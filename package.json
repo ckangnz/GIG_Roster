@@ -11,6 +11,7 @@
     "deploy": "gh-pages -d dist"
   },
   "dependencies": {
+    "firebase": "^12.8.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
@@ -20,10 +21,10 @@
     "@typescript-eslint/eslint-plugin": "^8.17.0",
     "@typescript-eslint/parser": "^8.17.0",
     "@vitejs/plugin-react": "^4.3.4",
-    "gh-pages":"latest",
     "eslint": "^9.16.0",
     "eslint-plugin-react-hooks": "^5.1.0",
     "eslint-plugin-react-refresh": "^0.4.16",
+    "gh-pages": "latest",
     "typescript": "^5.7.2",
     "vite": "^6.0.3"
   }
