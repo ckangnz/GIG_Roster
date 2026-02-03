@@ -1,16 +1,13 @@
 {
-  // These tasks will run in order when initializing your CodeSandbox project.
   "setupTasks": [
     {
       "name": "Install Dependencies",
       "command": "pnpm install"
     }
   ],
-
-  // These tasks can be run from CodeSandbox. Running one will open a log in the app.
   "tasks": {
     "dev": {
-      "name": "dev",
+      "name": "Run Dev Server",
       "command": "pnpm dev",
       "runAtStart": true,
       "preview": {
@@ -18,18 +15,19 @@
       }
     },
     "build": {
-      "name": "build",
+      "name": "Build Project",
       "command": "pnpm build",
       "runAtStart": false
     },
-    "preview": {
-      "name": "preview",
-      "command": "pnpm preview",
+    "deploy": {
+      "name": "Deploy to GitHub Pages",
+      "command": "pnpm build && pnpm exec gh-pages -d dist",
       "runAtStart": false
-    },
+    },    
     "install": {
-      "name": "install dependencies",
-      "command": "pnpm install"
+      "name": "Install Dependencies",
+      "command": "pnpm install",
+      "runAtStart": false
     }
   }
 }
