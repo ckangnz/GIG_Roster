@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
-import { auth, googleProvider, db, appleProvider } from "./firebase";
-import { signInWithPopup, onAuthStateChanged, User } from "firebase/auth";
+import { auth, db } from "./firebase";
+import { onAuthStateChanged, User } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 
-import "./App.css";
 import Loader from "./page/loading-page/LoadingPage";
+import LoginPage from "./page/login-page/LoginPage";
 import { AppUser } from "./model/model";
 
 import "./App.css";
@@ -49,71 +49,13 @@ function App() {
     return unsubscribe;
   }, []);
 
-  const loginGoogle = () => signInWithPopup(auth, googleProvider);
-  const loginApple = () => signInWithPopup(auth, appleProvider);
-
+  // Loading...
   if (loading) return <Loader />;
 
-  if (!user) {
-    return (
-      <div style={{ textAlign: "center", marginTop: "50px" }}>
-        <h1>GIG Roster</h1>
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "10px",
-            alignItems: "center",
-          }}
-        >
-          <button
-            onClick={loginGoogle}
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              gap: "8px",
-              padding: "10px 20px",
-              fontSize: "18px",
-              width: "250px",
-              backgroundColor: "black",
-              color: "white",
-            }}
-          >
-            <img
-              src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-              height="18"
-              alt="Google"
-            />
-            Login with Google
-          </button>
+  // Not signed in
+  if (!user) return <LoginPage />;
 
-          <button
-            onClick={loginApple}
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              gap: "8px",
-              padding: "10px 20px",
-              fontSize: "18px",
-              width: "250px",
-              backgroundColor: "black",
-              color: "white",
-            }}
-          >
-            <img
-              src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg"
-              height="18"
-              alt="Apple"
-              style={{ filter: "invert(1)" }}
-            />
-            Login with Apple
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // STEP 2: If logged in but NOT approved
+  // Unapproved
   if (userData && !userData.isApproved) {
     return (
       <div style={{ textAlign: "center", marginTop: "50px" }}>
@@ -126,12 +68,11 @@ function App() {
     );
   }
 
-  // STEP 3: Approved User - Show App
+  // Roster App
   return (
     <div style={{ padding: "20px" }}>
       <h1>GIG Roster Main App</h1>
-      <p>Welcome back, {userData.name}!</p>
-      {/* Roster components will go here later */}
+      <p>Welcome back, {userData!.name}!</p>
       <button onClick={() => auth.signOut()}>Logout</button>
     </div>
   );
