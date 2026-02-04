@@ -45,7 +45,6 @@ const PositionManager = () => {
 
   return (
     <div className="admin-section">
-      <h3>Positions</h3>
       <div className="pos-input">
         <input
           value={newEmoji}

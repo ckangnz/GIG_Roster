@@ -13,6 +13,8 @@ interface MainLayoutProps {
   onTabChange: (tab: string) => void;
   activeSideItem: string | null; // e.g., "Leader", "Synth", "Profile", or "Users"
   onSideItemChange: (item: string) => void;
+  isSidebarOpen: boolean;
+  setSidebarOpen: (open: boolean) => void;
 }
 
 const MainLayout = ({
@@ -22,18 +24,19 @@ const MainLayout = ({
   onTabChange,
   activeSideItem,
   onSideItemChange,
+  isSidebarOpen,
+  setSidebarOpen,
 }: MainLayoutProps) => {
-  const [isSidebarOpen, setSidebarOpen] = useState(false);
-
   return (
     <div className="app-shell">
-      {/* Mobile Top Bar */}
       <header className="mobile-header">
         <button onClick={() => setSidebarOpen(true)} className="menu-trigger">
-          ☰
+          〈
         </button>
-        <h1 className="logo">GIG ROSTER</h1>
-        <div className="header-spacer" />
+        <h1 className="logo">
+          {activeSideItem || (activeTab === "roster" ? "Roster" : "Settings")}
+        </h1>
+        <div className="header-spacer" style={{ width: "40px" }} />
       </header>
 
       {/* Side Navigation - Handles the sub-menu logic */}

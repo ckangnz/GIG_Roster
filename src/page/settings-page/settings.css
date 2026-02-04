@@ -1,18 +1,55 @@
-.settings-page-container {
-  padding: 20px;
-  max-width: 800px;
-  margin: 0 auto;
-}
+/* src/page/settings-page/settings.css */
 
-.admin-zone {
-  margin-top: 30px;
-  border-top: 2px dashed #333;
-  padding-top: 20px;
-}
-
-/* User cards inside UserManagement */
-.user-management-list {
+.settings-container {
+  /* Remove extra padding at top because the header provides breathing room */
+  padding: 10px 20px;
   display: flex;
   flex-direction: column;
+  gap: 15px;
+}
+
+.profile-card,
+.admin-section {
+  background: #1a1a1a;
+  padding: 20px;
+  border-radius: 16px; /* Smoother corners for a modern feel */
+  border: 1px solid #333;
+  margin-bottom: 20px;
+}
+
+/* Make the inputs and buttons feel "App-like" */
+.pos-input {
+  display: flex;
   gap: 10px;
+  margin-bottom: 20px;
+}
+
+.pos-input input {
+  background: #262626;
+  border: 1px solid #444;
+  color: white;
+  padding: 12px;
+  border-radius: 8px;
+  flex: 1;
+}
+
+.pos-input button {
+  background: #646cff;
+  color: white;
+  border: none;
+  padding: 0 20px;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+.user-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 0;
+  border-bottom: 1px solid #262626;
+}
+
+.user-card:last-child {
+  border-bottom: none;
 }

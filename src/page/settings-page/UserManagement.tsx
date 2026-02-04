@@ -50,7 +50,6 @@ const UserManagement = () => {
 
   return (
     <div className="admin-section">
-      <h3>User Management</h3>
       <div className="user-grid">
         {users.map((u) => (
           <div key={u.id} className="user-card">

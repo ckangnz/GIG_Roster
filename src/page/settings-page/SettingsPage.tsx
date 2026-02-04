@@ -13,14 +13,32 @@ const SettingsPage = ({ userData, activeSection }: SettingsPageProps) => {
     <div className="settings-container">
       {activeSection === "Profile" && (
         <section className="profile-card">
-          <h2>My Profile</h2>
-          {/* ... user profile info ... */}
+          <div className="profile-info">
+            <p>
+              <strong>Name:</strong> {userData.name}
+            </p>
+            <p>
+              <strong>Email:</strong> {userData.email}
+            </p>
+            <p>
+              <strong>Status:</strong>{" "}
+              {userData.isApproved ? "✅ Approved" : "⏳ Pending"}
+            </p>
+          </div>
         </section>
       )}
 
-      {activeSection === "Users" && userData.isAdmin && <UserManagement />}
+      {activeSection === "Users" && userData.isAdmin && (
+        <div className="admin-content">
+          <UserManagement />
+        </div>
+      )}
 
-      {activeSection === "Positions" && userData.isAdmin && <PositionManager />}
+      {activeSection === "Positions" && userData.isAdmin && (
+        <div className="admin-content">
+          <PositionManager />
+        </div>
+      )}
     </div>
   );
 };

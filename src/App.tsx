@@ -14,6 +14,7 @@ const App = () => {
   const { user, userData, loading } = useAuth();
   const [activeTab, setActiveTab] = useState("roster");
   const [activeSideItem, setActiveSideItem] = useState<string | null>(null);
+  const [isSidebarOpen, setSidebarOpen] = useState(false);
 
   if (loading) return <Loader />;
   if (!user) return <LoginPage />;
@@ -24,18 +25,18 @@ const App = () => {
     <MainLayout
       user={userData!}
       activeTab={activeTab}
+      isSidebarOpen={isSidebarOpen}
+      setSidebarOpen={setSidebarOpen}
       onTabChange={(tab) => {
         setActiveTab(tab);
-        setActiveSideItem(null); // Clear side selection when switching tabs
+        setActiveSideItem(null);
+        setSidebarOpen(true);
       }}
       activeSideItem={activeSideItem}
       onSideItemChange={setActiveSideItem}
     >
       {activeTab === "roster" ? (
         <div className="roster-view">
-          <header className="view-header">
-            <h2>{activeSideItem} Roster</h2>
-          </header>
           <div className="table-placeholder">Grid for {activeSideItem}...</div>
         </div>
       ) : (

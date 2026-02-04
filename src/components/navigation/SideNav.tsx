@@ -25,30 +25,34 @@ const SideNav = ({
 }: SideNavProps) => {
   const [positions, setPositions] = useState<Position[]>([]);
 
+  const sideNavTitle = activeTab === "roster" ? "Roster" : "Settings";
+
   useEffect(() => {
-    if (activeTab === "roster") {
-      const fetchPositions = async () => {
-        const snap = await getDoc(doc(db, "metadata", "positions"));
-        if (snap.exists()) {
-          const list = snap.data().list || [];
-          setPositions(list);
-          // Default to first position if none selected
-          if (!activeSideItem && list.length > 0)
-            onSideItemChange(list[0].name);
+    const fetchPositions = async () => {
+      const snap = await getDoc(doc(db, "metadata", "positions"));
+      if (snap.exists()) {
+        const list = snap.data().list || [];
+        setPositions(list);
+
+        if (activeTab === "roster" && !activeSideItem && list.length > 0) {
+          onSideItemChange(list[0].name);
         }
-      };
+      }
+    };
+
+    if (activeTab === "roster") {
       fetchPositions();
-    } else {
-      // If in Settings, default to Profile
-      if (!activeSideItem) onSideItemChange("Profile");
+    } else if (activeTab === "settings" && !activeSideItem) {
+      onSideItemChange("Profile");
     }
-  }, [activeTab, onSideItemChange, activeSideItem]);
+  }, [activeTab, activeSideItem, onSideItemChange]);
 
   return (
     <aside className={`sidebar ${isOpen ? "open" : ""}`}>
       <div className="sidebar-content">
         <div className="sidebar-header">
-          <h3>{activeTab === "roster" ? "Positions" : "Management"}</h3>
+          <div className="header-spacer" style={{ width: "24px" }} />
+          <h3>{sideNavTitle}</h3>
           <button className="mobile-close" onClick={onClose}>
             ×
           </button>
