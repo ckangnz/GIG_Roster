@@ -1,29 +1,45 @@
 import { useState } from "react";
 
 import { useAuth } from "./hooks/useAuth";
+
+import MainLayout from "./components/layout/MainLayout";
 import GuestPage from "./page/guest-page/GuestPage";
 import Loader from "./page/loading-page/LoadingPage";
 import LoginPage from "./page/login-page/LoginPage";
 import "./App.css";
 
-function App() {
+const App = () => {
   const { user, userData, loading } = useAuth();
-  const needsApproval = userData && !userData.isApproved;
+  const [currentPage, setCurrentPage] = useState("roster");
+  const [selectedPosition, setSelectedPosition] = useState<string | null>(null);
 
   if (loading) return <Loader />;
   if (!user) return <LoginPage />;
-
-  if (needsApproval) {
-    return <GuestPage user={userData!} uid={user.uid} />;
-  }
+  if (userData && !userData.isApproved)
+    return <GuestPage user={userData} uid={user.uid} />;
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h1>GIG Roster Main App</h1>
-      <p>Welcome back, {userData?.name}!</p>
-      <button onClick={() => auth.signOut()}>Logout</button>
-    </div>
+    <MainLayout
+      user={userData!}
+      activeTab={currentPage}
+      onTabChange={setCurrentPage}
+      selectedPosition={selectedPosition}
+      onPositionChange={setSelectedPosition}
+    >
+      {currentPage === "roster" && (
+        <div className="roster-view">
+          <header className="view-header">
+            <h2>{selectedPosition} Roster</h2>
+          </header>
+          <div className="table-placeholder">
+            Table for {selectedPosition} coming soon...
+          </div>
+        </div>
+      )}
+
+      {currentPage === "settings" && <div>Settings Page</div>}
+    </MainLayout>
   );
-}
+};
 
 export default App;
