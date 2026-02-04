@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { auth, googleProvider, db } from "./firebase";
+import { auth, googleProvider, db, appleProvider } from "./firebase";
 import { signInWithPopup, onAuthStateChanged, User } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 
@@ -45,7 +45,8 @@ function App() {
     return unsubscribe;
   }, []);
 
-  const login = () => signInWithPopup(auth, googleProvider);
+  const loginGoogle = () => signInWithPopup(auth, googleProvider);
+  const loginApple = () => signInWithPopup(auth, appleProvider);
 
   if (loading) return <h1>Loading...</h1>;
 
@@ -53,12 +54,57 @@ function App() {
     return (
       <div style={{ textAlign: "center", marginTop: "50px" }}>
         <h1>GIG Roster</h1>
-        <button
-          onClick={login}
-          style={{ padding: "10px 20px", fontSize: "18px" }}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "10px",
+            alignItems: "center",
+          }}
         >
-          Login with Google
-        </button>
+          <button
+            onClick={loginGoogle}
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              gap: "8px",
+              padding: "10px 20px",
+              fontSize: "18px",
+              width: "250px",
+              backgroundColor: "black",
+              color: "white",
+            }}
+          >
+            <img
+              src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+              height="18"
+              alt="Google"
+            />
+            Login with Google
+          </button>
+
+          <button
+            onClick={loginApple}
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              gap: "8px",
+              padding: "10px 20px",
+              fontSize: "18px",
+              width: "250px",
+              backgroundColor: "black",
+              color: "white",
+            }}
+          >
+            <img
+              src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg"
+              height="18"
+              alt="Apple"
+              style={{ filter: "invert(1)" }}
+            />
+            Login with Apple
+          </button>
+        </div>
       </div>
     );
   }
