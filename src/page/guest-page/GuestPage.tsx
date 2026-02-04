@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
+
 import { doc, getDoc, updateDoc } from "firebase/firestore";
+
 import { auth, db } from "../../firebase";
 import { AppUser, Position } from "../../model/model";
 import "./guest-page.css";

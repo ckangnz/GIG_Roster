@@ -1,4 +1,5 @@
 import { signInWithPopup } from "firebase/auth";
+
 import { appleProvider, auth, googleProvider } from "../../firebase";
 
 import "./login-page.css";

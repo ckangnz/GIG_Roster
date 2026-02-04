@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
-import { auth, db } from "../firebase";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
+import { useState, useEffect } from "react";
+
+import { auth, db } from "../firebase";
 import { AppUser } from "../model/model";
 
 export const useAuth = () => {

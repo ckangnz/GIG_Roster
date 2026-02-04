@@ -6,7 +6,7 @@ import tseslint from "typescript-eslint";
 import importPlugin from "eslint-plugin-import";
 
 export default [
-  { ignores: ["dist", "docs"] },
+  { ignores: ["dist", "docs", "vite.config.ts", "eslint.config.js"] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
@@ -16,7 +16,7 @@ export default [
       globals: globals.browser,
       parser: tseslint.parser,
       parserOptions: {
-        project: true,
+        project: ["./tsconfig.json", "./tsconfig.app.json"],
       },
     },
     plugins: {
@@ -34,13 +34,32 @@ export default [
         "error",
         {
           groups: [
-            "builtin",
-            "external",
-            "internal",
-            ["sibling", "parent"],
+            "builtin", // 1. node modules
+            "external", // 2. react, firebase, etc.
+            "internal", // 3. your hooks, models, firebase config
+            ["parent", "sibling"], // 4. local components/pages
             "index",
             "object",
+            "type",
           ],
+          pathGroups: [
+            {
+              pattern: "react",
+              group: "external",
+              position: "before",
+            },
+            {
+              pattern: "{./hooks/**,./firebase,./model/**}",
+              group: "internal",
+              position: "before",
+            },
+            {
+              pattern: "./**/*.css",
+              group: "index",
+              position: "after",
+            },
+          ],
+          pathGroupsExcludedImportTypes: ["react"],
           "newlines-between": "always",
           alphabetize: {
             order: "asc",

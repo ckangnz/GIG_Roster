@@ -1,8 +1,9 @@
-import { auth } from "./firebase";
+import { useState } from "react";
+
 import { useAuth } from "./hooks/useAuth";
+import GuestPage from "./page/guest-page/GuestPage";
 import Loader from "./page/loading-page/LoadingPage";
 import LoginPage from "./page/login-page/LoginPage";
-import GuestPage from "./page/guest-page/GuestPage";
 import "./App.css";
 
 function App() {
@@ -11,7 +12,10 @@ function App() {
 
   if (loading) return <Loader />;
   if (!user) return <LoginPage />;
-  if (needsApproval) return <GuestPage user={userData} uid={user.uid} />;
+
+  if (needsApproval) {
+    return <GuestPage user={userData!} uid={user.uid} />;
+  }
 
   return (
     <div style={{ padding: "20px" }}>
