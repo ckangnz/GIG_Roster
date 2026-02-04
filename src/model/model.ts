@@ -4,6 +4,12 @@ export interface AppUser {
   isApproved: boolean;
   isAdmin: boolean;
   isActive: boolean;
-  roles: string[];
+  positions: string[];
   gender: string;
+}
+
+export interface Position {
+  name: string;
+  emoji: string;
+  colour: string;
 }

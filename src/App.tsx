@@ -8,6 +8,7 @@ import LoginPage from "./page/login-page/LoginPage";
 import { AppUser } from "./model/model";
 
 import "./App.css";
+import GuestPage from "./page/guest-page/GuestPage";
 
 function App() {
   const [user, setUser] = useState<User | null>(null);
@@ -33,7 +34,7 @@ function App() {
             isApproved: isAutoAdmin,
             isAdmin: isAutoAdmin,
             isActive: true,
-            roles: [],
+            positions: [],
             gender: "",
           };
           await setDoc(userRef, newData);
@@ -57,15 +58,7 @@ function App() {
 
   // Unapproved
   if (userData && !userData.isApproved) {
-    return (
-      <div style={{ textAlign: "center", marginTop: "50px" }}>
-        <h1>Welcome, {user.displayName}</h1>
-        <p style={{ color: "orange", fontWeight: "bold" }}>
-          You are a guest. Wait for approval from admin.
-        </p>
-        <button onClick={() => auth.signOut()}>Logout</button>
-      </div>
-    );
+    return <GuestPage user={userData} uid={user.uid} />;
   }
 
   // Roster App
