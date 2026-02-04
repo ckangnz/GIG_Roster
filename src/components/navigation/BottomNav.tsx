@@ -1,3 +1,4 @@
+import { BOTTOM_NAV_ITEMS } from "../../constants/navigation";
 import "./navigation.css";
 
 interface BottomNavProps {
@@ -9,20 +10,16 @@ const BottomNav = ({ activeTab, onTabChange }: BottomNavProps) => {
   return (
     <nav className="bottom-nav-container">
       <div className="bottom-nav">
-        <button
-          className={`nav-btn ${activeTab === "roster" ? "active" : ""}`}
-          onClick={() => onTabChange("roster")}
-        >
-          <span className="nav-icon">🗓️</span>
-          <span className="nav-label">Roster</span>
-        </button>
-        <button
-          className={`nav-btn ${activeTab === "settings" ? "active" : ""}`}
-          onClick={() => onTabChange("settings")}
-        >
-          <span className="nav-icon">⚙️</span>
-          <span className="nav-label">Settings</span>
-        </button>
+        {BOTTOM_NAV_ITEMS.map((item) => (
+          <button
+            key={item.id}
+            className={`nav-btn ${activeTab === item.id ? "active" : ""}`}
+            onClick={() => onTabChange(item.id)}
+          >
+            <span className="nav-icon">{item.icon}</span>
+            <span className="nav-label">{item.label}</span>
+          </button>
+        ))}
       </div>
     </nav>
   );
