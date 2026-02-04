@@ -1,11 +1,11 @@
 export interface AppUser {
   name: string | null;
   email: string | null;
+  positions: string[];
+  gender: string;
   isApproved: boolean;
   isAdmin: boolean;
   isActive: boolean;
-  positions: string[];
-  gender: string;
 }
 
 export interface Position {
