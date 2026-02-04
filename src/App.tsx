@@ -4,6 +4,7 @@ import { signInWithPopup, onAuthStateChanged, User } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 
 import "./App.css";
+import Loader from "./page/loading-page/LoadingPage";
 
 function App() {
   const [user, setUser] = useState<User | null>(null);
@@ -48,7 +49,7 @@ function App() {
   const loginGoogle = () => signInWithPopup(auth, googleProvider);
   const loginApple = () => signInWithPopup(auth, appleProvider);
 
-  if (loading) return <h1>Loading...</h1>;
+  if (loading) return <Loader />;
 
   if (!user) {
     return (
