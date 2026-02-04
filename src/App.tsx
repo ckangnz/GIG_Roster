@@ -5,10 +5,13 @@ import { doc, getDoc, setDoc } from "firebase/firestore";
 
 import "./App.css";
 import Loader from "./page/loading-page/LoadingPage";
+import { AppUser } from "./model/model";
+
+import "./App.css";
 
 function App() {
   const [user, setUser] = useState<User | null>(null);
-  const [userData, setUserData] = useState<any>(null);
+  const [userData, setUserData] = useState<AppUser | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -19,12 +22,12 @@ function App() {
         const userSnap = await getDoc(userRef);
 
         if (userSnap.exists()) {
-          setUserData(userSnap.data());
+          setUserData(userSnap.data() as AppUser);
         } else {
           const adminEmail = import.meta.env.VITE_ADMIN_EMAIL;
           const isAutoAdmin = firebaseUser.email === adminEmail;
 
-          const newData = {
+          const newData: AppUser = {
             name: firebaseUser.displayName,
             email: firebaseUser.email,
             isApproved: isAutoAdmin,
