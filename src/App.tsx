@@ -6,12 +6,14 @@ import MainLayout from "./components/layout/MainLayout";
 import GuestPage from "./page/guest-page/GuestPage";
 import Loader from "./page/loading-page/LoadingPage";
 import LoginPage from "./page/login-page/LoginPage";
+import SettingsPage from "./page/settings-page/SettingsPage";
+
 import "./App.css";
 
 const App = () => {
   const { user, userData, loading } = useAuth();
-  const [currentPage, setCurrentPage] = useState("roster");
-  const [selectedPosition, setSelectedPosition] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState("roster");
+  const [activeSideItem, setActiveSideItem] = useState<string | null>(null);
 
   if (loading) return <Loader />;
   if (!user) return <LoginPage />;
@@ -21,23 +23,24 @@ const App = () => {
   return (
     <MainLayout
       user={userData!}
-      activeTab={currentPage}
-      onTabChange={setCurrentPage}
-      selectedPosition={selectedPosition}
-      onPositionChange={setSelectedPosition}
+      activeTab={activeTab}
+      onTabChange={(tab) => {
+        setActiveTab(tab);
+        setActiveSideItem(null); // Clear side selection when switching tabs
+      }}
+      activeSideItem={activeSideItem}
+      onSideItemChange={setActiveSideItem}
     >
-      {currentPage === "roster" && (
+      {activeTab === "roster" ? (
         <div className="roster-view">
           <header className="view-header">
-            <h2>{selectedPosition} Roster</h2>
+            <h2>{activeSideItem} Roster</h2>
           </header>
-          <div className="table-placeholder">
-            Table for {selectedPosition} coming soon...
-          </div>
+          <div className="table-placeholder">Grid for {activeSideItem}...</div>
         </div>
+      ) : (
+        <SettingsPage userData={userData!} activeSection={activeSideItem} />
       )}
-
-      {currentPage === "settings" && <div>Settings Page</div>}
     </MainLayout>
   );
 };
