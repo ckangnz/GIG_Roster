@@ -2,73 +2,77 @@ import { useEffect, useState } from "react";
 
 import { doc, getDoc } from "firebase/firestore";
 
-import { AppTab, SETTINGS_NAV_ITEMS } from "../../constants/navigation";
+import {
+  AppTab,
+  SETTINGS_NAV_ITEMS,
+  SettingsSection,
+} from "../../constants/navigation";
 import { db } from "../../firebase";
 import { AppUser, Position } from "../../model/model";
-
 import "./navigation.css";
 
 interface SideNavProps {
   user: AppUser;
-  isOpen: boolean;
-  onClose: () => void;
-  activeTab: string; // "roster" or "settings"
+  activeTab: string;
   activeSideItem: string | null;
-  onSideItemChange: (item: string) => void;
+  onSideItemChange: (item: string, isManual: boolean) => void;
 }
 
 const SideNav = ({
   user,
-  isOpen,
-  onClose,
   activeTab,
   activeSideItem,
   onSideItemChange,
 }: SideNavProps) => {
   const [positions, setPositions] = useState<Position[]>([]);
 
-  const sideNavTitle = activeTab === "roster" ? "Roster" : "Settings";
-
   useEffect(() => {
     const fetchPositions = async () => {
-      const snap = await getDoc(doc(db, "metadata", "positions"));
-      if (snap.exists()) {
-        const list = snap.data().list || [];
-        setPositions(list);
-
-        if (activeTab === "roster" && !activeSideItem && list.length > 0) {
-          onSideItemChange(list[0].name);
+      try {
+        const snap = await getDoc(doc(db, "metadata", "positions"));
+        if (snap.exists()) {
+          const list = snap.data().list || [];
+          setPositions(list);
+          if (
+            activeTab === AppTab.ROSTER &&
+            !activeSideItem &&
+            list.length > 0
+          ) {
+            onSideItemChange(list[0].name, false); // Auto-select, not manual
+          }
         }
+      } catch (e) {
+        console.error("Error fetching positions:", e);
       }
     };
 
-    if (activeTab === "roster") {
+    if (activeTab === AppTab.ROSTER) {
       fetchPositions();
-    } else if (activeTab === "settings" && !activeSideItem) {
-      onSideItemChange("Profile");
+    } else if (activeTab === AppTab.SETTINGS && !activeSideItem) {
+      onSideItemChange(SettingsSection.PROFILE, false);
     }
-  }, [activeTab, activeSideItem, onSideItemChange]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab]);
 
   return (
-    <aside className={`sidebar ${isOpen ? "open" : ""}`}>
+    <aside className="side-nav">
       <div className="sidebar-content">
-        <div className="sidebar-header">
-          <div className="header-spacer" style={{ width: "24px" }} />
-          <h3>{sideNavTitle}</h3>
-          <button className="mobile-close" onClick={onClose}>
-            ×
-          </button>
+        <div className="tablet-sidebar-header">
+          <h3>{activeTab === AppTab.ROSTER ? "Positions" : "Settings"}</h3>
         </div>
+
         <nav className="side-menu-list">
+          {activeTab === AppTab.ROSTER && positions.length === 0 && (
+            <div className="nav-item" style={{ opacity: 0.5 }}>
+              Loading...
+            </div>
+          )}
           {activeTab === AppTab.ROSTER
             ? positions.map((pos) => (
                 <button
                   key={pos.name}
                   className={`nav-item ${activeSideItem === pos.name ? "active" : ""}`}
-                  onClick={() => {
-                    onSideItemChange(pos.name);
-                    onClose();
-                  }}
+                  onClick={() => onSideItemChange(pos.name, true)}
                 >
                   <span className="side-emoji">{pos.emoji}</span> {pos.name}
                 </button>
@@ -79,10 +83,7 @@ const SideNav = ({
                 <button
                   key={item.id}
                   className={`nav-item ${activeSideItem === item.id ? "active" : ""}`}
-                  onClick={() => {
-                    onSideItemChange(item.id);
-                    onClose();
-                  }}
+                  onClick={() => onSideItemChange(item.id, true)}
                 >
                   <span className="side-emoji">{item.icon}</span> {item.label}
                 </button>

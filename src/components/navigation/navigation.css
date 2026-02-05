@@ -1,26 +1,33 @@
-.nav-btn,
+/* SHARED INTERACTION RULES */
 .nav-item,
-.menu-trigger,
-.mobile-close {
+.nav-btn {
+  background: none;
+  border: none;
   outline: none;
-  -webkit-tap-highlight-color: transparent;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: all 0.2s ease;
 }
 
-.nav-btn:focus,
+/* Clear focus borders for mouse users, keep for keyboard users */
 .nav-item:focus,
-.menu-trigger:focus,
-.mobile-close:focus {
+.nav-btn:focus {
   outline: none;
 }
 
-.sidebar {
-  grid-area: sidebar;
+/* SIDE NAV STRUCTURE */
+.side-nav {
   background: #1a1a1a;
-  border-right: 1px solid #333;
+  z-index: 1000;
+  overflow-y: auto;
+  border-bottom: 1px solid #333;
+  /* Mobile default: Hidden */
+  display: none;
+}
+
+.menu-open .side-nav {
   display: flex;
   flex-direction: column;
-  z-index: 100;
 }
 
 .sidebar-content {
@@ -29,31 +36,8 @@
   height: 100%;
 }
 
-.sidebar-header {
-  display: grid;
-  grid-template-columns: 44px 1fr 44px;
-  align-items: center;
-  padding: 10px 15px;
-  min-height: 60px;
-  border-bottom: 1px solid #262626;
-}
-
-.sidebar-header h3 {
-  grid-column: 2;
-  text-align: center;
-  margin: 0;
-  font-size: 1.1rem;
-}
-
-.mobile-close {
-  grid-column: 3;
-  background: none;
-  border: none;
-  color: white;
-  font-size: 32px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+.tablet-sidebar-header {
+  display: none;
 }
 
 .side-menu-list {
@@ -64,125 +48,96 @@
 
 .nav-item {
   width: 100%;
-  padding: 16px 20px;
+  padding: 18px 24px;
   display: flex;
   align-items: center;
-  background: transparent;
-  border: none;
-  border-left: 4px solid transparent;
   color: #888;
-  font-size: 1rem;
-  transition: all 0.2s ease;
-  text-align: left;
-}
-
-.nav-item:hover {
-  background: #242424;
-  color: white;
+  font-size: 1.1rem;
 }
 
 .nav-item.active {
   background: #242424;
   color: #646cff;
-  border-left-color: #646cff;
   font-weight: 700;
 }
 
 .side-emoji {
-  margin-right: 12px;
-  font-size: 1.2rem;
+  margin-right: 15px;
+  font-size: 1.3rem;
 }
 
+/* BOTTOM NAV */
 .bottom-nav-container {
   grid-area: nav;
   display: flex;
   justify-content: center;
+  background: #242424;
+  border-top: 1px solid #333;
+  padding: 8px 0;
   z-index: 10;
 }
 
 .bottom-nav {
   display: flex;
-  align-items: center;
-  transition: all 0.3s ease;
+  width: 100%;
+  max-width: 600px;
+  justify-content: space-around;
 }
 
 .nav-btn {
-  background: none;
-  border: none;
   color: #888;
   display: flex;
   flex-direction: column;
   align-items: center;
-  transition: color 0.2s;
+  flex: 1;
 }
 
 .nav-btn.active {
   color: #646cff;
 }
 
-.nav-label {
-  font-size: 10px;
-  text-transform: uppercase;
-  margin-top: 4px;
-}
-
-@media (max-width: 767px) {
-  .sidebar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    width: 100vw;
-    transform: translateX(-100%);
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .sidebar.open {
-    transform: translateX(0);
-  }
-
-  .sidebar-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.7);
-    display: none;
-    z-index: 99;
-  }
-
-  .sidebar.open + .sidebar-overlay {
-    display: block;
-  }
-
-  .bottom-nav-container {
-    padding: 0;
-    background: #242424;
-    border-top: 1px solid #333;
-  }
-
-  .bottom-nav {
-    width: 100%;
-    max-width: 600px;
-    background: transparent;
-    border: none;
-    padding: 8px 0;
-    justify-content: space-around;
-    box-shadow: none;
-  }
-
-  .nav-btn {
-    flex: 1;
-  }
-}
-
+/* TABLET & DESKTOP (No !importants needed via media query specificity) */
 @media (min-width: 768px) {
-  .mobile-close,
-  .sidebar-overlay {
-    display: none !important;
+  .side-nav {
+    display: flex;
+    position: relative;
+    grid-area: sidebar;
+    width: 260px;
+    height: 100%;
+    border-right: 1px solid #333;
+    border-bottom: none;
+  }
+
+  .tablet-sidebar-header {
+    display: flex;
+    align-items: center;
+    padding: 20px;
+    min-height: 60px;
+    border-bottom: 1px solid #262626;
+  }
+
+  .tablet-sidebar-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #fff;
+  }
+
+  .nav-item {
+    padding: 14px 20px;
+    font-size: 1rem;
+    border-left: 4px solid transparent;
+  }
+
+  .nav-item.active {
+    border-left-color: #646cff;
+    padding-left: 20px;
+    background: #242424;
   }
 
   .bottom-nav-container {
     padding: 10px 0;
     background: transparent;
+    border-top: none;
   }
 
   .bottom-nav {
@@ -192,11 +147,5 @@
     border-radius: 20px;
     padding: 8px 16px;
     gap: 15px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-  }
-
-  .nav-btn {
-    flex: none;
-    min-width: 80px;
   }
 }

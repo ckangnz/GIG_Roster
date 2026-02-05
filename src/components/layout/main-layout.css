@@ -1,67 +1,94 @@
+/* MOBILE FIRST */
 .app-shell {
   display: grid;
   height: 100vh;
   width: 100vw;
-  /* Area names must match exactly what components use */
   grid-template-areas:
     "header"
     "main"
     "nav";
-  grid-template-rows: auto 1fr auto;
+  grid-template-rows: 60px 1fr auto;
   overflow: hidden;
   background-color: #121212;
   color: white;
 }
 
+/* Header acting as a Dropdown Trigger */
 .mobile-header {
   grid-area: header;
-  display: grid;
-  grid-template-columns: 44px 1fr 44px;
-  align-items: center;
-  height: 60px;
-  padding: 0 15px;
   background: #1a1a1a;
   border-bottom: 1px solid #333;
-}
-
-.menu-trigger {
-  background: transparent;
-  border: none;
-  font-size: 28px;
-  font-weight: 300;
-  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0;
-  height: 44px;
-  width: 44px;
-  transition: opacity 0.2s;
-}
-.menu-trigger:active {
-  opacity: 0.5;
+  cursor: pointer;
+  z-index: 1100; /* Higher than SideNav overlay to stay visible or clickable */
 }
 
-.logo {
-  grid-column: 2;
-  font-size: 1rem;
-  font-weight: 700;
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   text-transform: uppercase;
-  letter-spacing: 1.5px;
-  margin: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  text-align: center;
+  font-weight: 700;
+  letter-spacing: 1px;
+  font-size: 0.9rem;
+}
+
+.dropdown-arrow {
+  font-size: 1.2rem;
+  transition: transform 0.3s ease;
+  color: #646cff;
+}
+
+.dropdown-arrow.up {
+  transform: rotate(180deg);
 }
 
 .main-content {
   grid-area: main;
   overflow-y: auto;
-  background-color: #121212;
+  position: relative;
+  animation: fadeIn 0.3s ease-in-out;
 }
 
-/* TABLET & DESKTOP GRID */
+@keyframes fadeIn {
+  from {
+    opacity: 0.2;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.content-container {
+  padding: 10px;
+  min-height: 100%;
+}
+
+/* SIDE NAV OVERLAY (Mobile) */
+.side-nav {
+  position: fixed;
+  top: 60px;
+  left: 0;
+  width: 100vw;
+  height: calc(100vh - 60px - 70px);
+  background: #1a1a1a;
+  z-index: 1000;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  display: none;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* When sidebar state is open */
+.menu-open .side-nav {
+  display: flex; /* Toggle visibility instantly */
+}
+
+/* TABLET & DESKTOP LAYOUT */
 @media (min-width: 768px) {
   .app-shell {
     grid-template-areas:
@@ -73,5 +100,19 @@
 
   .mobile-header {
     display: none;
+  }
+
+  .side-nav {
+    position: relative;
+    grid-area: sidebar;
+    top: 0;
+    width: 260px;
+    height: 100% !important;
+    border-right: 1px solid #333;
+    border-bottom: none;
+    transition: none;
+    overflow-y: auto;
+    display: flex !important;
+    visibility: visible !important;
   }
 }

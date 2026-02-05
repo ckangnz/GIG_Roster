@@ -2,15 +2,14 @@ import { BOTTOM_NAV_ITEMS } from "../../constants/navigation";
 import { AppUser } from "../../model/model";
 import BottomNav from "../navigation/BottomNav";
 import SideNav from "../navigation/SideNav";
-
 import "./main-layout.css";
 
 interface MainLayoutProps {
   user: AppUser;
   children: React.ReactNode;
-  activeTab: string; // "roster" or "settings"
+  activeTab: string;
   onTabChange: (tab: string) => void;
-  activeSideItem: string | null; // e.g., "Leader", "Synth", "Profile", or "Users"
+  activeSideItem: string | null;
   onSideItemChange: (item: string) => void;
   isSidebarOpen: boolean;
   setSidebarOpen: (open: boolean) => void;
@@ -27,37 +26,44 @@ const MainLayout = ({
   setSidebarOpen,
 }: MainLayoutProps) => {
   const getHeaderTitle = () => {
-    if (activeSideItem) return activeSideItem;
     const currentTab = BOTTOM_NAV_ITEMS.find((item) => item.id === activeTab);
-    return currentTab ? currentTab.label : "GIG ROSTER";
+    const tabLabel = currentTab ? currentTab.label : "GIG ROSTER";
+    return activeSideItem ? `${tabLabel} • ${activeSideItem}` : tabLabel;
+  };
+
+  // Only close sidebar on mobile if the selection was a manual user click
+  const handleSideItemChange = (item: string, isManual: boolean) => {
+    onSideItemChange(item);
+    if (isManual && window.innerWidth < 768) {
+      setSidebarOpen(false);
+    }
   };
 
   return (
-    <div className="app-shell">
-      <header className="mobile-header">
-        <button onClick={() => setSidebarOpen(true)} className="menu-trigger">
-          〈
-        </button>
-        <h1 className="logo">{getHeaderTitle()}</h1>
-        <div className="header-spacer" style={{ width: "40px" }} />
+    <div className={`app-shell ${isSidebarOpen ? "menu-open" : ""}`}>
+      <header
+        className="mobile-header"
+        onClick={() => setSidebarOpen(!isSidebarOpen)}
+      >
+        <div className="header-content">
+          <span className="current-context">{getHeaderTitle()}</span>
+          <span className={`dropdown-arrow ${isSidebarOpen ? "up" : "down"}`}>
+            ▾
+          </span>
+        </div>
       </header>
 
-      {/* Side Navigation - Handles the sub-menu logic */}
       <SideNav
         user={user}
-        isOpen={isSidebarOpen}
-        onClose={() => setSidebarOpen(false)}
         activeTab={activeTab}
         activeSideItem={activeSideItem}
-        onSideItemChange={onSideItemChange}
+        onSideItemChange={handleSideItemChange}
       />
 
-      {/* Main Content Area */}
       <main className="main-content">
         <div className="content-container">{children}</div>
       </main>
 
-      {/* Bottom Navigation - Handles the primary context switch */}
       <BottomNav activeTab={activeTab} onTabChange={onTabChange} />
     </div>
   );
