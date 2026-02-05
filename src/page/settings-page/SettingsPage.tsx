@@ -3,7 +3,8 @@ import ProfileSettings from "./ProfileSettings";
 import UserManagement from "./UserManagement";
 import { SettingsSection } from "../../constants/navigation";
 import { AppUser } from "../../model/model";
-import "./settings.css";
+
+import "./shared-settings.css";
 
 interface SettingsPageProps {
   userData: AppUser;

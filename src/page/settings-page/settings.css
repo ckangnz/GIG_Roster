@@ -117,7 +117,7 @@
 }
 
 .toggle-switch.on {
-  background: rgba(46, 125, 50, 0.15);
+  background: rgba(46, 125, 50, 0.25);
   color: #81c784;
   border-color: #2e7d32;
 }

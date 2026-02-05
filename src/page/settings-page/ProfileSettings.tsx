@@ -1,7 +1,11 @@
 import { useState, useEffect } from "react";
+
 import { doc, getDoc, updateDoc } from "firebase/firestore";
+
 import { db, auth } from "../../firebase";
 import { AppUser, Position } from "../../model/model";
+
+import "./profile-settings.css";
 
 interface ProfileSettingsProps {
   userData: AppUser;
@@ -55,7 +59,7 @@ const ProfileSettings = ({ userData, uid }: ProfileSettingsProps) => {
   };
 
   return (
-    <section className="profile-card">
+    <section className="settings-card">
       <div className="profile-readonly">
         <p>
           <strong>Name:</strong> {userData.name}

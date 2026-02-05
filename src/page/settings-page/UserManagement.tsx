@@ -5,6 +5,8 @@ import { collection, getDocs, doc, updateDoc } from "firebase/firestore";
 import { db } from "../../firebase";
 import { AppUser } from "../../model/model";
 
+import "./admin-management.css";
+
 const UserManagement = () => {
   const [users, setUsers] = useState<(AppUser & { id: string })[]>([]);
 
@@ -44,8 +46,20 @@ const UserManagement = () => {
   }, []);
 
   const toggleApproval = async (id: string, currentStatus: boolean) => {
-    await updateDoc(doc(db, "users", id), { isApproved: !currentStatus });
-    fetchUsers(); // Refresh list
+    setUsers((prev) =>
+      prev.map((u) => (u.id === id ? { ...u, isApproved: !currentStatus } : u)),
+    );
+
+    try {
+      await updateDoc(doc(db, "users", id), { isApproved: !currentStatus });
+    } catch (error) {
+      setUsers((prev) =>
+        prev.map((u) =>
+          u.id === id ? { ...u, isApproved: currentStatus } : u,
+        ),
+      );
+      console.error("Update failed:", error);
+    }
   };
 
   return (
@@ -53,9 +67,10 @@ const UserManagement = () => {
       <div className="user-grid">
         {users.map((u) => (
           <div key={u.id} className="user-card">
-            <span>
-              {u.name} ({u.email})
-            </span>
+            <div className="user-info">
+              <span className="user-name">{u.name}</span>
+              <span className="user-email">{u.email}</span>
+            </div>
             <button
               className={u.isApproved ? "btn-approved" : "btn-pending"}
               onClick={() => toggleApproval(u.id, u.isApproved)}

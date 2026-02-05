@@ -1,0 +1,65 @@
+.admin-section {
+  width: 100%;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.user-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Management Card Style */
+.user-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #1e1e1e;
+  padding: 16px 20px;
+  border-radius: 12px;
+  border: 1px solid #333;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.user-name {
+  font-weight: 600;
+  color: #fff;
+}
+
+.user-email {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+/* Management Action Buttons */
+.btn-approve,
+.btn-pending {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  min-width: 100px;
+  transition: all 0.2s ease;
+}
+
+.btn-approved {
+  background: rgba(46, 125, 50, 0.2);
+  color: #81c784;
+  border: 1px solid #2e7d32;
+}
+
+.btn-pending {
+  background: #646cff;
+  color: white;
+}
+
+.btn-pending:hover {
+  background: #535bf2;
+}
