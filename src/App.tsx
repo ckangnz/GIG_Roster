@@ -20,7 +20,6 @@ const App = () => {
   if (loading) return <Loader />;
   if (!user) return <LoginPage />;
 
-  // If user is logged in but not approved, show the Guest/Onboarding page
   if (userData && !userData.isApproved) {
     return <GuestPage user={userData} uid={user.uid} />;
   }
@@ -33,11 +32,10 @@ const App = () => {
       setSidebarOpen={setSidebarOpen}
       onTabChange={(tab) => {
         setActiveTab(tab);
-        // Default to Profile when switching to Settings tab
         setActiveSideItem(
           tab === AppTab.SETTINGS ? SettingsSection.PROFILE : null,
         );
-        setSidebarOpen(false);
+        setSidebarOpen(true);
       }}
       activeSideItem={activeSideItem}
       onSideItemChange={setActiveSideItem}
