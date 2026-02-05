@@ -33,6 +33,7 @@ const App = () => {
       onTabChange={(tab) => {
         setActiveTab(tab);
         setSidebarOpen(true);
+        console.log(tab);
 
         if (tab === AppTab.SETTINGS) {
           setActiveSideItem(SettingsSection.PROFILE);
@@ -52,7 +53,7 @@ const App = () => {
       ) : (
         <SettingsPage
           userData={userData!}
-          uid={user.uid} // THIS WAS MISSING: Passing the Firebase Auth UID
+          uid={user.uid}
           activeSection={activeSideItem}
         />
       )}

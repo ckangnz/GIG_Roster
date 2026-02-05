@@ -18,7 +18,7 @@
 }
 
 .profile-readonly {
-  text-align: center;
+  text-align: left;
   margin-bottom: 20px;
 }
 
@@ -34,12 +34,6 @@
   font-weight: 600;
   text-transform: uppercase;
   font-size: 0.75rem;
-}
-
-.settings-divider {
-  border: 0;
-  border-top: 1px solid #333;
-  margin: 24px 0;
 }
 
 .form-group {

@@ -33,6 +33,7 @@
 .sidebar-content {
   display: flex;
   flex-direction: column;
+  width: 100%;
   height: 100%;
 }
 
@@ -43,19 +44,23 @@
 .side-menu-list {
   display: flex;
   flex-direction: column;
-  padding: 10px 0;
 }
 
-.nav-item {
+button.nav-item {
   width: 100%;
   padding: 18px 24px;
   display: flex;
   align-items: center;
   color: #888;
   font-size: 1.1rem;
+  border-radius: 0;
 }
 
-.nav-item.active {
+button.nav-item:hover {
+  background: #242424;
+}
+
+button.nav-item.active {
   background: #242424;
   color: #646cff;
   font-weight: 700;
@@ -112,8 +117,6 @@
     display: flex;
     align-items: center;
     padding: 20px;
-    min-height: 60px;
-    border-bottom: 1px solid #262626;
   }
 
   .tablet-sidebar-header h3 {

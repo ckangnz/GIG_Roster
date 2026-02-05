@@ -31,7 +31,6 @@ const MainLayout = ({
     return activeSideItem ? `${tabLabel} • ${activeSideItem}` : tabLabel;
   };
 
-  // Only close sidebar on mobile if the selection was a manual user click
   const handleSideItemChange = (item: string, isManual: boolean) => {
     onSideItemChange(item);
     if (isManual && window.innerWidth < 768) {
@@ -45,11 +44,23 @@ const MainLayout = ({
         className="mobile-header"
         onClick={() => setSidebarOpen(!isSidebarOpen)}
       >
-        <div className="header-content">
+        <div className={`header-pill ${isSidebarOpen ? "pill-active" : ""}`}>
           <span className="current-context">{getHeaderTitle()}</span>
-          <span className={`dropdown-arrow ${isSidebarOpen ? "up" : "down"}`}>
-            ▾
-          </span>
+          <svg
+            className={`chevron-icon ${isSidebarOpen ? "rotate" : ""}`}
+            viewBox="0 0 24 24"
+            width="20"
+            height="20"
+          >
+            <path
+              d="M7 10l5 5 5-5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
         </div>
       </header>
 

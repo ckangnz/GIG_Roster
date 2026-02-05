@@ -14,8 +14,6 @@ const ProfileSettings = ({ userData, uid }: ProfileSettingsProps) => {
   const PRIMARY_ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL;
   const isPrimaryAdmin = userData.email === PRIMARY_ADMIN_EMAIL;
 
-  // 1. Initialize state directly from props.
-  // No need for useEffect to "sync" these on first load.
   const [gender, setGender] = useState(userData.gender || "");
   const [selectedPositions, setSelectedPositions] = useState<string[]>(
     userData.positions || [],
@@ -27,7 +25,6 @@ const ProfileSettings = ({ userData, uid }: ProfileSettingsProps) => {
   const [availablePositions, setAvailablePositions] = useState<Position[]>([]);
   const [status, setStatus] = useState("idle");
 
-  // Keep this effect: it's for external data (Firestore), not internal state syncing.
   useEffect(() => {
     const fetchPositions = async () => {
       try {
@@ -39,10 +36,6 @@ const ProfileSettings = ({ userData, uid }: ProfileSettingsProps) => {
     };
     fetchPositions();
   }, []);
-
-  // 2. Logic to handle "resetting" the form if the userData prop updates
-  // without triggering a cascade render warning.
-  // We use a separate state or just rely on the parent providing a new 'key'.
 
   const handleSave = async () => {
     if (!uid) return;
@@ -74,7 +67,6 @@ const ProfileSettings = ({ userData, uid }: ProfileSettingsProps) => {
 
   return (
     <section className="profile-card">
-      {/* ... (Rest of your JSX remains exactly the same) ... */}
       <div className="profile-readonly">
         <p>
           <strong>Name:</strong> {userData.name}
@@ -82,13 +74,7 @@ const ProfileSettings = ({ userData, uid }: ProfileSettingsProps) => {
         <p>
           <strong>Email:</strong> {userData.email}
         </p>
-        <p>
-          <strong>Account Status:</strong>{" "}
-          {userData.isApproved ? "✅ Approved" : "⏳ Pending"}
-        </p>
       </div>
-
-      <hr className="settings-divider" />
 
       <div className="form-group">
         <label>Gender</label>
@@ -180,7 +166,7 @@ const ProfileSettings = ({ userData, uid }: ProfileSettingsProps) => {
             ? "Saving..."
             : status === "success"
               ? "Done ✓"
-              : "Save Profile"}
+              : "Update Profile"}
         </button>
         <button onClick={() => auth.signOut()} className="logout-btn">
           Logout

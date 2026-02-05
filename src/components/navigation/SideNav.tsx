@@ -38,7 +38,7 @@ const SideNav = ({
             !activeSideItem &&
             list.length > 0
           ) {
-            onSideItemChange(list[0].name, false); // Auto-select, not manual
+            onSideItemChange(list[0].name, false);
           }
         }
       } catch (e) {
