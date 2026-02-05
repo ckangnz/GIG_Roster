@@ -10,15 +10,6 @@ import "./admin-management.css";
 const UserManagement = () => {
   const [users, setUsers] = useState<(AppUser & { id: string })[]>([]);
 
-  const fetchUsers = async () => {
-    const querySnapshot = await getDocs(collection(db, "users"));
-    const userList = querySnapshot.docs.map((d) => ({
-      ...(d.data() as AppUser),
-      id: d.id,
-    }));
-    setUsers(userList);
-  };
-
   useEffect(() => {
     let isMounted = true;
 
