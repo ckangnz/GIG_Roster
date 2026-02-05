@@ -2,13 +2,9 @@ import { useEffect, useState } from "react";
 
 import { doc, getDoc } from "firebase/firestore";
 
+import { AppTab, SETTINGS_NAV_ITEMS } from "../../constants/navigation";
 import { db } from "../../firebase";
 import { AppUser, Position } from "../../model/model";
-import {
-  AppTab,
-  SettingsSection,
-  SETTINGS_NAV_ITEMS,
-} from "../../constants/navigation";
 
 import "./navigation.css";
 

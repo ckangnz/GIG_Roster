@@ -1,7 +1,7 @@
+import { BOTTOM_NAV_ITEMS } from "../../constants/navigation";
 import { AppUser } from "../../model/model";
 import BottomNav from "../navigation/BottomNav";
 import SideNav from "../navigation/SideNav";
-import { BOTTOM_NAV_ITEMS, AppTab } from "../../constants/navigation";
 
 import "./main-layout.css";
 

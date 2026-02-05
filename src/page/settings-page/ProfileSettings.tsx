@@ -14,24 +14,20 @@ const ProfileSettings = ({ userData, uid }: ProfileSettingsProps) => {
   const PRIMARY_ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL;
   const isPrimaryAdmin = userData.email === PRIMARY_ADMIN_EMAIL;
 
+  // 1. Initialize state directly from props.
+  // No need for useEffect to "sync" these on first load.
   const [gender, setGender] = useState(userData.gender || "");
   const [selectedPositions, setSelectedPositions] = useState<string[]>(
     userData.positions || [],
   );
-  const [availablePositions, setAvailablePositions] = useState<Position[]>([]);
   const [isAdmin, setIsAdmin] = useState(userData.isAdmin || false);
   const [isApproved, setIsApproved] = useState(userData.isApproved || false);
   const [isActive, setIsActive] = useState(userData.isActive || false);
+
+  const [availablePositions, setAvailablePositions] = useState<Position[]>([]);
   const [status, setStatus] = useState("idle");
 
-  useEffect(() => {
-    setGender(userData.gender || "");
-    setSelectedPositions(userData.positions || []);
-    setIsAdmin(userData.isAdmin || false);
-    setIsApproved(userData.isApproved || false);
-    setIsActive(userData.isActive || false);
-  }, [userData]);
-
+  // Keep this effect: it's for external data (Firestore), not internal state syncing.
   useEffect(() => {
     const fetchPositions = async () => {
       try {
@@ -43,6 +39,10 @@ const ProfileSettings = ({ userData, uid }: ProfileSettingsProps) => {
     };
     fetchPositions();
   }, []);
+
+  // 2. Logic to handle "resetting" the form if the userData prop updates
+  // without triggering a cascade render warning.
+  // We use a separate state or just rely on the parent providing a new 'key'.
 
   const handleSave = async () => {
     if (!uid) return;
@@ -74,6 +74,7 @@ const ProfileSettings = ({ userData, uid }: ProfileSettingsProps) => {
 
   return (
     <section className="profile-card">
+      {/* ... (Rest of your JSX remains exactly the same) ... */}
       <div className="profile-readonly">
         <p>
           <strong>Name:</strong> {userData.name}

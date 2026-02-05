@@ -1,12 +1,13 @@
 import { useState } from "react";
+
 import { useAuth } from "./hooks/useAuth";
 
 import MainLayout from "./components/layout/MainLayout";
+import { AppTab, SettingsSection } from "./constants/navigation";
 import GuestPage from "./page/guest-page/GuestPage";
 import Loader from "./page/loading-page/LoadingPage";
 import LoginPage from "./page/login-page/LoginPage";
 import SettingsPage from "./page/settings-page/SettingsPage";
-import { AppTab, SettingsSection } from "./constants/navigation";
 
 import "./App.css";
 

@@ -15,7 +15,7 @@ const SettingsPage = ({ userData, uid, activeSection }: SettingsPageProps) => {
   return (
     <div className="settings-container">
       {activeSection === SettingsSection.PROFILE && (
-        <ProfileSettings userData={userData} uid={uid} />
+        <ProfileSettings key={uid} userData={userData} uid={uid} />
       )}
 
       {activeSection === SettingsSection.USERS && userData.isAdmin && (
