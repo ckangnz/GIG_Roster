@@ -83,7 +83,7 @@
 }
 
 .content-container {
-  padding: 10px;
+  padding: 0;
   min-height: 100%;
 }
 
@@ -117,6 +117,10 @@
 
   .mobile-header {
     display: none;
+  }
+
+  .content-container {
+    min-height: 100%;
   }
 
   .side-nav {

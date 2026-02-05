@@ -5,7 +5,7 @@ export enum AppTab {
 
 export enum SettingsSection {
   PROFILE = "Profile",
-  USERS = "Users",
+  USER_MANAGEMENT = "Users",
   POSITIONS = "Positions",
 }
 
@@ -17,7 +17,7 @@ export const BOTTOM_NAV_ITEMS = [
 export const SETTINGS_NAV_ITEMS = [
   { id: SettingsSection.PROFILE, label: "My Profile", icon: "👤" },
   {
-    id: SettingsSection.USERS,
+    id: SettingsSection.USER_MANAGEMENT,
     label: "User Management",
     icon: "👥",
     adminOnly: true,

@@ -19,11 +19,8 @@ const SettingsPage = ({ userData, uid, activeSection }: SettingsPageProps) => {
         <ProfileSettings key={uid} userData={userData} uid={uid} />
       )}
 
-      {activeSection === SettingsSection.USERS && userData.isAdmin && (
-        <div className="admin-content">
-          <UserManagement />
-        </div>
-      )}
+      {activeSection === SettingsSection.USER_MANAGEMENT &&
+        (userData.isAdmin ? <UserManagement /> : <p>Access Denied</p>)}
 
       {activeSection === SettingsSection.POSITIONS && userData.isAdmin && (
         <div className="admin-content">
