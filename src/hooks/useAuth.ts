@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 
 import { onAuthStateChanged, User } from "firebase/auth";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, onSnapshot } from "firebase/firestore"; // Added onSnapshot
 
 import { auth, db } from "../firebase";
 import { AppUser } from "../model/model";
@@ -12,14 +12,16 @@ export const useAuth = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+    let unsubscribeSnapshot: () => void;
+
+    const unsubscribeAuth = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
+        setUser(firebaseUser);
         const userRef = doc(db, "users", firebaseUser.uid);
+
         const userSnap = await getDoc(userRef);
 
-        if (userSnap.exists()) {
-          setUserData(userSnap.data() as AppUser);
-        } else {
+        if (!userSnap.exists()) {
           const adminEmail = import.meta.env.VITE_ADMIN_EMAIL;
           const isAutoAdmin = firebaseUser.email === adminEmail;
 
@@ -33,17 +35,25 @@ export const useAuth = () => {
             gender: "",
           };
           await setDoc(userRef, newData);
-          setUserData(newData);
         }
-        setUser(firebaseUser);
+
+        unsubscribeSnapshot = onSnapshot(userRef, (doc) => {
+          if (doc.exists()) {
+            setUserData(doc.data() as AppUser);
+          }
+          setLoading(false);
+        });
       } else {
         setUser(null);
         setUserData(null);
+        setLoading(false);
       }
-      setLoading(false);
     });
 
-    return unsubscribe;
+    return () => {
+      unsubscribeAuth();
+      if (unsubscribeSnapshot) unsubscribeSnapshot();
+    };
   }, []);
 
   return { user, userData, loading };
