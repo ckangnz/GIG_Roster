@@ -31,14 +31,17 @@ const App = () => {
       isSidebarOpen={isSidebarOpen}
       setSidebarOpen={setSidebarOpen}
       onTabChange={(tab) => {
-        setActiveTab(tab);
-        setSidebarOpen(true);
-        console.log(tab);
-
-        if (tab === AppTab.SETTINGS) {
-          setActiveSideItem(SettingsSection.PROFILE);
+        if (tab === activeTab) {
+          setSidebarOpen(true);
         } else {
-          setActiveSideItem(null);
+          setActiveTab(tab);
+          setSidebarOpen(true);
+
+          if (tab === AppTab.SETTINGS) {
+            setActiveSideItem(SettingsSection.PROFILE);
+          } else {
+            setActiveSideItem(null);
+          }
         }
       }}
       activeSideItem={activeSideItem}
