@@ -1,4 +1,4 @@
-import PositionManager from "./PositionManager";
+import PositionManagement from "./PositionManager";
 import ProfileSettings from "./ProfileSettings";
 import UserManagement from "./UserManagement";
 import { SettingsSection } from "../../constants/navigation";
@@ -22,11 +22,8 @@ const SettingsPage = ({ userData, uid, activeSection }: SettingsPageProps) => {
       {activeSection === SettingsSection.USER_MANAGEMENT &&
         (userData.isAdmin ? <UserManagement /> : <p>Access Denied</p>)}
 
-      {activeSection === SettingsSection.POSITIONS && userData.isAdmin && (
-        <div className="admin-content">
-          <PositionManager />
-        </div>
-      )}
+      {activeSection === SettingsSection.POSITIONS &&
+        (userData.isAdmin ? <PositionManagement /> : <p>Access Denied</p>)}
     </div>
   );
 };

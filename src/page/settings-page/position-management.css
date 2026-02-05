@@ -1,0 +1,145 @@
+.pos-mgmt-container {
+  width: 100%;
+  max-width: 800px; /* Keeps it from stretching too far on desktop */
+  margin: 0 auto;
+}
+
+.pos-scroll-area {
+  width: 100%;
+  overflow-x: auto;
+  padding-bottom: 120px;
+}
+
+.pos-mgmt-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.pos-mgmt-table th {
+  padding: 12px 8px;
+  text-align: left;
+  font-size: 0.75rem;
+  color: #888;
+  text-transform: uppercase;
+  border-bottom: 1px solid #333;
+}
+
+.pos-mgmt-table td {
+  padding: 8px;
+  border-bottom: 1px solid #222;
+  vertical-align: middle;
+}
+
+/* --- Fixed Column Widths --- */
+.w-order {
+  width: 80px;
+  text-align: center;
+}
+.w-emoji {
+  width: 60px;
+}
+.w-color {
+  width: 140px;
+}
+.w-action {
+  width: 50px;
+}
+
+.order-controls {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+}
+
+.order-controls button {
+  background: #2a2a2a;
+  border: 1px solid #444;
+  color: #ccc;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.7rem;
+}
+
+.order-controls button:disabled {
+  opacity: 0.2;
+}
+
+.pos-input {
+  background: #1a1a1a;
+  border: 1px solid #333;
+  color: #fff;
+  padding: 8px;
+  border-radius: 6px;
+  width: 100%;
+  outline: none;
+}
+
+.pos-input.center {
+  text-align: center;
+}
+.pos-input.hex-input {
+  font-family: monospace;
+  font-size: 0.8rem;
+  border: none;
+  background: transparent;
+}
+
+.color-picker-group {
+  display: flex;
+  align-items: center;
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 6px;
+  padding: 2px 6px;
+}
+
+input[type="color"] {
+  border: none;
+  width: 24px;
+  height: 24px;
+  background: none;
+  cursor: pointer;
+}
+
+.pos-btn-add,
+.pos-btn-del {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.pos-btn-add {
+  background: #646cff;
+  color: white;
+}
+.pos-btn-add:hover {
+  background: #7c83ff;
+  transform: scale(1.05);
+}
+
+.pos-btn-del {
+  background: #331a1a;
+  color: #ff5555;
+  border: 1px solid #552222;
+}
+.pos-btn-del:hover {
+  background: #ff5555;
+  color: white;
+}
+.pos-row-new {
+  background: rgba(100, 108, 255, 0.05);
+}
+.new-tag {
+  color: #646cff;
+  font-weight: bold;
+  font-size: 0.7rem;
+  text-align: center;
+}

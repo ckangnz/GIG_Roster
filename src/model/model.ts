@@ -1,3 +1,5 @@
+export type Gender = "Male" | "Female" | "";
+
 export interface AppUser {
   name: string | null;
   email: string | null;

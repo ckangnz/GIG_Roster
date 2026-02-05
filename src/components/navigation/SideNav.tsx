@@ -51,7 +51,6 @@ const SideNav = ({
     } else if (activeTab === AppTab.SETTINGS && !activeSideItem) {
       onSideItemChange(SettingsSection.PROFILE, false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab]);
 
   return (
@@ -63,20 +62,31 @@ const SideNav = ({
 
         <nav className="side-menu-list">
           {activeTab === AppTab.ROSTER && positions.length === 0 && (
-            <div className="nav-item" style={{ opacity: 0.5 }}>
-              Loading...
-            </div>
+            <div className="nav-item loading">Loading...</div>
           )}
+
           {activeTab === AppTab.ROSTER
-            ? positions.map((pos) => (
-                <button
-                  key={pos.name}
-                  className={`nav-item ${activeSideItem === pos.name ? "active" : ""}`}
-                  onClick={() => onSideItemChange(pos.name, true)}
-                >
-                  <span className="side-emoji">{pos.emoji}</span> {pos.name}
-                </button>
-              ))
+            ? positions.map((pos) => {
+                const isActive = activeSideItem === pos.name;
+                return (
+                  <button
+                    key={pos.name}
+                    className={`nav-item ${isActive ? "active" : ""}`}
+                    onClick={() => onSideItemChange(pos.name, true)}
+                    style={{
+                      borderLeft: isActive
+                        ? `4px solid ${pos.colour}`
+                        : "4px solid transparent",
+                      backgroundColor: isActive
+                        ? `${pos.colour}15`
+                        : "transparent",
+                      color: isActive ? pos.colour : "",
+                    }}
+                  >
+                    <span className="side-emoji">{pos.emoji}</span> {pos.name}
+                  </button>
+                );
+              })
             : SETTINGS_NAV_ITEMS.filter(
                 (item) => !item.adminOnly || user.isAdmin,
               ).map((item) => (

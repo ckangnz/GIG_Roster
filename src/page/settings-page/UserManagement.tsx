@@ -1,13 +1,16 @@
 import { useEffect, useState } from "react";
 
-import { collection, getDocs, writeBatch, doc } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  doc,
+  getDoc,
+  writeBatch,
+} from "firebase/firestore";
 
 import { db } from "../../firebase";
-import { AppUser, Position } from "../../model/model";
-
+import { AppUser, Gender, Position } from "../../model/model";
 import "./user-management.css";
-
-type Gender = "Male" | "Female" | "";
 
 const UserManagement = () => {
   const [users, setUsers] = useState<(AppUser & { id: string })[]>([]);
@@ -16,79 +19,54 @@ const UserManagement = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      try {
-        const [userSnap, posSnap] = await Promise.all([
-          getDocs(collection(db, "users")),
-          getDocs(collection(db, "metadata")),
-        ]);
+      // Fetch Users
+      const userSnap = await getDocs(collection(db, "users"));
+      const userList = userSnap.docs.map(
+        (d) => ({ ...d.data(), id: d.id }) as AppUser & { id: string },
+      );
+      setUsers(userList);
 
-        const userList = userSnap.docs
-          .map((d) => ({ ...(d.data() as AppUser), id: d.id }))
-          .sort((a, b) => (a.name || "").localeCompare(b.name || ""));
-
-        const posList = posSnap.docs.flatMap((d) => {
-          const data = d.data();
-          if (data.list && Array.isArray(data.list)) {
-            return data.list.map((p: Position) => ({
-              name: p.name,
-              emoji: p.emoji,
-              colour: p.colour || "#444",
-            }));
-          }
-          return [];
-        }) as Position[];
-
-        setUsers(userList);
-        setAvailablePositions(posList);
-      } catch (error) {
-        console.error("Error loading admin data:", error);
+      // Fetch Global Positions for the pills
+      const posSnap = await getDoc(doc(db, "metadata", "positions"));
+      if (posSnap.exists()) {
+        setAvailablePositions(posSnap.data().list || []);
       }
     };
     fetchData();
   }, []);
 
-  const handleChange = <K extends keyof AppUser>(
-    id: string,
-    field: K,
-    value: AppUser[K],
-  ) => {
+  const togglePosition = (userId: string, posName: string) => {
+    setUsers((prev) =>
+      prev.map((u) => {
+        if (u.id !== userId) return u;
+        const currentPos = u.positions || [];
+        const newPos = currentPos.includes(posName)
+          ? currentPos.filter((p) => p !== posName)
+          : [...currentPos, posName];
+        return { ...u, positions: newPos };
+      }),
+    );
+  };
+
+  const handleUpdate = (id: string, field: keyof AppUser, value: any) => {
     setUsers((prev) =>
       prev.map((u) => (u.id === id ? { ...u, [field]: value } : u)),
     );
   };
 
-  const togglePosition = (
-    userId: string,
-    currentPositions: string[] | undefined,
-    posName: string,
-  ) => {
-    const safePositions = currentPositions || [];
-    const updated = safePositions.includes(posName)
-      ? safePositions.filter((p) => p !== posName)
-      : [...safePositions, posName];
-
-    handleChange(userId, "positions", updated);
-  };
-
-  const handleBulkSave = async () => {
-    if (!window.confirm("Are you sure you want to save changes for all users?"))
-      return;
-
+  const saveAllChanges = async () => {
     setIsSaving(true);
     const batch = writeBatch(db);
-
-    users.forEach((user) => {
-      const { id, ...data } = user;
-      const userRef = doc(db, "users", id);
-      batch.update(userRef, { ...data });
+    users.forEach((u) => {
+      const { id, ...data } = u;
+      batch.update(doc(db, "users", id), data);
     });
-
     try {
       await batch.commit();
       alert("All users updated successfully!");
     } catch (e) {
-      console.error("Bulk save failed:", e);
-      alert("Failed to save changes.");
+      console.error(e);
+      alert("Error saving users.");
     } finally {
       setIsSaving(false);
     }
@@ -100,10 +78,10 @@ const UserManagement = () => {
         <table className="admin-table">
           <thead>
             <tr>
-              <th>Name</th>
+              <th className="sticky-col">Name</th>
               <th>Email</th>
               <th>Gender</th>
-              <th>Positions</th>
+              <th className="w-positions">Positions</th>
               <th>Active</th>
               <th>Approved</th>
               <th>Admin</th>
@@ -116,79 +94,77 @@ const UserManagement = () => {
                   <input
                     className="admin-input-name"
                     value={u.name || ""}
-                    onChange={(e) => handleChange(u.id, "name", e.target.value)}
+                    onChange={(e) => handleUpdate(u.id, "name", e.target.value)}
                   />
                 </td>
                 <td>
                   <input
+                    className="readonly-input"
                     value={u.email || ""}
                     readOnly
-                    className="readonly-input"
                   />
                 </td>
                 <td>
                   <select
                     className="admin-select"
-                    value={(u.gender as Gender) || ""}
+                    value={u.gender}
                     onChange={(e) =>
-                      handleChange(u.id, "gender", e.target.value as Gender)
+                      handleUpdate(u.id, "gender", e.target.value as Gender)
                     }
                   >
                     <option value="">-</option>
-                    <option value="Male">M</option>
-                    <option value="Female">F</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
                   </select>
                 </td>
-                <td>
-                  <div className="admin-pos-tags">
-                    {availablePositions.map((p) => {
-                      const isActive = (u.positions || []).includes(p.name);
+                <td className="pos-pills-cell">
+                  <div className="pos-pills-wrapper">
+                    {availablePositions.map((pos) => {
+                      const isActive = u.positions?.includes(pos.name);
                       return (
                         <button
-                          key={p.name}
-                          title={p.name}
+                          key={pos.name}
                           className={`pos-emoji-pill ${isActive ? "active" : ""}`}
+                          onClick={() => togglePosition(u.id, pos.name)}
                           style={{
-                            backgroundColor: isActive
-                              ? p.colour
-                              : "transparent",
-                            borderColor: isActive ? p.colour : "#444",
+                            borderColor: isActive ? pos.colour : "transparent",
+                            backgroundColor: isActive ? `${pos.colour}20` : "",
                           }}
-                          onClick={() =>
-                            togglePosition(u.id, u.positions, p.name)
-                          }
+                          title={pos.name}
                         >
-                          {p.emoji}
+                          {pos.emoji}
                         </button>
                       );
                     })}
                   </div>
                 </td>
-                <td>
-                  <button
-                    className={`toggle-switch mini ${u.isActive ? "on" : "off"}`}
-                    onClick={() => handleChange(u.id, "isActive", !u.isActive)}
+                <td className="center">
+                  <div
+                    className={`status-badge ${u.isActive ? "yes" : "no"}`}
+                    onClick={() => handleUpdate(u.id, "isActive", !u.isActive)}
                   >
-                    {u.isActive ? "Y" : "N"}
-                  </button>
+                    {u.isActive ? "YES" : "NO"}
+                  </div>
                 </td>
-                <td>
-                  <button
-                    className={`toggle-switch mini ${u.isApproved ? "on" : "off"}`}
+
+                <td className="center">
+                  <div
+                    className={`status-badge ${u.isApproved ? "yes" : "no"}`}
                     onClick={() =>
-                      handleChange(u.id, "isApproved", !u.isApproved)
+                      handleUpdate(u.id, "isApproved", !u.isApproved)
                     }
                   >
-                    {u.isApproved ? "Y" : "N"}
-                  </button>
+                    {u.isApproved ? "YES" : "NO"}
+                  </div>
                 </td>
-                <td>
-                  <button
-                    className={`toggle-switch mini ${u.isAdmin ? "on" : "off"}`}
-                    onClick={() => handleChange(u.id, "isAdmin", !u.isAdmin)}
+
+                <td className="center">
+                  <div
+                    className={`status-badge ${u.isAdmin ? "yes" : "no"}`}
+                    onClick={() => handleUpdate(u.id, "isAdmin", !u.isAdmin)}
                   >
-                    {u.isAdmin ? "Y" : "N"}
-                  </button>
+                    {u.isAdmin ? "YES" : "NO"}
+                  </div>
                 </td>
               </tr>
             ))}
@@ -199,10 +175,10 @@ const UserManagement = () => {
       <div className="admin-footer">
         <button
           className="save-button bulk"
-          onClick={handleBulkSave}
+          onClick={saveAllChanges}
           disabled={isSaving}
         >
-          {isSaving ? "Saving..." : "Save All Changes"}
+          {isSaving ? "Saving Changes..." : "Save All User Changes"}
         </button>
       </div>
     </div>
