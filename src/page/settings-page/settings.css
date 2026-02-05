@@ -17,9 +17,12 @@
   box-sizing: border-box;
 }
 
+/* --- Readonly Section --- */
 .profile-readonly {
   text-align: left;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #262626;
 }
 
 .profile-readonly p {
@@ -30,14 +33,16 @@
 
 .profile-readonly strong {
   color: #666;
-  margin-right: 5px;
+  margin-right: 8px;
   font-weight: 600;
   text-transform: uppercase;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.5px;
 }
 
+/* --- Form Elements --- */
 .form-group {
-  margin-bottom: 25px;
+  margin-bottom: 30px;
   text-align: left;
 }
 
@@ -47,10 +52,24 @@
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 1.2px;
-  color: #666;
-  font-weight: 600;
+  color: #888;
+  font-weight: 700;
 }
 
+/* Status Toggle Area */
+.status-toggle-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.field-hint {
+  font-size: 0.75rem;
+  color: #666;
+  line-height: 1.4;
+}
+
+/* --- Buttons & Pills --- */
 .gender-toggle-group,
 .pill-group {
   display: flex;
@@ -63,7 +82,7 @@
   padding: 10px 16px;
   border-radius: 12px;
   border: 1px solid #333;
-  background: #242424;
+  background: #1a1a1a;
   color: #aaa;
   cursor: pointer;
   display: flex;
@@ -79,78 +98,46 @@
   border-color: #646cff;
 }
 
-.pill-button.inactive {
-  background: #1a1a1a;
+.pill-button:hover:not(.active) {
+  border-color: #555;
+  background: #242424;
 }
 
-/* Admin Specifics */
-.admin-only-fields {
-  margin-top: 25px;
-  padding: 20px;
-  background: rgba(100, 108, 255, 0.05);
-  border: 1px dashed #444;
-  border-radius: 12px;
-}
-
-.admin-toggles {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-top: 15px;
-}
-
-.admin-status-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.9rem;
-  color: #ccc;
-}
-
+/* Availability Toggle Switch */
 .toggle-switch {
-  padding: 6px 12px;
-  border-radius: 8px;
-  font-size: 0.7rem;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-size: 0.8rem;
   font-weight: 800;
   cursor: pointer;
   border: 1px solid transparent;
-  min-width: 85px;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  text-align: center;
+  width: fit-content;
 }
 
 .toggle-switch.on {
-  background: #1b5e20;
-  color: #a5d6a7;
+  background: rgba(46, 125, 50, 0.15);
+  color: #81c784;
   border-color: #2e7d32;
 }
 
 .toggle-switch.off {
-  background: #b71c1c;
+  background: rgba(183, 28, 28, 0.15);
   color: #ef9a9a;
   border-color: #c62828;
 }
 
-.toggle-switch:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  filter: grayscale(0.5);
+.toggle-switch:active {
+  transform: scale(0.96);
 }
 
-.primary-admin-note {
-  margin-top: 15px;
-  font-size: 0.7rem;
-  color: #646cff;
-  font-style: italic;
-  text-align: center;
-  opacity: 0.8;
-}
-
-/* Buttons */
+/* --- Action Footer --- */
 .action-container {
-  margin-top: 30px;
+  margin-top: 20px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 .save-button {
@@ -163,6 +150,7 @@
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s ease;
+  font-size: 1rem;
 }
 
 .save-button.success {
@@ -178,9 +166,17 @@
   background: transparent;
   border: none;
   color: #ff4646;
-  padding: 10px;
+  padding: 12px;
   cursor: pointer;
   font-size: 0.9rem;
+  font-weight: 500;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+.logout-btn:hover {
+  opacity: 1;
+  text-decoration: underline;
 }
 
 .admin-content {

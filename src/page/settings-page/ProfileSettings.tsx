@@ -1,7 +1,5 @@
 import { useState, useEffect } from "react";
-
 import { doc, getDoc, updateDoc } from "firebase/firestore";
-
 import { db, auth } from "../../firebase";
 import { AppUser, Position } from "../../model/model";
 
@@ -11,16 +9,11 @@ interface ProfileSettingsProps {
 }
 
 const ProfileSettings = ({ userData, uid }: ProfileSettingsProps) => {
-  const PRIMARY_ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL;
-  const isPrimaryAdmin = userData.email === PRIMARY_ADMIN_EMAIL;
-
   const [gender, setGender] = useState(userData.gender || "");
   const [selectedPositions, setSelectedPositions] = useState<string[]>(
     userData.positions || [],
   );
-  const [isAdmin, setIsAdmin] = useState(userData.isAdmin || false);
-  const [isApproved, setIsApproved] = useState(userData.isApproved || false);
-  const [isActive, setIsActive] = useState(userData.isActive || false);
+  const [isActive, setIsActive] = useState(userData.isActive ?? true); // Default to true if undefined
 
   const [availablePositions, setAvailablePositions] = useState<Position[]>([]);
   const [status, setStatus] = useState("idle");
@@ -44,11 +37,7 @@ const ProfileSettings = ({ userData, uid }: ProfileSettingsProps) => {
       const updateData = {
         gender,
         positions: selectedPositions,
-        ...(userData.isAdmin && {
-          isAdmin: isPrimaryAdmin ? true : isAdmin,
-          isApproved: isPrimaryAdmin ? true : isApproved,
-          isActive: isActive,
-        }),
+        isActive,
       };
       await updateDoc(doc(db, "users", uid), updateData);
       setStatus("success");
@@ -114,47 +103,20 @@ const ProfileSettings = ({ userData, uid }: ProfileSettingsProps) => {
         </div>
       </div>
 
-      {userData.isAdmin && (
-        <div className="admin-only-fields">
-          <label>Administrative Controls (Self)</label>
-          <div className="admin-toggles">
-            <div className="admin-status-row">
-              <span>Approved</span>
-              <button
-                disabled={isPrimaryAdmin}
-                className={`toggle-switch ${isApproved ? "on" : "off"}`}
-                onClick={() => !isPrimaryAdmin && setIsApproved(!isApproved)}
-              >
-                {isApproved ? "YES" : "NO"}
-              </button>
-            </div>
-            <div className="admin-status-row">
-              <span>Admin Rights</span>
-              <button
-                disabled={isPrimaryAdmin}
-                className={`toggle-switch ${isAdmin ? "on" : "off"}`}
-                onClick={() => !isPrimaryAdmin && setIsAdmin(!isAdmin)}
-              >
-                {isAdmin ? "ADMIN" : "USER"}
-              </button>
-            </div>
-            <div className="admin-status-row">
-              <span>Active Status</span>
-              <button
-                className={`toggle-switch ${isActive ? "on" : "off"}`}
-                onClick={() => setIsActive(!isActive)}
-              >
-                {isActive ? "ACTIVE" : "INACTIVE"}
-              </button>
-            </div>
-          </div>
-          {isPrimaryAdmin && (
-            <p className="primary-admin-note">
-              Primary Admin rights are locked.
-            </p>
-          )}
+      <div className="form-group">
+        <label>Availability Status</label>
+        <div className="status-toggle-container">
+          <button
+            className={`toggle-switch ${isActive ? "on" : "off"}`}
+            onClick={() => setIsActive(!isActive)}
+          >
+            {isActive ? "ACTIVE & AVAILABLE" : "INACTIVE / AWAY"}
+          </button>
+          <p className="field-hint">
+            Turn off if you want to be hidden from the roster.
+          </p>
         </div>
-      )}
+      </div>
 
       <div className="action-container">
         <button
