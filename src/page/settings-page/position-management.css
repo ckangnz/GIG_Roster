@@ -1,12 +1,15 @@
 .app-table th.w-order {
-  width: 80px;
+  width: 50px;
   text-align: center;
 }
 .app-table th.w-emoji {
-  width: 60px;
+  width: 30px;
+}
+.app-table th.w-name {
+  min-width: 80px;
 }
 .app-table th.w-color {
-  min-width: 160px;
+  min-width: 100px;
 }
 .app-table th.w-action {
   width: 50px;

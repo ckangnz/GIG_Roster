@@ -96,7 +96,7 @@ const PositionManagement = () => {
             <tr>
               <th className="w-order">Order</th>
               <th className="w-emoji">Emoji</th>
-              <th>Name</th>
+              <th className="w-name">Name</th>
               <th className="w-color">Colour</th>
               <th className="w-action"></th>
             </tr>
@@ -200,7 +200,10 @@ const PositionManagement = () => {
                 </div>
               </td>
               <td>
-                <button onClick={addPosition} className="icon-button icon-button--add">
+                <button
+                  onClick={addPosition}
+                  className="icon-button icon-button--add"
+                >
                   +
                 </button>
               </td>

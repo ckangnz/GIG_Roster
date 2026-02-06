@@ -250,10 +250,9 @@
   margin-top: 8px;
 }
 
-/* Footer for settings pages */
 .settings-footer {
   position: fixed;
-  bottom: 80px; /* Above bottom nav */
+  bottom: 50px;
   width: 100%;
   display: flex;
   justify-content: center; /* Center button on mobile */
