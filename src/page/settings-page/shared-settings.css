@@ -1,5 +1,6 @@
 .settings-container {
   max-width: 800px;
+  height: 100%;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
@@ -38,24 +39,47 @@
   gap: 10px;
 }
 
-.pill-button {
+.pill {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease; /* Common transition */
+  border-radius: 8px; /* Take from emoji pill */
+}
+
+/* Modifier for regular text pills */
+.pill--text {
   padding: 10px 16px;
-  border-radius: 12px;
+  border-radius: 12px; /* Keep original border-radius for text pills */
   border: 1px solid #333;
   background: #1a1a1a;
   color: #aaa;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
   gap: 8px;
-  transition: all 0.2s ease;
   font-size: 0.9rem;
 }
 
-.pill-button.active {
+.pill--text.is-active {
   background: #646cff;
   color: white;
   border-color: #646cff;
+}
+
+/* Modifier for emoji pills */
+.pill--emoji {
+  flex: 0 0 38px;
+  height: 38px;
+  background: #262626;
+  border: 2px solid transparent;
+  font-size: 1.2rem;
+}
+
+.pill--emoji.is-active {
+  background: #333;
+}
+.pill--emoji:hover {
+  transform: translateY(-2px);
+  background: #444;
 }
 
 .toggle-switch {
@@ -82,4 +106,180 @@
 
 .toggle-switch:active {
   transform: scale(0.96);
+}
+
+.save-button {
+  width: 100%;
+  padding: 16px;
+  border-radius: 12px;
+  background: #646cff;
+  color: white;
+  font-weight: 700;
+}
+
+.save-button.success {
+  background: #2e7d32;
+}
+
+/* Modifier for save-button for bulk actions */
+.save-button.is-bulk {
+  width: auto;
+  padding: 14px 28px;
+  border-radius: 10px;
+  border: none;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  transition: all 0.2s;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.save-button.is-bulk:hover {
+  background: #7c83ff;
+  transform: translateY(-2px);
+}
+
+.save-button.is-bulk:disabled {
+  background: #444;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Icon button base style */
+.icon-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+/* Modifier for add icon button */
+.icon-button--add {
+  background: #646cff;
+  color: white;
+}
+.icon-button--add:hover {
+  background: #7c83ff;
+  transform: scale(1.05);
+}
+
+/* Modifier for delete icon button */
+.icon-button--delete {
+  background: #331a1a;
+  color: #ff5555;
+  border: 1px solid #552222;
+}
+.icon-button--delete:hover {
+  background: #ff5555;
+  color: white;
+}
+
+/* Generic form input style */
+.form-input {
+  background: #262626;
+  border: 1px solid #444;
+  color: #fff;
+  padding: 8px 12px;
+  box-sizing: border-box;
+  display: block;
+  border-radius: 6px;
+  width: 100%;
+  outline: none;
+  font-size: 0.9rem;
+}
+
+.form-input:focus {
+  border-color: #646cff;
+}
+
+/* Generic form select style */
+.form-select {
+  background: #262626;
+  border: 1px solid #444;
+  color: #fff;
+  padding: 8px 12px;
+  box-sizing: border-box;
+  display: block;
+  border-radius: 6px;
+  width: 100%;
+  outline: none;
+  font-size: 0.9rem;
+  /* Add specific select styles if any, for now it's identical to form-input */
+  -webkit-appearance: none; /* Remove default arrow on select */
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url('data:image/svg+xml;utf8,<svg fill="%23fff" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>'); /* Custom arrow */
+  background-repeat: no-repeat;
+  background-position: right 8px center; /* Changed from top 50% to center */
+  background-size: 20px; /* Added to control arrow size */
+}
+
+.form-select:focus {
+  border-color: #646cff;
+}
+
+/* Readonly input style */
+.form-input--readonly {
+  background: transparent;
+  border: none;
+  color: #666;
+  font-size: 0.85rem;
+  width: 100%;
+  outline: none;
+  cursor: default;
+}
+
+/* Field hint text */
+.form-field-hint {
+  font-size: 0.75rem;
+  color: #666;
+  line-height: 1.4;
+  margin-top: 8px;
+}
+
+/* Footer for settings pages */
+.settings-footer {
+  position: fixed;
+  bottom: 80px;
+  left: 280px;
+  right: 20px;
+  display: flex;
+  justify-content: flex-end;
+  pointer-events: none;
+}
+
+/* Status badge component */
+.badge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s;
+  min-width: 45px;
+  text-align: center;
+}
+
+.badge:hover {
+  filter: brightness(1.2);
+  transform: scale(1.05);
+}
+
+.badge--yes {
+  background: rgba(46, 213, 115, 0.15);
+  color: #2ed573;
+  border: 1px solid rgba(46, 213, 115, 0.3);
+}
+
+.badge--no {
+  background: rgba(255, 71, 87, 0.15);
+  color: #ff4757;
+  border: 1px solid rgba(255, 71, 87, 0.3);
 }

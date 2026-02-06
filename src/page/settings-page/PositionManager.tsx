@@ -119,14 +119,14 @@ const PositionManagement = () => {
                 </td>
                 <td>
                   <input
-                    className="pos-input center"
+                    className="form-input center"
                     value={p.emoji}
                     onChange={(e) => handleUpdate(i, "emoji", e.target.value)}
                   />
                 </td>
                 <td>
                   <input
-                    className="pos-input"
+                    className="form-input"
                     value={p.name}
                     onChange={(e) => handleUpdate(i, "name", e.target.value)}
                   />
@@ -141,7 +141,7 @@ const PositionManagement = () => {
                       }
                     />
                     <input
-                      className="pos-input hex-input"
+                      className="form-input hex-input"
                       value={p.colour}
                       onChange={(e) =>
                         handleUpdate(i, "colour", e.target.value)
@@ -152,7 +152,7 @@ const PositionManagement = () => {
                 <td>
                   <button
                     onClick={() => deletePosition(i)}
-                    className="pos-btn-del"
+                    className="icon-button icon-button--delete"
                   >
                     ×
                   </button>
@@ -163,7 +163,7 @@ const PositionManagement = () => {
               <td className="new-tag">NEW</td>
               <td>
                 <input
-                  className="pos-input center"
+                  className="form-input center"
                   placeholder="emoji"
                   value={newPos.emoji}
                   onChange={(e) =>
@@ -173,7 +173,7 @@ const PositionManagement = () => {
               </td>
               <td>
                 <input
-                  className="pos-input"
+                  className="form-input"
                   placeholder="Position Name"
                   value={newPos.name}
                   onChange={(e) =>
@@ -191,7 +191,7 @@ const PositionManagement = () => {
                     }
                   />
                   <input
-                    className="pos-input hex-input"
+                    className="form-input hex-input"
                     value={newPos.colour}
                     onChange={(e) =>
                       setNewPos({ ...newPos, colour: e.target.value })
@@ -200,7 +200,7 @@ const PositionManagement = () => {
                 </div>
               </td>
               <td>
-                <button onClick={addPosition} className="pos-btn-add">
+                <button onClick={addPosition} className="icon-button icon-button--add">
                   +
                 </button>
               </td>
@@ -209,9 +209,9 @@ const PositionManagement = () => {
         </table>
       </div>
 
-      <div className="admin-footer">
+      <div className="settings-footer">
         <button
-          className="save-button bulk"
+          className="save-button is-bulk"
           onClick={saveToFirebase}
           disabled={isSaving}
         >

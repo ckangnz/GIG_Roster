@@ -76,7 +76,7 @@ const ProfileSettings = ({ userData, uid }: ProfileSettingsProps) => {
             <button
               key={g}
               onClick={() => setGender(g)}
-              className={`pill-button ${g.toLowerCase()} ${gender === g ? "active" : "inactive"}`}
+              className={`pill pill--text ${g.toLowerCase()} ${gender === g ? "is-active" : ""}`}
             >
               {g}
             </button>
@@ -93,7 +93,7 @@ const ProfileSettings = ({ userData, uid }: ProfileSettingsProps) => {
               <button
                 key={pos.name}
                 onClick={() => togglePosition(pos.name)}
-                className={`pill-button ${isSelected ? "active" : "inactive"}`}
+                className={`pill pill--text ${isSelected ? "is-active" : ""}`}
                 style={
                   isSelected && pos.colour
                     ? { backgroundColor: pos.colour, borderColor: pos.colour }
@@ -116,7 +116,7 @@ const ProfileSettings = ({ userData, uid }: ProfileSettingsProps) => {
           >
             {isActive ? "ACTIVE & AVAILABLE" : "INACTIVE / AWAY"}
           </button>
-          <p className="field-hint">
+          <p className="form-field-hint">
             Turn off if you want to be hidden from the roster.
           </p>
         </div>

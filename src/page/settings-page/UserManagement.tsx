@@ -92,21 +92,21 @@ const UserManagement = () => {
               <tr key={u.id}>
                 <td className="sticky-col">
                   <input
-                    className="admin-input-name"
+                    className="form-input"
                     value={u.name || ""}
                     onChange={(e) => handleUpdate(u.id, "name", e.target.value)}
                   />
                 </td>
                 <td>
                   <input
-                    className="readonly-input"
+                    className="form-input--readonly"
                     value={u.email || ""}
                     readOnly
                   />
                 </td>
                 <td>
                   <select
-                    className="admin-select"
+                    className="form-select"
                     value={u.gender}
                     onChange={(e) =>
                       handleUpdate(u.id, "gender", e.target.value as Gender)
@@ -124,7 +124,7 @@ const UserManagement = () => {
                       return (
                         <button
                           key={pos.name}
-                          className={`pos-emoji-pill ${isActive ? "active" : ""}`}
+                          className={`pill pill--emoji ${isActive ? "is-active" : ""}`}
                           onClick={() => togglePosition(u.id, pos.name)}
                           style={{
                             borderColor: isActive ? pos.colour : "transparent",
@@ -140,7 +140,7 @@ const UserManagement = () => {
                 </td>
                 <td className="center">
                   <div
-                    className={`status-badge ${u.isActive ? "yes" : "no"}`}
+                    className={`badge ${u.isActive ? "badge--yes" : "badge--no"}`}
                     onClick={() => handleUpdate(u.id, "isActive", !u.isActive)}
                   >
                     {u.isActive ? "YES" : "NO"}
@@ -149,7 +149,7 @@ const UserManagement = () => {
 
                 <td className="center">
                   <div
-                    className={`status-badge ${u.isApproved ? "yes" : "no"}`}
+                    className={`badge ${u.isApproved ? "badge--yes" : "badge--no"}`}
                     onClick={() =>
                       handleUpdate(u.id, "isApproved", !u.isApproved)
                     }
@@ -160,7 +160,7 @@ const UserManagement = () => {
 
                 <td className="center">
                   <div
-                    className={`status-badge ${u.isAdmin ? "yes" : "no"}`}
+                    className={`badge ${u.isAdmin ? "badge--yes" : "badge--no"}`}
                     onClick={() => handleUpdate(u.id, "isAdmin", !u.isAdmin)}
                   >
                     {u.isAdmin ? "YES" : "NO"}
@@ -172,9 +172,9 @@ const UserManagement = () => {
         </table>
       </div>
 
-      <div className="admin-footer">
+      <div className="settings-footer">
         <button
-          className="save-button bulk"
+          className="save-button is-bulk"
           onClick={saveAllChanges}
           disabled={isSaving}
         >
