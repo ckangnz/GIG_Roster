@@ -1,12 +1,11 @@
 import { signInWithPopup } from "firebase/auth";
 
-import { appleProvider, auth, googleProvider } from "../../firebase";
+import { auth, googleProvider } from "../../firebase";
 
 import "./login-page.css";
 
 const LoginPage = () => {
   const loginGoogle = () => signInWithPopup(auth, googleProvider);
-  const loginApple = () => signInWithPopup(auth, appleProvider);
 
   return (
     <div className="login-container">
@@ -25,15 +24,15 @@ const LoginPage = () => {
           Login with Google
         </button>
 
-        <button onClick={loginApple} className="login-button apple">
-          <img
-            src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg"
-            height="18"
-            alt="Apple"
-            className="apple-icon"
-          />
-          Login with Apple
-        </button>
+        {/* <button onClick={loginApple} className="login-button apple"> */}
+        {/*   <img */}
+        {/*     src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg" */}
+        {/*     height="18" */}
+        {/*     alt="Apple" */}
+        {/*     className="apple-icon" */}
+        {/*   /> */}
+        {/*   Login with Apple */}
+        {/* </button> */}
       </div>
     </div>
   );
