@@ -31,6 +31,7 @@
   flex-direction: column;
   width: 100%;
   height: 100%;
+  flex: 1; /* Added to push content to bottom */
 }
 
 .tablet-sidebar-header {
@@ -41,6 +42,25 @@
   display: flex;
   flex-direction: column;
   padding-top: 10px;
+}
+
+.admin-section-heading {
+  padding: 10px 24px 5px; /* Adjust padding to align with nav-items */
+  color: var(--color-text-dim);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 700;
+  border-bottom: 1px solid var(--border-color-secondary);
+  margin-top: 10px;
+}
+.admin-section-heading h4 {
+  margin: 0;
+  font-size: 0.75rem; /* Match parent font size */
+  color: var(--color-text-dim);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 700;
 }
 
 button.nav-item {
@@ -129,6 +149,7 @@ button.nav-item.active {
 @media (min-width: 768px) {
   .side-nav {
     display: flex;
+    flex-flow: column;
     position: relative;
     grid-area: sidebar;
     width: 260px;
@@ -198,7 +219,7 @@ button.nav-item.active {
 
   /* Adjust sidebar width for collapsed state in desktop media query */
   .app-shell.sidebar-collapsed {
-    /* Add to app-shell to control overall layout */
+    /* Add to app-shell to control overall overall layout */
     grid-template-columns: 70px 1fr;
   }
 
@@ -257,16 +278,14 @@ button.nav-item.active {
   /* General style for the side-nav toggle button (desktop) */
   .theme-toggle-button.side-nav-toggle {
     display: flex;
-    position: absolute;
-    bottom: 10px;
-    right: 10px;
+    gap: 8px;
     background: var(--background-body);
     border: 1px solid var(--border-color-secondary);
     border-radius: 8px;
     padding: 8px;
+    margin: auto auto 10px;
     z-index: 1001;
     color: var(--color-text-primary);
-    gap: 8px; /* Space between icon and text when expanded */
   }
 
   .theme-toggle-button.side-nav-toggle:hover {
@@ -288,6 +307,30 @@ button.nav-item.active {
     .theme-toggle-button.side-nav-toggle
     .toggle-theme-text {
     display: none;
+  }
+
+  /* Admin Only Section Wrapper (Desktop) */
+  .admin-only-section-wrapper {
+    margin-top: auto; /* Push to bottom */
+    padding-top: 20px;
+    padding-bottom: 10px;
+  }
+
+  /* Override for nav-item padding within admin-only-section-wrapper */
+  .admin-only-section-wrapper .nav-item {
+    padding: 14px 20px; /* Adjust padding for admin items to match other nav items desktop */
+  }
+
+  /* Collapsed state adjustments for admin items */
+  .app-shell.sidebar-collapsed .admin-only-section-wrapper .nav-item {
+    justify-content: center;
+    padding: 14px 0;
+  }
+
+  .app-shell.sidebar-collapsed
+    .admin-only-section-wrapper
+    .admin-section-heading {
+    display: none; /* Hide heading when collapsed */
   }
 }
 

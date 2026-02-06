@@ -74,7 +74,11 @@ const SideNav = ({
             onClick={() => setSidebarOpen(!isSidebarOpen)}
             aria-label={isSidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
           >
-            {isSidebarOpen ? <PanelLeftClose size={20} /> : <PanelLeftOpen size={20} />}
+            {isSidebarOpen ? (
+              <PanelLeftClose size={20} />
+            ) : (
+              <PanelLeftOpen size={20} />
+            )}
           </button>
         </div>
 
@@ -83,46 +87,82 @@ const SideNav = ({
             <div className="nav-item loading">Loading...</div>
           )}
 
-          {activeTab === AppTab.ROSTER
-            ? positions.map((pos) => {
-                const isActive = activeSideItem === pos.name;
-                return (
-                  <button
-                    key={pos.name}
-                    className={`nav-item ${isActive ? "active" : ""}`}
-                    onClick={() => onSideItemChange(pos.name, true)}
-                    style={{
-                      borderLeft: isActive
-                        ? `4px solid ${pos.colour}`
-                        : "4px solid transparent",
-                      backgroundColor: isActive
-                        ? `${pos.colour}15`
-                        : "transparent",
-                      color: isActive ? pos.colour : "",
-                    }}
-                  >
-                    <span className="side-emoji">{pos.emoji}</span> {isSidebarOpen && pos.name}
-                  </button>
-                );
-              })
-            : SETTINGS_NAV_ITEMS.filter(
-                (item) => !item.adminOnly || user.isAdmin,
-              ).map((item) => (
+          {activeTab === AppTab.ROSTER ? (
+            positions.map((pos) => {
+              const isActive = activeSideItem === pos.name;
+              return (
                 <button
-                  key={item.id}
-                  className={`nav-item ${activeSideItem === item.id ? "active" : ""}`}
-                  onClick={() => onSideItemChange(item.id, true)}
+                  key={pos.name}
+                  className={`nav-item ${isActive ? "active" : ""}`}
+                  onClick={() => onSideItemChange(pos.name, true)}
+                  style={{
+                    borderLeft: isActive
+                      ? `4px solid ${pos.colour}`
+                      : "4px solid transparent",
+                    backgroundColor: isActive
+                      ? `${pos.colour}15`
+                      : "transparent",
+                    color: isActive ? pos.colour : "",
+                  }}
                 >
-                  <span className="side-emoji">{item.icon}</span> {isSidebarOpen && item.label}
+                  <span className="side-emoji">{pos.emoji}</span>{" "}
+                  {isSidebarOpen && pos.name}
                 </button>
-              ))}
+              );
+            })
+          ) : (
+            <>
+              {SETTINGS_NAV_ITEMS.filter((item) => !item.adminOnly).map(
+                (item) => (
+                  <button
+                    key={item.id}
+                    className={`nav-item ${activeSideItem === item.id ? "active" : ""}`}
+                    onClick={() => onSideItemChange(item.id, true)}
+                  >
+                    <span className="side-emoji">{item.icon}</span>{" "}
+                    {isSidebarOpen && item.label}
+                  </button>
+                ),
+              )}
+            </>
+          )}
         </nav>
       </div>
-      {/* Theme toggle for desktop */}
-      <button className="theme-toggle-button side-nav-toggle" onClick={toggleTheme} aria-label="Toggle theme">
-        {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
-        {isSidebarOpen && <span className="toggle-theme-text">Toggle theme</span>}
-      </button>
+
+      <div>
+        {user.isAdmin &&
+          activeTab === AppTab.SETTINGS &&
+          SETTINGS_NAV_ITEMS.some((item) => item.adminOnly) && (
+            <div className="admin-only-section-wrapper">
+              <div className="admin-section-heading">
+                {isSidebarOpen && <h4>Admin Only</h4>}
+              </div>
+              {SETTINGS_NAV_ITEMS.filter((item) => item.adminOnly).map(
+                (item) => (
+                  <button
+                    key={item.id}
+                    className={`nav-item ${activeSideItem === item.id ? "active" : ""}`}
+                    onClick={() => onSideItemChange(item.id, true)}
+                  >
+                    <span className="side-emoji">{item.icon}</span>{" "}
+                    {isSidebarOpen && item.label}
+                  </button>
+                ),
+              )}
+            </div>
+          )}
+
+        <button
+          className="theme-toggle-button side-nav-toggle"
+          onClick={toggleTheme}
+          aria-label="Toggle theme"
+        >
+          {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
+          {isSidebarOpen && (
+            <span className="toggle-theme-text">Toggle theme</span>
+          )}
+        </button>
+      </div>
     </aside>
   );
 };
