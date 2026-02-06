@@ -31,7 +31,7 @@ const App = () => {
       isSidebarOpen={isSidebarOpen}
       setSidebarOpen={setSidebarOpen}
       onTabChange={(tab) => {
-        setSidebarOpen(true);
+        //setSidebarOpen(true);
 
         if (tab !== activeTab) {
           setActiveTab(tab);
