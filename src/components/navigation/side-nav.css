@@ -135,7 +135,7 @@ button.side-nav-item:focus {
     font-weight: 700;
   }
 
-  .sidebar-toggle-button {
+  .side-nav .sidebar-toggle-button {
     background: transparent;
     border: none;
     color: var(--color-text-primary);
@@ -144,9 +144,10 @@ button.side-nav-item:focus {
     align-items: center;
     justify-content: center;
     padding: 8px;
+    outline: none;
   }
 
-  .sidebar-toggle-button:hover {
+  .side-nav .sidebar-toggle-button:hover {
     color: var(--color-link);
   }
 
