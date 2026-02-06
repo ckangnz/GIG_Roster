@@ -51,7 +51,3 @@ button {
 button:hover {
   border-color: var(--border-color-primary); /* Use variable */
 }
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
