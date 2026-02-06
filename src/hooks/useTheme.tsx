@@ -49,8 +49,10 @@ export const ThemeProvider = ({ children }: ThemeProviderProps) => {
   );
 
   const toggleTheme = useCallback(() => {
-    setTheme((prevTheme) => (prevTheme === "light" ? "dark" : "light"));
-  }, [setTheme]);
+    setThemeState((prevTheme: Theme) =>
+      prevTheme === "light" ? "dark" : "light",
+    );
+  }, [setThemeState]);
 
   // Load theme from Firebase on login
   useEffect(() => {
