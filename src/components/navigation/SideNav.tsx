@@ -121,6 +121,7 @@ const SideNav = ({
       {/* Theme toggle for desktop */}
       <button className="theme-toggle-button side-nav-toggle" onClick={toggleTheme} aria-label="Toggle theme">
         {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
+        {isSidebarOpen && <span className="toggle-theme-text">Toggle theme</span>}
       </button>
     </aside>
   );

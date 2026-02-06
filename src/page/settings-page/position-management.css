@@ -9,16 +9,21 @@
 /* --- Fixed Column Widths --- */
 .w-order {
   width: 80px;
-  text-align: center;
+  text-align: center !important;
 }
 .w-emoji {
   width: 60px;
 }
 .w-color {
-  width: 140px;
+  min-width: 160px;
 }
 .w-action {
   width: 50px;
+}
+
+.app-table th:nth-child(3),
+.app-table td:nth-child(3) {
+  min-width: 180px; /* Increased minimum width for Name column */
 }
 
 .order-controls {

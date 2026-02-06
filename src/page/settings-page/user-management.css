@@ -14,15 +14,17 @@
 
 .admin-table th:nth-child(1),
 .admin-table td:nth-child(1) {
-  width: 180px;
+  min-width: 240px; /* Further adjusted for Name */
+  width: auto;
 }
 .admin-table th:nth-child(2),
 .admin-table td:nth-child(2) {
-  width: 220px;
+  min-width: 320px; /* Even wider for email */
+  width: auto;
 }
 .admin-table th:nth-child(3),
 .admin-table td:nth-child(3) {
-  width: 110px;
+  width: 100px; /* Reduced for Male/Female */
 }
 
 .admin-table th:nth-child(4),

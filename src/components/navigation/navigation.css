@@ -249,9 +249,42 @@ button.nav-item.active {
 
   .nav-btn.active {
     background: var(
-      --background-button-primary
+      --background-primary-subtle
     ); /* Use primary background for active */
-    color: white; /* Active text color */
+    color: white; /* Active text text color */
+  }
+
+  /* General style for the side-nav toggle button (desktop) */
+  .theme-toggle-button.side-nav-toggle {
+    display: flex;
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background: var(--background-body);
+    border: 1px solid var(--border-color-secondary);
+    border-radius: 8px;
+    padding: 8px;
+    z-index: 1001;
+    color: var(--color-text-primary);
+    gap: 8px; /* Space between icon and text when expanded */
+  }
+
+  .theme-toggle-button.side-nav-toggle:hover {
+    color: var(--color-link);
+    border-color: var(--color-link);
+  }
+
+  /* When sidebar is collapsed */
+  .app-shell.sidebar-collapsed .theme-toggle-button.side-nav-toggle {
+    width: 50px; /* Adjust width to match collapsed sidebar content, leave some padding */
+    justify-content: center; /* Center icon when text is hidden */
+    right: 10px; /* Adjust positioning */
+    left: auto; /* Ensure it's not constrained by left */
+    padding: 8px;
+  }
+
+  /* Hide the text when sidebar is collapsed */
+  .app-shell.sidebar-collapsed .theme-toggle-button.side-nav-toggle .toggle-theme-text {
+    display: none;
   }
 }
-
