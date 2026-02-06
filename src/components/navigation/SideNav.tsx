@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { doc, getDoc } from "firebase/firestore";
-import { Sun, Moon, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 
 import {
   AppTab,
@@ -9,10 +9,10 @@ import {
   SettingsSection,
 } from "../../constants/navigation";
 import { db } from "../../firebase";
-import { useTheme } from "../../hooks/useThemeHook";
 import { AppUser, Position } from "../../model/model";
+import ThemeToggleButton from "../common/ThemeToggleButton";
 
-import "./navigation.css";
+import "./side-nav.css";
 
 interface SideNavProps {
   user: AppUser;
@@ -34,7 +34,6 @@ const SideNav = ({
   headerTitle,
 }: SideNavProps) => {
   const [positions, setPositions] = useState<Position[]>([]);
-  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     const fetchPositions = async () => {
@@ -84,7 +83,7 @@ const SideNav = ({
 
         <nav className="side-menu-list">
           {activeTab === AppTab.ROSTER && positions.length === 0 && (
-            <div className="nav-item loading">Loading...</div>
+            <div className="side-nav-item loading">Loading...</div>
           )}
 
           {activeTab === AppTab.ROSTER ? (
@@ -93,7 +92,7 @@ const SideNav = ({
               return (
                 <button
                   key={pos.name}
-                  className={`nav-item ${isActive ? "active" : ""}`}
+                  className={`side-nav-item ${isActive ? "side-nav-item-active" : ""}`}
                   onClick={() => onSideItemChange(pos.name, true)}
                   style={{
                     borderLeft: isActive
@@ -116,7 +115,7 @@ const SideNav = ({
                 (item) => (
                   <button
                     key={item.id}
-                    className={`nav-item ${activeSideItem === item.id ? "active" : ""}`}
+                    className={`side-nav-item ${activeSideItem === item.id ? "side-nav-item-active" : ""}`}
                     onClick={() => onSideItemChange(item.id, true)}
                   >
                     <span className="side-emoji">{item.icon}</span>{" "}
@@ -129,40 +128,26 @@ const SideNav = ({
         </nav>
       </div>
 
-      <div>
-        {user.isAdmin &&
-          activeTab === AppTab.SETTINGS &&
-          SETTINGS_NAV_ITEMS.some((item) => item.adminOnly) && (
-            <div className="admin-only-section-wrapper">
-              <div className="admin-section-heading">
-                {isSidebarOpen && <h4>Admin Only</h4>}
-              </div>
-              {SETTINGS_NAV_ITEMS.filter((item) => item.adminOnly).map(
-                (item) => (
-                  <button
-                    key={item.id}
-                    className={`nav-item ${activeSideItem === item.id ? "active" : ""}`}
-                    onClick={() => onSideItemChange(item.id, true)}
-                  >
-                    <span className="side-emoji">{item.icon}</span>{" "}
-                    {isSidebarOpen && item.label}
-                  </button>
-                ),
-              )}
+      {user.isAdmin &&
+        activeTab === AppTab.SETTINGS &&
+        SETTINGS_NAV_ITEMS.some((item) => item.adminOnly) && (
+          <div className="admin-only-section-wrapper">
+            <div className="admin-section-heading">
+              {isSidebarOpen && <h4>Admin Only</h4>}
             </div>
-          )}
-
-        <button
-          className="theme-toggle-button side-nav-toggle"
-          onClick={toggleTheme}
-          aria-label="Toggle theme"
-        >
-          {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
-          {isSidebarOpen && (
-            <span className="toggle-theme-text">Toggle theme</span>
-          )}
-        </button>
-      </div>
+            {SETTINGS_NAV_ITEMS.filter((item) => item.adminOnly).map((item) => (
+              <button
+                key={item.id}
+                className={`side-nav-item ${activeSideItem === item.id ? "side-nav-item-active" : ""}`}
+                onClick={() => onSideItemChange(item.id, true)}
+              >
+                <span className="side-emoji">{item.icon}</span>{" "}
+                {isSidebarOpen && item.label}
+              </button>
+            ))}
+          </div>
+        )}
+      <ThemeToggleButton showText={isSidebarOpen} />
     </aside>
   );
 };

@@ -30,9 +30,7 @@
 
 .mobile-header-pill-active {
   border-color: var(--border-color-primary); /* Use variable */
-  background: var(
-    --background-pill-active
-  ); /* This color isn't in my theme variables, maybe add it or find a close one */
+  background: var(--background-pill-active);
 }
 
 .mobile-header-text {

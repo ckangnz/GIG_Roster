@@ -1,0 +1,199 @@
+.side-nav {
+  position: fixed;
+  left: 0;
+  width: 100vw;
+  height: auto;
+  background: var(--background-card); /* Use variable */
+  z-index: 1000;
+  overflow-y: auto;
+  display: none;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+.menu-open .side-nav {
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); /* Subtle shadow */
+  border-bottom: 1px solid var(--border-color-secondary); /* Add a border to complete the floating look */
+}
+
+.sidebar-content {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  flex: 1;
+}
+
+.tablet-sidebar-header {
+  display: none;
+}
+
+.side-menu-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-section-heading {
+  padding: 10px 24px 5px; /* Adjust padding to align with nav-items */
+  color: var(--color-text-dim);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 700;
+  border-bottom: 1px solid var(--border-color-secondary);
+  margin-top: 10px;
+}
+.admin-section-heading h4 {
+  margin: 0;
+  font-size: 0.75rem; /* Match parent font size */
+  color: var(--color-text-dim);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 700;
+}
+
+button.side-nav-item {
+  width: 100%;
+  padding: 18px 24px;
+  display: flex;
+  align-items: center;
+  color: var(--color-text-dim);
+  font-size: 1.1rem;
+  border-radius: 0;
+  text-align: left;
+  border-left: 4px solid transparent;
+  background: none;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: all 0.2s ease;
+}
+
+button.side-nav-item:hover {
+  background: var(--background-body);
+  color: var(--color-text-primary);
+}
+
+button.side-nav-item.side-nav-item-active {
+  background: var(--background-primary-subtle);
+  color: var(--color-link);
+  font-weight: 700;
+  border-left-color: var(--border-color-primary);
+}
+button.side-nav-item:focus {
+  outline: none;
+}
+
+.side-emoji {
+  margin-right: 15px;
+  font-size: 1.3rem;
+  width: 24px;
+  display: flex;
+  justify-content: center;
+}
+
+.side-nav-item.loading {
+  padding: 20px;
+  font-size: 0.9rem;
+  opacity: 0.5;
+  font-style: italic;
+}
+
+.side-nav .sidebar-toggle-button,
+.side-nav .theme-toggle-button {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .side-nav {
+    display: flex;
+    flex-flow: column;
+    position: relative;
+    grid-area: sidebar;
+    width: 260px;
+    height: 100%;
+    border-right: 1px solid var(--border-color-secondary);
+  }
+
+  .tablet-sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    background: var(--background-mobile-header);
+    border-bottom: 1px solid var(--border-color-secondary);
+    height: 60px;
+  }
+
+  .tablet-sidebar-header h3 {
+    margin: 0;
+    font-size: 0.95rem;
+    color: var(--color-text-primary);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 700;
+  }
+
+  .sidebar-toggle-button {
+    background: transparent;
+    border: none;
+    color: var(--color-text-primary);
+    cursor: pointer;
+    display: flex; /* Show on desktop */
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+  }
+
+  .sidebar-toggle-button:hover {
+    color: var(--color-link);
+  }
+
+  /* Collapsed state for side-nav */
+  .app-shell.sidebar-collapsed .side-nav {
+    width: 70px;
+  }
+
+  .app-shell.sidebar-collapsed .side-menu-list {
+    align-items: center;
+  }
+
+  .app-shell.sidebar-collapsed button.side-nav-item {
+    justify-content: center;
+    padding: 14px 0;
+  }
+
+  .app-shell.sidebar-collapsed button.side-nav-item span:not(.side-emoji) {
+    display: none;
+  }
+
+  .app-shell.sidebar-collapsed .side-emoji {
+    margin-right: 0;
+  }
+
+  .admin-only-section-wrapper {
+    margin-top: auto; /* Push to bottom */
+    padding-top: 20px;
+    padding-bottom: 10px;
+  }
+
+  .admin-only-section-wrapper .side-nav-item {
+    padding: 14px 20px;
+  }
+
+  .app-shell.sidebar-collapsed .admin-only-section-wrapper .side-nav-item {
+    justify-content: center;
+    padding: 14px 0;
+  }
+
+  .app-shell.sidebar-collapsed
+    .admin-only-section-wrapper
+    .admin-section-heading {
+    display: none;
+  }
+
+  .app-shell .side-nav .theme-toggle-button {
+    display: inherit;
+  }
+}

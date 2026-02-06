@@ -9,7 +9,7 @@
 }
 
 .main-content {
-  grid-area: main;
+  flex: 1;
   overflow-y: auto;
   position: relative;
   animation: fadeIn 0.3s ease-in-out;
@@ -25,21 +25,12 @@
 }
 
 .content-container {
-  padding: 0;
   min-height: 100%;
 }
 
 @media (min-width: 768px) {
   .app-shell {
     flex-direction: row;
-  }
-
-  .app-shell.sidebar-expanded {
-    grid-template-columns: 260px 1fr;
-  }
-
-  .app-shell.sidebar-collapsed {
-    grid-template-columns: 70px 1fr; /* Reduced width */
   }
 
   .content-container {
@@ -50,16 +41,13 @@
     display: flex !important;
     visibility: visible !important;
     position: relative;
-    grid-area: sidebar;
     top: 0;
-    /* width is now controlled by app-shell grid-template-columns */
     height: 100% !important;
     border-right: 1px solid var(--border-color-secondary); /* Use variable */
     border-bottom: none;
     transition: width 0.3s ease; /* For smooth collapse/expand */
   }
 
-  /* Apply width to side-nav directly to ensure proper transition */
   .app-shell.sidebar-expanded .side-nav {
     width: 260px;
   }
@@ -68,13 +56,8 @@
     width: 70px;
   }
 
-  .theme-toggle-button {
-    display: none; /* Hide on desktop */
-  }
-
-  /* Adjustments for fixed BottomNav on desktop to align with new sidebar width */
   .bottom-nav-container {
-    left: 260px; /* Default expanded state */
+    left: 260px;
     transition: left 0.3s ease;
   }
 
