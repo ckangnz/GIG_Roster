@@ -19,6 +19,7 @@ const App = () => {
 
   if (loading) return <Loader />;
   if (!user) return <LoginPage />;
+  if (!userData) return <Loader />;
 
   if (userData && !userData.isApproved) {
     return <GuestPage user={userData} uid={user.uid} />;
