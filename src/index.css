@@ -13,8 +13,11 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-html {
+html,
+body {
   position: fixed;
+  touch-action: pan-y;
+  height: 100%;
 }
 
 a {
