@@ -4,39 +4,13 @@
   animation: fadeIn 0.3s ease-out;
 }
 
-.table-container {
-  width: 100%;
-  overflow-x: auto;
-  background: #1a1a1a;
-  border-radius: 12px;
-  border: 1px solid #333;
-}
 
-.admin-table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  table-layout: auto;
-  min-width: 1000px;
-}
 
-.admin-table th {
-  background: #222;
-  padding: 16px;
-  text-align: left;
-  font-size: 0.75rem;
-  color: #888;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  border-bottom: 2px solid #333;
-  white-space: nowrap;
-}
 
-.admin-table td {
-  padding: 12px;
-  border-bottom: 1px solid #222;
-  vertical-align: middle;
-}
+
+
+
+
 
 .admin-table th:nth-child(1),
 .admin-table td:nth-child(1) {
@@ -68,13 +42,7 @@
   text-align: center;
 }
 
-.sticky-col {
-  position: sticky;
-  left: 0;
-  background: #1a1a1a;
-  z-index: 10;
-  border-right: 2px solid #333;
-}
+
 
 .pos-pills-cell {
   padding: 4px 12px !important;

@@ -4,31 +4,7 @@
   margin: 0 auto;
 }
 
-.pos-scroll-area {
-  width: 100%;
-  overflow-x: auto;
-  padding-bottom: 120px;
-}
 
-.pos-mgmt-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.pos-mgmt-table th {
-  padding: 12px 8px;
-  text-align: left;
-  font-size: 0.75rem;
-  color: #888;
-  text-transform: uppercase;
-  border-bottom: 1px solid #333;
-}
-
-.pos-mgmt-table td {
-  padding: 8px;
-  border-bottom: 1px solid #222;
-  vertical-align: middle;
-}
 
 /* --- Fixed Column Widths --- */
 .w-order {
@@ -52,13 +28,16 @@
 }
 
 .order-controls button {
-  background: #2a2a2a;
-  border: 1px solid #444;
-  color: #ccc;
+  background: var(--background-order-controls);
+  border: 1px solid var(--border-color-input);
+  color: var(--color-controls);
   padding: 4px 8px;
   border-radius: 4px;
   cursor: pointer;
   font-size: 0.7rem;
+}
+.order-controls button:hover:not(:disabled) {
+  filter: brightness(1.2); /* Make it subtly lighter on hover */
 }
 
 .order-controls button:disabled {
@@ -72,10 +51,7 @@
 .color-picker-group {
   display: flex;
   align-items: center;
-  background: #1a1a1a;
-  border: 1px solid #333;
-  border-radius: 6px;
-  padding: 2px 6px;
+  background: transparent;
 }
 
 input[type="color"] {

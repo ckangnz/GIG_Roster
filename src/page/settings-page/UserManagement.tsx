@@ -48,7 +48,7 @@ const UserManagement = () => {
     );
   };
 
-  const handleUpdate = (id: string, field: keyof AppUser, value: any) => {
+  const handleUpdate = (id: string, field: keyof AppUser, value: AppUser[keyof AppUser]) => {
     setUsers((prev) =>
       prev.map((u) => (u.id === id ? { ...u, [field]: value } : u)),
     );
@@ -74,8 +74,8 @@ const UserManagement = () => {
 
   return (
     <div className="admin-section">
-      <div className="table-container">
-        <table className="admin-table">
+      <div className="app-table-container">
+        <table className="app-table">
           <thead>
             <tr>
               <th className="sticky-col">Name</th>
@@ -127,9 +127,10 @@ const UserManagement = () => {
                           className={`pill pill--emoji ${isActive ? "is-active" : ""}`}
                           onClick={() => togglePosition(u.id, pos.name)}
                           style={{
+                            '--pos-subtle-hover-color': `${pos.colour}15`, // Subtle hover color
                             borderColor: isActive ? pos.colour : "transparent",
                             backgroundColor: isActive ? `${pos.colour}20` : "",
-                          }}
+                          } as React.CSSProperties}
                           title={pos.name}
                         >
                           {pos.emoji}

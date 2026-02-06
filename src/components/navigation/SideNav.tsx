@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { doc, getDoc } from "firebase/firestore";
+import { Sun, Moon, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 
 import {
   AppTab,
@@ -8,7 +9,9 @@ import {
   SettingsSection,
 } from "../../constants/navigation";
 import { db } from "../../firebase";
+import { useTheme } from "../../hooks/useThemeHook";
 import { AppUser, Position } from "../../model/model";
+
 import "./navigation.css";
 
 interface SideNavProps {
@@ -16,6 +19,9 @@ interface SideNavProps {
   activeTab: string;
   activeSideItem: string | null;
   onSideItemChange: (item: string, isManual: boolean) => void;
+  isSidebarOpen: boolean;
+  setSidebarOpen: (open: boolean) => void;
+  headerTitle: string;
 }
 
 const SideNav = ({
@@ -23,8 +29,12 @@ const SideNav = ({
   activeTab,
   activeSideItem,
   onSideItemChange,
+  isSidebarOpen,
+  setSidebarOpen,
+  headerTitle,
 }: SideNavProps) => {
   const [positions, setPositions] = useState<Position[]>([]);
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     const fetchPositions = async () => {
@@ -51,13 +61,21 @@ const SideNav = ({
     } else if (activeTab === AppTab.SETTINGS && !activeSideItem) {
       onSideItemChange(SettingsSection.PROFILE, false);
     }
-  }, [activeTab]);
+  }, [activeTab, activeSideItem, onSideItemChange]);
 
   return (
     <aside className="side-nav">
       <div className="sidebar-content">
         <div className="tablet-sidebar-header">
-          <h3>{activeTab === AppTab.ROSTER ? "Positions" : "Settings"}</h3>
+          {isSidebarOpen && <h3>{headerTitle}</h3>}
+          {/* Collapse button */}
+          <button
+            className="sidebar-toggle-button"
+            onClick={() => setSidebarOpen(!isSidebarOpen)}
+            aria-label={isSidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
+          >
+            {isSidebarOpen ? <PanelLeftClose size={20} /> : <PanelLeftOpen size={20} />}
+          </button>
         </div>
 
         <nav className="side-menu-list">
@@ -83,7 +101,7 @@ const SideNav = ({
                       color: isActive ? pos.colour : "",
                     }}
                   >
-                    <span className="side-emoji">{pos.emoji}</span> {pos.name}
+                    <span className="side-emoji">{pos.emoji}</span> {isSidebarOpen && pos.name}
                   </button>
                 );
               })
@@ -95,11 +113,15 @@ const SideNav = ({
                   className={`nav-item ${activeSideItem === item.id ? "active" : ""}`}
                   onClick={() => onSideItemChange(item.id, true)}
                 >
-                  <span className="side-emoji">{item.icon}</span> {item.label}
+                  <span className="side-emoji">{item.icon}</span> {isSidebarOpen && item.label}
                 </button>
               ))}
         </nav>
       </div>
+      {/* Theme toggle for desktop */}
+      <button className="theme-toggle-button side-nav-toggle" onClick={toggleTheme} aria-label="Toggle theme">
+        {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
+      </button>
     </aside>
   );
 };

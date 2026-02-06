@@ -2,8 +2,13 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
-  width: 100%;
+  position: fixed; /* Ensure it covers the entire viewport */
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999; /* Ensure it's on top of everything */
+  background-color: var(--background-app-shell); /* Use theme background */
 }
 
 .spinner {

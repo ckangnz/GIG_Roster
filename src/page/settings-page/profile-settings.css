@@ -4,21 +4,19 @@
   text-align: left;
   margin-bottom: 24px;
   padding-bottom: 20px;
-  border-bottom: 1px solid #262626;
+  border-bottom: 1px solid var(--border-color-input); /* Changed to theme variable */
 }
 
 .profile-readonly p {
   margin: 8px 0;
   font-size: 0.95rem;
-  color: #efefef;
+  color: var(--color-text-secondary);
 }
 .profile-readonly strong {
-  color: #666;
+  color: var(--color-text-faded);
   font-size: 0.7rem;
   text-transform: uppercase;
 }
-
-
 
 .action-container {
   margin-top: 20px;
@@ -27,12 +25,21 @@
   gap: 12px;
 }
 
-
-
 .logout-btn {
   background: transparent;
-  color: #ff4646;
+  color: var(--color-error);
   padding: 12px;
   font-size: 0.9rem;
   cursor: pointer;
+}
+.logout-btn:hover {
+  background: rgba(255, 70, 70, 0.1); /* Subtle red background on hover */
+  color: var(--color-error); /* Keep same color or slightly darker */
+  border-color: transparent; /* Explicitly keep border transparent */
+}
+
+/* Hover effect for position pill buttons */
+.pill-group .pill--text:hover:not(.is-active) {
+  background-color: var(--pos-subtle-hover-color);
+  border-color: var(--pos-colour); /* Optionally change border on hover */
 }

@@ -1,0 +1,38 @@
+/* Common table styles for the application */
+.app-table-container {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid var(--border-color-secondary);
+  background: var(--background-card); /* Moved here for consistency */
+}
+
+.app-table {
+  width: 100%;
+  border-collapse: collapse; /* Unified border style */
+  border-spacing: 0;
+  table-layout: auto;
+  color: var(--color-text-primary); /* Ensure table text uses primary color */
+}
+
+.app-table th {
+  background: var(--background-table-header);
+  padding: 12px 8px; /* Unified padding */
+  text-align: left;
+  font-size: 0.75rem;
+  color: var(--color-text-dim);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-bottom: 1px solid var(--border-color-secondary); /* Unified border style */
+  white-space: nowrap; /* Keep for th */
+}
+
+.app-table td {
+  padding: 8px; /* Unified padding */
+  border-bottom: 1px solid var(--border-color-table);
+  vertical-align: middle;
+}
+
+.app-table tbody tr:last-child td {
+  border-bottom: none; /* No border for last row */
+}

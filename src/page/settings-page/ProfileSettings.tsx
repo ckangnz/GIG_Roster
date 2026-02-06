@@ -17,7 +17,7 @@ const ProfileSettings = ({ userData, uid }: ProfileSettingsProps) => {
   const [selectedPositions, setSelectedPositions] = useState<string[]>(
     userData.positions || [],
   );
-  const [isActive, setIsActive] = useState(userData.isActive ?? true); // Default to true if undefined
+  const [isActive, setIsActive] = useState(userData.isActive ?? true);
 
   const [availablePositions, setAvailablePositions] = useState<Position[]>([]);
   const [status, setStatus] = useState("idle");
@@ -95,9 +95,13 @@ const ProfileSettings = ({ userData, uid }: ProfileSettingsProps) => {
                 onClick={() => togglePosition(pos.name)}
                 className={`pill pill--text ${isSelected ? "is-active" : ""}`}
                 style={
-                  isSelected && pos.colour
-                    ? { backgroundColor: pos.colour, borderColor: pos.colour }
-                    : {}
+                  {
+                    "--pos-colour": pos.colour, // Make base colour available as CSS variable
+                    "--pos-subtle-hover-color": `${pos.colour}15`, // Subtle hover color
+                    ...(isSelected && pos.colour
+                      ? { backgroundColor: pos.colour, borderColor: pos.colour } // Existing active styles
+                      : {}),
+                  } as React.CSSProperties
                 }
               >
                 <span>{pos.emoji}</span> {pos.name}

@@ -90,14 +90,14 @@ const PositionManagement = () => {
 
   return (
     <div className="pos-mgmt-container">
-      <div className="pos-scroll-area">
-        <table className="pos-mgmt-table">
+      <div className="app-table-container">
+        <table className="app-table">
           <thead>
             <tr>
               <th className="w-order">Order</th>
               <th className="w-emoji">Emoji</th>
               <th>Name</th>
-              <th className="w-color">Color</th>
+              <th className="w-color">Colour</th>
               <th className="w-action"></th>
             </tr>
           </thead>

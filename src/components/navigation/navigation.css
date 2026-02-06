@@ -14,11 +14,10 @@
 }
 
 .side-nav {
-  background: #1a1a1a;
+  background: var(--background-card);
   z-index: 1000;
   overflow-y: auto;
-  border-bottom: 1px solid #333;
-
+  border-bottom: none;
   display: none;
 }
 
@@ -49,7 +48,7 @@ button.nav-item {
   padding: 18px 24px;
   display: flex;
   align-items: center;
-  color: #888;
+  color: var(--color-text-dim);
   font-size: 1.1rem;
   border-radius: 0;
   text-align: left;
@@ -57,15 +56,15 @@ button.nav-item {
 }
 
 button.nav-item:hover {
-  background: #242424;
-  color: #fff;
+  background: var(--background-body);
+  color: var(--color-text-primary);
 }
 
 button.nav-item.active {
-  background: #242424;
-  color: #646cff;
+  background: var(--background-primary-subtle);
+  color: var(--color-link);
   font-weight: 700;
-  border-left-color: #646cff;
+  border-left-color: var(--border-color-primary);
 }
 
 .side-emoji {
@@ -87,8 +86,8 @@ button.nav-item.active {
   grid-area: nav;
   display: flex;
   justify-content: center;
-  background: #242424;
-  border-top: 1px solid #333;
+  background: var(--background-body);
+  border-top: 1px solid var(--border-color-secondary);
   padding: 8px 0;
   z-index: 10;
 }
@@ -101,7 +100,7 @@ button.nav-item.active {
 }
 
 .nav-btn {
-  color: #888;
+  color: var(--color-text-dim);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -110,12 +109,21 @@ button.nav-item.active {
 }
 
 .nav-btn.active {
-  color: #646cff;
+  color: var(--color-link);
 }
 
 .nav-btn span {
   font-size: 0.75rem;
   font-weight: 500;
+}
+
+/* Hide on mobile */
+.theme-toggle-button.side-nav-toggle {
+  display: none;
+}
+
+.sidebar-toggle-button {
+  display: none; /* Hide on mobile by default */
 }
 
 @media (min-width: 768px) {
@@ -125,63 +133,125 @@ button.nav-item.active {
     grid-area: sidebar;
     width: 260px;
     height: 100%;
-    border-right: 1px solid #333;
-    border-bottom: none;
+    border-right: 1px solid var(--border-color-secondary);
   }
 
   .tablet-sidebar-header {
     display: flex;
     align-items: center;
-    padding: 24px 20px 10px 20px;
+    justify-content: space-between; /* Added for mobile-header resemblance */
+    padding: 0 16px; /* Adjusted padding for mobile-header resemblance */
+    background: var(
+      --background-mobile-header
+    ); /* Added for mobile-header resemblance */
+    border-bottom: 1px solid var(--border-color-secondary); /* Added for mobile-header resemblance */
+    height: 60px; /* Explicit height to match mobile header */
   }
 
   .tablet-sidebar-header h3 {
     margin: 0;
-    font-size: 0.8rem;
-    color: #555;
+    font-size: 0.95rem; /* Adjusted font size for better resemblance */
+    color: var(
+      --color-text-primary
+    ); /* Adjusted color for better resemblance */
     text-transform: uppercase;
-    letter-spacing: 1.5px;
+    letter-spacing: 1px; /* Adjusted letter spacing */
+    font-weight: 700; /* Adjusted font weight */
   }
 
-  .nav-item {
-    padding: 14px 20px;
-    font-size: 0.95rem;
+  .sidebar-toggle-button {
+    background: transparent;
+    border: none;
+    color: var(--color-text-primary);
+    cursor: pointer;
+    display: flex; /* Show on desktop */
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
   }
 
-  .nav-item.active {
-    padding-left: 20px;
+  .sidebar-toggle-button:hover {
+    color: var(--color-link);
   }
 
+  /* Collapsed state for side-nav */
+  .app-shell.sidebar-collapsed .side-nav {
+    width: 70px; /* Reduced width */
+  }
+
+  .app-shell.sidebar-collapsed .side-menu-list {
+    align-items: center; /* Center icons */
+  }
+
+  .app-shell.sidebar-collapsed button.nav-item {
+    justify-content: center; /* Center content */
+    padding: 14px 0; /* Adjust padding */
+  }
+
+  .app-shell.sidebar-collapsed button.nav-item span:not(.side-emoji) {
+    display: none; /* Hide text */
+  }
+
+  .app-shell.sidebar-collapsed .side-emoji {
+    margin-right: 0; /* Remove margin */
+  }
+
+  /* Adjust sidebar width for collapsed state in desktop media query */
+  .app-shell.sidebar-collapsed {
+    /* Add to app-shell to control overall layout */
+    grid-template-columns: 70px 1fr;
+  }
+
+  /* Restore tablet bottom nav to floating circular menu */
   .bottom-nav-container {
     padding: 10px 0;
     background: transparent;
     border-top: none;
     position: fixed;
     bottom: 20px;
-    left: 260px;
-    right: 0;
+    right: 20px; /* Position to the right */
+    left: auto; /* Remove left constraint */
+    display: flex; /* Ensure flex for centering its content */
+    justify-content: flex-end; /* Align to the right */
+    width: auto; /* Allow content to define width */
     pointer-events: none;
+    z-index: 10;
   }
 
   .bottom-nav {
     pointer-events: auto;
-    width: auto;
-    background: #1a1a1a;
-    border: 1px solid #333;
-    border-radius: 100px;
-    padding: 6px 12px;
+    width: auto; /* Not full width */
+    background: var(--background-card);
+    border: 1px solid var(--border-color-secondary);
+    border-radius: 100px; /* Circular container */
+    padding: 6px 12px; /* Adjusted padding */
     gap: 8px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: row; /* Buttons side-by-side inside the circular menu */
   }
 
   .nav-btn {
-    padding: 8px 16px;
-    border-radius: 100px;
-    flex-direction: row;
-    flex: none;
+    padding: 8px 16px; /* Adjusted padding */
+    border-radius: 100px; /* Pill shape for buttons */
+    flex-direction: column; /* Icon above text */
+    flex: none; /* Don't grow */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    color: var(--color-text-dim); /* Default color */
+  }
+
+  .nav-btn:hover {
+    background: var(--background-primary-subtle);
   }
 
   .nav-btn.active {
-    background: #242424;
+    background: var(
+      --background-button-primary
+    ); /* Use primary background for active */
+    color: white; /* Active text color */
   }
 }
+

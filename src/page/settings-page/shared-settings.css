@@ -9,10 +9,10 @@
 }
 
 .settings-card {
-  background: #1a1a1a;
+  background: var(--background-card);
   padding: 24px;
   border-radius: 16px;
-  border: 1px solid #333;
+  border: 1px solid var(--border-color-secondary);
   width: 90%;
   margin: 20px auto 20px;
   box-sizing: border-box;
@@ -29,7 +29,7 @@
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 1.2px;
-  color: #888;
+  color: var(--color-text-dim);
   font-weight: 700;
 }
 
@@ -44,42 +44,48 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s ease; /* Common transition */
-  border-radius: 8px; /* Take from emoji pill */
+  transition: all 0.2s ease;
+  border-radius: 8px;
 }
 
 /* Modifier for regular text pills */
 .pill--text {
   padding: 10px 16px;
-  border-radius: 12px; /* Keep original border-radius for text pills */
-  border: 1px solid #333;
-  background: #1a1a1a;
-  color: #aaa;
+  border-radius: 12px;
+  border: 1px solid var(--border-color-secondary);
+  background: var(--background-button-secondary);
+  color: var(--color-text-muted);
   gap: 8px;
   font-size: 0.9rem;
 }
 
+.pill--text:hover:not(.is-active) {
+  background: var(--background-primary-subtle);
+  border-color: var(--border-color-primary);
+  color: var(--color-link);
+}
+
 .pill--text.is-active {
-  background: #646cff;
+  background: var(--background-button-primary);
   color: white;
-  border-color: #646cff;
+  border-color: var(--border-color-primary);
 }
 
 /* Modifier for emoji pills */
 .pill--emoji {
   flex: 0 0 38px;
   height: 38px;
-  background: #262626;
+  background: var(--background-input);
   border: 2px solid transparent;
   font-size: 1.2rem;
 }
 
 .pill--emoji.is-active {
-  background: #333;
+  background: var(--background-pill-emoji-active);
 }
 .pill--emoji:hover {
   transform: translateY(-2px);
-  background: #444;
+  background: var(--pos-subtle-hover-color, var(--background-pill-emoji-hover));
 }
 
 .toggle-switch {
@@ -93,15 +99,15 @@
 }
 
 .toggle-switch.on {
-  background: rgba(46, 125, 50, 0.15);
-  color: #81c784;
-  border: 1px solid #2e7d32;
+  background: var(--background-toggle-on-transparent);
+  color: var(--color-success-light);
+  border: 1px solid var(--color-success-dark);
 }
 
 .toggle-switch.off {
-  background: rgba(183, 28, 28, 0.15);
-  color: #ef9a9a;
-  border: 1px solid #c62828;
+  background: var(--background-toggle-off-transparent);
+  color: var(--color-warning-light);
+  border: 1px solid var(--color-warning-dark);
 }
 
 .toggle-switch:active {
@@ -112,13 +118,17 @@
   width: 100%;
   padding: 16px;
   border-radius: 12px;
-  background: #646cff;
+  background: var(--background-button-primary);
   color: white;
   font-weight: 700;
 }
 
+.save-button:hover:not(:disabled) {
+  background: var(--background-button-primary-hover);
+}
+
 .save-button.success {
-  background: #2e7d32;
+  background: var(--color-success-dark);
 }
 
 /* Modifier for save-button for bulk actions */
@@ -127,19 +137,19 @@
   padding: 14px 28px;
   border-radius: 10px;
   border: none;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5); /* This shadow might need theme variables as well */
   transition: all 0.2s;
   pointer-events: auto;
   cursor: pointer;
 }
 
 .save-button.is-bulk:hover {
-  background: #7c83ff;
+  background: var(--background-button-primary-hover);
   transform: translateY(-2px);
 }
 
 .save-button.is-bulk:disabled {
-  background: #444;
+  background: var(--border-color-input);
   cursor: not-allowed;
   opacity: 0.7;
 }
@@ -160,30 +170,30 @@
 
 /* Modifier for add icon button */
 .icon-button--add {
-  background: #646cff;
+  background: var(--background-button-primary);
   color: white;
 }
 .icon-button--add:hover {
-  background: #7c83ff;
+  background: var(--background-button-primary-hover);
   transform: scale(1.05);
 }
 
 /* Modifier for delete icon button */
 .icon-button--delete {
-  background: #331a1a;
-  color: #ff5555;
-  border: 1px solid #552222;
+  background: var(--color-delete-dark);
+  color: var(--color-delete);
+  border: 1px solid var(--border-color-delete);
 }
 .icon-button--delete:hover {
-  background: #ff5555;
+  background: var(--background-button-delete-hover);
   color: white;
 }
 
 /* Generic form input style */
 .form-input {
-  background: #262626;
-  border: 1px solid #444;
-  color: #fff;
+  background: var(--background-input);
+  border: 1px solid var(--border-color-input);
+  color: var(--color-text-primary);
   padding: 8px 12px;
   box-sizing: border-box;
   display: block;
@@ -194,14 +204,14 @@
 }
 
 .form-input:focus {
-  border-color: #646cff;
+  border-color: var(--border-color-primary);
 }
 
 /* Generic form select style */
 .form-select {
-  background: #262626;
-  border: 1px solid #444;
-  color: #fff;
+  background: var(--background-input);
+  border: 1px solid var(--border-color-input);
+  color: var(--color-text-primary);
   padding: 8px 12px;
   box-sizing: border-box;
   display: block;
@@ -209,25 +219,24 @@
   width: 100%;
   outline: none;
   font-size: 0.9rem;
-  /* Add specific select styles if any, for now it's identical to form-input */
-  -webkit-appearance: none; /* Remove default arrow on select */
+  -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
-  background-image: url('data:image/svg+xml;utf8,<svg fill="%23fff" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>'); /* Custom arrow */
+  background-image: url('data:image/svg+xml;utf8,<svg fill="var(--color-text-primary)" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
   background-repeat: no-repeat;
-  background-position: right 8px center; /* Changed from top 50% to center */
-  background-size: 20px; /* Added to control arrow size */
+  background-position: right 8px center;
+  background-size: 20px;
 }
 
 .form-select:focus {
-  border-color: #646cff;
+  border-color: var(--border-color-primary);
 }
 
 /* Readonly input style */
 .form-input--readonly {
   background: transparent;
   border: none;
-  color: #666;
+  color: var(--color-text-faded);
   font-size: 0.85rem;
   width: 100%;
   outline: none;
@@ -237,7 +246,7 @@
 /* Field hint text */
 .form-field-hint {
   font-size: 0.75rem;
-  color: #666;
+  color: var(--color-text-faded);
   line-height: 1.4;
   margin-top: 8px;
 }
@@ -245,12 +254,40 @@
 /* Footer for settings pages */
 .settings-footer {
   position: fixed;
-  bottom: 80px;
-  left: 280px;
-  right: 20px;
+  bottom: 80px; /* Above bottom nav */
+  left: 0; /* Full width on mobile */
+  right: 0; /* Full width on mobile */
   display: flex;
-  justify-content: flex-end;
+  justify-content: center; /* Center button on mobile */
+  padding: 16px; /* Add padding for mobile */
   pointer-events: none;
+  background: var(--background-app-shell); /* Use a background that matches the app */
+  border-top: 1px solid var(--border-color-secondary); /* Add a border top */
+  z-index: 999; /* Ensure it's above other content but below mobile header */
+}
+
+.settings-footer .save-button.is-bulk { /* Target the button inside the footer */
+  width: 100%; /* Full width button on mobile */
+  pointer-events: auto; /* Re-enable pointer events for the button */
+}
+
+
+@media (min-width: 768px) {
+  .settings-footer {
+    left: 280px; /* Adjust for sidebar on desktop */
+    right: 20px;
+    justify-content: flex-end; /* Align right on desktop */
+    padding: 0; /* Remove padding on desktop as it's typically within content flow */
+    background: transparent; /* Transparent background on desktop */
+    border-top: none; /* No border on desktop */
+    position: relative; /* Make it relative on desktop to appear in the flow */
+    margin-top: 20px; /* Add some space above the footer on desktop */
+    bottom: auto; /* Remove fixed positioning */
+  }
+
+  .settings-footer .save-button.is-bulk {
+    width: auto; /* Auto width on desktop */
+  }
 }
 
 /* Status badge component */
@@ -268,18 +305,18 @@
 }
 
 .badge:hover {
-  filter: brightness(1.2);
+  filter: brightness(1.2); /* Need to make this theme-aware if colors change drastically */
   transform: scale(1.05);
 }
 
 .badge--yes {
-  background: rgba(46, 213, 115, 0.15);
-  color: #2ed573;
-  border: 1px solid rgba(46, 213, 115, 0.3);
+  background: var(--background-badge-yes-transparent);
+  color: var(--color-success-dark);
+  border: 1px solid var(--border-color-success);
 }
 
 .badge--no {
-  background: rgba(255, 71, 87, 0.15);
-  color: #ff4757;
-  border: 1px solid rgba(255, 71, 87, 0.3);
+  background: var(--background-badge-no-transparent);
+  color: var(--color-error);
+  border: 1px solid var(--border-color-warning);
 }
