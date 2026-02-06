@@ -4,47 +4,28 @@
   animation: fadeIn 0.3s ease-out;
 }
 
-
-
-
-
-
-
-
-
-.admin-table th:nth-child(1),
-.admin-table td:nth-child(1) {
-  min-width: 240px; /* Further adjusted for Name */
+.app-table th.w-user-name {
+  min-width: 70px; /* For 3 Korean characters */
   width: auto;
 }
-.admin-table th:nth-child(2),
-.admin-table td:nth-child(2) {
-  min-width: 320px; /* Even wider for email */
+.app-table th.w-user-email {
+  min-width: 170px; /* Wider for email */
   width: auto;
 }
-.admin-table th:nth-child(3),
-.admin-table td:nth-child(3) {
-  width: 100px; /* Reduced for Male/Female */
+.app-table th.w-user-gender {
+  min-width: 80px; /* For Male/Female */
+  width: auto;
 }
 
-.admin-table th:nth-child(4),
-.admin-table td:nth-child(4) {
-  width: auto;
+.app-table th.w-user-positions {
   min-width: 150px;
-  max-width: 450px;
+  width: auto;
 }
 
-.admin-table th:nth-child(5),
-.admin-table td:nth-child(5),
-.admin-table th:nth-child(6),
-.admin-table td:nth-child(6),
-.admin-table th:nth-child(7),
-.admin-table td:nth-child(7) {
+.app-table th.w-user-status-cols {
   width: 95px;
   text-align: center;
 }
-
-
 
 .pos-pills-cell {
   padding: 4px 12px !important;
@@ -64,18 +45,6 @@
 .pos-pills-wrapper::-webkit-scrollbar {
   display: none;
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
 .center {
   text-align: center;

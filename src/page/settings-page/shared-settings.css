@@ -1,5 +1,4 @@
 .settings-container {
-  max-width: 800px;
   height: 100%;
   margin: 0 auto;
   display: flex;
@@ -255,33 +254,31 @@
 .settings-footer {
   position: fixed;
   bottom: 80px; /* Above bottom nav */
-  left: 0; /* Full width on mobile */
-  right: 0; /* Full width on mobile */
+  width: 100%;
   display: flex;
   justify-content: center; /* Center button on mobile */
   padding: 16px; /* Add padding for mobile */
   pointer-events: none;
-  background: var(--background-app-shell); /* Use a background that matches the app */
+  box-sizing: border-box;
+  background: var(
+    --background-app-shell
+  ); /* Use a background that matches the app */
   border-top: 1px solid var(--border-color-secondary); /* Add a border top */
   z-index: 999; /* Ensure it's above other content but below mobile header */
 }
 
-.settings-footer .save-button.is-bulk { /* Target the button inside the footer */
+.settings-footer .save-button.is-bulk {
+  /* Target the button inside the footer */
   width: 100%; /* Full width button on mobile */
   pointer-events: auto; /* Re-enable pointer events for the button */
 }
 
-
 @media (min-width: 768px) {
   .settings-footer {
-    left: 280px; /* Adjust for sidebar on desktop */
-    right: 20px;
     justify-content: flex-end; /* Align right on desktop */
-    padding: 0; /* Remove padding on desktop as it's typically within content flow */
     background: transparent; /* Transparent background on desktop */
     border-top: none; /* No border on desktop */
     position: relative; /* Make it relative on desktop to appear in the flow */
-    margin-top: 20px; /* Add some space above the footer on desktop */
     bottom: auto; /* Remove fixed positioning */
   }
 
@@ -305,7 +302,9 @@
 }
 
 .badge:hover {
-  filter: brightness(1.2); /* Need to make this theme-aware if colors change drastically */
+  filter: brightness(
+    1.2
+  ); /* Need to make this theme-aware if colors change drastically */
   transform: scale(1.05);
 }
 

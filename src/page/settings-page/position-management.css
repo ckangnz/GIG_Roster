@@ -1,29 +1,15 @@
-.pos-mgmt-container {
-  width: 100%;
-  max-width: 800px; /* Keeps it from stretching too far on desktop */
-  margin: 0 auto;
-}
-
-
-
-/* --- Fixed Column Widths --- */
-.w-order {
+.app-table th.w-order {
   width: 80px;
-  text-align: center !important;
+  text-align: center;
 }
-.w-emoji {
+.app-table th.w-emoji {
   width: 60px;
 }
-.w-color {
+.app-table th.w-color {
   min-width: 160px;
 }
-.w-action {
+.app-table th.w-action {
   width: 50px;
-}
-
-.app-table th:nth-child(3),
-.app-table td:nth-child(3) {
-  min-width: 180px; /* Increased minimum width for Name column */
 }
 
 .order-controls {
@@ -49,10 +35,6 @@
   opacity: 0.2;
 }
 
-
-
-
-
 .color-picker-group {
   display: flex;
   align-items: center;
@@ -66,7 +48,6 @@ input[type="color"] {
   background: none;
   cursor: pointer;
 }
-
 
 .pos-row-new {
   background: rgba(100, 108, 255, 0.05);

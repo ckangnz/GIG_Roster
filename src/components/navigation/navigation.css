@@ -251,7 +251,7 @@ button.nav-item.active {
     background: var(
       --background-primary-subtle
     ); /* Use primary background for active */
-    color: white; /* Active text text color */
+    color: var(--color-text-primary); /* Active text text color */
   }
 
   /* General style for the side-nav toggle button (desktop) */
@@ -284,7 +284,10 @@ button.nav-item.active {
   }
 
   /* Hide the text when sidebar is collapsed */
-  .app-shell.sidebar-collapsed .theme-toggle-button.side-nav-toggle .toggle-theme-text {
+  .app-shell.sidebar-collapsed
+    .theme-toggle-button.side-nav-toggle
+    .toggle-theme-text {
     display: none;
   }
 }
+

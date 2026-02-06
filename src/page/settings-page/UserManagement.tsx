@@ -78,33 +78,33 @@ const UserManagement = () => {
         <table className="app-table">
           <thead>
             <tr>
-              <th className="sticky-col">Name</th>
-              <th>Email</th>
-              <th>Gender</th>
-              <th className="w-positions">Positions</th>
-              <th>Active</th>
-              <th>Approved</th>
-              <th>Admin</th>
+              <th className="w-user-name sticky-col">Name</th>
+              <th className="w-user-email">Email</th>
+              <th className="w-user-gender">Gender</th>
+              <th className="w-user-positions">Positions</th>
+              <th className="w-user-status-cols">Active</th>
+              <th className="w-user-status-cols">Approved</th>
+              <th className="w-user-status-cols">Admin</th>
             </tr>
           </thead>
           <tbody>
             {users.map((u) => (
               <tr key={u.id}>
-                <td className="sticky-col">
+                <td className="w-user-name sticky-col">
                   <input
                     className="form-input"
                     value={u.name || ""}
                     onChange={(e) => handleUpdate(u.id, "name", e.target.value)}
                   />
                 </td>
-                <td>
+                <td className="w-user-email">
                   <input
                     className="form-input--readonly"
                     value={u.email || ""}
                     readOnly
                   />
                 </td>
-                <td>
+                <td className="w-user-gender">
                   <select
                     className="form-select"
                     value={u.gender}
@@ -117,7 +117,7 @@ const UserManagement = () => {
                     <option value="Female">Female</option>
                   </select>
                 </td>
-                <td className="pos-pills-cell">
+                <td className="w-user-positions pos-pills-cell">
                   <div className="pos-pills-wrapper">
                     {availablePositions.map((pos) => {
                       const isActive = u.positions?.includes(pos.name);
@@ -139,7 +139,7 @@ const UserManagement = () => {
                     })}
                   </div>
                 </td>
-                <td className="center">
+                <td className="w-user-status-cols center">
                   <div
                     className={`badge ${u.isActive ? "badge--yes" : "badge--no"}`}
                     onClick={() => handleUpdate(u.id, "isActive", !u.isActive)}
@@ -148,7 +148,7 @@ const UserManagement = () => {
                   </div>
                 </td>
 
-                <td className="center">
+                <td className="w-user-status-cols center">
                   <div
                     className={`badge ${u.isApproved ? "badge--yes" : "badge--no"}`}
                     onClick={() =>
@@ -159,7 +159,7 @@ const UserManagement = () => {
                   </div>
                 </td>
 
-                <td className="center">
+                <td className="w-user-status-cols center">
                   <div
                     className={`badge ${u.isAdmin ? "badge--yes" : "badge--no"}`}
                     onClick={() => handleUpdate(u.id, "isAdmin", !u.isAdmin)}

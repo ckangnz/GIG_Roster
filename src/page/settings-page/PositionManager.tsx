@@ -89,7 +89,7 @@ const PositionManagement = () => {
   };
 
   return (
-    <div className="pos-mgmt-container">
+    <>
       <div className="app-table-container">
         <table className="app-table">
           <thead>
@@ -218,7 +218,7 @@ const PositionManagement = () => {
           {isSaving ? "Saving..." : "Save Position Config"}
         </button>
       </div>
-    </div>
+    </>
   );
 };
 
