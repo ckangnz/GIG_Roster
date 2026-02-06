@@ -14,11 +14,18 @@
 }
 
 .side-nav {
-  background: var(--background-card);
+  position: fixed;
+  top: 60px;
+  left: 0;
+  width: 100vw;
+  height: calc(100vh - 113px);
+  height: calc(100svh - 113px);
+  background: var(--background-card); /* Use variable */
   z-index: 1000;
   overflow-y: auto;
-  border-bottom: none;
   display: none;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 .menu-open .side-nav {
@@ -41,7 +48,6 @@
 .side-menu-list {
   display: flex;
   flex-direction: column;
-  padding-top: 10px;
 }
 
 .admin-section-heading {
@@ -107,8 +113,8 @@ button.nav-item.active {
   display: flex;
   justify-content: center;
   background: var(--background-body);
-  border-top: 1px solid var(--border-color-secondary);
-  padding: 8px 0;
+  padding-bottom: constant(safe-area-inset-bottom); /* iOS 11.0 */
+  padding-bottom: env(safe-area-inset-bottom); /* iOS 11.2+ */
   z-index: 10;
 }
 
@@ -130,6 +136,7 @@ button.nav-item.active {
 
 .nav-btn.active {
   color: var(--color-link);
+  background: var(--background-primary-subtle);
 }
 
 .nav-btn span {
@@ -273,6 +280,7 @@ button.nav-item.active {
       --background-primary-subtle
     ); /* Use primary background for active */
     color: var(--color-text-primary); /* Active text text color */
+    border-radius: 100px; /* Explicitly circular */
   }
 
   /* General style for the side-nav toggle button (desktop) */
@@ -333,4 +341,3 @@ button.nav-item.active {
     display: none; /* Hide heading when collapsed */
   }
 }
-
