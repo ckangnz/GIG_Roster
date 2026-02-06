@@ -1,70 +1,11 @@
 .app-shell {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   height: 100vh;
   height: 100svh;
   width: 100vw;
-  grid-template-areas:
-    "header"
-    "main"
-    "nav";
-  grid-template-rows: 60px 1fr auto;
   background-color: var(--background-app-shell); /* Use variable */
   color: var(--color-text-primary); /* Use variable */
-}
-
-.mobile-header {
-  grid-area: header;
-  display: flex; /* Ensure flexbox */
-  align-items: center;
-  justify-content: space-between; /* Space out children */
-  padding: 0 16px;
-  z-index: 1100;
-  /* Removed cursor: pointer and user-select: none from header itself */
-  background: var(--background-mobile-header);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--border-color-secondary);
-  position: sticky;
-  top: 0;
-}
-
-.header-pill {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 6px 16px;
-  background: var(--background-body); /* Use variable */
-  border: 1px solid var(--border-color-input); /* Use variable */
-  border-radius: 20px;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.header-pill:active {
-  transform: scale(0.96);
-}
-
-.pill-active {
-  border-color: var(--border-color-primary); /* Use variable */
-  background: var(
-    --background-pill-active
-  ); /* This color isn't in my theme variables, maybe add it or find a close one */
-}
-
-.current-context {
-  text-transform: uppercase;
-  font-weight: 700;
-  letter-spacing: 1px;
-  font-size: 0.85rem;
-  color: var(--color-text-secondary); /* Use variable */
-}
-
-.chevron-icon {
-  color: var(--color-link); /* Use variable */
-  transition: transform 0.3s ease;
-}
-
-.chevron-icon.rotate {
-  transform: rotate(180deg);
 }
 
 .main-content {
@@ -88,28 +29,9 @@
   min-height: 100%;
 }
 
-.theme-toggle-button {
-  background: transparent;
-  border: none;
-  color: var(--color-text-primary); /* Use theme color */
-  cursor: pointer;
-  padding: 8px; /* Add some padding */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.theme-toggle-button:hover {
-  color: var(--color-link); /* Hover effect */
-}
-
 @media (min-width: 768px) {
   .app-shell {
-    grid-template-areas:
-      "sidebar main"
-      "sidebar nav";
-    grid-template-rows: 1fr auto;
-    transition: grid-template-columns 0.3s ease; /* Smooth transition */
+    flex-direction: row;
   }
 
   .app-shell.sidebar-expanded {
@@ -118,10 +40,6 @@
 
   .app-shell.sidebar-collapsed {
     grid-template-columns: 70px 1fr; /* Reduced width */
-  }
-
-  .mobile-header {
-    display: none;
   }
 
   .content-container {

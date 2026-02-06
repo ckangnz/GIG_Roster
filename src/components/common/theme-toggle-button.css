@@ -1,0 +1,14 @@
+.theme-toggle-button {
+  background: transparent;
+  border: none;
+  color: var(--color-text-primary); /* Use theme color */
+  cursor: pointer;
+  padding: 8px; /* Add some padding */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.theme-toggle-button:hover {
+  color: var(--color-link); /* Hover effect */
+}

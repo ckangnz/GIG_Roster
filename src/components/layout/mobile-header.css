@@ -1,0 +1,59 @@
+.mobile-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* Space out children */
+  padding: 16px;
+  z-index: 1100;
+  /* Removed cursor: pointer and user-select: none from header itself */
+  background: var(--background-mobile-header);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border-color-secondary);
+  position: sticky;
+  top: 0;
+}
+
+.mobile-header-pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 16px;
+  background: var(--background-body); /* Use variable */
+  border: 1px solid var(--border-color-input); /* Use variable */
+  border-radius: 20px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mobile-header-pill:active {
+  transform: scale(0.96);
+}
+
+.mobile-header-pill-active {
+  border-color: var(--border-color-primary); /* Use variable */
+  background: var(
+    --background-pill-active
+  ); /* This color isn't in my theme variables, maybe add it or find a close one */
+}
+
+.mobile-header-text {
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 1px;
+  font-size: 0.85rem;
+  color: var(--color-text-secondary); /* Use variable */
+}
+
+.mobile-header-chevron {
+  color: var(--color-link); /* Use variable */
+  transition: transform 0.3s ease;
+}
+
+.mobile-header-chevron.rotate {
+  transform: rotate(180deg);
+}
+
+@media (min-width: 768px) {
+  .mobile-header {
+    display: none;
+  }
+}
