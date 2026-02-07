@@ -19,7 +19,7 @@ import { AppUser, Gender, Position } from "../../model/model";
 const UserManagement = () => {
   const [users, setUsers] = useState<(AppUser & { id: string })[]>([]);
   const [availablePositions, setAvailablePositions] = useState<Position[]>([]);
-  const [isSaving, setIsSaving] = useState(false);
+  const [status, setStatus] = useState("idle"); // Changed from isSaving to status
 
   useEffect(() => {
     const fetchData = async () => {
@@ -61,7 +61,7 @@ const UserManagement = () => {
   };
 
   const saveAllChanges = async () => {
-    setIsSaving(true);
+    setStatus("saving"); // Set status to saving
     const batch = writeBatch(db);
     users.forEach((u) => {
       const { id, ...data } = u;
@@ -69,12 +69,12 @@ const UserManagement = () => {
     });
     try {
       await batch.commit();
-      alert("All users updated successfully!");
+      setStatus("success"); // Set status to success
+      setTimeout(() => setStatus("idle"), 2000); // Reset to idle after 2 seconds
     } catch (e) {
       console.error(e);
-      alert("Error saving users.");
-    } finally {
-      setIsSaving(false);
+      alert("Error saving users."); // Keep alert for error, or change to status="error" if desired
+      setStatus("idle"); // Reset to idle on error
     }
   };
 
@@ -184,11 +184,15 @@ const UserManagement = () => {
 
       <div className="settings-footer">
         <button
-          className="save-button is-bulk"
+          className={`save-button ${status}`}
           onClick={saveAllChanges}
-          disabled={isSaving}
+          disabled={status !== "idle"}
         >
-          {isSaving ? "Saving Changes..." : "Save All User Changes"}
+          {status === "saving"
+            ? "Saving Changes..."
+            : status === "success"
+              ? "Done ✓"
+              : "Save All User Changes"}
         </button>
       </div>
     </>

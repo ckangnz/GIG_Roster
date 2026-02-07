@@ -7,6 +7,7 @@ export enum SettingsSection {
   PROFILE = "Profile",
   USER_MANAGEMENT = "Users",
   POSITIONS = "Positions",
+  TEAMS = "Teams",
 }
 
 export const BOTTOM_NAV_ITEMS = [
@@ -20,6 +21,12 @@ export const SETTINGS_NAV_ITEMS = [
     id: SettingsSection.USER_MANAGEMENT,
     label: "User Management",
     icon: "👥",
+    adminOnly: true,
+  },
+  {
+    id: SettingsSection.TEAMS,
+    label: "Team Management",
+    icon: "🏆",
     adminOnly: true,
   },
   {

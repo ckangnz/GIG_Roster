@@ -18,8 +18,8 @@ const defaultPosition = {
 
 const PositionManagement = () => {
   const [positions, setPositions] = useState<Position[]>([]);
-  const [isSaving, setIsSaving] = useState(false);
   const [newPos, setNewPos] = useState<Position>(defaultPosition);
+  const [status, setStatus] = useState("idle"); // Changed from isSaving to status
 
   useEffect(() => {
     const fetchPositions = async () => {
@@ -79,18 +79,18 @@ const PositionManagement = () => {
   };
 
   const saveToFirebase = async () => {
-    setIsSaving(true);
+    setStatus("saving"); // Set status to saving
     try {
       const docRef = doc(db, "metadata", "positions");
       await updateDoc(docRef, { list: positions });
-      alert("Position configuration saved successfully!");
+      setStatus("success"); // Set status to success
+      setTimeout(() => setStatus("idle"), 2000); // Reset to idle after 2 seconds
     } catch (e) {
       console.error("Save Error:", e);
       alert(
         "Check Firestore Rules: You may lack permission to write to 'metadata'.",
       );
-    } finally {
-      setIsSaving(false);
+      setStatus("idle"); // Reset to idle on error
     }
   };
 
@@ -179,6 +179,7 @@ const PositionManagement = () => {
             <button
               onClick={addPosition}
               className="icon-button icon-button--add"
+              disabled={!newPos.name.trim() || !newPos.emoji.trim()}
             >
               +
             </button>
@@ -188,11 +189,15 @@ const PositionManagement = () => {
 
       <div className="settings-footer">
         <button
-          className="save-button"
+          className={`save-button ${status}`}
           onClick={saveToFirebase}
-          disabled={isSaving}
+          disabled={status !== "idle"}
         >
-          {isSaving ? "Saving..." : "Save"}
+          {status === "saving"
+            ? "Saving..."
+            : status === "success"
+              ? "Done ✓"
+              : "Save"}
         </button>
       </div>
     </>

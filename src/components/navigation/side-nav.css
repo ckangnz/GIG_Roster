@@ -129,7 +129,7 @@ button.side-nav-item:focus {
 
   .tablet-sidebar-header h3 {
     margin: 0;
-    font-size: 0.95rem;
+    font-size: 0.85rem;
     color: var(--color-text-primary);
     text-transform: uppercase;
     letter-spacing: 1px;

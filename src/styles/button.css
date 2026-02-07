@@ -70,22 +70,12 @@ button.save-button {
   color: white;
   font-weight: 700;
 }
-
 button.save-button:hover:not(:disabled) {
   background: var(--background-button-primary-hover);
 }
-
 button.save-button.success {
   background: var(--color-success-dark);
 }
-
-button.save-button.is-bulk {
-  width: auto;
-  padding: 14px 28px;
-  border-radius: 10px;
-  border: none;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5); /* This shadow might need theme variables as well */
-  transition: all 0.2s;
-  pointer-events: auto;
-  cursor: pointer;
+button.save-button.success:disabled {
+  opacity: 1;
 }
