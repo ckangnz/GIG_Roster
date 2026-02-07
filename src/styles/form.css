@@ -12,81 +12,7 @@
   color: var(--color-text-dim);
   font-weight: 700;
 }
-.save-button {
-  width: 100%;
-  padding: 16px;
-  border-radius: 12px;
-  background: var(--background-button-primary);
-  color: white;
-  font-weight: 700;
-}
 
-.save-button:hover:not(:disabled) {
-  background: var(--background-button-primary-hover);
-}
-
-.save-button.success {
-  background: var(--color-success-dark);
-}
-
-/* Modifier for save-button for bulk actions */
-.save-button.is-bulk {
-  width: auto;
-  padding: 14px 28px;
-  border-radius: 10px;
-  border: none;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5); /* This shadow might need theme variables as well */
-  transition: all 0.2s;
-  pointer-events: auto;
-  cursor: pointer;
-}
-
-.save-button.is-bulk:hover {
-  background: var(--background-button-primary-hover);
-  transform: translateY(-2px);
-}
-
-.save-button.is-bulk:disabled {
-  background: var(--border-color-input);
-  cursor: not-allowed;
-  opacity: 0.7;
-}
-
-.icon-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 6px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border: none;
-}
-
-/* Modifier for add icon button */
-.icon-button--add {
-  background: var(--background-button-primary);
-  color: white;
-}
-.icon-button--add:hover {
-  background: var(--background-button-primary-hover);
-  transform: scale(1.05);
-}
-
-/* Modifier for delete icon button */
-.icon-button--delete {
-  background: var(--color-delete-dark);
-  color: var(--color-delete);
-  border: 1px solid var(--border-color-delete);
-}
-.icon-button--delete:hover {
-  background: var(--background-button-delete-hover);
-  color: white;
-}
-
-/* Generic form input style */
 .form-input {
   background: var(--background-input);
   border: 1px solid var(--border-color-input);
@@ -108,7 +34,6 @@
   border-color: var(--border-color-primary);
 }
 
-/* Generic form select style */
 .form-select {
   background: var(--background-input);
   border: 1px solid var(--border-color-input);
@@ -133,7 +58,6 @@
   border-color: var(--border-color-primary);
 }
 
-/* Readonly input style */
 .form-input--readonly {
   background: transparent;
   border: none;
@@ -144,7 +68,6 @@
   cursor: default;
 }
 
-/* Field hint text */
 .form-field-hint {
   font-size: 0.75rem;
   color: var(--color-text-faded);

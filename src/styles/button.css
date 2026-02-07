@@ -1,0 +1,100 @@
+button {
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  background-color: var(--background-button-secondary);
+  transition: border-color 0.25s;
+}
+
+button:hover {
+  border-color: var(--border-color-primary);
+}
+button:disabled {
+  cursor: not-allowed !important;
+  opacity: 0.2;
+}
+
+button.icon-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  height: 32px;
+  border-radius: 6px;
+  font-weight: bold;
+  transition: all 0.2s ease;
+  border: none;
+  color: white;
+  background: var(--background-button-primary);
+}
+
+button.icon-button.icon-button--small {
+  font-size: 0.8em;
+  height: 28px;
+}
+
+button.icon-button:hover {
+  background: var(--background-button-primary-hover);
+  transform: scale(1.05);
+}
+
+button.icon-button--secondary {
+  background: var(--background-button-secondary);
+  color: var(--color-text-primary);
+}
+
+button.icon-button--secondary:hover {
+  background: var(--background-button-secondary-hover);
+}
+
+button.icon-button--delete {
+  color: var(--color-delete);
+  background: var(--color-delete-dark);
+  border: 1px solid var(--border-color-delete);
+}
+button.icon-button--delete:hover {
+  color: white;
+  background: var(--background-button-delete-hover);
+}
+
+button.save-button {
+  width: 100%;
+  padding: 16px;
+  border-radius: 12px;
+  background: var(--background-button-primary);
+  color: white;
+  font-weight: 700;
+}
+
+button.save-button:hover:not(:disabled) {
+  background: var(--background-button-primary-hover);
+}
+
+button.save-button.success {
+  background: var(--color-success-dark);
+}
+
+button.save-button.is-bulk {
+  width: auto;
+  padding: 14px 28px;
+  border-radius: 10px;
+  border: none;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5); /* This shadow might need theme variables as well */
+  transition: all 0.2s;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+button.save-button.is-bulk:hover {
+  background: var(--background-button-primary-hover);
+  transform: translateY(-2px);
+}
+
+button.save-button.is-bulk:disabled {
+  background: var(--border-color-input);
+  cursor: not-allowed;
+  opacity: 0.7;
+}

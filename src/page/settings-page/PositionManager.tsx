@@ -2,18 +2,24 @@ import { useEffect, useState } from "react";
 
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 
+import SettingsTable, {
+  SettingsTableAnyCell,
+  SettingsTableColourInputCell,
+  SettingsTableInputCell,
+} from "../../components/common/SettingsTable";
 import { db } from "../../firebase";
 import { Position } from "../../model/model";
-import "./position-management.css";
+
+const defaultPosition = {
+  name: "",
+  emoji: "",
+  colour: "#f0f0f0",
+};
 
 const PositionManagement = () => {
   const [positions, setPositions] = useState<Position[]>([]);
   const [isSaving, setIsSaving] = useState(false);
-  const [newPos, setNewPos] = useState<Position>({
-    name: "",
-    emoji: "",
-    colour: "#646cff",
-  });
+  const [newPos, setNewPos] = useState<Position>(defaultPosition);
 
   useEffect(() => {
     const fetchPositions = async () => {
@@ -59,7 +65,7 @@ const PositionManagement = () => {
       return alert("Please provide both an emoji and a name.");
     }
     setPositions([...positions, newPos]);
-    setNewPos({ name: "", emoji: "", colour: "#646cff" });
+    setNewPos(defaultPosition);
   };
 
   const deletePosition = (index: number) => {
@@ -90,127 +96,89 @@ const PositionManagement = () => {
 
   return (
     <>
-      <div className="app-table-container">
-        <table className="app-table">
-          <thead>
-            <tr>
-              <th className="w-order">Order</th>
-              <th className="w-emoji">Emoji</th>
-              <th className="w-name">Name</th>
-              <th className="w-color">Colour</th>
-              <th className="w-action"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {positions.map((p, i) => (
-              <tr key={`${p.name}-${i}`}>
-                <td>
-                  <div className="order-controls">
-                    <button onClick={() => move(i, "up")} disabled={i === 0}>
-                      ▲
-                    </button>
-                    <button
-                      onClick={() => move(i, "down")}
-                      disabled={i === positions.length - 1}
-                    >
-                      ▼
-                    </button>
-                  </div>
-                </td>
-                <td>
-                  <input
-                    className="form-input center"
-                    value={p.emoji}
-                    onChange={(e) => handleUpdate(i, "emoji", e.target.value)}
-                  />
-                </td>
-                <td>
-                  <input
-                    className="form-input"
-                    value={p.name}
-                    onChange={(e) => handleUpdate(i, "name", e.target.value)}
-                  />
-                </td>
-                <td>
-                  <div className="color-picker-group">
-                    <input
-                      type="color"
-                      value={p.colour}
-                      onChange={(e) =>
-                        handleUpdate(i, "colour", e.target.value)
-                      }
-                    />
-                    <input
-                      className="form-input hex-input"
-                      value={p.colour}
-                      onChange={(e) =>
-                        handleUpdate(i, "colour", e.target.value)
-                      }
-                    />
-                  </div>
-                </td>
-                <td>
-                  <button
-                    onClick={() => deletePosition(i)}
-                    className="icon-button icon-button--delete"
-                  >
-                    ×
-                  </button>
-                </td>
-              </tr>
-            ))}
-            <tr className="pos-row-new">
-              <td className="new-tag">NEW</td>
-              <td>
-                <input
-                  className="form-input center"
-                  placeholder="emoji"
-                  value={newPos.emoji}
-                  onChange={(e) =>
-                    setNewPos({ ...newPos, emoji: e.target.value })
-                  }
-                />
-              </td>
-              <td>
-                <input
-                  className="form-input"
-                  placeholder="Position Name"
-                  value={newPos.name}
-                  onChange={(e) =>
-                    setNewPos({ ...newPos, name: e.target.value })
-                  }
-                />
-              </td>
-              <td>
-                <div className="color-picker-group">
-                  <input
-                    type="color"
-                    value={newPos.colour}
-                    onChange={(e) =>
-                      setNewPos({ ...newPos, colour: e.target.value })
-                    }
-                  />
-                  <input
-                    className="form-input hex-input"
-                    value={newPos.colour}
-                    onChange={(e) =>
-                      setNewPos({ ...newPos, colour: e.target.value })
-                    }
-                  />
-                </div>
-              </td>
-              <td>
+      <SettingsTable
+        headers={[
+          { text: "Order", minWidth: 50, textAlign: "center" },
+          { text: "Emoji", width: 30 },
+          { text: "Name", minWidth: 80 },
+          { text: "Colour", minWidth: 100 },
+          { text: "" },
+        ]}
+      >
+        {positions.map((p, i) => (
+          <tr key={`${p.name}-${i}`}>
+            <SettingsTableAnyCell>
+              <div
+                style={{
+                  display: "flex",
+                  gap: "4px",
+                  justifyContent: "center",
+                }}
+              >
                 <button
-                  onClick={addPosition}
-                  className="icon-button icon-button--add"
+                  className="icon-button icon-button--small icon-button--secondary"
+                  onClick={() => move(i, "up")}
+                  disabled={i === 0}
                 >
-                  +
+                  ▲
                 </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+                <button
+                  className="icon-button icon-button--small icon-button--secondary"
+                  onClick={() => move(i, "down")}
+                  disabled={i === positions.length - 1}
+                >
+                  ▼
+                </button>
+              </div>
+            </SettingsTableAnyCell>
+            <SettingsTableInputCell
+              value={p.emoji}
+              onChange={(e) => handleUpdate(i, "emoji", e.target.value)}
+            />
+            <SettingsTableInputCell
+              value={p.name}
+              onChange={(e) => handleUpdate(i, "name", e.target.value)}
+            />
+            <SettingsTableColourInputCell
+              value={p.colour}
+              onChange={(e) => handleUpdate(i, "colour", e.target.value)}
+            />
+            <SettingsTableAnyCell>
+              <button
+                className="icon-button icon-button--delete"
+                onClick={() => deletePosition(i)}
+              >
+                ×
+              </button>
+            </SettingsTableAnyCell>
+          </tr>
+        ))}
+        <tr className="pos-row-new">
+          <td className=""></td>
+          <SettingsTableInputCell
+            value={newPos.emoji}
+            placeholder="😎"
+            onChange={(e) => setNewPos({ ...newPos, emoji: e.target.value })}
+          />
+          <SettingsTableInputCell
+            value={newPos.name}
+            placeholder="Position Name"
+            onChange={(e) => setNewPos({ ...newPos, name: e.target.value })}
+          />
+          <SettingsTableColourInputCell
+            value={newPos.colour}
+            onChange={(e) => setNewPos({ ...newPos, colour: e.target.value })}
+          />
+          <SettingsTableAnyCell>
+            <button
+              onClick={addPosition}
+              className="icon-button icon-button--add"
+            >
+              +
+            </button>
+          </SettingsTableAnyCell>
+        </tr>
+      </SettingsTable>
 
       <div className="settings-footer">
         <button
