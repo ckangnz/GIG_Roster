@@ -25,6 +25,10 @@
   gap: 4px;
 }
 
+.bottom-nav-btn:hover {
+  transform: translateY(0);
+}
+
 .bottom-nav-btn.bottom-nav-btn-active {
   color: var(--color-link);
   background: var(--background-primary-subtle);

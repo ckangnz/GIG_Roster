@@ -11,5 +11,7 @@
 }
 
 .theme-toggle-button:hover {
-  color: var(--color-link);
+  color: var(--color-text-muted);
+  background: transparent;
+  transform: translateY(0);
 }

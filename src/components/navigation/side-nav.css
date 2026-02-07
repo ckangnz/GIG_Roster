@@ -74,6 +74,7 @@ button.side-nav-item {
 button.side-nav-item:hover {
   background: var(--background-body);
   color: var(--color-text-primary);
+  transform: translateY(0);
 }
 
 button.side-nav-item.side-nav-item-active {

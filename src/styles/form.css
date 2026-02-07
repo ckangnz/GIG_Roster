@@ -34,7 +34,7 @@
   border-color: var(--border-color-primary);
 }
 
-.form-input[type="color"] {
+input[type="color"] {
   border: none;
   width: 24px;
   height: 24px;
