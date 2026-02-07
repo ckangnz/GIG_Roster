@@ -147,7 +147,9 @@ const SideNav = ({
             ))}
           </div>
         )}
-      <ThemeToggleButton showText={isSidebarOpen} />
+      <div className="sidebar-footer">
+        <ThemeToggleButton showText={isSidebarOpen} />
+      </div>
     </aside>
   );
 };

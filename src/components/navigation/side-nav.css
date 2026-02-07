@@ -14,7 +14,7 @@
   display: flex;
   flex-direction: column;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); /* Subtle shadow */
-  border-bottom: 1px solid var(--border-color-secondary); /* Add a border to complete the floating look */
+  border-bottom: 1px solid var(--border-color-secondary);
 }
 
 .sidebar-content {
@@ -101,7 +101,7 @@ button.side-nav-item:focus {
 }
 
 .side-nav .sidebar-toggle-button,
-.side-nav .theme-toggle-button {
+.side-nav .sidebar-footer {
   display: none;
 }
 
@@ -194,7 +194,9 @@ button.side-nav-item:focus {
     display: none;
   }
 
-  .app-shell .side-nav .theme-toggle-button {
+  .app-shell .side-nav .sidebar-footer {
     display: inherit;
+    border-top: 1px solid var(--border-color-secondary);
+    padding: 16px;
   }
 }
