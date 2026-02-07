@@ -22,10 +22,33 @@
   transition: all 0.2s ease;
 }
 
-.pill.inactive {
+.pill:hover {
+  transform: translateY(-2px);
+}
+
+.pill:hover:not(.pill-active) {
+  color: var(--pill-colour);
+  border-color: 1px solid var(--pill-colour);
+  background: var(--pill-subtle-hover-color);
+}
+
+.pill.pill-disabled {
   opacity: 0.5;
   filter: grayscale(1);
   border: 1px solid #333;
+}
+.pill.pill-disabled:hover {
+  transform: none;
+  color: var(--color-text-muted);
+  border-color: 1px solid transparent;
+  background: var(--background-button-secondary);
+  cursor: not-allowed;
+}
+
+.pill.pill-active {
+  color: var(--pill-colour);
+  border-color: 1px solid var(--pill-colour);
+  background: var(--pill-subtle-hover-color);
 }
 
 .pill--text {
@@ -34,20 +57,4 @@
   border: 1px solid transparent;
   background: var(--background-button-secondary);
   border-radius: 12px;
-}
-
-.pill--text:hover {
-  transform: translateY(-2px);
-}
-
-.pill--text:hover:not(.pill-active) {
-  color: var(--pill-colour);
-  border-color: 1px solid var(--pill-colour);
-  background: var(--pill-subtle-hover-color);
-}
-
-.pill--text.pill-active {
-  color: var(--pill-colour);
-  border-color: 1px solid var(--pill-colour);
-  background: var(--pill-subtle-hover-color);
 }

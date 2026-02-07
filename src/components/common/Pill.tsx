@@ -8,6 +8,7 @@ interface PillProps {
   colour?: string;
   isDropdown?: boolean;
   isActive?: boolean;
+  isDisabled?: boolean;
   minWidth?: number;
   onClick?: (evt: React.MouseEvent<HTMLDivElement>) => void;
   children: React.ReactNode;
@@ -29,6 +30,7 @@ const Pill = ({
   colour,
   isDropdown,
   isActive,
+  isDisabled,
   minWidth,
   onClick,
   children,
@@ -43,7 +45,7 @@ const Pill = ({
 
   return (
     <div
-      className={`pill pill--text ${isActive ? "pill-active" : ""}`}
+      className={`pill pill--text ${isActive ? "pill-active" : ""} ${isDisabled ? "pill-disabled" : ""}`}
       style={
         {
           "--pill-colour": colour ? colour : "var(--color-link)",
@@ -52,8 +54,9 @@ const Pill = ({
         } as React.CSSProperties
       }
       onClick={(evt) => {
-        setIsOpen((prev) => !prev);
+        if (isDisabled) return;
 
+        setIsOpen((prev) => !prev);
         if (onClick) onClick(evt);
       }}
     >

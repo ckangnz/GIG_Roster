@@ -30,9 +30,8 @@ const MainLayout = ({
   setSidebarOpen,
 }: MainLayoutProps) => {
   const [isDesktopSidebarExpanded, setIsDesktopSidebarExpanded] =
-    useState(true); // New state for desktop
+    useState(true);
 
-  // Handle sidebar state based on screen size
   useEffect(() => {
     const handleResize = () => {
       // Remove automatic re-expansion on desktop resize, allow user control

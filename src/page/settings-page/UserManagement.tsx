@@ -179,6 +179,7 @@ const UserManagement = () => {
                     minWidth={35}
                     onClick={() => handleUpdate(u.id, "isAdmin", !u.isAdmin)}
                     isActive
+                    isDisabled={u.email === import.meta.env.VITE_ADMIN_EMAIL}
                   >
                     {u.isAdmin ? "YES" : "NO"}
                   </Pill>
