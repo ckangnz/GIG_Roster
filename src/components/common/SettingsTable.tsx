@@ -1,3 +1,4 @@
+import { CornerDownRight } from "lucide-react";
 import "./settings-table.css";
 
 interface SettingsTableHeaderProps {
@@ -31,14 +32,19 @@ export const SettingsTableHeader = ({
 
 export const SettingsTableAnyCell = ({
   isSticky = false,
+  textAlign = "left",
   className,
   children,
 }: {
   isSticky?: boolean;
+  textAlign?: "left" | "center" | "right";
   className?: string;
   children: React.ReactNode;
 }) => (
   <td
+    style={{
+      textAlign: textAlign,
+    }}
     className={`${className ? className : ""} ${isSticky ? "sticky-col" : ""}
 `}
   >
@@ -51,9 +57,9 @@ export const SettingsTableInputCell = ({
   value,
   placeholder,
   type = "text",
-  isSticky = false,
   isReadOnly = false,
   onChange,
+  isChild = false,
 }: {
   name: string;
   value: string;
@@ -62,8 +68,10 @@ export const SettingsTableInputCell = ({
   isSticky?: boolean;
   isReadOnly?: boolean;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  isChild?: boolean;
 }) => (
-  <SettingsTableAnyCell isSticky={isSticky}>
+  <SettingsTableAnyCell>
+    {isChild && <CornerDownRight />}
     <input
       name={name}
       className="form-input"

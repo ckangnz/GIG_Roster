@@ -170,7 +170,7 @@ const TeamManagement = () => {
         ]}
       >
         {teams.map((team, teamIndex) => (
-          <tr key={`${team.name}-${teamIndex}`}>
+          <tr key={`${team.emoji}-${teamIndex}`}>
             <SettingsTableAnyCell>
               {" "}
               {/* Added move buttons */}

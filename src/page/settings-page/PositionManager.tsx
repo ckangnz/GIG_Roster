@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { CornerDownRight } from "lucide-react";
 
 import SettingsTable, {
   SettingsTableAnyCell,
@@ -8,18 +9,23 @@ import SettingsTable, {
   SettingsTableInputCell,
 } from "../../components/common/SettingsTable";
 import { db } from "../../firebase";
-import { Position } from "../../model/model";
+import { Position as GlobalPosition } from "../../model/model";
 
-const defaultPosition = {
+interface Position extends GlobalPosition {
+  parentId?: string;
+}
+
+const defaultPosition: Position = {
   name: "",
   emoji: "",
   colour: "#f0f0f0",
+  parentId: undefined,
 };
 
 const PositionManagement = () => {
   const [positions, setPositions] = useState<Position[]>([]);
   const [newPos, setNewPos] = useState<Position>(defaultPosition);
-  const [status, setStatus] = useState("idle"); // Changed from isSaving to status
+  const [status, setStatus] = useState("idle");
 
   useEffect(() => {
     const fetchPositions = async () => {
@@ -28,8 +34,14 @@ const PositionManagement = () => {
         const snap = await getDoc(docRef);
         if (snap.exists()) {
           const data = snap.data();
-
-          setPositions(Array.isArray(data.list) ? data.list : []);
+          setPositions(
+            Array.isArray(data.list)
+              ? data.list.map((p: GlobalPosition) => ({
+                  ...p,
+                  parentId: (p as Position).parentId || undefined,
+                }))
+              : [],
+          );
         }
       } catch (error) {
         console.error("Error fetching positions:", error);
@@ -71,27 +83,65 @@ const PositionManagement = () => {
   const deletePosition = (index: number) => {
     if (
       window.confirm(
-        "Delete this position? This will remove it from the global list.",
+        "Delete this position? This will remove it from the global list, and any associated child positions.",
       )
     ) {
-      setPositions(positions.filter((_, i) => i !== index));
+      const positionToDelete = positions[index];
+      let updatedPositions = positions.filter((_, i) => i !== index);
+
+      if (!positionToDelete.parentId) {
+        updatedPositions = updatedPositions.filter(
+          (p) => p.parentId !== positionToDelete.name,
+        );
+      }
+      setPositions(updatedPositions);
     }
   };
 
   const saveToFirebase = async () => {
-    setStatus("saving"); // Set status to saving
+    setStatus("saving");
     try {
       const docRef = doc(db, "metadata", "positions");
-      await updateDoc(docRef, { list: positions });
-      setStatus("success"); // Set status to success
-      setTimeout(() => setStatus("idle"), 2000); // Reset to idle after 2 seconds
+      const positionsToSave = positions.map((p) => ({
+        ...p,
+        parentId: p.parentId === undefined ? null : p.parentId,
+      }));
+      await updateDoc(docRef, { list: positionsToSave });
+      setStatus("success");
+      setTimeout(() => setStatus("idle"), 2000);
     } catch (e) {
       console.error("Save Error:", e);
       alert(
         "Check Firestore Rules: You may lack permission to write to 'metadata'.",
       );
-      setStatus("idle"); // Reset to idle on error
+      setStatus("idle");
     }
+  };
+
+  const addChildPosition = (parentName: string) => {
+    setPositions((prevPositions) => {
+      const newChild = { ...defaultPosition, parentId: parentName };
+      const parentIndex = prevPositions.findIndex((p) => p.name === parentName);
+
+      if (parentIndex === -1) {
+        return [...prevPositions, newChild];
+      }
+
+      let insertIndex = parentIndex;
+      while (
+        insertIndex + 1 < prevPositions.length &&
+        prevPositions[insertIndex + 1].parentId === parentName
+      ) {
+        insertIndex++;
+      }
+
+      const updated = [
+        ...prevPositions.slice(0, insertIndex + 1),
+        newChild,
+        ...prevPositions.slice(insertIndex + 1),
+      ];
+      return updated;
+    });
   };
 
   return (
@@ -102,34 +152,39 @@ const PositionManagement = () => {
           { text: "Emoji", width: 30 },
           { text: "Name", minWidth: 80 },
           { text: "Colour", minWidth: 100 },
-          { text: "" },
+          { text: "Add Child", width: 80, textAlign: "center" },
+          { text: "Delete", width: 60, textAlign: "center" },
         ]}
       >
         {positions.map((p, i) => (
-          <tr key={`${p.name}-${i}`}>
-            <SettingsTableAnyCell>
-              <div
-                style={{
-                  display: "flex",
-                  gap: "4px",
-                  justifyContent: "center",
-                }}
-              >
-                <button
-                  className="icon-button icon-button--small icon-button--secondary"
-                  onClick={() => move(i, "up")}
-                  disabled={i === 0}
+          <tr key={`${p.emoji}-${i}`}>
+            <SettingsTableAnyCell textAlign="center">
+              {p.parentId ? (
+                <CornerDownRight />
+              ) : (
+                <div
+                  style={{
+                    display: "flex",
+                    gap: "4px",
+                    justifyContent: "center",
+                  }}
                 >
-                  ▲
-                </button>
-                <button
-                  className="icon-button icon-button--small icon-button--secondary"
-                  onClick={() => move(i, "down")}
-                  disabled={i === positions.length - 1}
-                >
-                  ▼
-                </button>
-              </div>
+                  <button
+                    className="icon-button icon-button--small icon-button--secondary"
+                    onClick={() => move(i, "up")}
+                    disabled={i === 0}
+                  >
+                    ▲
+                  </button>
+                  <button
+                    className="icon-button icon-button--small icon-button--secondary"
+                    onClick={() => move(i, "down")}
+                    disabled={i === positions.length - 1}
+                  >
+                    ▼
+                  </button>
+                </div>
+              )}
             </SettingsTableAnyCell>
             <SettingsTableInputCell
               name={`emoji-${i}`}
@@ -146,7 +201,18 @@ const PositionManagement = () => {
               value={p.colour}
               onChange={(e) => handleUpdate(i, "colour", e.target.value)}
             />
-            <SettingsTableAnyCell>
+            <SettingsTableAnyCell textAlign="center">
+              {!p.parentId && (
+                <button
+                  className="icon-button icon-button--add-child"
+                  onClick={() => addChildPosition(p.name)}
+                  title="Add Child Position"
+                >
+                  +
+                </button>
+              )}
+            </SettingsTableAnyCell>
+            <SettingsTableAnyCell textAlign="center">
               <button
                 className="icon-button icon-button--delete"
                 onClick={() => deletePosition(i)}
@@ -175,7 +241,8 @@ const PositionManagement = () => {
             value={newPos.colour}
             onChange={(e) => setNewPos({ ...newPos, colour: e.target.value })}
           />
-          <SettingsTableAnyCell>
+          <td className=""></td>
+          <SettingsTableAnyCell textAlign="center">
             <button
               onClick={addPosition}
               className="icon-button icon-button--add"
