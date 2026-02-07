@@ -8,6 +8,7 @@ import {
   writeBatch,
 } from "firebase/firestore";
 
+import Pill, { PillGroup } from "../../components/common/Pill";
 import { db } from "../../firebase";
 import { AppUser, Gender, Position } from "../../model/model";
 import "./user-management.css";
@@ -19,14 +20,12 @@ const UserManagement = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      // Fetch Users
       const userSnap = await getDocs(collection(db, "users"));
       const userList = userSnap.docs.map(
         (d) => ({ ...d.data(), id: d.id }) as AppUser & { id: string },
       );
-      setUsers(userList);
+      setUsers(userList.sort((a, b) => a.name!.localeCompare(b.name!)));
 
-      // Fetch Global Positions for the pills
       const posSnap = await getDoc(doc(db, "metadata", "positions"));
       if (posSnap.exists()) {
         setAvailablePositions(posSnap.data().list || []);
@@ -48,7 +47,11 @@ const UserManagement = () => {
     );
   };
 
-  const handleUpdate = (id: string, field: keyof AppUser, value: AppUser[keyof AppUser]) => {
+  const handleUpdate = (
+    id: string,
+    field: keyof AppUser,
+    value: AppUser[keyof AppUser],
+  ) => {
     setUsers((prev) =>
       prev.map((u) => (u.id === id ? { ...u, [field]: value } : u)),
     );
@@ -117,55 +120,68 @@ const UserManagement = () => {
                     <option value="Female">Female</option>
                   </select>
                 </td>
-                <td className="w-user-positions pos-pills-cell">
-                  <div className="pos-pills-wrapper">
+                <td className="w-user-positions">
+                  <PillGroup nowrap>
                     {availablePositions.map((pos) => {
                       const isActive = u.positions?.includes(pos.name);
                       return (
-                        <button
+                        <Pill
                           key={pos.name}
-                          className={`pill pill--emoji ${isActive ? "is-active" : ""}`}
+                          colour={pos.colour}
+                          isActive={isActive}
                           onClick={() => togglePosition(u.id, pos.name)}
-                          style={{
-                            '--pos-subtle-hover-color': `${pos.colour}15`, // Subtle hover color
-                            borderColor: isActive ? pos.colour : "transparent",
-                            backgroundColor: isActive ? `${pos.colour}20` : "",
-                          } as React.CSSProperties}
-                          title={pos.name}
                         >
                           {pos.emoji}
-                        </button>
+                        </Pill>
                       );
                     })}
-                  </div>
+                  </PillGroup>
                 </td>
-                <td className="w-user-status-cols center">
-                  <div
-                    className={`badge ${u.isActive ? "badge--yes" : "badge--no"}`}
+                <td className="w-user-status-cols">
+                  <Pill
+                    colour={
+                      u.isActive
+                        ? "var(--color-success-dark)"
+                        : "var(--color-warning-dark)"
+                    }
+                    minWidth={35}
                     onClick={() => handleUpdate(u.id, "isActive", !u.isActive)}
+                    isActive
                   >
                     {u.isActive ? "YES" : "NO"}
-                  </div>
+                  </Pill>
                 </td>
 
-                <td className="w-user-status-cols center">
-                  <div
-                    className={`badge ${u.isApproved ? "badge--yes" : "badge--no"}`}
+                <td className="w-user-status-cols">
+                  <Pill
+                    colour={
+                      u.isApproved
+                        ? "var(--color-success-dark)"
+                        : "var(--color-warning-dark)"
+                    }
+                    minWidth={35}
                     onClick={() =>
                       handleUpdate(u.id, "isApproved", !u.isApproved)
                     }
+                    isActive
                   >
                     {u.isApproved ? "YES" : "NO"}
-                  </div>
+                  </Pill>
                 </td>
 
-                <td className="w-user-status-cols center">
-                  <div
-                    className={`badge ${u.isAdmin ? "badge--yes" : "badge--no"}`}
+                <td className="w-user-status-cols">
+                  <Pill
+                    colour={
+                      u.isAdmin
+                        ? "var(--color-success-dark)"
+                        : "var(--color-warning-dark)"
+                    }
+                    minWidth={35}
                     onClick={() => handleUpdate(u.id, "isAdmin", !u.isAdmin)}
+                    isActive
                   >
                     {u.isAdmin ? "YES" : "NO"}
-                  </div>
+                  </Pill>
                 </td>
               </tr>
             ))}

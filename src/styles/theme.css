@@ -16,6 +16,8 @@
   --color-delete-dark: #331a1a;
   --color-controls: #ccc;
 
+  --color-male: #2e5bff;
+  --color-female: #f06292;
 
   --background-body: #242424;
   --background-app-shell: #121212;
@@ -23,7 +25,7 @@
   --background-button-primary: #646cff;
   --background-primary-subtle: rgba(100, 108, 255, 0.15);
   --background-button-primary-hover: #7c83ff;
-  --background-button-secondary: #1a1a1a;
+  --background-button-secondary: #2a2a2a;
   --background-button-delete-hover: #ff5555;
   --background-input: #262626;
   --background-table-header: #222;
@@ -31,13 +33,8 @@
   --background-order-controls: #2a2a2a;
   --background-new-row: rgba(100, 108, 255, 0.05);
   --background-pill-active: #1e1e2e;
-  --background-pill-emoji-active: #333;
-  --background-pill-emoji-hover: #444;
   --background-toggle-on-transparent: rgba(46, 125, 50, 0.15);
   --background-toggle-off-transparent: rgba(183, 28, 28, 0.15);
-  --background-badge-yes-transparent: rgba(46, 213, 115, 0.15);
-  --background-badge-no-transparent: rgba(255, 71, 87, 0.15);
-
 
   --border-color-primary: #646cff;
   --border-color-secondary: #333;
@@ -86,7 +83,6 @@
   --background-badge-yes-transparent: rgba(76, 175, 80, 0.15);
   --background-badge-no-transparent: rgba(255, 71, 87, 0.15);
 
-
   --border-color-primary: #4f46e5; /* Primary border color for light mode */
   --border-color-secondary: #ccc;
   --border-color-input: #ddd;
@@ -95,3 +91,4 @@
   --border-color-success: rgba(76, 175, 80, 0.3);
   --border-color-warning: rgba(255, 152, 0, 0.3);
 }
+

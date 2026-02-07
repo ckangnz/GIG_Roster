@@ -1,4 +1,6 @@
-@import "./theme.css";
+@import "./animation.css";
+@import "./styles/theme.css";
+@import "./styles/form.css";
 @import "./styles/table.css";
 
 :root {

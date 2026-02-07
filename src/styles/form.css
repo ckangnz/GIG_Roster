@@ -1,0 +1,149 @@
+.form-group {
+  margin-bottom: 30px;
+  text-align: left;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 12px;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--color-text-dim);
+  font-weight: 700;
+}
+.save-button {
+  width: 100%;
+  padding: 16px;
+  border-radius: 12px;
+  background: var(--background-button-primary);
+  color: white;
+  font-weight: 700;
+}
+
+.save-button:hover:not(:disabled) {
+  background: var(--background-button-primary-hover);
+}
+
+.save-button.success {
+  background: var(--color-success-dark);
+}
+
+/* Modifier for save-button for bulk actions */
+.save-button.is-bulk {
+  width: auto;
+  padding: 14px 28px;
+  border-radius: 10px;
+  border: none;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5); /* This shadow might need theme variables as well */
+  transition: all 0.2s;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.save-button.is-bulk:hover {
+  background: var(--background-button-primary-hover);
+  transform: translateY(-2px);
+}
+
+.save-button.is-bulk:disabled {
+  background: var(--border-color-input);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.icon-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+/* Modifier for add icon button */
+.icon-button--add {
+  background: var(--background-button-primary);
+  color: white;
+}
+.icon-button--add:hover {
+  background: var(--background-button-primary-hover);
+  transform: scale(1.05);
+}
+
+/* Modifier for delete icon button */
+.icon-button--delete {
+  background: var(--color-delete-dark);
+  color: var(--color-delete);
+  border: 1px solid var(--border-color-delete);
+}
+.icon-button--delete:hover {
+  background: var(--background-button-delete-hover);
+  color: white;
+}
+
+/* Generic form input style */
+.form-input {
+  background: var(--background-input);
+  border: 1px solid var(--border-color-input);
+  color: var(--color-text-primary);
+  padding: 8px 12px;
+  box-sizing: border-box;
+  display: block;
+  border-radius: 6px;
+  width: 100%;
+  outline: none;
+  font-size: 0.9rem;
+}
+
+.form-input:focus {
+  border-color: var(--border-color-primary);
+}
+
+/* Generic form select style */
+.form-select {
+  background: var(--background-input);
+  border: 1px solid var(--border-color-input);
+  color: var(--color-text-primary);
+  padding: 8px 12px;
+  box-sizing: border-box;
+  display: block;
+  border-radius: 6px;
+  width: 100%;
+  outline: none;
+  font-size: 0.9rem;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url('data:image/svg+xml;utf8,<svg fill="var(--color-text-primary)" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 20px;
+}
+
+.form-select:focus {
+  border-color: var(--border-color-primary);
+}
+
+/* Readonly input style */
+.form-input--readonly {
+  background: transparent;
+  border: none;
+  color: var(--color-text-faded);
+  font-size: 0.85rem;
+  width: 100%;
+  outline: none;
+  cursor: default;
+}
+
+/* Field hint text */
+.form-field-hint {
+  font-size: 0.75rem;
+  color: var(--color-text-faded);
+  line-height: 1.4;
+  margin-top: 8px;
+}

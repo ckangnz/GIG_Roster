@@ -1,144 +1,28 @@
 .guest-container {
-  max-width: 400px;
-  margin: 40px auto;
+  max-width: 600px;
+  margin: auto;
   padding: 20px;
   text-align: left;
   display: flex;
   flex-direction: column;
+  justify-content: center;
 }
 
 .guest-header {
+  position: relative;
   text-align: center;
-  margin-bottom: 30px;
 }
 
-.status-label {
+.guest-theme-toggle-container {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+.pending-label {
   color: orange;
   font-size: 0.85rem;
   font-weight: 800;
   letter-spacing: 1px;
   margin-top: 8px;
-}
-
-.form-group {
-  margin-bottom: 24px;
-  display: flex;
-  flex-direction: column;
-}
-
-.form-group label {
-  font-size: 0.75rem;
-  font-weight: 700;
-  opacity: 0.6;
-  text-transform: uppercase;
-  margin-bottom: 8px;
-}
-
-.text-input {
-  width: 100%;
-  padding: 14px;
-  background: #1a1a1a;
-  color: white;
-  border: 1px solid #333;
-  border-radius: 8px;
-  box-sizing: border-box;
-  font-size: 16px;
-}
-
-.gender-toggle-group,
-.pill-group {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.pill-button {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
-  font-size: 14px;
-  border-radius: 25px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  color: white;
-  font-weight: 500;
-  border: 1px solid #444;
-  background-color: transparent;
-}
-
-/* Default Active State (The Fallback) */
-.pill-button.active {
-  background-color: #646cff;
-  border-color: #646cff;
-  filter: none; /* Reset grayscale */
-  opacity: 1;
-}
-
-/* Specific Gender Colors - No !important needed now */
-.pill-button.male.active {
-  background-color: #2e5bff;
-  border-color: #2e5bff;
-}
-
-.pill-button.female.active {
-  background-color: #f06292;
-  border-color: #f06292;
-}
-
-.pill-button.inactive {
-  opacity: 0.5;
-  filter: grayscale(1);
-  border: 1px solid #333;
-}
-
-.emoji-span {
-  font-size: 1.2rem;
-}
-
-.action-container {
-  margin-top: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.save-button {
-  width: 100%;
-  padding: 16px;
-  border-radius: 8px;
-  border: none;
-  font-weight: 700;
-  font-size: 16px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.save-button:disabled {
-  background-color: #333;
-  color: #666;
-  cursor: not-allowed;
-}
-
-.save-button.idle {
-  background-color: #646cff;
-  color: white;
-}
-.save-button.saving {
-  background-color: #444;
-  color: white;
-}
-.save-button.success {
-  background-color: #2ecc71;
-  color: white;
-}
-
-.logout-link {
-  background: none;
-  border: none;
-  color: #888;
-  padding: 10px;
-  cursor: pointer;
-  font-size: 14px;
-  text-decoration: underline;
 }

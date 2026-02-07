@@ -1,4 +1,12 @@
-/* Use shared-settings.css classes + these: */
+.profile-card {
+  background: var(--background-card);
+  padding: 24px;
+  border-radius: 16px;
+  border: 1px solid var(--border-color-secondary);
+  width: 100%;
+  margin: auto;
+  box-sizing: border-box;
+}
 
 .profile-readonly {
   text-align: left;
@@ -32,14 +40,10 @@
   font-size: 0.9rem;
   cursor: pointer;
 }
+
 .logout-btn:hover {
   background: rgba(255, 70, 70, 0.1); /* Subtle red background on hover */
   color: var(--color-error); /* Keep same color or slightly darker */
   border-color: transparent; /* Explicitly keep border transparent */
 }
 
-/* Hover effect for position pill buttons */
-.pill-group .pill--text:hover:not(.is-active) {
-  background-color: var(--pos-subtle-hover-color);
-  border-color: var(--pos-colour); /* Optionally change border on hover */
-}

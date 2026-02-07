@@ -4,15 +4,15 @@
 }
 
 .app-table th.w-user-name {
-  min-width: 70px; /* For 3 Korean characters */
+  min-width: 70px;
   width: auto;
 }
 .app-table th.w-user-email {
-  min-width: 170px; /* Wider for email */
+  min-width: 170px;
   width: auto;
 }
 .app-table th.w-user-gender {
-  min-width: 80px; /* For Male/Female */
+  min-width: 90px;
   width: auto;
 }
 
@@ -24,38 +24,4 @@
 .app-table th.w-user-status-cols {
   width: 95px;
   text-align: center;
-}
-
-.pos-pills-cell {
-  padding: 4px 12px !important;
-}
-
-.pos-pills-wrapper {
-  display: inline-flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  gap: 6px;
-  overflow-x: auto;
-  padding: 8px 0;
-  max-width: 100%;
-  scrollbar-width: none;
-}
-
-.pos-pills-wrapper::-webkit-scrollbar {
-  display: none;
-}
-
-.center {
-  text-align: center;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(5px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }

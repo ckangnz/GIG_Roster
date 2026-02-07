@@ -4,7 +4,7 @@ import UserManagement from "./UserManagement";
 import { SettingsSection } from "../../constants/navigation";
 import { AppUser } from "../../model/model";
 
-import "./shared-settings.css";
+import "./settings-page.css";
 
 interface SettingsPageProps {
   userData: AppUser;

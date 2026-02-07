@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 
+import Pill, { PillGroup } from "../../components/common/Pill";
 import { db, auth } from "../../firebase";
 import { AppUser, Position } from "../../model/model";
 
@@ -59,7 +60,7 @@ const ProfileSettings = ({ userData, uid }: ProfileSettingsProps) => {
   };
 
   return (
-    <section className="settings-card">
+    <section className="profile-card">
       <div className="profile-readonly">
         <p>
           <strong>Name:</strong> {userData.name}
@@ -71,59 +72,56 @@ const ProfileSettings = ({ userData, uid }: ProfileSettingsProps) => {
 
       <div className="form-group">
         <label>Gender</label>
-        <div className="gender-toggle-group">
-          {["Male", "Female"].map((g) => (
-            <button
-              key={g}
-              onClick={() => setGender(g)}
-              className={`pill pill--text ${g.toLowerCase()} ${gender === g ? "is-active" : ""}`}
+        <PillGroup>
+          {[
+            { value: "Male", colour: "var(--color-male)" },
+            { value: "Female", colour: "var(--color-female)" },
+          ].map((g: { value: string; colour: string }) => (
+            <Pill
+              key={g.value}
+              colour={g.colour}
+              onClick={() => setGender(g.value)}
+              isActive={gender === g.value}
             >
-              {g}
-            </button>
+              {g.value}
+            </Pill>
           ))}
-        </div>
+        </PillGroup>
       </div>
 
       <div className="form-group">
         <label>My Positions</label>
-        <div className="pill-group">
+        <PillGroup>
           {availablePositions.map((pos) => {
             const isSelected = selectedPositions.includes(pos.name);
             return (
-              <button
+              <Pill
                 key={pos.name}
                 onClick={() => togglePosition(pos.name)}
-                className={`pill pill--text ${isSelected ? "is-active" : ""}`}
-                style={
-                  {
-                    "--pos-colour": pos.colour, // Make base colour available as CSS variable
-                    "--pos-subtle-hover-color": `${pos.colour}15`, // Subtle hover color
-                    ...(isSelected && pos.colour
-                      ? { backgroundColor: pos.colour, borderColor: pos.colour } // Existing active styles
-                      : {}),
-                  } as React.CSSProperties
-                }
+                isActive={isSelected}
+                colour={pos.colour}
               >
                 <span>{pos.emoji}</span> {pos.name}
-              </button>
+              </Pill>
             );
           })}
-        </div>
+        </PillGroup>
       </div>
 
       <div className="form-group">
         <label>Availability Status</label>
-        <div className="status-toggle-container">
-          <button
-            className={`toggle-switch ${isActive ? "on" : "off"}`}
-            onClick={() => setIsActive(!isActive)}
-          >
-            {isActive ? "ACTIVE & AVAILABLE" : "INACTIVE / AWAY"}
-          </button>
-          <p className="form-field-hint">
-            Turn off if you want to be hidden from the roster.
-          </p>
-        </div>
+        <Pill
+          colour={
+            isActive ? "var(--color-success-dark)" : "var(--color-warning-dark)"
+          }
+          onClick={() => setIsActive(!isActive)}
+          isActive
+        >
+          {isActive ? "ACTIVE & AVAILABLE" : "INACTIVE / AWAY"}
+        </Pill>
+        <p className="form-field-hint">
+          Turn off if you want to be hidden from the roster.
+        </p>
       </div>
 
       <div className="action-container">
