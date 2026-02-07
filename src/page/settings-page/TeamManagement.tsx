@@ -15,13 +15,25 @@ interface Team {
   name: string;
   emoji: string;
   positions: string[]; // Array of position names
+  preferredDays: string[]; // Added Preferred Days
 }
 
 const defaultTeam: Team = {
   name: "",
   emoji: "",
   positions: [],
+  preferredDays: [], // Default to empty array
 };
+
+const WEEK_DAYS = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+];
 
 const TeamManagement = () => {
   const [teams, setTeams] = useState<Team[]>([]);
@@ -37,7 +49,15 @@ const TeamManagement = () => {
         const teamsSnap = await getDoc(teamsDocRef);
         if (teamsSnap.exists()) {
           const data = teamsSnap.data();
-          setTeams(Array.isArray(data.list) ? data.list : []);
+          // Ensure preferredDays is initialized if missing
+          setTeams(
+            Array.isArray(data.list)
+              ? data.list.map((team: Team) => ({
+                  ...team,
+                  preferredDays: team.preferredDays || [],
+                }))
+              : [],
+          );
         }
       } catch (error) {
         console.error("Error fetching teams:", error);
@@ -68,6 +88,18 @@ const TeamManagement = () => {
     setTeams(updated);
   };
 
+  const move = (index: number, direction: "up" | "down") => {
+    const updated = [...teams];
+    const target = direction === "up" ? index - 1 : index + 1;
+    if (target < 0 || target >= updated.length) return;
+
+    const temp = updated[index];
+    updated[index] = updated[target];
+    updated[target] = temp;
+
+    setTeams(updated);
+  };
+
   const togglePosition = (teamIndex: number, posName: string) => {
     const updatedTeams = teams.map((team, index) => {
       if (index !== teamIndex) return team;
@@ -77,6 +109,19 @@ const TeamManagement = () => {
         ? currentPositions.filter((p) => p !== posName)
         : [...currentPositions, posName];
       return { ...team, positions: newPositions };
+    });
+    setTeams(updatedTeams);
+  };
+
+  const toggleDay = (teamIndex: number, day: string) => {
+    const updatedTeams = teams.map((team, index) => {
+      if (index !== teamIndex) return team;
+
+      const currentDays = team.preferredDays || [];
+      const newDays = currentDays.includes(day)
+        ? currentDays.filter((d) => d !== day)
+        : [...currentDays, day];
+      return { ...team, preferredDays: newDays };
     });
     setTeams(updatedTeams);
   };
@@ -116,14 +161,42 @@ const TeamManagement = () => {
     <>
       <SettingsTable
         headers={[
+          { text: "Order", minWidth: 50, textAlign: "center" },
           { text: "Emoji", width: 30 },
           { text: "Name", minWidth: 100 },
-          { text: "Positions", minWidth: 200 },
+          { text: "Allowed Positions", minWidth: 200 }, // Renamed header
+          { text: "Preferred Days", minWidth: 250 }, // New header
           { text: "", width: 50 }, // For delete button
         ]}
       >
         {teams.map((team, teamIndex) => (
           <tr key={`${team.name}-${teamIndex}`}>
+            <SettingsTableAnyCell>
+              {" "}
+              {/* Added move buttons */}
+              <div
+                style={{
+                  display: "flex",
+                  gap: "4px",
+                  justifyContent: "center",
+                }}
+              >
+                <button
+                  className="icon-button icon-button--small icon-button--secondary"
+                  onClick={() => move(teamIndex, "up")}
+                  disabled={teamIndex === 0}
+                >
+                  ▲
+                </button>
+                <button
+                  className="icon-button icon-button--small icon-button--secondary"
+                  onClick={() => move(teamIndex, "down")}
+                  disabled={teamIndex === teams.length - 1}
+                >
+                  ▼
+                </button>
+              </div>
+            </SettingsTableAnyCell>
             <SettingsTableInputCell
               name={`team-emoji-${teamIndex}`}
               value={team.emoji}
@@ -152,6 +225,22 @@ const TeamManagement = () => {
               </PillGroup>
             </SettingsTableAnyCell>
             <SettingsTableAnyCell>
+              <PillGroup nowrap>
+                {WEEK_DAYS.map((day) => {
+                  const isActive = team.preferredDays?.includes(day);
+                  return (
+                    <Pill
+                      key={day}
+                      isActive={isActive}
+                      onClick={() => toggleDay(teamIndex, day)}
+                    >
+                      {day.substring(0, 3)}
+                    </Pill>
+                  );
+                })}
+              </PillGroup>
+            </SettingsTableAnyCell>
+            <SettingsTableAnyCell>
               <button
                 className="icon-button icon-button--delete"
                 onClick={() => deleteTeam(teamIndex)}
@@ -161,8 +250,8 @@ const TeamManagement = () => {
             </SettingsTableAnyCell>
           </tr>
         ))}
-        {/* Row for adding a new team */}
         <tr className="team-row-new">
+          <td className=""></td> {/* Empty cell for the order column */}
           <SettingsTableInputCell
             name={`new-team-emoji`}
             value={newTeam.emoji}
@@ -195,6 +284,32 @@ const TeamManagement = () => {
                     }
                   >
                     {pos.emoji}
+                  </Pill>
+                );
+              })}
+            </PillGroup>
+          </SettingsTableAnyCell>
+          <SettingsTableAnyCell>
+            {" "}
+            {/* New cell for Preferred Days in new team row */}
+            <PillGroup nowrap>
+              {WEEK_DAYS.map((day) => {
+                const isActive = newTeam.preferredDays?.includes(day);
+                return (
+                  <Pill
+                    key={`new-team-${day}`}
+                    isActive={isActive}
+                    onClick={() =>
+                      setNewTeam((prev) => {
+                        const currentDays = prev.preferredDays || [];
+                        const newDays = currentDays.includes(day)
+                          ? currentDays.filter((d) => d !== day)
+                          : [...currentDays, day];
+                        return { ...prev, preferredDays: newDays };
+                      })
+                    }
+                  >
+                    {day.substring(0, 3)}
                   </Pill>
                 );
               })}
