@@ -132,14 +132,17 @@ const PositionManagement = () => {
               </div>
             </SettingsTableAnyCell>
             <SettingsTableInputCell
+              name={`emoji-${i}`}
               value={p.emoji}
               onChange={(e) => handleUpdate(i, "emoji", e.target.value)}
             />
             <SettingsTableInputCell
+              name={`name-${i}`}
               value={p.name}
               onChange={(e) => handleUpdate(i, "name", e.target.value)}
             />
             <SettingsTableColourInputCell
+              name={`colour-${i}`}
               value={p.colour}
               onChange={(e) => handleUpdate(i, "colour", e.target.value)}
             />
@@ -156,16 +159,19 @@ const PositionManagement = () => {
         <tr className="pos-row-new">
           <td className=""></td>
           <SettingsTableInputCell
+            name={`new-emoji`}
             value={newPos.emoji}
             placeholder="😎"
             onChange={(e) => setNewPos({ ...newPos, emoji: e.target.value })}
           />
           <SettingsTableInputCell
+            name={`new-name`}
             value={newPos.name}
             placeholder="Position Name"
             onChange={(e) => setNewPos({ ...newPos, name: e.target.value })}
           />
           <SettingsTableColourInputCell
+            name={`new-colour`}
             value={newPos.colour}
             onChange={(e) => setNewPos({ ...newPos, colour: e.target.value })}
           />

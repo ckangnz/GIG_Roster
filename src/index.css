@@ -2,7 +2,6 @@
 @import "./styles/theme.css";
 @import "./styles/form.css";
 @import "./styles/button.css";
-@import "./styles/table.css";
 
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;

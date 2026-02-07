@@ -34,6 +34,14 @@
   border-color: var(--border-color-primary);
 }
 
+.form-input[type="color"] {
+  border: none;
+  width: 24px;
+  height: 24px;
+  background: none;
+  cursor: pointer;
+}
+
 .form-select {
   background: var(--background-input);
   border: 1px solid var(--border-color-input);
@@ -58,7 +66,7 @@
   border-color: var(--border-color-primary);
 }
 
-.form-input--readonly {
+.form-input[readonly] {
   background: transparent;
   border: none;
   color: var(--color-text-faded);
