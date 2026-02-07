@@ -2,14 +2,12 @@ import React, { useCallback, useState, useEffect } from "react";
 
 import MobileHeader from "./Mobile-Header";
 import { BOTTOM_NAV_ITEMS } from "../../constants/navigation";
-import { AppUser } from "../../model/model";
 import BottomNav from "../navigation/BottomNav";
 import SideNav from "../navigation/SideNav";
 
 import "./main-layout.css";
 
 interface MainLayoutProps {
-  user: AppUser;
   children: React.ReactNode;
   activeTab: string;
   onTabChange: (tab: string) => void;
@@ -20,7 +18,6 @@ interface MainLayoutProps {
 }
 
 const MainLayout = ({
-  user,
   children,
   activeTab,
   onTabChange,
@@ -33,15 +30,9 @@ const MainLayout = ({
     useState(true);
 
   useEffect(() => {
-    const handleResize = () => {
-      // Remove automatic re-expansion on desktop resize, allow user control
-      // if (window.innerWidth >= 768) {
-      //   setIsDesktopSidebarExpanded(true);
-      // }
-    };
-
+    const handleResize = () => {};
     window.addEventListener("resize", handleResize);
-    handleResize(); // Set initial state
+    handleResize();
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
@@ -85,7 +76,6 @@ const MainLayout = ({
 
       <div className={appShellClasses}>
         <SideNav
-          user={user}
           activeTab={activeTab}
           activeSideItem={activeSideItem}
           onSideItemChange={handleSideItemChange}

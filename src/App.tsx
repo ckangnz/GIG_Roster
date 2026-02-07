@@ -28,7 +28,6 @@ const App = () => {
 
   return (
     <MainLayout
-      user={userData!}
       activeTab={activeTab}
       isSidebarOpen={isSidebarOpen}
       setSidebarOpen={setSidebarOpen}

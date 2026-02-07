@@ -9,13 +9,13 @@ import {
   SettingsSection,
 } from "../../constants/navigation";
 import { db } from "../../firebase";
-import { AppUser, Position } from "../../model/model";
+import { useAuth } from "../../hooks/useAuth";
+import { Position } from "../../model/model";
 import ThemeToggleButton from "../common/ThemeToggleButton";
 
 import "./side-nav.css";
 
 interface SideNavProps {
-  user: AppUser;
   activeTab: string;
   activeSideItem: string | null;
   onSideItemChange: (item: string, isManual: boolean) => void;
@@ -25,7 +25,6 @@ interface SideNavProps {
 }
 
 const SideNav = ({
-  user,
   activeTab,
   activeSideItem,
   onSideItemChange,
@@ -33,6 +32,8 @@ const SideNav = ({
   setSidebarOpen,
   headerTitle,
 }: SideNavProps) => {
+  const { userData } = useAuth();
+
   const [positions, setPositions] = useState<Position[]>([]);
 
   useEffect(() => {
@@ -128,7 +129,8 @@ const SideNav = ({
         </nav>
       </div>
 
-      {user.isAdmin &&
+      {userData &&
+        userData.isAdmin &&
         activeTab === AppTab.SETTINGS &&
         SETTINGS_NAV_ITEMS.some((item) => item.adminOnly) && (
           <div className="admin-only-section-wrapper">
