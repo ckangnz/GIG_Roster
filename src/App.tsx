@@ -7,6 +7,7 @@ import { AppTab, SettingsSection } from "./constants/navigation";
 import GuestPage from "./page/guest-page/GuestPage";
 import Loader from "./page/loading-page/LoadingPage";
 import LoginPage from "./page/login-page/LoginPage";
+import RosterPage from "./page/roster-page/RosterPage";
 import SettingsPage from "./page/settings-page/SettingsPage";
 
 import "./App.css";
@@ -47,11 +48,11 @@ const App = () => {
       onSideItemChange={setActiveSideItem}
     >
       {activeTab === AppTab.ROSTER ? (
-        <div className="roster-view">
-          <div className="table-placeholder">
-            Grid for {activeSideItem || "All Positions"}...
-          </div>
-        </div>
+        <RosterPage
+          userData={userData!}
+          uid={user.uid}
+          activePosition={activeSideItem}
+        />
       ) : (
         <SettingsPage
           userData={userData!}
