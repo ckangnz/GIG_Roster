@@ -9,25 +9,15 @@
 }
 
 .settings-footer {
-  position: fixed;
-  bottom: 50px;
-  width: 100%;
   display: flex;
-  justify-content: center; /* Center button on mobile */
-  padding: 16px; /* Add padding for mobile */
+  justify-content: flex-end;
+  padding: 16px;
   pointer-events: none;
   box-sizing: border-box;
-  background: var(
-    --background-app-shell
-  ); /* Use a background that matches the app */
-  border-top: 1px solid var(--border-color-secondary); /* Add a border top */
-  z-index: 999; /* Ensure it's above other content but below mobile header */
 }
 
-.settings-footer .save-button.is-bulk {
-  /* Target the button inside the footer */
-  width: 100%; /* Full width button on mobile */
-  pointer-events: auto; /* Re-enable pointer events for the button */
+.settings-footer .save-button {
+  pointer-events: auto;
 }
 
 @media (min-width: 768px) {
@@ -36,14 +26,9 @@
   }
 
   .settings-footer {
-    justify-content: flex-end; /* Align right on desktop */
     background: transparent; /* Transparent background on desktop */
     border-top: none; /* No border on desktop */
     position: relative; /* Make it relative on desktop to appear in the flow */
     bottom: auto; /* Remove fixed positioning */
-  }
-
-  .settings-footer .save-button.is-bulk {
-    width: auto; /* Auto width on desktop */
   }
 }

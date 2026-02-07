@@ -63,13 +63,20 @@ const ProfileSettings = ({ userData, uid }: ProfileSettingsProps) => {
     <section className="profile-card">
       <div className="profile-readonly">
         <p>
-          <strong>Name:</strong> {userData.name}
-        </p>
-        <p>
           <strong>Email:</strong> {userData.email}
         </p>
       </div>
 
+      <div className="form-group">
+        <label>Name</label>
+        <PillGroup>
+          <input
+            type="text"
+            value={userData.name || ""}
+            className="form-input form-input-width-auto"
+          />
+        </PillGroup>
+      </div>
       <div className="form-group">
         <label>Gender</label>
         <PillGroup>

@@ -76,7 +76,7 @@ const UserManagement = () => {
   };
 
   return (
-    <div className="admin-section">
+    <>
       <div className="app-table-container">
         <table className="app-table">
           <thead>
@@ -198,7 +198,7 @@ const UserManagement = () => {
           {isSaving ? "Saving Changes..." : "Save All User Changes"}
         </button>
       </div>
-    </div>
+    </>
   );
 };
 

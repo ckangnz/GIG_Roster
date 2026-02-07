@@ -214,11 +214,11 @@ const PositionManagement = () => {
 
       <div className="settings-footer">
         <button
-          className="save-button is-bulk"
+          className="save-button"
           onClick={saveToFirebase}
           disabled={isSaving}
         >
-          {isSaving ? "Saving..." : "Save Position Config"}
+          {isSaving ? "Saving..." : "Save"}
         </button>
       </div>
     </>
