@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 
 import { useAuth } from "./hooks/useAuth";
 
@@ -16,6 +16,15 @@ const App = () => {
   const { user, userData, loading } = useAuth();
   const [activeTab, setActiveTab] = useState<string>(AppTab.ROSTER);
   const [activeSideItem, setActiveSideItem] = useState<string | null>(null);
+  const [activeTeamName, setActiveTeamName] = useState<string | null>(null);
+
+  const handleActiveSelectionChange = useCallback(
+    (teamName: string | null, positionName: string | null) => {
+      setActiveTeamName(teamName);
+      setActiveSideItem(positionName);
+    },
+    [],
+  );
 
   if (loading) return <Loader />;
   if (!user) return <LoginPage />;
@@ -32,20 +41,21 @@ const App = () => {
         if (tab !== activeTab) {
           setActiveTab(tab);
           if (tab === AppTab.SETTINGS) {
-            setActiveSideItem(SettingsSection.PROFILE);
+            handleActiveSelectionChange(null, SettingsSection.PROFILE);
           } else {
-            setActiveSideItem(null);
+            handleActiveSelectionChange(null, null);
           }
         }
       }}
       activeSideItem={activeSideItem}
-      onSideItemChange={setActiveSideItem}
+      activeTeamName={activeTeamName}
+      onActiveSelectionChange={handleActiveSelectionChange}
     >
       {activeTab === AppTab.ROSTER ? (
         <RosterPage
-          userData={userData!}
           uid={user.uid}
           activePosition={activeSideItem}
+          activeTeamName={activeTeamName}
         />
       ) : (
         <SettingsPage

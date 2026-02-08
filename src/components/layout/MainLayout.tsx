@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 
 import MobileHeader from "./Mobile-Header";
 import { BOTTOM_NAV_ITEMS } from "../../constants/navigation";
@@ -12,7 +12,11 @@ interface MainLayoutProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
   activeSideItem: string | null;
-  onSideItemChange: (item: string) => void;
+  activeTeamName: string | null;
+  onActiveSelectionChange: (
+    teamName: string | null,
+    positionName: string | null,
+  ) => void;
 }
 
 const MainLayout = ({
@@ -20,7 +24,8 @@ const MainLayout = ({
   activeTab,
   onTabChange,
   activeSideItem,
-  onSideItemChange,
+  activeTeamName,
+  onActiveSelectionChange,
 }: MainLayoutProps) => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [isDesktopSidebarExpanded, setIsDesktopSidebarExpanded] =
@@ -36,18 +41,14 @@ const MainLayout = ({
   const getHeaderTitle = () => {
     const currentTab = BOTTOM_NAV_ITEMS.find((item) => item.id === activeTab);
     const tabLabel = currentTab ? currentTab.label : "GIG ROSTER";
+
+    if (activeTeamName && activeSideItem) {
+      return `${activeTeamName} • ${activeSideItem}`;
+    } else if (activeTeamName) {
+      return activeTeamName;
+    }
     return activeSideItem ? `${tabLabel} • ${activeSideItem}` : tabLabel;
   };
-
-  const handleSideItemChange = useCallback(
-    (item: string, isManual: boolean) => {
-      onSideItemChange(item);
-      if (isManual && window.innerWidth < 768) {
-        setSidebarOpen(false);
-      }
-    },
-    [onSideItemChange, setSidebarOpen],
-  );
 
   const appShellClasses = [
     "app-shell",
@@ -74,10 +75,11 @@ const MainLayout = ({
         <SideNav
           activeTab={activeTab}
           activeSideItem={activeSideItem}
-          onSideItemChange={handleSideItemChange}
           isSidebarOpen={isDesktopSidebarExpanded}
           setSidebarOpen={setIsDesktopSidebarExpanded}
           headerTitle={getHeaderTitle()}
+          activeTeamName={activeTeamName}
+          onActiveSelectionChange={onActiveSelectionChange}
         />
 
         <main className="main-content">

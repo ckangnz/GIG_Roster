@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 
 import { doc, getDoc } from "firebase/firestore";
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
@@ -18,19 +18,24 @@ import "./side-nav.css";
 interface SideNavProps {
   activeTab: string;
   activeSideItem: string | null;
-  onSideItemChange: (item: string, isManual: boolean) => void;
   isSidebarOpen: boolean;
   setSidebarOpen: (open: boolean) => void;
   headerTitle: string;
+  activeTeamName: string | null;
+  onActiveSelectionChange: (
+    teamName: string | null,
+    positionName: string | null,
+  ) => void;
 }
 
 const SideNav = ({
   activeTab,
   activeSideItem,
-  onSideItemChange,
   isSidebarOpen,
   setSidebarOpen,
   headerTitle,
+  activeTeamName,
+  onActiveSelectionChange,
 }: SideNavProps) => {
   const { userData } = useAuth();
 
@@ -44,6 +49,16 @@ const SideNav = ({
         : [...prev, teamName],
     );
   };
+
+  const handleNavItemClick = useCallback(
+    (teamName: string, positionName: string) => {
+      onActiveSelectionChange(teamName, positionName);
+      if (window.innerWidth < 768) {
+        setSidebarOpen(false);
+      }
+    },
+    [onActiveSelectionChange, setSidebarOpen],
+  );
 
   useEffect(() => {
     const fetchData = async () => {
@@ -64,10 +79,14 @@ const SideNav = ({
           if (
             activeTab === AppTab.ROSTER &&
             !activeSideItem &&
+            !activeTeamName &&
             teamsList.length > 0 &&
             teamsList[0].positions.length > 0
           ) {
-            onSideItemChange(teamsList[0].positions[0].name, false);
+            onActiveSelectionChange(
+              teamsList[0].name,
+              teamsList[0].positions[0].name,
+            );
           }
         }
       } catch (error) {
@@ -78,9 +97,9 @@ const SideNav = ({
     if (activeTab === AppTab.ROSTER) {
       fetchData();
     } else if (activeTab === AppTab.SETTINGS && !activeSideItem) {
-      onSideItemChange(SettingsSection.PROFILE, false);
+      onActiveSelectionChange(null, SettingsSection.PROFILE);
     }
-  }, [activeTab, activeSideItem, onSideItemChange]);
+  }, [activeTab, activeSideItem, activeTeamName, onActiveSelectionChange]);
 
   return (
     <aside className="side-nav">
@@ -144,21 +163,24 @@ const SideNav = ({
                       team.positions.length > 0 && (
                         <div className="side-nav-sub-items">
                           {team.positions.map((pos) => {
-                            const isActivePosition =
-                              activeSideItem === pos.name;
+                            const isActive =
+                              activeSideItem === pos.name &&
+                              activeTeamName === team.name;
                             return (
                               <button
                                 key={pos.name}
-                                className={`side-nav-item side-nav-item-sub ${isActivePosition ? "side-nav-item-active" : ""}`}
-                                onClick={() => onSideItemChange(pos.name, true)}
+                                className={`side-nav-item side-nav-item-sub ${isActive ? "side-nav-item-active" : ""}`}
+                                onClick={() =>
+                                  handleNavItemClick(team.name, pos.name)
+                                }
                                 style={{
-                                  borderLeft: isActivePosition
+                                  borderLeft: isActive
                                     ? `4px solid ${pos.colour}`
                                     : "4px solid transparent",
-                                  backgroundColor: isActivePosition
+                                  backgroundColor: isActive
                                     ? `${pos.colour}15`
                                     : "transparent",
-                                  color: isActivePosition ? pos.colour : "",
+                                  color: isActive ? pos.colour : "",
                                 }}
                               >
                                 <span className="side-emoji">{pos.emoji}</span>{" "}
@@ -181,7 +203,7 @@ const SideNav = ({
                   <button
                     key={item.id}
                     className={`side-nav-item ${activeSideItem === item.id ? "side-nav-item-active" : ""}`}
-                    onClick={() => onSideItemChange(item.id, true)}
+                    onClick={() => onActiveSelectionChange(null, item.id)}
                   >
                     <span className="side-emoji">{item.icon}</span>{" "}
                     {isSidebarOpen && item.label}
@@ -205,7 +227,7 @@ const SideNav = ({
               <button
                 key={item.id}
                 className={`side-nav-item ${activeSideItem === item.id ? "side-nav-item-active" : ""}`}
-                onClick={() => onSideItemChange(item.id, true)}
+                onClick={() => onActiveSelectionChange(null, item.id)}
               >
                 <span className="side-emoji">{item.icon}</span>{" "}
                 {isSidebarOpen && item.label}
@@ -221,3 +243,4 @@ const SideNav = ({
 };
 
 export default SideNav;
+
