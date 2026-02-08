@@ -86,8 +86,8 @@ const UserManagement = () => {
           { text: "Email", minWidth: 170 },
           { text: "Gender", minWidth: 90 },
           { text: "Positions", minWidth: 150 },
-          { text: "Admin", minWidth: 95, textAlign: "center" },
-          { text: "Admin", minWidth: 95, textAlign: "center" },
+          { text: "Active", minWidth: 95, textAlign: "center" },
+          { text: "Approved", minWidth: 95, textAlign: "center" },
           { text: "Admin", minWidth: 95, textAlign: "center" },
         ]}
       >
