@@ -33,7 +33,7 @@
   flex-direction: column;
 }
 
-.admin-section-heading {
+.sidenav-menu-subheading {
   padding: 10px 24px 5px;
   color: var(--color-text-dim);
   font-size: 0.75rem;
@@ -43,7 +43,7 @@
   border-bottom: 1px solid var(--border-color-secondary);
   margin-top: 16px;
 }
-.admin-section-heading h4 {
+.sidenav-menu-subheading h4 {
   margin: 0;
   font-size: 0.75rem;
   color: var(--color-text-dim);
@@ -192,9 +192,7 @@ button.side-nav-item:focus {
     padding: 14px 0;
   }
 
-  .app-shell.sidebar-collapsed
-    .admin-only-section-wrapper
-    .admin-section-heading {
+  .app-shell.sidebar-collapsed .sidenav-menu-subheading {
     display: none;
   }
 

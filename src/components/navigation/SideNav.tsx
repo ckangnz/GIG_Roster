@@ -134,7 +134,7 @@ const SideNav = ({
         activeTab === AppTab.SETTINGS &&
         SETTINGS_NAV_ITEMS.some((item) => item.adminOnly) && (
           <div className="admin-only-section-wrapper">
-            <div className="admin-section-heading">
+            <div className="sidenav-menu-subheading">
               {isSidebarOpen && <h4>Admin Only</h4>}
             </div>
             {SETTINGS_NAV_ITEMS.filter((item) => item.adminOnly).map((item) => (
