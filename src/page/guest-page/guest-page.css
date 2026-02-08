@@ -5,7 +5,14 @@
   text-align: left;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  height: 100%; /* Occupy full height of parent */
+  overflow-y: auto; /* Enable vertical scrolling */
+}
+
+.guest-container .profile-card {
+  border-radius: 16px;
+  margin: 0;
+  height: auto;
 }
 
 .guest-header {
