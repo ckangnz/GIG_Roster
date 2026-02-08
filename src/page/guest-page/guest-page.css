@@ -5,8 +5,8 @@
   text-align: left;
   display: flex;
   flex-direction: column;
-  height: 100%; /* Occupy full height of parent */
-  overflow-y: auto; /* Enable vertical scrolling */
+  height: 100%;
+  overflow-y: auto;
 }
 
 .guest-container .profile-card {

@@ -4,8 +4,8 @@
   height: 100vh;
   height: 100svh;
   width: 100vw;
-  background-color: var(--background-app-shell); /* Use variable */
-  color: var(--color-text-primary); /* Use variable */
+  background-color: var(--background-app-shell);
+  color: var(--color-text-primary);
 }
 
 .main-content {
@@ -34,9 +34,9 @@
     position: relative;
     top: 0;
     height: 100% !important;
-    border-right: 1px solid var(--border-color-secondary); /* Use variable */
+    border-right: 1px solid var(--border-color-secondary);
     border-bottom: none;
-    transition: width 0.3s ease; /* For smooth collapse/expand */
+    transition: width 0.3s ease;
   }
 
   .app-shell.sidebar-expanded .side-nav {
@@ -53,6 +53,6 @@
   }
 
   .app-shell.sidebar-collapsed .bottom-nav-container {
-    left: 70px; /* When sidebar is collapsed */
+    left: 70px;
   }
 }

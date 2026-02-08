@@ -20,7 +20,6 @@ export interface AppUser {
 }
 
 export interface Team {
-  id: string;
   name: string;
   emoji: string;
   positions: Position[];

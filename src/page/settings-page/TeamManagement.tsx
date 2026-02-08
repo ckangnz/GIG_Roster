@@ -11,7 +11,6 @@ import { db } from "../../firebase";
 import { Position, Team, Weekday } from "../../model/model";
 
 const defaultTeam: Team = {
-  id: "",
   name: "",
   emoji: "",
   positions: [],
@@ -166,7 +165,6 @@ const TeamManagement = () => {
           <tr key={`${team.emoji}-${teamIndex}`}>
             <SettingsTableAnyCell>
               {" "}
-              {/* Added move buttons */}
               <div
                 style={{
                   display: "flex",

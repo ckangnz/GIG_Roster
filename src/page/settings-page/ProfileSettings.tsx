@@ -40,16 +40,14 @@ const ProfileSettings = ({ userData, uid }: ProfileSettingsProps) => {
           setAvailableTeams(
             Array.isArray(data.list)
               ? data.list.map((teamData: Team) => ({
-                  // Directly use Team type
                   ...teamData,
                   preferredDays: teamData.preferredDays || [],
-                  positions: teamData.positions || [], // Assume already Position[]
+                  positions: teamData.positions || [],
                 }))
               : [],
           );
         }
       } catch (e) {
-        // Changed 'error' to 'e' for consistency
         console.error("Error fetching teams:", e);
       }
     };

@@ -20,7 +20,7 @@
   text-align: left;
   margin-bottom: 24px;
   padding-bottom: 20px;
-  border-bottom: 1px solid var(--border-color-input); /* Changed to theme variable */
+  border-bottom: 1px solid var(--border-color-input);
 }
 
 .profile-readonly p {
@@ -51,8 +51,8 @@
 
 @media (hover: hover) {
   .logout-btn:hover {
-    background: rgba(255, 70, 70, 0.1); /* Subtle red background on hover */
-    color: var(--color-error); /* Keep same color or slightly darker */
-    border-color: transparent; /* Explicitly keep border transparent */
+    background: rgba(255, 70, 70, 0.1);
+    color: var(--color-error);
+    border-color: transparent;
   }
 }

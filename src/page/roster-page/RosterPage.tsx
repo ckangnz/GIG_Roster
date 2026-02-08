@@ -9,7 +9,7 @@ interface RosterPageProps {
 
 const RosterPage = ({ activePosition }: RosterPageProps) => {
   return (
-    <div className="roster-view">
+    <div className="roster-page">
       <RosterTable activePosition={activePosition} />
     </div>
   );

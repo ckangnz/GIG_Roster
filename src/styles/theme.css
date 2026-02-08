@@ -1,5 +1,4 @@
 :root {
-  /* Dark Theme (Default) */
   --color-text-primary: rgba(255, 255, 255, 0.87);
   --color-text-secondary: #efefef;
   --color-text-muted: #aaa;
@@ -7,7 +6,7 @@
   --color-text-faded: #666;
   --color-link: #646cff;
   --color-link-hover: #535bf2;
-  --color-error: #ff4646; /* Logout, general error */
+  --color-error: #ff4646;
   --color-success-dark: #2e7d32;
   --color-success-light: #81c784;
   --color-warning-light: #ef9a9a;
@@ -74,8 +73,8 @@
   --background-table-header: #e0e0e0;
   --background-mobile-header: rgba(255, 255, 255, 0.8);
   --background-order-controls: #e0e0e0;
-  --background-new-row: rgba(100, 108, 255, 0.05); /* keep same for now */
-  --background-pill-active: #c5d0ff; /* Adjusted to be lighter than primary button for distinction */
+  --background-new-row: rgba(100, 108, 255, 0.05);
+  --background-pill-active: #c5d0ff;
   --background-pill-emoji-active: #cfd8dc;
   --background-pill-emoji-hover: #eceff1;
   --background-toggle-on-transparent: rgba(76, 175, 80, 0.15);
@@ -83,7 +82,7 @@
   --background-badge-yes-transparent: rgba(76, 175, 80, 0.15);
   --background-badge-no-transparent: rgba(255, 71, 87, 0.15);
 
-  --border-color-primary: #4f46e5; /* Primary border color for light mode */
+  --border-color-primary: #4f46e5;
   --border-color-secondary: #ccc;
   --border-color-input: #ddd;
   --border-color-table: #eee;

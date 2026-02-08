@@ -21,7 +21,7 @@
   padding: 14px 28px;
   border-radius: 10px;
   border: none;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5); /* This shadow might need theme variables as well */
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
   transition: all 0.2s;
   pointer-events: auto;
   cursor: pointer;
@@ -33,9 +33,9 @@
   }
 
   .settings-footer {
-    background: transparent; /* Transparent background on desktop */
-    border-top: none; /* No border on desktop */
-    position: relative; /* Make it relative on desktop to appear in the flow */
-    bottom: auto; /* Remove fixed positioning */
+    background: transparent;
+    border-top: none;
+    position: relative;
+    bottom: auto;
   }
 }

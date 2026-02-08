@@ -1,10 +1,10 @@
 .mobile-header {
   display: flex;
   align-items: center;
-  justify-content: space-between; /* Space out children */
+  justify-content: space-between;
   padding: 16px;
   z-index: 1100;
-  /* Removed cursor: pointer and user-select: none from header itself */
+
   background: var(--background-mobile-header);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -18,8 +18,8 @@
   align-items: center;
   gap: 10px;
   padding: 6px 16px;
-  background: var(--background-body); /* Use variable */
-  border: 1px solid var(--border-color-input); /* Use variable */
+  background: var(--background-body);
+  border: 1px solid var(--border-color-input);
   border-radius: 20px;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -29,7 +29,7 @@
 }
 
 .mobile-header-pill-active {
-  border-color: var(--border-color-primary); /* Use variable */
+  border-color: var(--border-color-primary);
   background: var(--background-pill-active);
 }
 
@@ -38,11 +38,11 @@
   font-weight: 700;
   letter-spacing: 1px;
   font-size: 0.85rem;
-  color: var(--color-text-secondary); /* Use variable */
+  color: var(--color-text-secondary);
 }
 
 .mobile-header-chevron {
-  color: var(--color-link); /* Use variable */
+  color: var(--color-link);
   transition: transform 0.3s ease;
 }
 
