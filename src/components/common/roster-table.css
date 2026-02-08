@@ -1,0 +1,30 @@
+.roster-table-container {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.roster-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.roster-table th,
+.roster-table td {
+  border: 1px solid var(--border-color);
+  padding: 8px;
+  text-align: left;
+}
+
+.roster-table-header-cell {
+  background-color: var(--background-color-light);
+  font-weight: bold;
+  color: var(--text-color);
+}
+
+.roster-table-loading,
+.roster-table-error {
+  padding: 1rem;
+  text-align: center;
+  color: var(--text-color);
+}
