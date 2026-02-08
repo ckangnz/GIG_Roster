@@ -9,8 +9,8 @@
   font-weight: 400;
 
   color-scheme: light dark;
-  color: var(--color-text-primary); /* Use variable */
-  background-color: var(--background-body); /* Use variable */
+  color: var(--color-text-primary);
+  background-color: var(--background-body);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -29,11 +29,13 @@ body {
 
 a {
   font-weight: 500;
-  color: var(--color-link); /* Use variable */
+  color: var(--color-link);
   text-decoration: inherit;
 }
-a:hover {
-  color: var(--color-link-hover); /* Use variable */
+@media (hover: hover) {
+  a:hover {
+    color: var(--color-link-hover);
+  }
 }
 
 body {

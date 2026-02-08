@@ -9,11 +9,6 @@ button {
   transition: all 0.2s ease;
 }
 
-button:hover {
-  background: var(--background-button-primary-hover);
-  transform: translateY(-2px);
-}
-
 button:disabled {
   background: var(--border-color-input);
   cursor: not-allowed;
@@ -38,28 +33,15 @@ button.icon-button.icon-button--small {
   height: 28px;
 }
 
-button.icon-button:hover {
-  background: var(--background-button-primary-hover);
-  transform: scale(1.05);
-}
-
 button.icon-button--secondary {
   background: var(--background-button-secondary);
   color: var(--color-text-primary);
-}
-
-button.icon-button--secondary:hover {
-  background: var(--background-button-secondary-hover);
 }
 
 button.icon-button--delete {
   color: var(--color-delete);
   background: var(--color-delete-dark);
   border: 1px solid var(--border-color-delete);
-}
-button.icon-button--delete:hover {
-  color: white;
-  background: var(--background-button-delete-hover);
 }
 
 button.save-button {
@@ -70,12 +52,30 @@ button.save-button {
   color: white;
   font-weight: 700;
 }
-button.save-button:hover:not(:disabled) {
-  background: var(--background-button-primary-hover);
-}
 button.save-button.success {
   background: var(--color-success-dark);
 }
 button.save-button.success:disabled {
   opacity: 1;
+}
+
+@media (hover: hover) {
+  button:hover {
+    background: var(--background-button-primary-hover);
+    transform: translateY(-2px);
+  }
+  button.icon-button:hover {
+    background: var(--background-button-primary-hover);
+    transform: scale(1.05);
+  }
+  button.icon-button--secondary:hover {
+    background: var(--background-button-secondary-hover);
+  }
+  button.icon-button--delete:hover {
+    color: white;
+    background: var(--background-button-delete-hover);
+  }
+  button.save-button:hover:not(:disabled) {
+    background: var(--background-button-primary-hover);
+  }
 }

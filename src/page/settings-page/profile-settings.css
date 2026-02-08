@@ -48,9 +48,10 @@
   cursor: pointer;
 }
 
-.logout-btn:hover {
-  background: rgba(255, 70, 70, 0.1); /* Subtle red background on hover */
-  color: var(--color-error); /* Keep same color or slightly darker */
-  border-color: transparent; /* Explicitly keep border transparent */
+@media (hover: hover) {
+  .logout-btn:hover {
+    background: rgba(255, 70, 70, 0.1); /* Subtle red background on hover */
+    color: var(--color-error); /* Keep same color or slightly darker */
+    border-color: transparent; /* Explicitly keep border transparent */
+  }
 }
-

@@ -71,10 +71,12 @@ button.side-nav-item {
   transition: all 0.2s ease;
 }
 
-button.side-nav-item:hover {
-  background: var(--background-body);
-  color: var(--color-text-primary);
-  transform: translateY(0);
+@media (hover: hover) {
+  button.side-nav-item:hover {
+    background: var(--background-body);
+    color: var(--color-text-primary);
+    transform: translateY(0);
+  }
 }
 
 button.side-nav-item.side-nav-item-active {
@@ -148,8 +150,10 @@ button.side-nav-item:focus {
     outline: none;
   }
 
-  .side-nav .sidebar-toggle-button:hover {
-    color: var(--color-link);
+  @media (hover: hover) {
+    .side-nav .sidebar-toggle-button:hover {
+      color: var(--color-link);
+    }
   }
 
   /* Collapsed state for side-nav */
