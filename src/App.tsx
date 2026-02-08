@@ -22,7 +22,6 @@ const App = () => {
   if (!user) return <LoginPage />;
   if (!userData) return <Loader />;
 
-  // return <GuestPage user={userData} uid={user.uid} />;
   if (userData && !userData.isApproved) {
     return <GuestPage user={userData} uid={user.uid} />;
   }
@@ -33,8 +32,6 @@ const App = () => {
       isSidebarOpen={isSidebarOpen}
       setSidebarOpen={setSidebarOpen}
       onTabChange={(tab) => {
-        //setSidebarOpen(true);
-
         if (tab !== activeTab) {
           setActiveTab(tab);
           if (tab === AppTab.SETTINGS) {

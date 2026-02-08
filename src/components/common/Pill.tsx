@@ -51,7 +51,7 @@ const Pill = ({
           "--pill-colour": colour ? colour : "var(--color-link)",
           "--pill-subtle-hover-color": `${colour}15`,
           minWidth: minWidth ? `${minWidth}px` : "fit-content",
-        } as React.CSSProperties
+        } as React.CSSProperties & { [key: string]: string | number | undefined }
       }
       onClick={(evt) => {
         if (isDisabled) return;

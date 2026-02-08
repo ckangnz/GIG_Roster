@@ -8,24 +8,17 @@ import SettingsTable, {
   SettingsTableInputCell,
 } from "../../components/common/SettingsTable";
 import { db } from "../../firebase";
-import { Position } from "../../model/model";
-
-interface Team {
-  id?: string; // Optional, as it might not exist for new teams or before saving
-  name: string;
-  emoji: string;
-  positions: string[]; // Array of position names
-  preferredDays: string[]; // Added Preferred Days
-}
+import { Position, Team, Weekday } from "../../model/model";
 
 const defaultTeam: Team = {
+  id: "",
   name: "",
   emoji: "",
   positions: [],
-  preferredDays: [], // Default to empty array
+  preferredDays: [],
 };
 
-const WEEK_DAYS = [
+const WEEK_DAYS: Weekday[] = [
   "Sunday",
   "Monday",
   "Tuesday",
@@ -39,40 +32,58 @@ const TeamManagement = () => {
   const [teams, setTeams] = useState<Team[]>([]);
   const [availablePositions, setAvailablePositions] = useState<Position[]>([]);
   const [newTeam, setNewTeam] = useState<Team>(defaultTeam);
-  const [status, setStatus] = useState("idle"); // Changed from isSaving to status
+  const [status, setStatus] = useState("idle");
 
   useEffect(() => {
     const fetchData = async () => {
-      // Fetch teams
-      try {
-        const teamsDocRef = doc(db, "metadata", "teams");
-        const teamsSnap = await getDoc(teamsDocRef);
-        if (teamsSnap.exists()) {
-          const data = teamsSnap.data();
-          // Ensure preferredDays is initialized if missing
-          setTeams(
-            Array.isArray(data.list)
-              ? data.list.map((team: Team) => ({
-                  ...team,
-                  preferredDays: team.preferredDays || [],
-                }))
-              : [],
-          );
-        }
-      } catch (error) {
-        console.error("Error fetching teams:", error);
-      }
-
-      // Fetch available positions
+      let fetchedAvailablePositions: Position[] = [];
       try {
         const posDocRef = doc(db, "metadata", "positions");
         const posSnap = await getDoc(posDocRef);
         if (posSnap.exists()) {
           const data = posSnap.data();
-          setAvailablePositions(Array.isArray(data.list) ? data.list : []);
+          fetchedAvailablePositions = Array.isArray(data.list) ? data.list : [];
+          setAvailablePositions(fetchedAvailablePositions);
         }
       } catch (error) {
         console.error("Error fetching positions:", error);
+      }
+
+      try {
+        const teamsDocRef = doc(db, "metadata", "teams");
+        const teamsSnap = await getDoc(teamsDocRef);
+        if (teamsSnap.exists()) {
+          const data = teamsSnap.data();
+          setTeams(
+            Array.isArray(data.list)
+              ? data.list.map((teamData: Team) => {
+                  const team: Team = {
+                    ...teamData,
+                    preferredDays: teamData.preferredDays || [],
+                    positions: Array.isArray(teamData.positions)
+                      ? teamData.positions.map((pos: string | Position) => {
+                          if (typeof pos === "string") {
+                            return (
+                              fetchedAvailablePositions.find(
+                                (ap) => ap.name === pos,
+                              ) || {
+                                name: pos,
+                                emoji: "❓",
+                                colour: "#ccc",
+                              }
+                            );
+                          }
+                          return pos;
+                        })
+                      : [],
+                  };
+                  return team;
+                })
+              : [],
+          );
+        }
+      } catch (error) {
+        console.error("Error fetching teams:", error);
       }
     };
     fetchData();
@@ -100,20 +111,20 @@ const TeamManagement = () => {
     setTeams(updated);
   };
 
-  const togglePosition = (teamIndex: number, posName: string) => {
+  const togglePosition = (teamIndex: number, pos: Position) => {
     const updatedTeams = teams.map((team, index) => {
       if (index !== teamIndex) return team;
 
       const currentPositions = team.positions || [];
-      const newPositions = currentPositions.includes(posName)
-        ? currentPositions.filter((p) => p !== posName)
-        : [...currentPositions, posName];
+      const newPositions = currentPositions.find((p) => p.name === pos.name)
+        ? currentPositions.filter((p) => p.name !== pos.name)
+        : [...currentPositions, pos];
       return { ...team, positions: newPositions };
     });
     setTeams(updatedTeams);
   };
 
-  const toggleDay = (teamIndex: number, day: string) => {
+  const toggleDay = (teamIndex: number, day: Weekday) => {
     const updatedTeams = teams.map((team, index) => {
       if (index !== teamIndex) return team;
 
@@ -131,7 +142,7 @@ const TeamManagement = () => {
       return alert("Please provide both an emoji and a name for the team.");
     }
     setTeams([...teams, newTeam]);
-    setNewTeam(defaultTeam); // Reset form
+    setNewTeam(defaultTeam);
   };
 
   const deleteTeam = (index: number) => {
@@ -141,19 +152,19 @@ const TeamManagement = () => {
   };
 
   const saveToFirebase = async () => {
-    setStatus("saving"); // Set status to saving
+    setStatus("saving");
     try {
       const teamsDocRef = doc(db, "metadata", "teams");
       const teamsToSave = teams.map(({ ...rest }) => rest);
       await updateDoc(teamsDocRef, { list: teamsToSave });
-      setStatus("success"); // Set status to success
-      setTimeout(() => setStatus("idle"), 2000); // Reset to idle after 2 seconds
+      setStatus("success");
+      setTimeout(() => setStatus("idle"), 2000);
     } catch (e) {
       console.error("Save Error:", e);
       alert(
         "Check Firestore Rules: You may lack permission to write to 'metadata'.",
       );
-      setStatus("idle"); // Reset to idle on error
+      setStatus("idle");
     }
   };
 
@@ -164,9 +175,9 @@ const TeamManagement = () => {
           { text: "Order", minWidth: 50, textAlign: "center" },
           { text: "Emoji", width: 30 },
           { text: "Name", minWidth: 100 },
-          { text: "Allowed Positions", minWidth: 200 }, // Renamed header
-          { text: "Preferred Days", minWidth: 250 }, // New header
-          { text: "", width: 50 }, // For delete button
+          { text: "Allowed Positions", minWidth: 200 },
+          { text: "Preferred Days", minWidth: 250 },
+          { text: "", width: 50 },
         ]}
       >
         {teams.map((team, teamIndex) => (
@@ -210,13 +221,15 @@ const TeamManagement = () => {
             <SettingsTableAnyCell>
               <PillGroup nowrap>
                 {availablePositions.map((pos) => {
-                  const isActive = team.positions?.includes(pos.name);
+                  const isActive = team.positions?.some(
+                    (p) => p.name === pos.name,
+                  );
                   return (
                     <Pill
                       key={pos.name}
                       colour={pos.colour}
                       isActive={isActive}
-                      onClick={() => togglePosition(teamIndex, pos.name)}
+                      onClick={() => togglePosition(teamIndex, pos)}
                     >
                       {pos.emoji}
                     </Pill>
@@ -251,7 +264,7 @@ const TeamManagement = () => {
           </tr>
         ))}
         <tr className="team-row-new">
-          <td className=""></td> {/* Empty cell for the order column */}
+          <td className="">{""}</td>
           <SettingsTableInputCell
             name={`new-team-emoji`}
             value={newTeam.emoji}
@@ -261,13 +274,15 @@ const TeamManagement = () => {
           <SettingsTableInputCell
             name={`new-team-name`}
             value={newTeam.name}
-            placeholder="New Team Name"
+            placeholder="Team Name"
             onChange={(e) => setNewTeam({ ...newTeam, name: e.target.value })}
           />
           <SettingsTableAnyCell>
             <PillGroup nowrap>
               {availablePositions.map((pos) => {
-                const isActive = newTeam.positions?.includes(pos.name);
+                const isActive = newTeam.positions?.some(
+                  (p) => p.name === pos.name,
+                );
                 return (
                   <Pill
                     key={`new-${pos.name}`}
@@ -276,9 +291,11 @@ const TeamManagement = () => {
                     onClick={() =>
                       setNewTeam((prev) => {
                         const currentPositions = prev.positions || [];
-                        const newPositions = currentPositions.includes(pos.name)
-                          ? currentPositions.filter((p) => p !== pos.name)
-                          : [...currentPositions, pos.name];
+                        const newPositions = currentPositions.some(
+                          (p) => p.name === pos.name,
+                        )
+                          ? currentPositions.filter((p) => p.name !== pos.name)
+                          : [...currentPositions, pos];
                         return { ...prev, positions: newPositions };
                       })
                     }
@@ -290,8 +307,6 @@ const TeamManagement = () => {
             </PillGroup>
           </SettingsTableAnyCell>
           <SettingsTableAnyCell>
-            {" "}
-            {/* New cell for Preferred Days in new team row */}
             <PillGroup nowrap>
               {WEEK_DAYS.map((day) => {
                 const isActive = newTeam.preferredDays?.includes(day);

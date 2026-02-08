@@ -13,8 +13,8 @@ interface MainLayoutProps {
   onTabChange: (tab: string) => void;
   activeSideItem: string | null;
   onSideItemChange: (item: string) => void;
-  isSidebarOpen: boolean; // This is for mobile, passed from parent
-  setSidebarOpen: (open: boolean) => void; // This is for mobile, passed from parent
+  isSidebarOpen: boolean;
+  setSidebarOpen: (open: boolean) => void;
 }
 
 const MainLayout = ({
@@ -52,16 +52,15 @@ const MainLayout = ({
     [onSideItemChange, setSidebarOpen],
   );
 
-  // Determine the main class for app-shell
   const appShellClasses = [
     "app-shell",
-    window.innerWidth < 768 && isSidebarOpen ? "menu-open" : "", // Mobile sidebar open
+    window.innerWidth < 768 && isSidebarOpen ? "menu-open" : "",
     window.innerWidth >= 768 && !isDesktopSidebarExpanded
       ? "sidebar-collapsed"
-      : "", // Desktop sidebar collapsed
+      : "",
     window.innerWidth >= 768 && isDesktopSidebarExpanded
       ? "sidebar-expanded"
-      : "", // Desktop sidebar expanded
+      : "",
   ]
     .filter(Boolean)
     .join(" ");
@@ -79,9 +78,9 @@ const MainLayout = ({
           activeTab={activeTab}
           activeSideItem={activeSideItem}
           onSideItemChange={handleSideItemChange}
-          isSidebarOpen={isDesktopSidebarExpanded} // Pass desktop state to SideNav
-          setSidebarOpen={setIsDesktopSidebarExpanded} // Pass desktop setter to SideNav
-          headerTitle={getHeaderTitle()} // Pass the generated title
+          isSidebarOpen={isDesktopSidebarExpanded}
+          setSidebarOpen={setIsDesktopSidebarExpanded}
+          headerTitle={getHeaderTitle()}
         />
 
         <main className="main-content">

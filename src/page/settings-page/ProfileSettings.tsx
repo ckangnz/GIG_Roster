@@ -4,7 +4,8 @@ import { doc, getDoc, updateDoc } from "firebase/firestore";
 
 import Pill, { PillGroup } from "../../components/common/Pill";
 import { db, auth } from "../../firebase";
-import { AppUser, Position } from "../../model/model";
+import { useComputedPositions } from "../../hooks/useComputedPositions";
+import { AppUser, Team } from "../../model/model";
 
 import "./profile-settings.css";
 
@@ -14,25 +15,42 @@ interface ProfileSettingsProps {
 }
 
 const ProfileSettings = ({ userData, uid }: ProfileSettingsProps) => {
+  const [name, setName] = useState(userData.name || "");
   const [gender, setGender] = useState(userData.gender || "");
   const [selectedPositions, setSelectedPositions] = useState<string[]>(
     userData.positions || [],
   );
   const [isActive, setIsActive] = useState(userData.isActive ?? true);
+  const [selectedTeams, setSelectedTeams] = useState<string[]>(
+    userData.teams || [],
+  );
 
-  const [availablePositions, setAvailablePositions] = useState<Position[]>([]);
+  const [availableTeams, setAvailableTeams] = useState<Team[]>([]);
   const [status, setStatus] = useState("idle");
 
+  const computedPositions = useComputedPositions(selectedTeams, availableTeams);
+
   useEffect(() => {
-    const fetchPositions = async () => {
+    const fetchData = async () => {
       try {
-        const docSnap = await getDoc(doc(db, "metadata", "positions"));
-        if (docSnap.exists()) setAvailablePositions(docSnap.data().list || []);
-      } catch (e) {
-        console.error(e);
+        const teamsDocRef = doc(db, "metadata", "teams");
+        const teamsSnap = await getDoc(teamsDocRef);
+        if (teamsSnap.exists()) {
+          const data = teamsSnap.data();
+          setAvailableTeams(
+            Array.isArray(data.list)
+              ? data.list.map((team: Team) => ({
+                  ...team,
+                  preferredDays: team.preferredDays || [],
+                }))
+              : [],
+          );
+        }
+      } catch (error) {
+        console.error("Error fetching teams:", error);
       }
     };
-    fetchPositions();
+    fetchData();
   }, []);
 
   const handleSave = async () => {
@@ -40,9 +58,11 @@ const ProfileSettings = ({ userData, uid }: ProfileSettingsProps) => {
     setStatus("saving");
     try {
       const updateData = {
+        name,
         gender,
         positions: selectedPositions,
         isActive,
+        teams: selectedTeams,
       };
       await updateDoc(doc(db, "users", uid), updateData);
       setStatus("success");
@@ -59,6 +79,14 @@ const ProfileSettings = ({ userData, uid }: ProfileSettingsProps) => {
     );
   };
 
+  const toggleTeam = (teamName: string) => {
+    setSelectedTeams((prev) =>
+      prev.includes(teamName)
+        ? prev.filter((name) => name !== teamName)
+        : [...prev, teamName],
+    );
+  };
+
   return (
     <section className="profile-card">
       <div className="profile-readonly">
@@ -72,7 +100,8 @@ const ProfileSettings = ({ userData, uid }: ProfileSettingsProps) => {
         <PillGroup>
           <input
             type="text"
-            value={userData.name || ""}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
             className="form-input form-input-width-auto"
           />
         </PillGroup>
@@ -97,9 +126,27 @@ const ProfileSettings = ({ userData, uid }: ProfileSettingsProps) => {
       </div>
 
       <div className="form-group">
+        <label>My Teams</label>
+        <PillGroup>
+          {availableTeams.map((team) => {
+            const isSelected = selectedTeams.includes(team.name);
+            return (
+              <Pill
+                key={team.name}
+                onClick={() => toggleTeam(team.name)}
+                isActive={isSelected}
+              >
+                <span>{team.emoji}</span> {team.name}
+              </Pill>
+            );
+          })}
+        </PillGroup>
+      </div>
+
+      <div className="form-group">
         <label>My Positions</label>
         <PillGroup>
-          {availablePositions.map((pos) => {
+          {computedPositions.map((pos) => {
             const isSelected = selectedPositions.includes(pos.name);
             return (
               <Pill

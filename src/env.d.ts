@@ -1,5 +1,3 @@
-/// <reference types="vite/client" />
-
 type ViteEnvString = string;
 
 interface ImportMetaEnv {
@@ -9,7 +7,7 @@ interface ImportMetaEnv {
   readonly VITE_FIREBASE_STORAGE_BUCKET: ViteEnvString;
   readonly VITE_FIREBASE_MESSAGING_SENDER_ID: ViteEnvString;
   readonly VITE_FIREBASE_APP_ID: ViteEnvString;
-  readonly VITE_ADMIN_EMAIL: ViteEnvString; // used only for initial admin bootstrapping
+  readonly VITE_ADMIN_EMAIL: ViteEnvString;
 }
 
 interface ImportMeta {

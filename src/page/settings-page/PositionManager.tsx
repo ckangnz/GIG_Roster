@@ -95,9 +95,7 @@ const PositionManagement = () => {
         });
       }
 
-      const sortedBlock = block.sort(
-        (a, b) => updated.indexOf(a) - updated.indexOf(b),
-      );
+      const sortedBlock = block;
       return { block: sortedBlock, startIndex: minIndex, endIndex: maxIndex };
     };
 
@@ -339,7 +337,7 @@ const PositionManagement = () => {
           </tr>
         ))}
         <tr className="pos-row-new">
-          <td className=""></td>
+          <td className="">{""}</td>
           <SettingsTableInputCell
             name={`new-emoji`}
             value={newPos.emoji}

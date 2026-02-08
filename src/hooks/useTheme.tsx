@@ -34,7 +34,6 @@ export const ThemeProvider = ({ children }: ThemeProviderProps) => {
       setThemeState(newTheme);
       applyTheme(newTheme);
 
-      // Save to Firebase if user is logged in
       const currentUser = auth.currentUser;
       if (currentUser) {
         const userRef = doc(db, "users", currentUser.uid);
@@ -54,7 +53,6 @@ export const ThemeProvider = ({ children }: ThemeProviderProps) => {
     );
   }, [setThemeState]);
 
-  // Load theme from Firebase on login
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
       if (user) {

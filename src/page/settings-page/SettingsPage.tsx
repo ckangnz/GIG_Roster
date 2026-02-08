@@ -1,6 +1,6 @@
 import PositionManagement from "./PositionManager";
 import ProfileSettings from "./ProfileSettings";
-import TeamManagement from "./TeamManagement"; // Import TeamManagement
+import TeamManagement from "./TeamManagement";
 import UserManagement from "./UserManagement";
 import { SettingsSection } from "../../constants/navigation";
 import { AppUser } from "../../model/model";

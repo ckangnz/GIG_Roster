@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 
 import { onAuthStateChanged, User } from "firebase/auth";
-import { doc, getDoc, setDoc, onSnapshot } from "firebase/firestore"; // Added onSnapshot
+import { doc, getDoc, setDoc, onSnapshot } from "firebase/firestore";
 
 import { auth, db } from "../firebase";
 import { AppUser } from "../model/model";
@@ -31,6 +31,7 @@ export const useAuth = () => {
             isApproved: isAutoAdmin,
             isAdmin: isAutoAdmin,
             isActive: true,
+            teams: [],
             positions: [],
             gender: "",
           };

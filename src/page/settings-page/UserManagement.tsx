@@ -8,18 +8,15 @@ import {
   writeBatch,
 } from "firebase/firestore";
 
-import Pill, { PillGroup } from "../../components/common/Pill";
-import SettingsTable, {
-  SettingsTableAnyCell,
-  SettingsTableInputCell,
-} from "../../components/common/SettingsTable";
+import UserManagementRow from "./UserManagementRow";
+import SettingsTable from "../../components/common/SettingsTable";
 import { db } from "../../firebase";
-import { AppUser, Gender, Position } from "../../model/model";
+import { AppUser, Team } from "../../model/model";
 
 const UserManagement = () => {
   const [users, setUsers] = useState<(AppUser & { id: string })[]>([]);
-  const [availablePositions, setAvailablePositions] = useState<Position[]>([]);
-  const [status, setStatus] = useState("idle"); // Changed from isSaving to status
+  const [availableTeams, setAvailableTeams] = useState<Team[]>([]);
+  const [status, setStatus] = useState("idle");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -29,9 +26,17 @@ const UserManagement = () => {
       );
       setUsers(userList.sort((a, b) => a.name!.localeCompare(b.name!)));
 
-      const posSnap = await getDoc(doc(db, "metadata", "positions"));
-      if (posSnap.exists()) {
-        setAvailablePositions(posSnap.data().list || []);
+      const teamsDocRef = await getDoc(doc(db, "metadata", "teams"));
+      if (teamsDocRef.exists()) {
+        const data = teamsDocRef.data();
+        setAvailableTeams(
+          Array.isArray(data.list)
+            ? data.list.map((team: Team) => ({
+                ...team,
+                preferredDays: team.preferredDays || [],
+              }))
+            : [],
+        );
       }
     };
     fetchData();
@@ -50,6 +55,19 @@ const UserManagement = () => {
     );
   };
 
+  const toggleTeam = (userId: string, teamName: string) => {
+    setUsers((prev) =>
+      prev.map((u) => {
+        if (u.id !== userId) return u;
+        const currentTeams = u.teams || [];
+        const newTeams = currentTeams.includes(teamName)
+          ? currentTeams.filter((t) => t !== teamName)
+          : [...currentTeams, teamName];
+        return { ...u, teams: newTeams };
+      }),
+    );
+  };
+
   const handleUpdate = (
     id: string,
     field: keyof AppUser,
@@ -61,7 +79,7 @@ const UserManagement = () => {
   };
 
   const saveAllChanges = async () => {
-    setStatus("saving"); // Set status to saving
+    setStatus("saving");
     const batch = writeBatch(db);
     users.forEach((u) => {
       const { id, ...data } = u;
@@ -69,12 +87,12 @@ const UserManagement = () => {
     });
     try {
       await batch.commit();
-      setStatus("success"); // Set status to success
-      setTimeout(() => setStatus("idle"), 2000); // Reset to idle after 2 seconds
+      setStatus("success");
+      setTimeout(() => setStatus("idle"), 2000);
     } catch (e) {
       console.error(e);
-      alert("Error saving users."); // Keep alert for error, or change to status="error" if desired
-      setStatus("idle"); // Reset to idle on error
+      alert("Error saving users.");
+      setStatus("idle");
     }
   };
 
@@ -85,100 +103,23 @@ const UserManagement = () => {
           { text: "Name", minWidth: 70, isSticky: true },
           { text: "Email", minWidth: 170 },
           { text: "Gender", minWidth: 90 },
-          { text: "Positions", minWidth: 150 },
+          { text: "Teams", minWidth: 200 },
+          { text: "Positions", minWidth: 200 },
           { text: "Active", minWidth: 95, textAlign: "center" },
           { text: "Approved", minWidth: 95, textAlign: "center" },
           { text: "Admin", minWidth: 95, textAlign: "center" },
         ]}
       >
         {users.map((u) => (
-          <tr key={u.id}>
-            <SettingsTableInputCell
-              name={`name-${u.id}`}
-              value={u.name || ""}
-              onChange={(e) => handleUpdate(u.id, "name", e.target.value)}
-              isSticky
-            />
-            <SettingsTableInputCell
-              name={`email-${u.id}`}
-              value={u.email || ""}
-              isReadOnly
-            />
-            <SettingsTableAnyCell>
-              <select
-                name={`gender-${u.id}`}
-                className="form-select"
-                value={u.gender}
-                onChange={(e) =>
-                  handleUpdate(u.id, "gender", e.target.value as Gender)
-                }
-              >
-                <option value="">-</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-              </select>
-            </SettingsTableAnyCell>
-            <SettingsTableAnyCell>
-              <PillGroup nowrap>
-                {availablePositions.map((pos) => {
-                  const isActive = u.positions?.includes(pos.name);
-                  return (
-                    <Pill
-                      key={pos.name}
-                      colour={pos.colour}
-                      isActive={isActive}
-                      onClick={() => togglePosition(u.id, pos.name)}
-                    >
-                      {pos.emoji}
-                    </Pill>
-                  );
-                })}
-              </PillGroup>
-            </SettingsTableAnyCell>
-            <SettingsTableAnyCell>
-              <Pill
-                colour={
-                  u.isActive
-                    ? "var(--color-success-dark)"
-                    : "var(--color-warning-dark)"
-                }
-                minWidth={35}
-                onClick={() => handleUpdate(u.id, "isActive", !u.isActive)}
-                isActive
-              >
-                {u.isActive ? "YES" : "NO"}
-              </Pill>
-            </SettingsTableAnyCell>
-            <SettingsTableAnyCell>
-              <Pill
-                colour={
-                  u.isApproved
-                    ? "var(--color-success-dark)"
-                    : "var(--color-warning-dark)"
-                }
-                minWidth={35}
-                onClick={() => handleUpdate(u.id, "isApproved", !u.isApproved)}
-                isActive
-              >
-                {u.isApproved ? "YES" : "NO"}
-              </Pill>
-            </SettingsTableAnyCell>
-            <SettingsTableAnyCell>
-              <Pill
-                colour={
-                  u.isAdmin
-                    ? "var(--color-success-dark)"
-                    : "var(--color-warning-dark)"
-                }
-                minWidth={35}
-                onClick={() => handleUpdate(u.id, "isAdmin", !u.isAdmin)}
-                isActive
-                isDisabled={u.email === import.meta.env.VITE_ADMIN_EMAIL}
-              >
-                {u.isAdmin ? "YES" : "NO"}
-              </Pill>
-            </SettingsTableAnyCell>
-          </tr>
+          <UserManagementRow
+            key={u.id}
+            user={u}
+            availableTeams={availableTeams}
+            onTogglePosition={togglePosition}
+            onToggleTeam={toggleTeam}
+            onHandleUpdate={handleUpdate}
+            adminEmail={import.meta.env.VITE_ADMIN_EMAIL}
+          />
         ))}
       </SettingsTable>
 
