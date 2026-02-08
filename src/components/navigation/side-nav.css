@@ -34,6 +34,9 @@
 }
 
 .sidenav-menu-subheading {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
   padding: 10px 24px 5px;
   color: var(--color-text-dim);
   font-size: 0.75rem;
@@ -42,7 +45,9 @@
   font-weight: 700;
   border-bottom: 1px solid var(--border-color-secondary);
   margin-top: 16px;
+  background: none;
 }
+
 .sidenav-menu-subheading h4 {
   margin: 0;
   font-size: 0.75rem;
@@ -166,7 +171,7 @@ button.side-nav-item:focus {
 
   .app-shell.sidebar-collapsed button.side-nav-item {
     justify-content: center;
-    padding: 14px 0;
+    padding: 12px 24px;
   }
 
   .app-shell.sidebar-collapsed button.side-nav-item span:not(.side-emoji) {
@@ -192,7 +197,12 @@ button.side-nav-item:focus {
     padding: 14px 0;
   }
 
-  .app-shell.sidebar-collapsed .sidenav-menu-subheading {
+  .app-shell .sidenav-menu-subheading {
+    margin-top: 0;
+  }
+
+  .app-shell.sidebar-collapsed
+    .sidenav-menu-subheading:not(.sidenav-menu-subheading-clickable) {
     display: none;
   }
 

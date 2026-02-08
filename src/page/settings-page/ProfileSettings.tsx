@@ -39,15 +39,18 @@ const ProfileSettings = ({ userData, uid }: ProfileSettingsProps) => {
           const data = teamsSnap.data();
           setAvailableTeams(
             Array.isArray(data.list)
-              ? data.list.map((team: Team) => ({
-                  ...team,
-                  preferredDays: team.preferredDays || [],
+              ? data.list.map((teamData: Team) => ({
+                  // Directly use Team type
+                  ...teamData,
+                  preferredDays: teamData.preferredDays || [],
+                  positions: teamData.positions || [], // Assume already Position[]
                 }))
               : [],
           );
         }
-      } catch (error) {
-        console.error("Error fetching teams:", error);
+      } catch (e) {
+        // Changed 'error' to 'e' for consistency
+        console.error("Error fetching teams:", e);
       }
     };
     fetchData();

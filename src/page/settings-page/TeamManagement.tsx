@@ -56,29 +56,11 @@ const TeamManagement = () => {
           const data = teamsSnap.data();
           setTeams(
             Array.isArray(data.list)
-              ? data.list.map((teamData: Team) => {
-                  const team: Team = {
-                    ...teamData,
-                    preferredDays: teamData.preferredDays || [],
-                    positions: Array.isArray(teamData.positions)
-                      ? teamData.positions.map((pos: string | Position) => {
-                          if (typeof pos === "string") {
-                            return (
-                              fetchedAvailablePositions.find(
-                                (ap) => ap.name === pos,
-                              ) || {
-                                name: pos,
-                                emoji: "❓",
-                                colour: "#ccc",
-                              }
-                            );
-                          }
-                          return pos;
-                        })
-                      : [],
-                  };
-                  return team;
-                })
+              ? data.list.map((teamData: Team) => ({
+                  ...teamData,
+                  preferredDays: teamData.preferredDays || [],
+                  positions: teamData.positions || [],
+                }))
               : [],
           );
         }

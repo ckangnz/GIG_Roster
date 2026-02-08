@@ -16,7 +16,6 @@ const App = () => {
   const { user, userData, loading } = useAuth();
   const [activeTab, setActiveTab] = useState<string>(AppTab.ROSTER);
   const [activeSideItem, setActiveSideItem] = useState<string | null>(null);
-  const [isSidebarOpen, setSidebarOpen] = useState(false);
 
   if (loading) return <Loader />;
   if (!user) return <LoginPage />;
@@ -29,8 +28,6 @@ const App = () => {
   return (
     <MainLayout
       activeTab={activeTab}
-      isSidebarOpen={isSidebarOpen}
-      setSidebarOpen={setSidebarOpen}
       onTabChange={(tab) => {
         if (tab !== activeTab) {
           setActiveTab(tab);

@@ -10,7 +10,7 @@ import {
 } from "../../constants/navigation";
 import { db } from "../../firebase";
 import { useAuth } from "../../hooks/useAuth";
-import { Position } from "../../model/model";
+import { Team } from "../../model/model";
 import ThemeToggleButton from "../common/ThemeToggleButton";
 
 import "./side-nav.css";
@@ -34,30 +34,49 @@ const SideNav = ({
 }: SideNavProps) => {
   const { userData } = useAuth();
 
-  const [positions, setPositions] = useState<Position[]>([]);
+  const [allTeams, setAllTeams] = useState<Team[]>([]);
+  const [expandedTeams, setExpandedTeams] = useState<string[]>([]);
+
+  const toggleTeamExpansion = (teamName: string) => {
+    setExpandedTeams((prev) =>
+      prev.includes(teamName)
+        ? prev.filter((name) => name !== teamName)
+        : [...prev, teamName],
+    );
+  };
 
   useEffect(() => {
-    const fetchPositions = async () => {
+    const fetchData = async () => {
       try {
-        const snap = await getDoc(doc(db, "metadata", "positions"));
-        if (snap.exists()) {
-          const list = snap.data().list || [];
-          setPositions(list);
+        const teamsDocRef = doc(db, "metadata", "teams");
+        const teamsSnap = await getDoc(teamsDocRef);
+        if (teamsSnap.exists()) {
+          const data = teamsSnap.data();
+          const teamsList = Array.isArray(data.list)
+            ? data.list.map((teamData: Team) => ({
+                ...teamData,
+                preferredDays: teamData.preferredDays || [],
+                positions: teamData.positions || [],
+              }))
+            : [];
+          setAllTeams(teamsList);
+
           if (
             activeTab === AppTab.ROSTER &&
             !activeSideItem &&
-            list.length > 0
+            teamsList.length > 0 &&
+            teamsList[0].positions.length > 0
           ) {
-            onSideItemChange(list[0].name, false);
+            onSideItemChange(teamsList[0].positions[0].name, false);
           }
         }
-      } catch (e) {
-        console.error("Error fetching positions:", e);
+      } catch (error) {
+        console.error("Error fetching teams:", error);
       }
     };
 
     if (activeTab === AppTab.ROSTER) {
-      fetchPositions();
+      fetchData();
     } else if (activeTab === AppTab.SETTINGS && !activeSideItem) {
       onSideItemChange(SettingsSection.PROFILE, false);
     }
@@ -68,7 +87,6 @@ const SideNav = ({
       <div className="sidebar-content">
         <div className="tablet-sidebar-header">
           {isSidebarOpen && <h3>{headerTitle}</h3>}
-          {/* Collapse button */}
           <button
             className="sidebar-toggle-button"
             onClick={() => setSidebarOpen(!isSidebarOpen)}
@@ -83,33 +101,79 @@ const SideNav = ({
         </div>
 
         <nav className="side-menu-list">
-          {activeTab === AppTab.ROSTER && positions.length === 0 && (
-            <div className="side-nav-item loading">Loading...</div>
+          {activeTab === AppTab.ROSTER &&
+            userData &&
+            userData.teams &&
+            userData.teams.length > 0 &&
+            allTeams.length === 0 && (
+              <div className="side-nav-item loading">Loading teams...</div>
+            )}
+          {activeTab === AppTab.ROSTER && allTeams.length === 0 && (
+            <div className="side-nav-item loading">Loading positions...</div>
           )}
 
           {activeTab === AppTab.ROSTER ? (
-            positions.map((pos) => {
-              const isActive = activeSideItem === pos.name;
-              return (
-                <button
-                  key={pos.name}
-                  className={`side-nav-item ${isActive ? "side-nav-item-active" : ""}`}
-                  onClick={() => onSideItemChange(pos.name, true)}
-                  style={{
-                    borderLeft: isActive
-                      ? `4px solid ${pos.colour}`
-                      : "4px solid transparent",
-                    backgroundColor: isActive
-                      ? `${pos.colour}15`
-                      : "transparent",
-                    color: isActive ? pos.colour : "",
-                  }}
-                >
-                  <span className="side-emoji">{pos.emoji}</span>{" "}
-                  {isSidebarOpen && pos.name}
-                </button>
-              );
-            })
+            userData && userData.teams && userData.teams.length > 0 ? (
+              userData.teams.map((teamName) => {
+                const team = allTeams.find((t) => t.name === teamName);
+                if (!team) return null;
+
+                const hasOneTeam = userData.teams.length === 1;
+                const isTeamExpanded = hasOneTeam
+                  ? true
+                  : expandedTeams.includes(team.name);
+
+                return (
+                  <div key={team.name}>
+                    {!hasOneTeam && (
+                      <div
+                        className="sidenav-menu-subheading sidenav-menu-subheading-clickable"
+                        style={{ cursor: "pointer" }}
+                        onClick={() => toggleTeamExpansion(team.name)}
+                      >
+                        <div>
+                          {team.emoji} {isSidebarOpen && team.name}
+                        </div>
+                        <span className="expand-icon">
+                          {isTeamExpanded ? "▼" : "▶"}
+                        </span>
+                      </div>
+                    )}
+                    {isTeamExpanded &&
+                      team.positions &&
+                      team.positions.length > 0 && (
+                        <div className="side-nav-sub-items">
+                          {team.positions.map((pos) => {
+                            const isActivePosition =
+                              activeSideItem === pos.name;
+                            return (
+                              <button
+                                key={pos.name}
+                                className={`side-nav-item side-nav-item-sub ${isActivePosition ? "side-nav-item-active" : ""}`}
+                                onClick={() => onSideItemChange(pos.name, true)}
+                                style={{
+                                  borderLeft: isActivePosition
+                                    ? `4px solid ${pos.colour}`
+                                    : "4px solid transparent",
+                                  backgroundColor: isActivePosition
+                                    ? `${pos.colour}15`
+                                    : "transparent",
+                                  color: isActivePosition ? pos.colour : "",
+                                }}
+                              >
+                                <span className="side-emoji">{pos.emoji}</span>{" "}
+                                {isSidebarOpen && pos.name}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                  </div>
+                );
+              })
+            ) : (
+              <div className="side-nav-item no-teams">No teams assigned.</div>
+            )
           ) : (
             <>
               {SETTINGS_NAV_ITEMS.filter((item) => !item.adminOnly).map(

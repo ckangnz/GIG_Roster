@@ -13,8 +13,6 @@ interface MainLayoutProps {
   onTabChange: (tab: string) => void;
   activeSideItem: string | null;
   onSideItemChange: (item: string) => void;
-  isSidebarOpen: boolean;
-  setSidebarOpen: (open: boolean) => void;
 }
 
 const MainLayout = ({
@@ -23,9 +21,8 @@ const MainLayout = ({
   onTabChange,
   activeSideItem,
   onSideItemChange,
-  isSidebarOpen,
-  setSidebarOpen,
 }: MainLayoutProps) => {
+  const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [isDesktopSidebarExpanded, setIsDesktopSidebarExpanded] =
     useState(true);
 
