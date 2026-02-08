@@ -22,16 +22,6 @@
   transition: all 0.2s ease;
 }
 
-.pill:hover {
-  transform: translateY(-2px);
-}
-
-.pill:hover:not(.pill-active) {
-  color: var(--pill-colour);
-  border-color: 1px solid var(--pill-colour);
-  background: var(--pill-subtle-hover-color);
-}
-
 .pill.pill-disabled {
   opacity: 0.5;
   filter: grayscale(1);
@@ -57,4 +47,16 @@
   border: 1px solid transparent;
   background: var(--background-button-secondary);
   border-radius: 12px;
+}
+
+@media (min-width: 768px) {
+  .pill:hover {
+    transform: translateY(-2px);
+  }
+
+  .pill:hover:not(.pill-active) {
+    color: var(--pill-colour);
+    border-color: 1px solid var(--pill-colour);
+    background: var(--pill-subtle-hover-color);
+  }
 }
