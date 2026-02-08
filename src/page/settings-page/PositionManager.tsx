@@ -18,7 +18,7 @@ interface Position extends GlobalPosition {
 const defaultPosition: Position = {
   name: "",
   emoji: "",
-  colour: "#f0f0f0",
+  colour: "",
   parentId: undefined,
 };
 
@@ -62,14 +62,130 @@ const PositionManagement = () => {
 
   const move = (index: number, direction: "up" | "down") => {
     const updated = [...positions];
-    const target = direction === "up" ? index - 1 : index + 1;
-    if (target < 0 || target >= updated.length) return;
+    const currentPosition = updated[index];
+    const currentParentId = currentPosition.parentId;
 
-    const temp = updated[index];
-    updated[index] = updated[target];
-    updated[target] = temp;
+    const getBlockInfo = (
+      startPosIndex: number,
+    ): { block: Position[]; startIndex: number; endIndex: number } => {
+      const startPosition = updated[startPosIndex];
+      if (!startPosition) return { block: [], startIndex: -1, endIndex: -1 };
 
-    setPositions(updated);
+      const block: Position[] = [];
+      const queue: Position[] = [startPosition];
+      const visitedNames = new Set<string>();
+
+      let minIndex = startPosIndex;
+      let maxIndex = startPosIndex;
+
+      let head = 0;
+      while (head < queue.length) {
+        const p = queue[head++];
+
+        if (visitedNames.has(p.name)) continue;
+        visitedNames.add(p.name);
+        block.push(p);
+
+        updated.forEach((pos, idx) => {
+          if (pos.parentId === p.name && !visitedNames.has(pos.name)) {
+            queue.push(pos);
+            minIndex = Math.min(minIndex, idx);
+            maxIndex = Math.max(maxIndex, idx);
+          }
+        });
+      }
+
+      const sortedBlock = block.sort(
+        (a, b) => updated.indexOf(a) - updated.indexOf(b),
+      );
+      return { block: sortedBlock, startIndex: minIndex, endIndex: maxIndex };
+    };
+
+    if (!currentParentId) {
+      const currentBlockInfo = getBlockInfo(index);
+      const {
+        block: currentBlock,
+        startIndex: currentBlockStartIndex,
+        endIndex: currentBlockEndIndex,
+      } = currentBlockInfo;
+
+      if (!currentBlock || currentBlock.length === 0) return;
+
+      if (direction === "up") {
+        if (currentBlockStartIndex === 0) return;
+
+        let targetBlockEndIndex = currentBlockStartIndex - 1;
+        while (
+          targetBlockEndIndex >= 0 &&
+          updated[targetBlockEndIndex].parentId
+        ) {
+          targetBlockEndIndex--;
+        }
+        if (targetBlockEndIndex < 0) return;
+
+        const targetBlockInfo = getBlockInfo(targetBlockEndIndex);
+        const { block: targetBlock, startIndex: targetBlockStartIndex } =
+          targetBlockInfo;
+
+        if (!targetBlock || targetBlock.length === 0) return;
+
+        const newPositions = [
+          ...updated.slice(0, targetBlockStartIndex),
+          ...currentBlock,
+          ...targetBlock,
+          ...updated.slice(currentBlockEndIndex + 1),
+        ].filter(Boolean);
+
+        setPositions(newPositions);
+      } else {
+        if (currentBlockEndIndex === updated.length - 1) return;
+
+        let targetBlockStartIndex = currentBlockEndIndex + 1;
+        while (
+          targetBlockStartIndex < updated.length &&
+          updated[targetBlockStartIndex].parentId
+        ) {
+          targetBlockStartIndex++;
+        }
+        if (targetBlockStartIndex >= updated.length) return;
+
+        const targetBlockInfo = getBlockInfo(targetBlockStartIndex);
+        const { block: targetBlock, startIndex: targetBlockActualStartIndex } =
+          targetBlockInfo;
+
+        if (!targetBlock || targetBlock.length === 0) return;
+
+        const newPositions = [
+          ...updated.slice(0, currentBlockStartIndex),
+          ...targetBlock,
+          ...currentBlock,
+          ...updated.slice(targetBlockActualStartIndex + targetBlock.length),
+        ].filter(Boolean);
+
+        setPositions(newPositions);
+      }
+    } else {
+      const allSiblings = updated.filter((p) => p.parentId === currentParentId);
+      const currentSiblingIndex = allSiblings.findIndex(
+        (s) => s.name === currentPosition.name,
+      );
+
+      const newSiblingIndex =
+        currentSiblingIndex + (direction === "up" ? -1 : 1);
+      if (newSiblingIndex < 0 || newSiblingIndex >= allSiblings.length) return;
+
+      const siblingToSwapWith = allSiblings[newSiblingIndex];
+      const indexOfCurrentInUpdated = updated.indexOf(currentPosition);
+      const indexOfSwapWithInUpdated = updated.indexOf(siblingToSwapWith);
+
+      if (indexOfCurrentInUpdated === -1 || indexOfSwapWithInUpdated === -1)
+        return;
+
+      const newPositions = [...updated];
+      newPositions[indexOfCurrentInUpdated] = siblingToSwapWith;
+      newPositions[indexOfSwapWithInUpdated] = currentPosition;
+      setPositions(newPositions);
+    }
   };
 
   const addPosition = () => {
@@ -239,6 +355,7 @@ const PositionManagement = () => {
           <SettingsTableColourInputCell
             name={`new-colour`}
             value={newPos.colour}
+            placeholder="#FFFFFF"
             onChange={(e) => setNewPos({ ...newPos, colour: e.target.value })}
           />
           <td className=""></td>
@@ -248,7 +365,7 @@ const PositionManagement = () => {
               className="icon-button icon-button--add"
               disabled={!newPos.name.trim() || !newPos.emoji.trim()}
             >
-              +
+              Add
             </button>
           </SettingsTableAnyCell>
         </tr>

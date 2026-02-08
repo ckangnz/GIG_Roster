@@ -57,20 +57,21 @@ export const SettingsTableInputCell = ({
   value,
   placeholder,
   type = "text",
+  isSticky,
   isReadOnly = false,
-  onChange,
   isChild = false,
+  onChange,
 }: {
   name: string;
   value: string;
   placeholder?: string;
   type?: string;
   isSticky?: boolean;
-  isReadOnly?: boolean;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  isReadOnly?: boolean;
   isChild?: boolean;
 }) => (
-  <SettingsTableAnyCell>
+  <SettingsTableAnyCell isSticky={isSticky}>
     {isChild && <CornerDownRight />}
     <input
       name={name}
@@ -87,18 +88,26 @@ export const SettingsTableInputCell = ({
 export const SettingsTableColourInputCell = ({
   name,
   value,
+  placeholder,
   onChange,
 }: {
   name: string;
   value: string;
+  placeholder?: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }) => (
   <SettingsTableAnyCell className="color-picker-group">
-    <input name={name} type="color" value={value} onChange={onChange} />
+    <input
+      name={name}
+      type="color"
+      value={value ? value : "#FFFFFF"}
+      onChange={onChange}
+    />
     <input
       name={name}
       className="form-input"
       value={value}
+      placeholder={placeholder}
       onChange={onChange}
     />
   </SettingsTableAnyCell>
