@@ -115,6 +115,12 @@
   font-size: 1.2rem;
 }
 
+.other-team-emoji {
+  opacity: 0.4;
+  font-size: 0.9rem;
+  filter: grayscale(0.6);
+}
+
 .date-header-content {
   display: flex;
   align-items: center;

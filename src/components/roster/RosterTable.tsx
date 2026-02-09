@@ -249,22 +249,49 @@ const RosterTable = () => {
   const getCellContent = (dateString: string, userEmail: string) => {
     const dateKey = dateString.split('T')[0];
     const entry = dirtyEntries[dateKey] || entries[dateKey];
-    if (!entry || !teamName || !entry.teams[teamName] || !entry.teams[teamName][userEmail]) {
+    if (!entry || !teamName) {
       return '-';
     }
 
-    const assignedPositions = entry.teams[teamName][userEmail];
+    // Current team assignments
+    const currentTeamAssignments = entry.teams[teamName]?.[userEmail] || [];
+
+    // Other teams assignments
+    const otherTeamsAssignments: { team: string; positions: string[] }[] = [];
+    Object.entries(entry.teams).forEach(([tName, teamData]) => {
+      if (tName !== teamName && teamData[userEmail]) {
+        otherTeamsAssignments.push({ team: tName, positions: teamData[userEmail] });
+      }
+    });
+
+    if (currentTeamAssignments.length === 0 && otherTeamsAssignments.length === 0) {
+      return '-';
+    }
 
     return (
       <div className="assigned-positions">
-        {assignedPositions.map((posName) => {
+        {currentTeamAssignments.map((posName) => {
           const pos = allPositions.find((p) => p.name === posName);
           return (
-            <span key={posName} title={posName} className="pos-emoji">
+            <span key={posName} title={`${teamName}: ${posName}`} className="pos-emoji">
               {pos?.emoji || '❓'}
             </span>
           );
         })}
+        {otherTeamsAssignments.map((ota) =>
+          ota.positions.map((posName) => {
+            const pos = allPositions.find((p) => p.name === posName);
+            return (
+              <span
+                key={`${ota.team}-${posName}`}
+                title={`${ota.team}: ${posName}`}
+                className="pos-emoji other-team-emoji"
+              >
+                {pos?.emoji || '❓'}
+              </span>
+            );
+          }),
+        )}
       </div>
     );
   };
