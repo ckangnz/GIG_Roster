@@ -70,7 +70,7 @@ const UserManagementRow = ({
         </select>
       </SettingsTableAnyCell>
       <SettingsTableAnyCell>
-        <PillGroup nowrap>
+        <PillGroup>
           {availableTeams.map((team) => {
             const isSelected = user.teams?.includes(team.name);
             return (
@@ -86,7 +86,7 @@ const UserManagementRow = ({
         </PillGroup>
       </SettingsTableAnyCell>
       <SettingsTableAnyCell>
-        <PillGroup nowrap>
+        <PillGroup>
           {computedPositions.map((pos) => {
             const isSelected = user.positions?.includes(pos.name);
             return (
