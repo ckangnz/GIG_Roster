@@ -1,8 +1,9 @@
 import { RouteObject } from 'react-router-dom';
 
+import MainLoader from './MainLoader';
+import ProtectedRoute from './ProtectedRoute';
 import AppLayout from '../components/layout/AppLayout';
 import GuestPageWrapper from '../page/guest-page/GuestPageWrapper';
-import LoadingPage from '../page/loading-page/LoadingPage';
 import LoginPage from '../page/login-page/LoginPage';
 import RosterPageWrapper from '../page/roster-page/RosterPageWrapper';
 import SettingsPageWrapper from '../page/settings-page/SettingsPageWrapper';
@@ -10,7 +11,7 @@ import SettingsPageWrapper from '../page/settings-page/SettingsPageWrapper';
 export const routes: RouteObject[] = [
   {
     path: '/',
-    element: <LoadingPage />,
+    element: <MainLoader />,
   },
   {
     path: '/login',
@@ -22,15 +23,21 @@ export const routes: RouteObject[] = [
   },
   {
     path: '/app',
-    element: <AppLayout />,
+    element: <ProtectedRoute />,
     children: [
       {
-        path: 'roster',
-        element: <RosterPageWrapper />,
-      },
-      {
-        path: 'settings',
-        element: <SettingsPageWrapper />,
+        path: '',
+        element: <AppLayout />,
+        children: [
+          {
+            path: 'roster',
+            element: <RosterPageWrapper />,
+          },
+          {
+            path: 'settings',
+            element: <SettingsPageWrapper />,
+          },
+        ],
       },
     ],
   },
