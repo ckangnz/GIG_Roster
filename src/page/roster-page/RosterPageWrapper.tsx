@@ -1,8 +1,18 @@
+import { useEffect } from 'react';
+
 import RosterPage from './RosterPage';
-import { useAppSelector } from '../../hooks/redux';
+import { useAppDispatch, useAppSelector } from '../../hooks/redux';
+import { fetchRosterEntries } from '../../store/slices/rosterSlice';
 
 const RosterPageWrapper = () => {
+  const dispatch = useAppDispatch();
   const firebaseUser = useAppSelector((state) => state.auth.firebaseUser);
+  const activePosition = useAppSelector((state) => state.ui.activeSideItem);
+  const activeTeamName = useAppSelector((state) => state.ui.activeTeamName);
+
+  useEffect(() => {
+    dispatch(fetchRosterEntries());
+  }, [dispatch]);
 
   if (!firebaseUser) {
     return null;
@@ -11,8 +21,8 @@ const RosterPageWrapper = () => {
   return (
     <RosterPage
       uid={firebaseUser.uid}
-      activePosition={null}
-      activeTeamName={null}
+      activePosition={activePosition}
+      activeTeamName={activeTeamName}
     />
   );
 };

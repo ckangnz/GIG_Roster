@@ -1,5 +1,6 @@
 import { RouteObject } from 'react-router-dom';
 
+import AppLayout from '../components/layout/AppLayout';
 import GuestPageWrapper from '../page/guest-page/GuestPageWrapper';
 import LoadingPage from '../page/loading-page/LoadingPage';
 import LoginPage from '../page/login-page/LoginPage';
@@ -20,11 +21,17 @@ export const routes: RouteObject[] = [
     element: <GuestPageWrapper />,
   },
   {
-    path: '/roster',
-    element: <RosterPageWrapper />,
-  },
-  {
-    path: '/settings',
-    element: <SettingsPageWrapper />,
+    path: '/app',
+    element: <AppLayout />,
+    children: [
+      {
+        path: 'roster',
+        element: <RosterPageWrapper />,
+      },
+      {
+        path: 'settings',
+        element: <SettingsPageWrapper />,
+      },
+    ],
   },
 ];
