@@ -31,3 +31,18 @@ export interface Position {
   emoji: string;
   colour: string;
 }
+
+export interface Absence {
+  reason: string;
+}
+
+export type TeamAssignments = Record<string, string[]>;
+
+export interface RosterEntry {
+  id: string;
+  date: string;
+  teams: Record<string, TeamAssignments>;
+  absence: Record<string, Absence>;
+  createdAt: Date;
+  updatedAt: Date;
+}
