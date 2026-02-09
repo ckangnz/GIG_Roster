@@ -25,6 +25,7 @@ export interface Team {
   emoji: string;
   positions: Position[];
   preferredDays: Weekday[];
+  maxConflict: number;
 }
 
 export interface Position {
@@ -38,15 +39,14 @@ export interface Absence {
   reason: string;
 }
 
-export type TeamAssignments = Record<string, string[]>;
+export type TeamAssignments = Record<string, string[]>; // userEmail/uid -> positionNames[]
 
 export interface RosterEntry {
-  id: string;
-  date: string;
-  teams: Record<string, TeamAssignments>;
-  absence: Record<string, Absence>;
-  createdAt: Date;
-  updatedAt: Date;
+  id: string; // Document ID (usually date)
+  date: string; // YYYY-MM-DD
+  teams: Record<string, TeamAssignments>; // teamName -> { userIdentifier -> positions[] }
+  absence: Record<string, Absence>; // userIdentifier -> { reason }
+  updatedAt?: unknown;
 }
 
 export const generateIndexedAssignments = (

@@ -33,3 +33,120 @@
   font-weight: 500;
 }
 
+.roster-table-wrapper {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  position: relative;
+  padding-bottom: 80px; /* Space for footer */
+}
+
+.clickable {
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.clickable:hover {
+  background-color: var(--background-primary-subtle);
+}
+
+.date-cell {
+  white-space: nowrap;
+  font-size: 0.85rem;
+  color: var(--color-text-dim);
+}
+
+.roster-cell {
+  text-align: center !important;
+  vertical-align: middle;
+  min-width: 80px;
+}
+
+.assigned-positions {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.pos-emoji {
+  font-size: 1.2rem;
+}
+
+/* Save Footer */
+.roster-save-footer {
+  position: fixed;
+  bottom: 80px; /* Above BottomNav */
+  left: 0;
+  right: 0;
+  background: var(--background-card);
+  border-top: 1px solid var(--border-color-secondary);
+  padding: 1rem 2rem;
+  box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.3);
+  z-index: 100;
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.save-footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.changes-label {
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.save-footer-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.save-btn {
+  background: var(--color-link);
+  color: white;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.save-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cancel-btn {
+  background: transparent;
+  color: var(--color-text-dim);
+  border: 1px solid var(--border-color-input);
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+@media (min-width: 768px) {
+  .roster-save-footer {
+    left: 260px; /* Account for Sidebar */
+    bottom: 20px;
+    right: 20px;
+    border-radius: 12px;
+    border: 1px solid var(--border-color-secondary);
+    width: auto;
+  }
+  
+  .app-shell.sidebar-collapsed .roster-save-footer {
+    left: 70px;
+  }
+}
+

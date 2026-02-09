@@ -16,6 +16,7 @@ const defaultTeam: Team = {
   emoji: '',
   positions: [],
   preferredDays: [],
+  maxConflict: 1,
 };
 
 const WEEK_DAYS: Weekday[] = [
@@ -124,7 +125,7 @@ const TeamManagement = () => {
       setTimeout(() => setStatus('idle'), 2000);
     } catch (e) {
       console.error('Save Error:', e);
-      alert('Check Firestore Rules: You may lack permission to write to \'metadata\'.');
+      alert("Check Firestore Rules: You may lack permission to write to 'metadata'.");
       setStatus('idle');
     }
   };
@@ -140,6 +141,7 @@ const TeamManagement = () => {
           { text: 'Order', minWidth: 50, textAlign: 'center' },
           { text: 'Emoji', width: 30 },
           { text: 'Name', minWidth: 100 },
+          { text: 'Conflicts', width: 60, textAlign: 'center' },
           { text: 'Allowed Positions', minWidth: 200 },
           { text: 'Preferred Days', minWidth: 250 },
           { text: '', width: 50 },
@@ -181,6 +183,12 @@ const TeamManagement = () => {
               name={`team-name-${teamIndex}`}
               value={team.name}
               onChange={(e) => handleUpdate(teamIndex, 'name', e.target.value)}
+            />
+            <SettingsTableInputCell
+              name={`team-maxConflict-${teamIndex}`}
+              value={team.maxConflict?.toString() || '1'}
+              type="number"
+              onChange={(e) => handleUpdate(teamIndex, 'maxConflict', parseInt(e.target.value) || 1)}
             />
             <SettingsTableAnyCell>
               <PillGroup nowrap>
@@ -240,6 +248,12 @@ const TeamManagement = () => {
             value={newTeam.name}
             placeholder="Team Name"
             onChange={(e) => setNewTeam({ ...newTeam, name: e.target.value })}
+          />
+          <SettingsTableInputCell
+            name={`new-team-maxConflict`}
+            value={newTeam.maxConflict?.toString() || '1'}
+            type="number"
+            onChange={(e) => setNewTeam({ ...newTeam, maxConflict: parseInt(e.target.value) || 1 })}
           />
           <SettingsTableAnyCell>
             <PillGroup nowrap>
