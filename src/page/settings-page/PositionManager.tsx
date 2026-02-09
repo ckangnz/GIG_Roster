@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 
 import { CornerDownRight } from 'lucide-react';
 
+import Pill from '../../components/common/Pill';
 import SettingsTable, {
   SettingsTableAnyCell,
   SettingsTableColourInputCell,
@@ -21,6 +22,7 @@ const defaultPosition: Position = {
   emoji: '',
   colour: '',
   parentId: undefined,
+  sortByGender: false,
 };
 
 const PositionManagement = () => {
@@ -44,7 +46,7 @@ const PositionManagement = () => {
     setPositions(reduxPositions);
   }, [reduxPositions]);
 
-  const handleUpdate = (index: number, field: keyof Position, value: string) => {
+  const handleUpdate = (index: number, field: keyof Position, value: Position[keyof Position]) => {
     const updated = [...positions];
     updated[index] = { ...updated[index], [field]: value };
     setPositions(updated);
@@ -250,6 +252,7 @@ const PositionManagement = () => {
           { text: 'Emoji', width: 30 },
           { text: 'Name', minWidth: 80 },
           { text: 'Colour', minWidth: 100 },
+          { text: 'Sort by Gender', width: 100, textAlign: 'center' },
           { text: 'Add Child', width: 80, textAlign: 'center' },
           { text: 'Delete', width: 60, textAlign: 'center' },
         ]}
@@ -300,6 +303,15 @@ const PositionManagement = () => {
               onChange={(e) => handleUpdate(i, 'colour', e.target.value)}
             />
             <SettingsTableAnyCell textAlign="center">
+              <Pill
+                colour={p.sortByGender ? 'var(--color-success-dark)' : 'var(--color-text-dim)'}
+                isActive={p.sortByGender}
+                onClick={() => handleUpdate(i, 'sortByGender', !p.sortByGender)}
+              >
+                {p.sortByGender ? 'YES' : 'NO'}
+              </Pill>
+            </SettingsTableAnyCell>
+            <SettingsTableAnyCell textAlign="center">
               {!p.parentId && (
                 <button
                   className="icon-button icon-button--add-child"
@@ -340,7 +352,15 @@ const PositionManagement = () => {
             placeholder="#FFFFFF"
             onChange={(e) => setNewPos({ ...newPos, colour: e.target.value })}
           />
-          <td className=""></td>
+          <SettingsTableAnyCell textAlign="center">
+            <Pill
+              colour={newPos.sortByGender ? 'var(--color-success-dark)' : 'var(--color-text-dim)'}
+              isActive={newPos.sortByGender}
+              onClick={() => setNewPos({ ...newPos, sortByGender: !newPos.sortByGender })}
+            >
+              {newPos.sortByGender ? 'YES' : 'NO'}
+            </Pill>
+          </SettingsTableAnyCell>
           <SettingsTableAnyCell textAlign="center">
             <button
               onClick={addPosition}

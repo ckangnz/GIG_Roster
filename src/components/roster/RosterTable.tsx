@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useParams } from 'react-router-dom';
 
@@ -28,7 +28,29 @@ const RosterTable = () => {
   const { teams: allTeams } = useAppSelector((state) => state.teams);
   const { positions: allPositions } = useAppSelector((state) => state.positions);
 
+  const [focusedCell, setFocusedCell] = useState<{ row: number; col: number } | null>(null);
+
   const hasDirtyChanges = Object.keys(dirtyEntries).length > 0;
+
+  const currentPosition = useMemo(
+    () => allPositions.find((p) => p.name === activePosition),
+    [allPositions, activePosition],
+  );
+
+  const sortedUsers = useMemo(() => {
+    const list = [...users];
+    if (currentPosition?.sortByGender) {
+      return list.sort((a, b) => {
+        if (a.gender === b.gender) {
+          return (a.name || '').localeCompare(b.name || '');
+        }
+        if (a.gender === 'Male') return -1;
+        if (b.gender === 'Male') return 1;
+        return (a.gender || '').localeCompare(b.gender || '');
+      });
+    }
+    return list;
+  }, [users, currentPosition]);
 
   useEffect(() => {
     dispatch(fetchRosterEntries());
@@ -46,61 +68,68 @@ const RosterTable = () => {
     }
   }, [teamName, dispatch]);
 
-  const handleCellClick = (dateString: string, userEmail: string) => {
-    if (!teamName || !activePosition || isCellDisabled(dateString, userEmail)) return;
+  const isCellDisabled = useCallback(
+    (dateString: string, userEmail: string) => {
+      if (!teamName || !activePosition) return false;
 
-    const currentTeam = allTeams.find((t) => t.name === teamName);
-    const maxConflict = currentTeam?.maxConflict || 1;
+      const dateKey = dateString.split('T')[0];
+      const entry = dirtyEntries[dateKey] || entries[dateKey];
+      const currentTeam = allTeams.find((t) => t.name === teamName);
+      const maxConflict = currentTeam?.maxConflict || 1;
 
-    // Build the position group: [Parent, Child1, Child2...]
-    const children = allPositions.filter((p) => p.parentId === activePosition);
-    const positionGroupNames = [activePosition, ...children.map((c) => c.name)];
+      if (!entry || !entry.teams[teamName] || !entry.teams[teamName][userEmail]) {
+        return false;
+      }
 
-    dispatch(
-      updateLocalAssignment({
-        date: dateString.split('T')[0],
-        teamName,
-        userIdentifier: userEmail,
-        positionGroupNames,
-        maxConflict,
-      }),
-    );
-  };
+      const userAssignments = entry.teams[teamName][userEmail];
 
-  const isCellDisabled = (dateString: string, userEmail: string) => {
-    if (!teamName || !activePosition) return false;
+      const children = allPositions.filter((p) => p.parentId === activePosition);
+      const positionGroupNames = [activePosition, ...children.map((c) => c.name)];
+      const isInGroup = userAssignments.some((p) => positionGroupNames.includes(p));
 
-    const dateKey = dateString.split('T')[0];
-    const entry = dirtyEntries[dateKey] || entries[dateKey];
-    const currentTeam = allTeams.find((t) => t.name === teamName);
-    const maxConflict = currentTeam?.maxConflict || 1;
+      if (isInGroup) return false;
 
-    if (!entry || !entry.teams[teamName] || !entry.teams[teamName][userEmail]) {
-      // If user has NO assignments at all, they can't be disabled (unless maxConflict < 1 which isn't possible)
-      return false;
-    }
+      return userAssignments.length >= maxConflict;
+    },
+    [teamName, activePosition, dirtyEntries, entries, allTeams, allPositions],
+  );
 
-    const userAssignments = entry.teams[teamName][userEmail];
-    
-    // Find if user is already in this position group
-    const children = allPositions.filter((p) => p.parentId === activePosition);
-    const positionGroupNames = [activePosition, ...children.map((c) => c.name)];
-    const isInGroup = userAssignments.some(p => positionGroupNames.includes(p));
+  const handleCellClick = useCallback(
+    (dateString: string, userEmail: string, row: number, col: number) => {
+      if (!teamName || !activePosition || isCellDisabled(dateString, userEmail)) {
+        setFocusedCell({ row, col });
+        return;
+      }
 
-    // If they ARE in the group, they can always click to cycle or remove
-    if (isInGroup) return false;
+      setFocusedCell({ row, col });
 
-    // If they ARE NOT in the group, they are disabled if they've reached maxConflict
-    return userAssignments.length >= maxConflict;
-  };
+      const currentTeam = allTeams.find((t) => t.name === teamName);
+      const maxConflict = currentTeam?.maxConflict || 1;
 
-  const handleSave = () => {
+      // Build the position group: [Parent, Child1, Child2...]
+      const children = allPositions.filter((p) => p.parentId === activePosition);
+      const positionGroupNames = [activePosition, ...children.map((c) => c.name)];
+
+      dispatch(
+        updateLocalAssignment({
+          date: dateString.split('T')[0],
+          teamName,
+          userIdentifier: userEmail,
+          positionGroupNames,
+          maxConflict,
+        }),
+      );
+    },
+    [dispatch, teamName, activePosition, isCellDisabled, allTeams, allPositions],
+  );
+
+  const handleSave = useCallback(() => {
     dispatch(saveRosterChanges(dirtyEntries));
-  };
+  }, [dispatch, dirtyEntries]);
 
-  const handleCancel = () => {
+  const handleCancel = useCallback(() => {
     dispatch(resetRosterEdits());
-  };
+  }, [dispatch]);
 
   const getCellContent = (dateString: string, userEmail: string) => {
     const dateKey = dateString.split('T')[0];
@@ -125,6 +154,74 @@ const RosterTable = () => {
     );
   };
 
+  // Keyboard navigation
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if (!focusedCell) return;
+
+      const { row, col } = focusedCell;
+
+      switch (e.key) {
+        case 'ArrowUp':
+          e.preventDefault();
+          if (row > 0) setFocusedCell({ row: row - 1, col });
+          break;
+        case 'ArrowDown':
+          e.preventDefault();
+          if (row < rosterDates.length - 1) setFocusedCell({ row: row + 1, col });
+          break;
+        case 'ArrowLeft':
+          e.preventDefault();
+          if (col > 0) setFocusedCell({ row, col: col - 1 });
+          break;
+        case 'ArrowRight':
+          e.preventDefault();
+          if (col < sortedUsers.length - 1) setFocusedCell({ row, col: col + 1 });
+          break;
+        case 'Tab':
+          e.preventDefault();
+          if (e.shiftKey) {
+            if (row > 0) setFocusedCell({ row: row - 1, col });
+          } else {
+            if (row < rosterDates.length - 1) setFocusedCell({ row: row + 1, col });
+          }
+          break;
+        case ' ': {
+          e.preventDefault();
+          const dStr = rosterDates[row];
+          const usr = sortedUsers[col];
+          if (usr?.email) {
+            handleCellClick(dStr, usr.email, row, col);
+          }
+          break;
+        }
+        case 'Enter':
+          if (hasDirtyChanges) {
+            e.preventDefault();
+            handleSave();
+          }
+          break;
+        case 'Escape':
+          if (hasDirtyChanges) {
+            e.preventDefault();
+            handleCancel();
+          }
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, [
+    focusedCell,
+    rosterDates,
+    sortedUsers,
+    hasDirtyChanges,
+    handleCellClick,
+    handleSave,
+    handleCancel,
+  ]);
+
   if (loadingUsers || loadingTeam) {
     return <Spinner />;
   }
@@ -134,7 +231,7 @@ const RosterTable = () => {
     return <div className="roster-table-error">Error: {error}</div>;
   }
 
-  if (users.length === 0) {
+  if (sortedUsers.length === 0) {
     return <div className="roster-table-loading">No users found for this position.</div>;
   }
 
@@ -145,26 +242,36 @@ const RosterTable = () => {
           <thead>
             <tr>
               <th className="roster-table-header-cell">Date</th>
-              {users.map((user) => (
+              {sortedUsers.map((user) => (
                 <th key={user.email} className="roster-table-header-cell">
                   {user.name}
+                  {currentPosition?.sortByGender && (
+                    <span className="gender-label">
+                      ({user.gender === 'Male' ? 'M' : user.gender === 'Female' ? 'F' : '?'})
+                    </span>
+                  )}
                 </th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {rosterDates.map((dateString) => (
+            {rosterDates.map((dateString, rowIndex) => (
               <tr key={dateString}>
                 <td className="date-cell">{new Date(dateString).toLocaleDateString()}</td>
-                {users.map((user) => {
+                {sortedUsers.map((user, colIndex) => {
+                  const isFocused = focusedCell?.row === rowIndex && focusedCell?.col === colIndex;
                   const disabled = user.email ? isCellDisabled(dateString, user.email) : false;
                   return (
                     <td
                       key={user.email}
-                      className={`roster-cell ${!disabled ? 'clickable' : 'disabled'}`}
+                      className={`roster-cell ${!disabled ? 'clickable' : 'disabled'} ${
+                        isFocused ? 'focused' : ''
+                      }`}
                       onClick={() =>
-                        user.email && !disabled && handleCellClick(dateString, user.email)
+                        user.email && handleCellClick(dateString, user.email, rowIndex, colIndex)
                       }
+                      tabIndex={0}
+                      onFocus={() => setFocusedCell({ row: rowIndex, col: colIndex })}
                     >
                       {user.email && getCellContent(dateString, user.email)}
                     </td>

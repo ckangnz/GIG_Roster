@@ -33,6 +33,7 @@ export interface Position {
   emoji: string;
   colour: string;
   parentId?: string;
+  sortByGender?: boolean;
 }
 
 export interface Absence {

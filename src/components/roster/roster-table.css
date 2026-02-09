@@ -79,6 +79,23 @@
   font-size: 1.2rem;
 }
 
+.gender-label {
+  font-size: 0.7rem;
+  opacity: 0.6;
+  margin-left: 4px;
+  font-weight: normal;
+}
+
+.roster-cell.focused {
+  outline: 2px solid var(--color-link);
+  outline-offset: -2px;
+  background-color: var(--background-primary-subtle);
+}
+
+.roster-cell:focus {
+  outline: none; /* We use the .focused class for custom styling */
+}
+
 /* Save Footer */
 .roster-save-footer {
   position: fixed;
