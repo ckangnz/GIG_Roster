@@ -12,7 +12,6 @@ export interface AppUser {
   name: string | null;
   email: string | null;
   teams: string[];
-  positions: string[];
   teamPositions?: Record<string, string[]>; // teamName -> positionNames[]
   indexedAssignments?: string[]; // ["TeamName|PositionName", ...]
   gender: string;

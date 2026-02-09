@@ -38,7 +38,6 @@ export const initializeUserData = createAsyncThunk(
           isAdmin: isAutoAdmin,
           isActive: true,
           teams: [],
-          positions: [],
           teamPositions: {},
           indexedAssignments: [],
           gender: '',

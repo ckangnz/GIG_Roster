@@ -89,20 +89,6 @@ const userManagementSlice = createSlice({
         (user as Record<keyof AppUser, AppUser[keyof AppUser]>)[field] = value;
       }
     },
-    toggleUserPosition(
-      state,
-      action: PayloadAction<{ userId: string; posName: string }>,
-    ) {
-      const { userId, posName } = action.payload;
-      const user = state.allUsers.find((u) => u.id === userId);
-      if (user) {
-        const currentPos = user.positions || [];
-        const newPos = currentPos.includes(posName)
-          ? currentPos.filter((p) => p !== posName)
-          : [...currentPos, posName];
-        user.positions = newPos;
-      }
-    },
     toggleUserTeam(
       state,
       action: PayloadAction<{ userId: string; teamName: string }>,
@@ -144,13 +130,6 @@ const userManagementSlice = createSlice({
           ? currentPos.filter((p) => p !== posName)
           : [...currentPos, posName];
         user.teamPositions[teamName] = newPos;
-
-        // Sync legacy positions array
-        const allPos = new Set<string>();
-        Object.values(user.teamPositions).forEach((positions) => {
-          positions.forEach((p) => allPos.add(p));
-        });
-        user.positions = Array.from(allPos);
       }
     },
   },

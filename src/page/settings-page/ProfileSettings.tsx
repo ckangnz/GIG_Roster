@@ -24,19 +24,12 @@ const ProfileSettings = () => {
     if (!firebaseUser) return;
     setStatus('saving');
     try {
-      // Sync legacy positions array
-      const allPos = new Set<string>();
-      Object.values(teamPositions).forEach((positions) => {
-        positions.forEach((p) => allPos.add(p));
-      });
-
       const updateData = {
         name,
         gender,
         isActive,
         teams: selectedTeams,
         teamPositions,
-        positions: Array.from(allPos),
       };
       await dispatch(updateUserProfile({ uid: firebaseUser.uid, data: updateData })).unwrap();
       setStatus('success');
