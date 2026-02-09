@@ -4,7 +4,6 @@ import { RootState } from '../index';
 
 const selectTeamsState = (state: RootState) => state.teams;
 const selectPositionsState = (state: RootState) => state.positions;
-const selectGendersState = (state: RootState) => state.genders;
 
 export const selectTeams = createSelector([selectTeamsState], (teams) => teams.teams);
 
@@ -53,11 +52,3 @@ export const selectPositionsByNameFilter = (nameFilter: string) =>
         position.name.toLowerCase().includes(nameFilter.toLowerCase()),
       ),
   );
-
-export const selectGenders = createSelector(
-  [selectGendersState],
-  (genders) => genders.genders,
-);
-
-export const selectGenderById = (genderId: string) =>
-  createSelector([selectGenders], (genders) => genders.find((gender) => gender.id === genderId));

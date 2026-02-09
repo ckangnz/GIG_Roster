@@ -27,6 +27,13 @@ body {
   overflow: hidden;
 }
 
+#root {
+  margin: 0 auto;
+  padding: 0;
+  text-align: center;
+  height: 100%;
+}
+
 a {
   font-weight: 500;
   color: var(--color-link);

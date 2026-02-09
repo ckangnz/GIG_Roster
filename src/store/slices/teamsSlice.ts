@@ -8,12 +8,14 @@ interface TeamsState {
   teams: Team[];
   loading: boolean;
   error: string | null;
+  fetched: boolean;
 }
 
 const initialState: TeamsState = {
   teams: [],
   loading: false,
   error: null,
+  fetched: false,
 };
 
 export const fetchTeams = createAsyncThunk('teams/fetchTeams', async (_, { rejectWithValue }) => {
@@ -60,6 +62,7 @@ const teamsSlice = createSlice({
       .addCase(fetchTeams.fulfilled, (state, action) => {
         state.teams = action.payload;
         state.loading = false;
+        state.fetched = true;
       })
       .addCase(fetchTeams.rejected, (state, action) => {
         state.error = action.payload as string;

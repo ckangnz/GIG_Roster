@@ -1,40 +1,39 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 interface UIState {
-  activeTab: string;
-  activeSideItem: string | null;
-  activeTeamName: string | null;
+  isMobileSidebarOpen: boolean;
+  isDesktopSidebarExpanded: boolean;
+  expandedTeams: string[];
 }
 
 const initialState: UIState = {
-  activeTab: 'roster',
-  activeSideItem: null,
-  activeTeamName: null,
+  isMobileSidebarOpen: false,
+  isDesktopSidebarExpanded: true,
+  expandedTeams: [],
 };
 
 const uiSlice = createSlice({
   name: 'ui',
   initialState,
   reducers: {
-    setActiveTab: (state, action: PayloadAction<string>) => {
-      state.activeTab = action.payload;
+    setMobileSidebarOpen: (state, action: PayloadAction<boolean>) => {
+      state.isMobileSidebarOpen = action.payload;
     },
-    setActiveSideItem: (state, action: PayloadAction<string | null>) => {
-      state.activeSideItem = action.payload;
+    setDesktopSidebarExpanded: (state, action: PayloadAction<boolean>) => {
+      state.isDesktopSidebarExpanded = action.payload;
     },
-    setActiveTeamName: (state, action: PayloadAction<string | null>) => {
-      state.activeTeamName = action.payload;
-    },
-    setActiveSelection: (
-      state,
-      action: PayloadAction<{ teamName: string | null; sideItem: string | null; }>,
-    ) => {
-      state.activeTeamName = action.payload.teamName;
-      state.activeSideItem = action.payload.sideItem;
+    toggleTeamExpansion: (state, action: PayloadAction<string>) => {
+      const teamName = action.payload;
+      const index = state.expandedTeams.indexOf(teamName);
+      if (index >= 0) {
+        state.expandedTeams.splice(index, 1);
+      } else {
+        state.expandedTeams.push(teamName);
+      }
     },
   },
 });
 
-export const { setActiveTab, setActiveSideItem, setActiveTeamName, setActiveSelection } =
+export const { setMobileSidebarOpen, setDesktopSidebarExpanded, toggleTeamExpansion } =
   uiSlice.actions;
 export const uiReducer = uiSlice.reducer;

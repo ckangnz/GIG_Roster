@@ -1,29 +1,27 @@
 import { ChevronUpIcon } from "lucide-react";
 
 import "./mobile-header.css";
+import { useAppDispatch, useAppSelector } from "../../hooks/redux";
+import { setMobileSidebarOpen } from "../../store/slices/uiSlice";
 import ThemeToggleButton from "../common/ThemeToggleButton";
 
 interface MobileHeaderProps {
   title: string;
-  isSidebarOpen: boolean;
-  setSidebarOpen: (open: boolean) => void;
 }
 
-const MobileHeader = ({
-  title,
-  isSidebarOpen,
-  setSidebarOpen,
-}: MobileHeaderProps) => {
+const MobileHeader = ({ title }: MobileHeaderProps) => {
+  const dispatch = useAppDispatch();
+  const { isMobileSidebarOpen } = useAppSelector((state) => state.ui);
   return (
     <header className="mobile-header">
       <div
-        className={`mobile-header-pill ${isSidebarOpen ? "mobile-header-pill-active" : ""}`}
-        onClick={() => setSidebarOpen(!isSidebarOpen)}
+        className={`mobile-header-pill ${isMobileSidebarOpen ? "mobile-header-pill-active" : ""}`}
+        onClick={() => dispatch(setMobileSidebarOpen(!isMobileSidebarOpen))}
       >
         <span className="mobile-header-text">{title}</span>
         {
           <ChevronUpIcon
-            className={`mobile-header-chevron ${isSidebarOpen ? "rotate" : ""}`}
+            className={`mobile-header-chevron ${isMobileSidebarOpen ? "rotate" : ""}`}
           />
         }
       </div>

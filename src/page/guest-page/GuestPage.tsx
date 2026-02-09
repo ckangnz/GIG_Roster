@@ -1,14 +1,30 @@
+import { Navigate } from "react-router-dom";
+
 import ThemeToggleButton from "../../components/common/ThemeToggleButton";
-import { AppUser } from "../../model/model";
-import "./guest-page.css";
+import { useAppSelector } from "../../hooks/redux";
+import LoadingPage from "../loading-page/LoadingPage";
 import ProfileSettings from "../settings-page/ProfileSettings";
+import "./guest-page.css";
 
-interface GuestPageProps {
-  user: AppUser;
-  uid: string;
-}
+const GuestPage = () => {
+  const { userData, firebaseUser, loading } = useAppSelector(
+    (state) => state.auth,
+  );
 
-const GuestPage = ({ user, uid }: GuestPageProps) => {
+  if (loading) return <LoadingPage />;
+
+  if (!firebaseUser) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (!userData) {
+    return <LoadingPage />;
+  }
+
+  if (userData.isApproved) {
+    return <Navigate to="/app" replace />;
+  }
+
   return (
     <div className="guest-container">
       <header className="guest-header">
@@ -19,7 +35,7 @@ const GuestPage = ({ user, uid }: GuestPageProps) => {
         </div>
       </header>
 
-      <ProfileSettings userData={user} uid={uid} />
+      <ProfileSettings />
     </div>
   );
 };

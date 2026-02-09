@@ -1,6 +1,6 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { User } from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 
 import { auth, db } from '../../firebase';
 import { AppUser } from '../../model/model';
@@ -47,23 +47,41 @@ export const initializeUserData = createAsyncThunk(
       return userSnap.data() as AppUser;
     } catch (error) {
       return rejectWithValue(
-        error instanceof Error ? error.message : 'Unknown error'
+        error instanceof Error ? error.message : 'Unknown error',
       );
     }
-  }
+  },
+);
+
+export const updateUserProfile = createAsyncThunk(
+  'auth/updateUserProfile',
+  async (
+    { uid, data }: { uid: string; data: Partial<AppUser> },
+    { rejectWithValue },
+  ) => {
+    try {
+      const userRef = doc(db, 'users', uid);
+      await updateDoc(userRef, data);
+      return data;
+    } catch (error) {
+      return rejectWithValue(
+        error instanceof Error ? error.message : 'Failed to update profile',
+      );
+    }
+  },
 );
 
 const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    setUser: (state, action) => {
+    setUser: (state, action: PayloadAction<User | null>) => {
       state.firebaseUser = action.payload;
     },
-    setUserData: (state, action) => {
+    setUserData: (state, action: PayloadAction<AppUser | null>) => {
       state.userData = action.payload;
     },
-    setLoading: (state, action) => {
+    setLoading: (state, action: PayloadAction<boolean>) => {
       state.loading = action.payload;
     },
     logout: (state) => {
@@ -78,13 +96,27 @@ const authSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(initializeUserData.fulfilled, (state, action) => {
+      .addCase(initializeUserData.fulfilled, (state, action: PayloadAction<AppUser>) => {
         state.userData = action.payload;
         state.loading = false;
       })
       .addCase(initializeUserData.rejected, (state, action) => {
         state.error = action.payload as string;
         state.loading = false;
+      })
+      .addCase(updateUserProfile.pending, (state) => {
+        state.error = null;
+      })
+      .addCase(
+        updateUserProfile.fulfilled,
+        (state, action: PayloadAction<Partial<AppUser>>) => {
+          if (state.userData) {
+            state.userData = { ...state.userData, ...action.payload };
+          }
+        },
+      )
+      .addCase(updateUserProfile.rejected, (state, action) => {
+        state.error = action.payload as string;
       });
   },
 });

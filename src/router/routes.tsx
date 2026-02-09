@@ -1,41 +1,41 @@
-import { RouteObject } from 'react-router-dom';
+import { RouteObject } from "react-router-dom";
 
-import MainLoader from './MainLoader';
-import ProtectedRoute from './ProtectedRoute';
-import AppLayout from '../components/layout/AppLayout';
-import GuestPageWrapper from '../page/guest-page/GuestPageWrapper';
-import LoginPage from '../page/login-page/LoginPage';
-import RosterPageWrapper from '../page/roster-page/RosterPageWrapper';
-import SettingsPageWrapper from '../page/settings-page/SettingsPageWrapper';
+import MainLoader from "./MainLoader";
+import ProtectedRoute from "./ProtectedRoute";
+import MainLayout from "../components/layout/MainLayout";
+import GuestPage from "../page/guest-page/GuestPage";
+import LoginPage from "../page/login-page/LoginPage";
+import RosterPage from "../page/roster-page/RosterPage";
+import SettingsPage from "../page/settings-page/SettingsPage";
 
 export const routes: RouteObject[] = [
   {
-    path: '/',
+    path: "/",
     element: <MainLoader />,
   },
   {
-    path: '/login',
+    path: "/login",
     element: <LoginPage />,
   },
   {
-    path: '/guest',
-    element: <GuestPageWrapper />,
+    path: "/guest",
+    element: <GuestPage />,
   },
   {
-    path: '/app',
+    path: "/app",
     element: <ProtectedRoute />,
     children: [
       {
-        path: '',
-        element: <AppLayout />,
+        path: "",
+        element: <MainLayout />,
         children: [
           {
-            path: 'roster',
-            element: <RosterPageWrapper />,
+            path: "roster/:teamName?/:positionName?",
+            element: <RosterPage />,
           },
           {
-            path: 'settings',
-            element: <SettingsPageWrapper />,
+            path: "settings/:section?",
+            element: <SettingsPage />,
           },
         ],
       },

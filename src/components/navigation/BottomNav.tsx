@@ -1,20 +1,26 @@
-import { BOTTOM_NAV_ITEMS } from "../../constants/navigation";
-import "./bottom-nav.css";
+import { useNavigate, useLocation } from 'react-router-dom';
 
-interface BottomNavProps {
-  activeTab: string;
-  onTabChange: (tab: string) => void;
-}
+import { BOTTOM_NAV_ITEMS, AppTab } from '../../constants/navigation';
+import './bottom-nav.css';
 
-const BottomNav = ({ activeTab, onTabChange }: BottomNavProps) => {
+const BottomNav = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const activeTab = location.pathname.includes('/settings') ? AppTab.SETTINGS : AppTab.ROSTER;
+
+  const handleTabChange = (tabId: string) => {
+    navigate(`/app/${tabId}`);
+  };
+
   return (
     <nav className="bottom-nav-container">
       <div className="bottom-nav">
         {BOTTOM_NAV_ITEMS.map((item) => (
           <button
             key={item.id}
-            className={`bottom-nav-btn ${activeTab === item.id ? "bottom-nav-btn-active" : ""}`}
-            onClick={() => onTabChange(item.id)}
+            className={`bottom-nav-btn ${activeTab === item.id ? 'bottom-nav-btn-active' : ''}`}
+            onClick={() => handleTabChange(item.id)}
           >
             <span>{item.icon}</span>
             <span>{item.label}</span>

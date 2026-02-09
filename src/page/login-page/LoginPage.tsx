@@ -1,11 +1,22 @@
-import { signInWithPopup } from "firebase/auth";
+import { signInWithPopup } from 'firebase/auth';
+import { Navigate } from 'react-router-dom';
 
-import { auth, googleProvider } from "../../firebase";
+import { auth, googleProvider } from '../../firebase';
+import { useAppSelector } from '../../hooks/redux';
 
-import "./login-page.css";
+import './login-page.css';
 
 const LoginPage = () => {
+  const { firebaseUser, loading } = useAppSelector((state) => state.auth);
   const loginGoogle = () => signInWithPopup(auth, googleProvider);
+
+  if (loading) {
+    return null;
+  }
+
+  if (firebaseUser) {
+    return <Navigate to="/" replace />;
+  }
 
   return (
     <div className="login-container">
@@ -23,16 +34,6 @@ const LoginPage = () => {
           />
           Login with Google
         </button>
-
-        {/* <button onClick={loginApple} className="login-button apple"> */}
-        {/*   <img */}
-        {/*     src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg" */}
-        {/*     height="18" */}
-        {/*     alt="Apple" */}
-        {/*     className="apple-icon" */}
-        {/*   /> */}
-        {/*   Login with Apple */}
-        {/* </button> */}
       </div>
     </div>
   );

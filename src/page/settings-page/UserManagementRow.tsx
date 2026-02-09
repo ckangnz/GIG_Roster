@@ -3,41 +3,53 @@ import {
   SettingsTableAnyCell,
   SettingsTableInputCell,
 } from "../../components/common/SettingsTable";
+import { useAppDispatch } from "../../hooks/redux";
 import { useComputedPositions } from "../../hooks/useComputedPositions";
 import { AppUser, Gender, Team } from "../../model/model";
+import {
+  toggleUserPosition,
+  toggleUserTeam,
+  updateUserField,
+} from "../../store/slices/userManagementSlice";
 
 interface UserManagementRowProps {
   user: AppUser & { id: string };
   availableTeams: Team[];
-  onTogglePosition: (userId: string, posName: string) => void;
-  onToggleTeam: (userId: string, teamName: string) => void;
-  onHandleUpdate: (
-    id: string,
-    field: keyof AppUser,
-    value: AppUser[keyof AppUser],
-  ) => void;
   adminEmail: string;
 }
 
 const UserManagementRow = ({
   user,
   availableTeams,
-  onTogglePosition,
-  onToggleTeam,
-  onHandleUpdate,
   adminEmail,
 }: UserManagementRowProps) => {
+  const dispatch = useAppDispatch();
   const computedPositions = useComputedPositions(
     user.teams || [],
     availableTeams,
   );
+
+  const handleUpdate = (
+    field: keyof AppUser,
+    value: AppUser[keyof AppUser],
+  ) => {
+    dispatch(updateUserField({ id: user.id, field, value }));
+  };
+
+  const handleToggleTeam = (teamName: string) => {
+    dispatch(toggleUserTeam({ userId: user.id, teamName }));
+  };
+
+  const handleTogglePosition = (posName: string) => {
+    dispatch(toggleUserPosition({ userId: user.id, posName }));
+  };
 
   return (
     <tr key={user.id}>
       <SettingsTableInputCell
         name={`name-${user.id}`}
         value={user.name || ""}
-        onChange={(e) => onHandleUpdate(user.id, "name", e.target.value)}
+        onChange={(e) => handleUpdate("name", e.target.value)}
         isSticky
       />
       <SettingsTableInputCell
@@ -50,9 +62,7 @@ const UserManagementRow = ({
           name={`gender-${user.id}`}
           className="form-select"
           value={user.gender}
-          onChange={(e) =>
-            onHandleUpdate(user.id, "gender", e.target.value as Gender)
-          }
+          onChange={(e) => handleUpdate("gender", e.target.value as Gender)}
         >
           <option value="">-</option>
           <option value="Male">Male</option>
@@ -66,7 +76,7 @@ const UserManagementRow = ({
             return (
               <Pill
                 key={team.name}
-                onClick={() => onToggleTeam(user.id, team.name)}
+                onClick={() => handleToggleTeam(team.name)}
                 isActive={isSelected}
               >
                 <span>{team.emoji}</span> {team.name}
@@ -84,7 +94,7 @@ const UserManagementRow = ({
                 key={pos.name}
                 colour={pos.colour}
                 isActive={isSelected}
-                onClick={() => onTogglePosition(user.id, pos.name)}
+                onClick={() => handleTogglePosition(pos.name)}
               >
                 {pos.emoji}
               </Pill>
@@ -100,7 +110,7 @@ const UserManagementRow = ({
               : "var(--color-warning-dark)"
           }
           minWidth={35}
-          onClick={() => onHandleUpdate(user.id, "isActive", !user.isActive)}
+          onClick={() => handleUpdate("isActive", !user.isActive)}
           isActive
         >
           {user.isActive ? "YES" : "NO"}
@@ -114,9 +124,7 @@ const UserManagementRow = ({
               : "var(--color-warning-dark)"
           }
           minWidth={35}
-          onClick={() =>
-            onHandleUpdate(user.id, "isApproved", !user.isApproved)
-          }
+          onClick={() => handleUpdate("isApproved", !user.isApproved)}
           isActive
         >
           {user.isApproved ? "YES" : "NO"}
@@ -130,7 +138,7 @@ const UserManagementRow = ({
               : "var(--color-warning-dark)"
           }
           minWidth={35}
-          onClick={() => onHandleUpdate(user.id, "isAdmin", !user.isAdmin)}
+          onClick={() => handleUpdate("isAdmin", !user.isAdmin)}
           isActive
           isDisabled={user.email === adminEmail}
         >

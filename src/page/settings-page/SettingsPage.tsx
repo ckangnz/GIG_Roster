@@ -1,24 +1,22 @@
+import { useParams } from "react-router-dom";
+
 import PositionManagement from "./PositionManager";
 import ProfileSettings from "./ProfileSettings";
+import "./settings-page.css";
 import TeamManagement from "./TeamManagement";
 import UserManagement from "./UserManagement";
 import { SettingsSection } from "../../constants/navigation";
-import { AppUser } from "../../model/model";
+import { useAppSelector } from "../../hooks/redux";
 
-import "./settings-page.css";
+const SettingsPage = () => {
+  const { userData } = useAppSelector((state) => state.auth);
+  const { section: activeSection } = useParams();
 
-interface SettingsPageProps {
-  userData: AppUser;
-  uid: string;
-  activeSection: string | null;
-}
+  if (!userData) return null;
 
-const SettingsPage = ({ userData, uid, activeSection }: SettingsPageProps) => {
   return (
     <div className="settings-container">
-      {activeSection === SettingsSection.PROFILE && (
-        <ProfileSettings key={uid} userData={userData} uid={uid} />
-      )}
+      {activeSection === SettingsSection.PROFILE && <ProfileSettings />}
 
       {activeSection === SettingsSection.USER_MANAGEMENT &&
         (userData.isAdmin ? <UserManagement /> : <p>Access Denied</p>)}

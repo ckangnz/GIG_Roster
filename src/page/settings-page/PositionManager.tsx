@@ -1,53 +1,62 @@
-import { useState } from "react";
+import { useState, useEffect } from 'react';
 
-import { CornerDownRight } from "lucide-react";
+import { CornerDownRight } from 'lucide-react';
 
 import SettingsTable, {
   SettingsTableAnyCell,
   SettingsTableColourInputCell,
   SettingsTableInputCell,
-} from "../../components/common/SettingsTable";
-import { useAppDispatch, useAppSelector } from "../../hooks/redux";
-import { Position as GlobalPosition } from "../../model/model";
-import { updatePositions } from "../../store/slices/positionsSlice";
-
+} from '../../components/common/SettingsTable';
+import { useAppDispatch, useAppSelector } from '../../hooks/redux';
+import { Position as GlobalPosition } from '../../model/model';
+import { fetchPositions, updatePositions } from '../../store/slices/positionsSlice';
 
 interface Position extends GlobalPosition {
   parentId?: string;
 }
 
 const defaultPosition: Position = {
-  name: "",
-  emoji: "",
-  colour: "",
+  name: '',
+  emoji: '',
+  colour: '',
   parentId: undefined,
 };
 
 const PositionManagement = () => {
   const dispatch = useAppDispatch();
-  const reduxPositions = useAppSelector((state) => state.positions.positions);
+  const {
+    positions: reduxPositions,
+    fetched: positionsFetched,
+    loading: positionsLoading,
+  } = useAppSelector((state) => state.positions);
   const [positions, setPositions] = useState<Position[]>(reduxPositions);
   const [newPos, setNewPos] = useState<Position>(defaultPosition);
-  const [status, setStatus] = useState("idle");
+  const [status, setStatus] = useState('idle');
 
-  const handleUpdate = (
-    index: number,
-    field: keyof Position,
-    value: string,
-  ) => {
+  useEffect(() => {
+    if (!positionsFetched) {
+      dispatch(fetchPositions());
+    }
+  }, [dispatch, positionsFetched]);
+
+  useEffect(() => {
+    setPositions(reduxPositions);
+  }, [reduxPositions]);
+
+  const handleUpdate = (index: number, field: keyof Position, value: string) => {
     const updated = [...positions];
     updated[index] = { ...updated[index], [field]: value };
     setPositions(updated);
   };
 
-  const move = (index: number, direction: "up" | "down") => {
+  const move = (index: number, direction: 'up' | 'down') => {
     const updated = [...positions];
     const currentPosition = updated[index];
     const currentParentId = currentPosition.parentId;
 
     const getBlockInfo = (
       startPosIndex: number,
-    ): { block: Position[]; startIndex: number; endIndex: number; } => {
+    ): { block: Position[]; startIndex: number; endIndex: number } => {
       const startPosition = updated[startPosIndex];
       if (!startPosition) return { block: [], startIndex: -1, endIndex: -1 };
 
@@ -89,21 +98,17 @@ const PositionManagement = () => {
 
       if (!currentBlock || currentBlock.length === 0) return;
 
-      if (direction === "up") {
+      if (direction === 'up') {
         if (currentBlockStartIndex === 0) return;
 
         let targetBlockEndIndex = currentBlockStartIndex - 1;
-        while (
-          targetBlockEndIndex >= 0 &&
-          updated[targetBlockEndIndex].parentId
-        ) {
+        while (targetBlockEndIndex >= 0 && updated[targetBlockEndIndex].parentId) {
           targetBlockEndIndex--;
         }
         if (targetBlockEndIndex < 0) return;
 
         const targetBlockInfo = getBlockInfo(targetBlockEndIndex);
-        const { block: targetBlock, startIndex: targetBlockStartIndex } =
-          targetBlockInfo;
+        const { block: targetBlock, startIndex: targetBlockStartIndex } = targetBlockInfo;
 
         if (!targetBlock || targetBlock.length === 0) return;
 
@@ -128,8 +133,7 @@ const PositionManagement = () => {
         if (targetBlockStartIndex >= updated.length) return;
 
         const targetBlockInfo = getBlockInfo(targetBlockStartIndex);
-        const { block: targetBlock, startIndex: targetBlockActualStartIndex } =
-          targetBlockInfo;
+        const { block: targetBlock, startIndex: targetBlockActualStartIndex } = targetBlockInfo;
 
         if (!targetBlock || targetBlock.length === 0) return;
 
@@ -148,16 +152,14 @@ const PositionManagement = () => {
         (s) => s.name === currentPosition.name,
       );
 
-      const newSiblingIndex =
-        currentSiblingIndex + (direction === "up" ? -1 : 1);
+      const newSiblingIndex = currentSiblingIndex + (direction === 'up' ? -1 : 1);
       if (newSiblingIndex < 0 || newSiblingIndex >= allSiblings.length) return;
 
       const siblingToSwapWith = allSiblings[newSiblingIndex];
       const indexOfCurrentInUpdated = updated.indexOf(currentPosition);
       const indexOfSwapWithInUpdated = updated.indexOf(siblingToSwapWith);
 
-      if (indexOfCurrentInUpdated === -1 || indexOfSwapWithInUpdated === -1)
-        return;
+      if (indexOfCurrentInUpdated === -1 || indexOfSwapWithInUpdated === -1) return;
 
       const newPositions = [...updated];
       newPositions[indexOfCurrentInUpdated] = siblingToSwapWith;
@@ -168,7 +170,7 @@ const PositionManagement = () => {
 
   const addPosition = () => {
     if (!newPos.name.trim() || !newPos.emoji.trim()) {
-      return alert("Please provide both an emoji and a name.");
+      return alert('Please provide both an emoji and a name.');
     }
     setPositions([...positions, newPos]);
     setNewPos(defaultPosition);
@@ -177,7 +179,7 @@ const PositionManagement = () => {
   const deletePosition = (index: number) => {
     if (
       window.confirm(
-        "Delete this position? This will remove it from the global list, and any associated child positions.",
+        'Delete this position? This will remove it from the global list, and any associated child positions.',
       )
     ) {
       const positionToDelete = positions[index];
@@ -193,21 +195,19 @@ const PositionManagement = () => {
   };
 
   const saveToFirebase = async () => {
-    setStatus("saving");
+    setStatus('saving');
     try {
       const positionsToSave = positions.map((p) => ({
         ...p,
         parentId: p.parentId === undefined ? undefined : p.parentId,
       }));
       await dispatch(updatePositions(positionsToSave)).unwrap();
-      setStatus("success");
-      setTimeout(() => setStatus("idle"), 2000);
+      setStatus('success');
+      setTimeout(() => setStatus('idle'), 2000);
     } catch (e) {
-      console.error("Save Error:", e);
-      alert(
-        "Check Firestore Rules: You may lack permission to write to 'metadata'.",
-      );
-      setStatus("idle");
+      console.error('Save Error:', e);
+      alert('Check Firestore Rules: You may lack permission to write to \'metadata\'.');
+      setStatus('idle');
     }
   };
 
@@ -237,16 +237,20 @@ const PositionManagement = () => {
     });
   };
 
+  if (positionsLoading) {
+    return <div>Loading data...</div>;
+  }
+
   return (
     <>
       <SettingsTable
         headers={[
-          { text: "Order", minWidth: 50, textAlign: "center" },
-          { text: "Emoji", width: 30 },
-          { text: "Name", minWidth: 80 },
-          { text: "Colour", minWidth: 100 },
-          { text: "Add Child", width: 80, textAlign: "center" },
-          { text: "Delete", width: 60, textAlign: "center" },
+          { text: 'Order', minWidth: 50, textAlign: 'center' },
+          { text: 'Emoji', width: 30 },
+          { text: 'Name', minWidth: 80 },
+          { text: 'Colour', minWidth: 100 },
+          { text: 'Add Child', width: 80, textAlign: 'center' },
+          { text: 'Delete', width: 60, textAlign: 'center' },
         ]}
       >
         {positions.map((p, i) => (
@@ -257,21 +261,21 @@ const PositionManagement = () => {
               ) : (
                 <div
                   style={{
-                    display: "flex",
-                    gap: "4px",
-                    justifyContent: "center",
+                    display: 'flex',
+                    gap: '4px',
+                    justifyContent: 'center',
                   }}
                 >
                   <button
                     className="icon-button icon-button--small icon-button--secondary"
-                    onClick={() => move(i, "up")}
+                    onClick={() => move(i, 'up')}
                     disabled={i === 0}
                   >
                     ▲
                   </button>
                   <button
                     className="icon-button icon-button--small icon-button--secondary"
-                    onClick={() => move(i, "down")}
+                    onClick={() => move(i, 'down')}
                     disabled={i === positions.length - 1}
                   >
                     ▼
@@ -282,17 +286,17 @@ const PositionManagement = () => {
             <SettingsTableInputCell
               name={`emoji-${i}`}
               value={p.emoji}
-              onChange={(e) => handleUpdate(i, "emoji", e.target.value)}
+              onChange={(e) => handleUpdate(i, 'emoji', e.target.value)}
             />
             <SettingsTableInputCell
               name={`name-${i}`}
               value={p.name}
-              onChange={(e) => handleUpdate(i, "name", e.target.value)}
+              onChange={(e) => handleUpdate(i, 'name', e.target.value)}
             />
             <SettingsTableColourInputCell
               name={`colour-${i}`}
               value={p.colour}
-              onChange={(e) => handleUpdate(i, "colour", e.target.value)}
+              onChange={(e) => handleUpdate(i, 'colour', e.target.value)}
             />
             <SettingsTableAnyCell textAlign="center">
               {!p.parentId && (
@@ -316,7 +320,7 @@ const PositionManagement = () => {
           </tr>
         ))}
         <tr className="pos-row-new">
-          <td className="">{""}</td>
+          <td className="">{''}</td>
           <SettingsTableInputCell
             name={`new-emoji`}
             value={newPos.emoji}
@@ -352,13 +356,13 @@ const PositionManagement = () => {
         <button
           className={`save-button ${status}`}
           onClick={saveToFirebase}
-          disabled={status !== "idle"}
+          disabled={status !== 'idle'}
         >
-          {status === "saving"
-            ? "Saving..."
-            : status === "success"
-              ? "Done ✓"
-              : "Save"}
+          {status === 'saving'
+            ? 'Saving...'
+            : status === 'success'
+            ? 'Done ✓'
+            : 'Save'}
         </button>
       </div>
     </>

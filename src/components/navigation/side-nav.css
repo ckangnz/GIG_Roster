@@ -1,8 +1,9 @@
 .side-nav {
   position: fixed;
   left: 0;
+  top: 64px;
+  bottom: 0;
   width: 100vw;
-  height: auto;
   background: var(--background-card);
   z-index: 1000;
   overflow-y: auto;

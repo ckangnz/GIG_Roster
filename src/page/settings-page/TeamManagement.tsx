@@ -1,52 +1,71 @@
-import { useState } from "react";
+import { useState, useEffect } from 'react';
 
-import Pill, { PillGroup } from "../../components/common/Pill";
+import Pill, { PillGroup } from '../../components/common/Pill';
 import SettingsTable, {
   SettingsTableAnyCell,
   SettingsTableInputCell,
-} from "../../components/common/SettingsTable";
-import { useAppDispatch, useAppSelector } from "../../hooks/redux";
-import { Position, Team, Weekday } from "../../model/model";
-import { updateTeams } from "../../store/slices/teamsSlice";
+} from '../../components/common/SettingsTable';
+import { useAppDispatch, useAppSelector } from '../../hooks/redux';
+import { Position, Team, Weekday } from '../../model/model';
+import { fetchPositions } from '../../store/slices/positionsSlice';
+import { fetchTeams, updateTeams } from '../../store/slices/teamsSlice';
 
 const defaultTeam: Team = {
-  name: "",
-  emoji: "",
+  name: '',
+  emoji: '',
   positions: [],
   preferredDays: [],
 };
 
 const WEEK_DAYS: Weekday[] = [
-  "Sunday",
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
+  'Sunday',
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
 ];
 
 const TeamManagement = () => {
   const dispatch = useAppDispatch();
-  const reduxTeams = useAppSelector((state) => state.teams.teams);
-  const availablePositions = useAppSelector((state) => state.positions.positions);
+  const {
+    teams: reduxTeams,
+    fetched: teamsFetched,
+    loading: teamsLoading,
+  } = useAppSelector((state) => state.teams);
+  const {
+    positions: availablePositions,
+    fetched: positionsFetched,
+    loading: positionsLoading,
+  } = useAppSelector((state) => state.positions);
+
   const [teams, setTeams] = useState<Team[]>(reduxTeams);
   const [newTeam, setNewTeam] = useState<Team>(defaultTeam);
-  const [status, setStatus] = useState("idle");
+  const [status, setStatus] = useState('idle');
 
-  const handleUpdate = (
-    index: number,
-    field: keyof Team,
-    value: Team[keyof Team],
-  ) => {
+  useEffect(() => {
+    if (!teamsFetched) {
+      dispatch(fetchTeams());
+    }
+    if (!positionsFetched) {
+      dispatch(fetchPositions());
+    }
+  }, [dispatch, teamsFetched, positionsFetched]);
+
+  useEffect(() => {
+    setTeams(reduxTeams);
+  }, [reduxTeams]);
+
+  const handleUpdate = (index: number, field: keyof Team, value: Team[keyof Team]) => {
     const updated = [...teams];
     updated[index] = { ...updated[index], [field]: value };
     setTeams(updated);
   };
 
-  const move = (index: number, direction: "up" | "down") => {
+  const move = (index: number, direction: 'up' | 'down') => {
     const updated = [...teams];
-    const target = direction === "up" ? index - 1 : index + 1;
+    const target = direction === 'up' ? index - 1 : index + 1;
     if (target < 0 || target >= updated.length) return;
 
     const temp = updated[index];
@@ -84,66 +103,68 @@ const TeamManagement = () => {
 
   const addTeam = () => {
     if (!newTeam.name.trim() || !newTeam.emoji.trim()) {
-      return alert("Please provide both an emoji and a name for the team.");
+      return alert('Please provide both an emoji and a name for the team.');
     }
     setTeams([...teams, newTeam]);
     setNewTeam(defaultTeam);
   };
 
   const deleteTeam = (index: number) => {
-    if (window.confirm("Are you sure you want to delete this team?")) {
+    if (window.confirm('Are you sure you want to delete this team?')) {
       setTeams(teams.filter((_, i) => i !== index));
     }
   };
 
   const saveToFirebase = async () => {
-    setStatus("saving");
+    setStatus('saving');
     try {
       await dispatch(updateTeams(teams)).unwrap();
-      setStatus("success");
-      setTimeout(() => setStatus("idle"), 2000);
+      setStatus('success');
+      setTimeout(() => setStatus('idle'), 2000);
     } catch (e) {
-      console.error("Save Error:", e);
-      alert(
-        "Check Firestore Rules: You may lack permission to write to 'metadata'.",
-      );
-      setStatus("idle");
+      console.error('Save Error:', e);
+      alert('Check Firestore Rules: You may lack permission to write to \'metadata\'.');
+      setStatus('idle');
     }
   };
+
+  if (teamsLoading || positionsLoading) {
+    return <div>Loading data...</div>;
+  }
 
   return (
     <>
       <SettingsTable
         headers={[
-          { text: "Order", minWidth: 50, textAlign: "center" },
-          { text: "Emoji", width: 30 },
-          { text: "Name", minWidth: 100 },
-          { text: "Allowed Positions", minWidth: 200 },
-          { text: "Preferred Days", minWidth: 250 },
-          { text: "", width: 50 },
+          { text: 'Order', minWidth: 50, textAlign: 'center' },
+          { text: 'Emoji', width: 30 },
+          { text: 'Name', minWidth: 100 },
+          { text: 'Allowed Positions', minWidth: 200 },
+          { text: 'Preferred Days', minWidth: 250 },
+          { text: '', width: 50 },
         ]}
       >
         {teams.map((team, teamIndex) => (
           <tr key={`${team.emoji}-${teamIndex}`}>
             <SettingsTableAnyCell>
-              {" "}
+              {' '}
               <div
                 style={{
-                  display: "flex",
-                  gap: "4px",
-                  justifyContent: "center",
+                  display: 'flex',
+                  gap: '4px',
+                  justifyContent: 'center',
                 }}
               >
                 <button
                   className="icon-button icon-button--small icon-button--secondary"
-                  onClick={() => move(teamIndex, "up")}
+                  onClick={() => move(teamIndex, 'up')}
                   disabled={teamIndex === 0}
                 >
                   ▲
                 </button>
                 <button
                   className="icon-button icon-button--small icon-button--secondary"
-                  onClick={() => move(teamIndex, "down")}
+                  onClick={() => move(teamIndex, 'down')}
                   disabled={teamIndex === teams.length - 1}
                 >
                   ▼
@@ -153,19 +174,17 @@ const TeamManagement = () => {
             <SettingsTableInputCell
               name={`team-emoji-${teamIndex}`}
               value={team.emoji}
-              onChange={(e) => handleUpdate(teamIndex, "emoji", e.target.value)}
+              onChange={(e) => handleUpdate(teamIndex, 'emoji', e.target.value)}
             />
             <SettingsTableInputCell
               name={`team-name-${teamIndex}`}
               value={team.name}
-              onChange={(e) => handleUpdate(teamIndex, "name", e.target.value)}
+              onChange={(e) => handleUpdate(teamIndex, 'name', e.target.value)}
             />
             <SettingsTableAnyCell>
               <PillGroup nowrap>
                 {availablePositions.map((pos) => {
-                  const isActive = team.positions?.some(
-                    (p) => p.name === pos.name,
-                  );
+                  const isActive = team.positions?.some((p) => p.name === pos.name);
                   return (
                     <Pill
                       key={pos.name}
@@ -206,7 +225,7 @@ const TeamManagement = () => {
           </tr>
         ))}
         <tr className="team-row-new">
-          <td className="">{""}</td>
+          <td className="">{''}</td>
           <SettingsTableInputCell
             name={`new-team-emoji`}
             value={newTeam.emoji}
@@ -222,9 +241,7 @@ const TeamManagement = () => {
           <SettingsTableAnyCell>
             <PillGroup nowrap>
               {availablePositions.map((pos) => {
-                const isActive = newTeam.positions?.some(
-                  (p) => p.name === pos.name,
-                );
+                const isActive = newTeam.positions?.some((p) => p.name === pos.name);
                 return (
                   <Pill
                     key={`new-${pos.name}`}
@@ -233,9 +250,7 @@ const TeamManagement = () => {
                     onClick={() =>
                       setNewTeam((prev) => {
                         const currentPositions = prev.positions || [];
-                        const newPositions = currentPositions.some(
-                          (p) => p.name === pos.name,
-                        )
+                        const newPositions = currentPositions.some((p) => p.name === pos.name)
                           ? currentPositions.filter((p) => p.name !== pos.name)
                           : [...currentPositions, pos];
                         return { ...prev, positions: newPositions };
@@ -288,13 +303,13 @@ const TeamManagement = () => {
         <button
           className={`save-button ${status}`}
           onClick={saveToFirebase}
-          disabled={status !== "idle"}
+          disabled={status !== 'idle'}
         >
-          {status === "saving"
-            ? "Saving..."
-            : status === "success"
-              ? "Done ✓"
-              : "Save All Team Changes"}
+          {status === 'saving'
+            ? 'Saving...'
+            : status === 'success'
+            ? 'Done ✓'
+            : 'Save All Team Changes'}
         </button>
       </div>
     </>

@@ -8,12 +8,14 @@ interface PositionsState {
   positions: Position[];
   loading: boolean;
   error: string | null;
+  fetched: boolean;
 }
 
 const initialState: PositionsState = {
   positions: [],
   loading: false,
   error: null,
+  fetched: false,
 };
 
 export const fetchPositions = createAsyncThunk(
@@ -28,7 +30,9 @@ export const fetchPositions = createAsyncThunk(
       }
       return [];
     } catch (error) {
-      return rejectWithValue(error instanceof Error ? error.message : 'Failed to fetch positions');
+      return rejectWithValue(
+        error instanceof Error ? error.message : 'Failed to fetch positions',
+      );
     }
   },
 );
@@ -41,7 +45,9 @@ export const updatePositions = createAsyncThunk(
       await updateDoc(docRef, { list: positions });
       return positions;
     } catch (error) {
-      return rejectWithValue(error instanceof Error ? error.message : 'Failed to update positions');
+      return rejectWithValue(
+        error instanceof Error ? error.message : 'Failed to update positions',
+      );
     }
   },
 );
@@ -49,11 +55,7 @@ export const updatePositions = createAsyncThunk(
 const positionsSlice = createSlice({
   name: 'positions',
   initialState,
-  reducers: {
-    clearError: (state) => {
-      state.error = null;
-    },
-  },
+  reducers: {},
   extraReducers: (builder) => {
     builder
       .addCase(fetchPositions.pending, (state) => {
@@ -63,22 +65,16 @@ const positionsSlice = createSlice({
       .addCase(fetchPositions.fulfilled, (state, action) => {
         state.positions = action.payload;
         state.loading = false;
+        state.fetched = true;
       })
       .addCase(fetchPositions.rejected, (state, action) => {
         state.error = action.payload as string;
         state.loading = false;
       })
-      .addCase(updatePositions.pending, (state) => {
-        state.error = null;
-      })
       .addCase(updatePositions.fulfilled, (state, action) => {
         state.positions = action.payload;
-      })
-      .addCase(updatePositions.rejected, (state, action) => {
-        state.error = action.payload as string;
       });
   },
 });
 
-export const { clearError } = positionsSlice.actions;
 export const positionsReducer = positionsSlice.reducer;

@@ -1,38 +1,31 @@
-import { useState } from "react";
+import { useState } from 'react';
 
-import { doc, updateDoc } from "firebase/firestore";
+import Pill, { PillGroup } from '../../components/common/Pill';
+import { auth } from '../../firebase';
+import { useAppDispatch, useAppSelector } from '../../hooks/redux';
+import { useComputedPositions } from '../../hooks/useComputedPositions';
+import { updateUserProfile } from '../../store/slices/authSlice';
+import './profile-settings.css';
 
-import Pill, { PillGroup } from "../../components/common/Pill";
-import { db, auth } from "../../firebase";
-import { useAppSelector } from "../../hooks/redux";
-import { useComputedPositions } from "../../hooks/useComputedPositions";
-import { AppUser } from "../../model/model";
-
-import "./profile-settings.css";
-
-interface ProfileSettingsProps {
-  userData: AppUser;
-  uid: string;
-}
-
-const ProfileSettings = ({ userData, uid }: ProfileSettingsProps) => {
-  const [name, setName] = useState(userData.name || "");
-  const [gender, setGender] = useState(userData.gender || "");
-  const [selectedPositions, setSelectedPositions] = useState<string[]>(
-    userData.positions || [],
-  );
-  const [isActive, setIsActive] = useState(userData.isActive ?? true);
-  const [selectedTeams, setSelectedTeams] = useState<string[]>(
-    userData.teams || [],
-  );
-  const [status, setStatus] = useState("idle");
-
+const ProfileSettings = () => {
+  const dispatch = useAppDispatch();
+  const { userData, firebaseUser } = useAppSelector((state) => state.auth);
   const availableTeams = useAppSelector((state) => state.teams.teams);
+
+  const [name, setName] = useState(userData?.name || '');
+  const [gender, setGender] = useState(userData?.gender || '');
+  const [selectedPositions, setSelectedPositions] = useState<string[]>(
+    userData?.positions || [],
+  );
+  const [isActive, setIsActive] = useState(userData?.isActive ?? true);
+  const [selectedTeams, setSelectedTeams] = useState<string[]>(userData?.teams || []);
+  const [status, setStatus] = useState('idle');
+
   const computedPositions = useComputedPositions(selectedTeams, availableTeams);
 
   const handleSave = async () => {
-    if (!uid) return;
-    setStatus("saving");
+    if (!firebaseUser) return;
+    setStatus('saving');
     try {
       const updateData = {
         name,
@@ -41,12 +34,12 @@ const ProfileSettings = ({ userData, uid }: ProfileSettingsProps) => {
         isActive,
         teams: selectedTeams,
       };
-      await updateDoc(doc(db, "users", uid), updateData);
-      setStatus("success");
-      setTimeout(() => setStatus("idle"), 2000);
+      await dispatch(updateUserProfile({ uid: firebaseUser.uid, data: updateData })).unwrap();
+      setStatus('success');
+      setTimeout(() => setStatus('idle'), 2000);
     } catch (e) {
       console.error(e);
-      setStatus("idle");
+      setStatus('idle');
     }
   };
 
@@ -63,6 +56,10 @@ const ProfileSettings = ({ userData, uid }: ProfileSettingsProps) => {
         : [...prev, teamName],
     );
   };
+
+  if (!userData) {
+    return <div>Loading profile...</div>;
+  }
 
   return (
     <section className="profile-card">
@@ -87,9 +84,9 @@ const ProfileSettings = ({ userData, uid }: ProfileSettingsProps) => {
         <label>Gender</label>
         <PillGroup>
           {[
-            { value: "Male", colour: "var(--color-male)" },
-            { value: "Female", colour: "var(--color-female)" },
-          ].map((g: { value: string; colour: string; }) => (
+            { value: 'Male', colour: 'var(--color-male)' },
+            { value: 'Female', colour: 'var(--color-female)' },
+          ].map((g: { value: string; colour: string }) => (
             <Pill
               key={g.value}
               colour={g.colour}
@@ -142,13 +139,11 @@ const ProfileSettings = ({ userData, uid }: ProfileSettingsProps) => {
       <div className="form-group">
         <label>Availability Status</label>
         <Pill
-          colour={
-            isActive ? "var(--color-success-dark)" : "var(--color-warning-dark)"
-          }
+          colour={isActive ? 'var(--color-success-dark)' : 'var(--color-warning-dark)'}
           onClick={() => setIsActive(!isActive)}
           isActive
         >
-          {isActive ? "ACTIVE & AVAILABLE" : "INACTIVE / AWAY"}
+          {isActive ? 'ACTIVE & AVAILABLE' : 'INACTIVE / AWAY'}
         </Pill>
         <p className="form-field-hint">
           Turn off if you want to be hidden from the roster.
@@ -158,14 +153,14 @@ const ProfileSettings = ({ userData, uid }: ProfileSettingsProps) => {
       <div className="action-container">
         <button
           onClick={handleSave}
-          disabled={status !== "idle"}
+          disabled={status !== 'idle'}
           className={`save-button ${status}`}
         >
-          {status === "saving"
-            ? "Saving..."
-            : status === "success"
-              ? "Done ✓"
-              : "Update Profile"}
+          {status === 'saving'
+            ? 'Saving...'
+            : status === 'success'
+            ? 'Done ✓'
+            : 'Update Profile'}
         </button>
         <button onClick={() => auth.signOut()} className="logout-btn">
           Logout
