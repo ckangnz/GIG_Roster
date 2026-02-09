@@ -54,21 +54,45 @@ const getUpcomingDates = (preferredDays: Weekday[]): string[] => {
 
 interface RosterViewState {
   users: AppUser[];
+  allTeamUsers: AppUser[];
   currentTeamData: Team | null;
   rosterDates: string[];
   loadingUsers: boolean;
   loadingTeam: boolean;
+  loadingAllTeamUsers: boolean;
   error: string | null;
 }
 
 const initialState: RosterViewState = {
   users: [],
+  allTeamUsers: [],
   currentTeamData: null,
   rosterDates: [],
   loadingUsers: false,
   loadingTeam: false,
+  loadingAllTeamUsers: false,
   error: null,
 };
+
+export const fetchAllTeamUsers = createAsyncThunk(
+  'rosterView/fetchAllTeamUsers',
+  async (teamName: string, { rejectWithValue }) => {
+    if (!teamName) return [];
+    try {
+      const usersCollectionRef = collection(db, 'users');
+      const q = query(usersCollectionRef, where('teams', 'array-contains', teamName));
+      const querySnapshot = await getDocs(q);
+      const fetchedUsers: AppUser[] = [];
+      querySnapshot.forEach((doc) => {
+        fetchedUsers.push(doc.data() as AppUser);
+      });
+      return fetchedUsers.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+    } catch (err) {
+      console.error('Error fetching team users:', err);
+      return rejectWithValue('Failed to load team users.');
+    }
+  },
+);
 
 export const fetchUsersByTeamAndPosition = createAsyncThunk(
   'rosterView/fetchUsers',
@@ -156,6 +180,19 @@ const rosterViewSlice = createSlice({
       .addCase(fetchUsersByTeamAndPosition.rejected, (state, action) => {
         state.error = action.payload as string;
         state.loadingUsers = false;
+      })
+      // Fetch All Team Users
+      .addCase(fetchAllTeamUsers.pending, (state) => {
+        state.loadingAllTeamUsers = true;
+        state.allTeamUsers = [];
+      })
+      .addCase(fetchAllTeamUsers.fulfilled, (state, action: PayloadAction<AppUser[]>) => {
+        state.allTeamUsers = action.payload;
+        state.loadingAllTeamUsers = false;
+      })
+      .addCase(fetchAllTeamUsers.rejected, (state, action) => {
+        state.error = action.payload as string;
+        state.loadingAllTeamUsers = false;
       })
       // Fetch Team Data
       .addCase(fetchTeamDataForRoster.pending, (state) => {

@@ -22,8 +22,18 @@ export const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: {
-        ignoredActions: ['auth/setUser'],
-        ignoredPaths: ['auth.firebaseUser'],
+        ignoredActions: [
+          'auth/setUser',
+          'roster/fetchEntries/fulfilled',
+          'roster/saveChanges/fulfilled',
+        ],
+        ignoredPaths: [
+          'auth.firebaseUser',
+          'roster.entries',
+          'roster.dirtyEntries',
+          'rosterView.users',
+          'rosterView.allTeamUsers',
+        ],
       },
     }).concat(authMiddleware),
 });

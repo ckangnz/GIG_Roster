@@ -130,40 +130,62 @@ const SideNav = () => {
                         </span>
                       </div>
                     )}
-                    {isTeamExpanded &&
-                      team.positions
-                        ?.filter((pos) => !pos.parentId)
-                        ?.map((pos) => {
-                          const isActive =
-                            activeSideItem === pos.name &&
-                            activeTeamName === team.name;
-                        return (
-                          <button
-                            key={pos.name}
-                            className={`side-nav-item side-nav-item-sub ${
-                              isActive ? "side-nav-item-active" : ""
-                            }`}
-                            onClick={() => {
-                              handleNavItemClick(
-                                `/app/roster/${team.name}/${pos.name}`,
-                              );
-                              dispatch(setMobileSidebarOpen(false));
-                            }}
-                            style={{
-                              borderLeft: isActive
-                                ? `4px solid ${pos.colour}`
-                                : "4px solid transparent",
-                              backgroundColor: isActive
-                                ? `${pos.colour}15`
-                                : "transparent",
-                              color: isActive ? pos.colour : "",
-                            }}
-                          >
-                            <span className="side-emoji">{pos.emoji}</span>{" "}
-                            {isDesktopSidebarExpanded && pos.name}
-                          </button>
-                        );
-                      })}
+                    {isTeamExpanded && (
+                      <div className="side-nav-sub-items">
+                        {team.positions
+                          ?.filter((pos) => !pos.parentId)
+                          ?.map((pos) => {
+                            const isActive =
+                              activeSideItem === pos.name && activeTeamName === team.name;
+                            return (
+                              <button
+                                key={pos.name}
+                                className={`side-nav-item side-nav-item-sub ${
+                                  isActive ? 'side-nav-item-active' : ''
+                                }`}
+                                onClick={() => {
+                                  handleNavItemClick(`/app/roster/${team.name}/${pos.name}`);
+                                  dispatch(setMobileSidebarOpen(false));
+                                }}
+                                style={{
+                                  borderLeft: isActive
+                                    ? `4px solid ${pos.colour}`
+                                    : '4px solid transparent',
+                                  backgroundColor: isActive ? `${pos.colour}15` : 'transparent',
+                                  color: isActive ? pos.colour : '',
+                                }}
+                              >
+                                <span className="side-emoji">{pos.emoji}</span>{' '}
+                                {isDesktopSidebarExpanded && pos.name}
+                              </button>
+                            );
+                          })}
+                        <button
+                          className={`side-nav-item side-nav-item-sub ${
+                            activeSideItem === 'Absence' && activeTeamName === team.name
+                              ? 'side-nav-item-active'
+                              : ''
+                          }`}
+                          onClick={() => {
+                            handleNavItemClick(`/app/roster/${team.name}/Absence`);
+                            dispatch(setMobileSidebarOpen(false));
+                          }}
+                          style={{
+                            borderLeft:
+                              activeSideItem === 'Absence' && activeTeamName === team.name
+                                ? '4px solid var(--color-error)'
+                                : '4px solid transparent',
+                            backgroundColor:
+                              activeSideItem === 'Absence' && activeTeamName === team.name
+                                ? 'var(--background-toggle-off-transparent)'
+                                : 'transparent',
+                          }}
+                        >
+                          <span className="side-emoji">🏥</span>{' '}
+                          {isDesktopSidebarExpanded && 'Absence Roster'}
+                        </button>
+                      </div>
+                    )}
                   </div>
                 );
               })

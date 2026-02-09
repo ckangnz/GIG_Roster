@@ -79,6 +79,78 @@
   font-size: 1.2rem;
 }
 
+.roster-section {
+  margin-bottom: 3rem;
+}
+
+.section-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: 1rem;
+  padding-left: 0.5rem;
+  border-left: 4px solid var(--color-link);
+}
+
+.absent-strike {
+  text-decoration: line-through;
+  opacity: 0.6;
+  background-color: var(--background-body) !important;
+}
+
+.absent-cell {
+  background-color: rgba(255, 70, 70, 0.1) !important;
+}
+
+.absence-input-container {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+}
+
+.absence-reason-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--color-text-primary);
+  text-align: left;
+  font-size: 0.85rem;
+  padding: 4px;
+  min-width: 0; /* Allow shrinking for ellipsis */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.absence-reason-input:focus {
+  outline: 1px solid var(--color-link);
+  background: var(--background-input);
+  text-overflow: clip;
+}
+
+.remove-absence-btn {
+  background: transparent;
+  border: none;
+  color: var(--color-text-dim);
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+}
+
+.remove-absence-btn:hover {
+  color: var(--color-error);
+}
+
+.absence-roster-cell {
+  min-width: 120px !important;
+}
+
 .gender-label {
   font-size: 0.7rem;
   opacity: 0.6;

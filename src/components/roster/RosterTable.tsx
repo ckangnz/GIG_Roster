@@ -8,10 +8,12 @@ import {
   saveRosterChanges,
   updateLocalAssignment,
   resetRosterEdits,
+  updateLocalAbsence,
 } from '../../store/slices/rosterSlice';
 import {
   fetchTeamDataForRoster,
   fetchUsersByTeamAndPosition,
+  fetchAllTeamUsers,
 } from '../../store/slices/rosterViewSlice';
 import Spinner from '../common/Spinner';
 import './roster-table.css';
@@ -20,15 +22,26 @@ const RosterTable = () => {
   const dispatch = useAppDispatch();
   const { teamName, positionName: activePosition } = useParams();
 
-  const { users, rosterDates, loadingUsers, loadingTeam, error: viewError } =
-    useAppSelector((state) => state.rosterView);
+  const {
+    users,
+    allTeamUsers,
+    rosterDates,
+    loadingUsers,
+    loadingTeam,
+    loadingAllTeamUsers,
+    error: viewError,
+  } = useAppSelector((state) => state.rosterView);
   const { entries, dirtyEntries, saving, error: rosterError } = useAppSelector(
     (state) => state.roster,
   );
   const { teams: allTeams } = useAppSelector((state) => state.teams);
   const { positions: allPositions } = useAppSelector((state) => state.positions);
 
-  const [focusedCell, setFocusedCell] = useState<{ row: number; col: number } | null>(null);
+  const [focusedCell, setFocusedCell] = useState<{
+    row: number;
+    col: number;
+    table: 'roster' | 'absence';
+  } | null>(null);
 
   const hasDirtyChanges = Object.keys(dirtyEntries).length > 0;
 
@@ -57,7 +70,7 @@ const RosterTable = () => {
   }, [dispatch]);
 
   useEffect(() => {
-    if (activePosition && teamName) {
+    if (activePosition && teamName && activePosition !== 'Absence') {
       dispatch(fetchUsersByTeamAndPosition({ teamName, positionName: activePosition }));
     }
   }, [activePosition, teamName, dispatch]);
@@ -65,13 +78,36 @@ const RosterTable = () => {
   useEffect(() => {
     if (teamName) {
       dispatch(fetchTeamDataForRoster(teamName));
+      dispatch(fetchAllTeamUsers(teamName));
     }
   }, [teamName, dispatch]);
 
+  const isUserAbsent = useCallback(
+    (dateString: string, userEmail: string) => {
+      const dateKey = dateString.split('T')[0];
+      const entry = dirtyEntries[dateKey] || entries[dateKey];
+      return !!(entry && entry.absence && entry.absence[userEmail]);
+    },
+    [dirtyEntries, entries],
+  );
+
+  const getAbsenceReason = useCallback(
+    (dateString: string, userEmail: string) => {
+      const dateKey = dateString.split('T')[0];
+      const entry = dirtyEntries[dateKey] || entries[dateKey];
+      return entry?.absence?.[userEmail]?.reason || '';
+    },
+    [dirtyEntries, entries],
+  );
+
   const isCellDisabled = useCallback(
     (dateString: string, userEmail: string) => {
-      if (!teamName || !activePosition) return false;
+      if (!teamName || !activePosition || activePosition === 'Absence') return false;
 
+      // 1. Check if user is absent
+      if (isUserAbsent(dateString, userEmail)) return true;
+
+      // 2. Check maxConflict
       const dateKey = dateString.split('T')[0];
       const entry = dirtyEntries[dateKey] || entries[dateKey];
       const currentTeam = allTeams.find((t) => t.name === teamName);
@@ -91,17 +127,17 @@ const RosterTable = () => {
 
       return userAssignments.length >= maxConflict;
     },
-    [teamName, activePosition, dirtyEntries, entries, allTeams, allPositions],
+    [teamName, activePosition, isUserAbsent, dirtyEntries, entries, allTeams, allPositions],
   );
 
   const handleCellClick = useCallback(
     (dateString: string, userEmail: string, row: number, col: number) => {
-      if (!teamName || !activePosition || isCellDisabled(dateString, userEmail)) {
-        setFocusedCell({ row, col });
+      if (!teamName || !activePosition || activePosition === 'Absence' || isCellDisabled(dateString, userEmail)) {
+        setFocusedCell({ row, col, table: 'roster' });
         return;
       }
 
-      setFocusedCell({ row, col });
+      setFocusedCell({ row, col, table: 'roster' });
 
       const currentTeam = allTeams.find((t) => t.name === teamName);
       const maxConflict = currentTeam?.maxConflict || 1;
@@ -121,6 +157,36 @@ const RosterTable = () => {
       );
     },
     [dispatch, teamName, activePosition, isCellDisabled, allTeams, allPositions],
+  );
+
+  const handleAbsenceClick = useCallback(
+    (dateString: string, userEmail: string, row: number, col: number) => {
+      setFocusedCell({ row, col, table: 'absence' });
+      const isCurrentlyAbsent = isUserAbsent(dateString, userEmail);
+
+      dispatch(
+        updateLocalAbsence({
+          date: dateString.split('T')[0],
+          userIdentifier: userEmail,
+          isAbsent: !isCurrentlyAbsent,
+        }),
+      );
+    },
+    [dispatch, isUserAbsent],
+  );
+
+  const handleAbsenceReasonChange = useCallback(
+    (dateString: string, userEmail: string, reason: string) => {
+      dispatch(
+        updateLocalAbsence({
+          date: dateString.split('T')[0],
+          userIdentifier: userEmail,
+          reason: reason.substring(0, 20),
+          isAbsent: true,
+        }),
+      );
+    },
+    [dispatch],
   );
 
   const handleSave = useCallback(() => {
@@ -159,39 +225,45 @@ const RosterTable = () => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
       if (!focusedCell) return;
 
-      const { row, col } = focusedCell;
+      const { row, col, table } = focusedCell;
+      const dateList = rosterDates;
+      const userList = table === 'roster' ? sortedUsers : allTeamUsers;
 
       switch (e.key) {
         case 'ArrowUp':
           e.preventDefault();
-          if (row > 0) setFocusedCell({ row: row - 1, col });
+          if (row > 0) setFocusedCell({ row: row - 1, col, table });
           break;
         case 'ArrowDown':
           e.preventDefault();
-          if (row < rosterDates.length - 1) setFocusedCell({ row: row + 1, col });
+          if (row < dateList.length - 1) setFocusedCell({ row: row + 1, col, table });
           break;
         case 'ArrowLeft':
           e.preventDefault();
-          if (col > 0) setFocusedCell({ row, col: col - 1 });
+          if (col > 0) setFocusedCell({ row, col: col - 1, table });
           break;
         case 'ArrowRight':
           e.preventDefault();
-          if (col < sortedUsers.length - 1) setFocusedCell({ row, col: col + 1 });
+          if (col < userList.length - 1) setFocusedCell({ row, col: col + 1, table });
           break;
         case 'Tab':
           e.preventDefault();
           if (e.shiftKey) {
-            if (row > 0) setFocusedCell({ row: row - 1, col });
+            if (row > 0) setFocusedCell({ row: row - 1, col, table });
           } else {
-            if (row < rosterDates.length - 1) setFocusedCell({ row: row + 1, col });
+            if (row < dateList.length - 1) setFocusedCell({ row: row + 1, col, table });
           }
           break;
         case ' ': {
           e.preventDefault();
           const dStr = rosterDates[row];
-          const usr = sortedUsers[col];
+          const usr = userList[col];
           if (usr?.email) {
-            handleCellClick(dStr, usr.email, row, col);
+            if (table === 'roster') {
+              handleCellClick(dStr, usr.email, row, col);
+            } else {
+              handleAbsenceClick(dStr, usr.email, row, col);
+            }
           }
           break;
         }
@@ -216,13 +288,15 @@ const RosterTable = () => {
     focusedCell,
     rosterDates,
     sortedUsers,
+    allTeamUsers,
     hasDirtyChanges,
     handleCellClick,
+    handleAbsenceClick,
     handleSave,
     handleCancel,
   ]);
 
-  if (loadingUsers || loadingTeam) {
+  if (loadingUsers || loadingTeam || loadingAllTeamUsers) {
     return <Spinner />;
   }
 
@@ -231,56 +305,156 @@ const RosterTable = () => {
     return <div className="roster-table-error">Error: {error}</div>;
   }
 
-  if (sortedUsers.length === 0) {
+  const isAbsenceRosterOnly = activePosition === 'Absence';
+
+  if (!isAbsenceRosterOnly && sortedUsers.length === 0) {
     return <div className="roster-table-loading">No users found for this position.</div>;
   }
 
   return (
     <div className="roster-table-wrapper">
-      <div className="roster-table-container">
-        <table className="roster-table">
-          <thead>
-            <tr>
-              <th className="roster-table-header-cell">Date</th>
-              {sortedUsers.map((user) => (
-                <th key={user.email} className="roster-table-header-cell">
-                  {user.name}
-                  {currentPosition?.sortByGender && (
-                    <span className="gender-label">
-                      ({user.gender === 'Male' ? 'M' : user.gender === 'Female' ? 'F' : '?'})
-                    </span>
-                  )}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {rosterDates.map((dateString, rowIndex) => (
-              <tr key={dateString}>
-                <td className="date-cell">{new Date(dateString).toLocaleDateString()}</td>
-                {sortedUsers.map((user, colIndex) => {
-                  const isFocused = focusedCell?.row === rowIndex && focusedCell?.col === colIndex;
-                  const disabled = user.email ? isCellDisabled(dateString, user.email) : false;
-                  return (
-                    <td
-                      key={user.email}
-                      className={`roster-cell ${!disabled ? 'clickable' : 'disabled'} ${
-                        isFocused ? 'focused' : ''
-                      }`}
-                      onClick={() =>
-                        user.email && handleCellClick(dateString, user.email, rowIndex, colIndex)
-                      }
-                      tabIndex={0}
-                      onFocus={() => setFocusedCell({ row: rowIndex, col: colIndex })}
-                    >
-                      {user.email && getCellContent(dateString, user.email)}
-                    </td>
-                  );
-                })}
+      {!isAbsenceRosterOnly && (
+        <div className="roster-section">
+          <div className="roster-table-container">
+            <table className="roster-table">
+              <thead>
+                <tr>
+                  <th className="roster-table-header-cell">Date</th>
+                  {sortedUsers.map((user) => (
+                    <th key={user.email} className="roster-table-header-cell">
+                      {user.name}
+                      {currentPosition?.sortByGender && (
+                        <span className="gender-label">
+                          ({user.gender === 'Male' ? 'M' : user.gender === 'Female' ? 'F' : '?'})
+                        </span>
+                      )}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {rosterDates.map((dateString, rowIndex) => (
+                  <tr key={dateString}>
+                    <td className="date-cell">{new Date(dateString).toLocaleDateString()}</td>
+                    {sortedUsers.map((user, colIndex) => {
+                      const isFocused =
+                        focusedCell?.row === rowIndex &&
+                        focusedCell?.col === colIndex &&
+                        focusedCell?.table === 'roster';
+                      const disabled = user.email ? isCellDisabled(dateString, user.email) : false;
+                      const absent = user.email ? isUserAbsent(dateString, user.email) : false;
+
+                      return (
+                        <td
+                          key={user.email}
+                          className={`roster-cell ${!disabled ? 'clickable' : 'disabled'} ${
+                            isFocused ? 'focused' : ''
+                          } ${absent ? 'absent-strike' : ''}`}
+                          onClick={() => {
+                            if (user.email && !disabled) {
+                              handleCellClick(dateString, user.email, rowIndex, colIndex);
+                            }
+                          }}
+                          tabIndex={0}
+                          onFocus={() =>
+                            setFocusedCell({ row: rowIndex, col: colIndex, table: 'roster' })
+                          }
+                        >
+                          {user.email && (absent ? '❌' : getCellContent(dateString, user.email))}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      <div className="roster-section absence-section">
+        <h3 className="section-title">Absence Roster</h3>
+        <div className="roster-table-container">
+          <table className="roster-table absence-table">
+            <thead>
+              <tr>
+                <th className="roster-table-header-cell">Date</th>
+                {allTeamUsers.map((user) => (
+                  <th key={user.email} className="roster-table-header-cell">
+                    {user.name}
+                  </th>
+                ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {rosterDates.map((dateString, rowIndex) => (
+                <tr key={dateString}>
+                  <td className="date-cell">{new Date(dateString).toLocaleDateString()}</td>
+                  {allTeamUsers.map((user, colIndex) => {
+                    const isFocused =
+                      focusedCell?.row === rowIndex &&
+                      focusedCell?.col === colIndex &&
+                      focusedCell?.table === 'absence';
+                    const absent = user.email ? isUserAbsent(dateString, user.email) : false;
+                    const reason = user.email ? getAbsenceReason(dateString, user.email) : '';
+
+                    return (
+                      <td
+                        key={user.email}
+                        className={`roster-cell clickable absence-roster-cell ${
+                          isFocused ? 'focused' : ''
+                        } ${absent ? 'absent-cell' : ''}`}
+                        onClick={() => {
+                          if (user.email) {
+                            handleAbsenceClick(dateString, user.email, rowIndex, colIndex);
+                          }
+                        }}
+                        tabIndex={0}
+                        onFocus={() =>
+                          setFocusedCell({ row: rowIndex, col: colIndex, table: 'absence' })
+                        }
+                        title={reason}
+                      >
+                        {absent ? (
+                          <div className="absence-input-container">
+                            <input
+                              type="text"
+                              className="absence-reason-input"
+                              value={reason}
+                              placeholder="Reason..."
+                              maxLength={20}
+                              autoFocus={isFocused}
+                              onClick={(e) => e.stopPropagation()}
+                              onChange={(e) => {
+                                if (user.email) {
+                                  handleAbsenceReasonChange(dateString, user.email, e.target.value);
+                                }
+                              }}
+                            />
+                            <button
+                              className="remove-absence-btn"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (user.email) {
+                                  handleAbsenceClick(dateString, user.email, rowIndex, colIndex);
+                                }
+                              }}
+                              title="Mark as present"
+                            >
+                              ×
+                            </button>
+                          </div>
+                        ) : (
+                          '-'
+                        )}
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {hasDirtyChanges && (
@@ -303,4 +477,3 @@ const RosterTable = () => {
 };
 
 export default RosterTable;
-

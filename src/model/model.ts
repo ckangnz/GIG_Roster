@@ -47,7 +47,7 @@ export interface RosterEntry {
   date: string; // YYYY-MM-DD
   teams: Record<string, TeamAssignments>; // teamName -> { userIdentifier -> positions[] }
   absence: Record<string, Absence>; // userIdentifier -> { reason }
-  updatedAt?: unknown;
+  updatedAt?: number;
 }
 
 export const generateIndexedAssignments = (

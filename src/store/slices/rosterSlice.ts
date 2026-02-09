@@ -1,14 +1,14 @@
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import {
   collection,
   query,
   getDocs,
   doc,
   writeBatch,
-} from 'firebase/firestore';
+} from "firebase/firestore";
 
-import { db } from '../../firebase';
-import { RosterEntry } from '../../model/model';
+import { db } from "../../firebase";
+import { RosterEntry } from "../../model/model";
 
 interface RosterState {
   entries: Record<string, RosterEntry>; // date -> RosterEntry
@@ -27,47 +27,63 @@ const initialState: RosterState = {
 };
 
 export const fetchRosterEntries = createAsyncThunk(
-  'roster/fetchEntries',
+  "roster/fetchEntries",
   async (_, { rejectWithValue }) => {
     try {
-      const q = query(collection(db, 'roster'));
+      const q = query(collection(db, "roster"));
       const snapshot = await getDocs(q);
       const entries: Record<string, RosterEntry> = {};
       snapshot.docs.forEach((doc) => {
-        const data = doc.data() as Omit<RosterEntry, 'id'>;
-        entries[doc.id] = { ...data, id: doc.id };
+        const data = doc.data();
+        const updatedAt = data.updatedAt;
+        const serializableData = {
+          ...data,
+          updatedAt:
+            updatedAt && typeof updatedAt === 'object' && 'toMillis' in updatedAt
+              ? (updatedAt as { toMillis: () => number }).toMillis()
+              : (updatedAt as number | undefined),
+        };
+        entries[doc.id] = { ...serializableData, id: doc.id } as RosterEntry;
       });
       return entries;
     } catch (error) {
       return rejectWithValue(
-        error instanceof Error ? error.message : 'Failed to fetch roster entries',
+        error instanceof Error
+          ? error.message
+          : "Failed to fetch roster entries",
       );
     }
   },
 );
 
 export const saveRosterChanges = createAsyncThunk(
-  'roster/saveChanges',
+  "roster/saveChanges",
   async (dirtyEntries: Record<string, RosterEntry>, { rejectWithValue }) => {
     try {
       const batch = writeBatch(db);
+      const timestamp = Date.now();
+      const entriesWithTimestamp: Record<string, RosterEntry> = {};
+
       Object.values(dirtyEntries).forEach((entry) => {
-        const docRef = doc(db, 'roster', entry.id);
-        const data = { ...entry, updatedAt: new Date() };
+        const docRef = doc(db, "roster", entry.id);
+        const data = { ...entry, updatedAt: timestamp };
         batch.set(docRef, data);
+        entriesWithTimestamp[entry.id] = data;
       });
       await batch.commit();
-      return dirtyEntries;
+      return entriesWithTimestamp;
     } catch (error) {
       return rejectWithValue(
-        error instanceof Error ? error.message : 'Failed to save roster changes',
+        error instanceof Error
+          ? error.message
+          : "Failed to save roster changes",
       );
     }
   },
 );
 
 const rosterSlice = createSlice({
-  name: 'roster',
+  name: "roster",
   initialState,
   reducers: {
     clearError: (state) => {
@@ -83,7 +99,13 @@ const rosterSlice = createSlice({
         maxConflict: number;
       }>,
     ) {
-      const { date, teamName, userIdentifier, positionGroupNames, maxConflict } = action.payload;
+      const {
+        date,
+        teamName,
+        userIdentifier,
+        positionGroupNames,
+        maxConflict,
+      } = action.payload;
 
       // Get base entry (either from dirty or original)
       const entry = state.dirtyEntries[date] || state.entries[date];
@@ -103,8 +125,13 @@ const rosterSlice = createSlice({
       const userAssignments = newEntry.teams[teamName][userIdentifier] || [];
 
       // Find current assignment within this group (if any)
-      const currentInGroupIndex = positionGroupNames.findIndex((p) => userAssignments.includes(p));
-      const currentInGroupName = currentInGroupIndex >= 0 ? positionGroupNames[currentInGroupIndex] : null;
+      const currentInGroupIndex = positionGroupNames.findIndex((p) =>
+        userAssignments.includes(p),
+      );
+      const currentInGroupName =
+        currentInGroupIndex >= 0
+          ? positionGroupNames[currentInGroupIndex]
+          : null;
 
       // Calculate next assignment in cycle: Parent -> Child1 -> Child2 -> ... -> None -> Parent
       let nextPositionName: string | null = null;
@@ -120,7 +147,9 @@ const rosterSlice = createSlice({
       }
 
       // 1. Remove current group member from assignments
-      const updatedAssignments = userAssignments.filter((p) => !positionGroupNames.includes(p));
+      const updatedAssignments = userAssignments.filter(
+        (p) => !positionGroupNames.includes(p),
+      );
 
       // 2. Add next member if not None
       if (nextPositionName) {
@@ -145,6 +174,35 @@ const rosterSlice = createSlice({
       state.dirtyEntries = {};
       state.error = null;
     },
+    updateLocalAbsence(
+      state,
+      action: PayloadAction<{
+        date: string;
+        userIdentifier: string;
+        reason?: string;
+        isAbsent: boolean;
+      }>,
+    ) {
+      const { date, userIdentifier, reason, isAbsent } = action.payload;
+      const entry = state.dirtyEntries[date] || state.entries[date];
+
+      let newEntry: RosterEntry;
+      if (entry) {
+        newEntry = JSON.parse(JSON.stringify(entry));
+      } else {
+        newEntry = { id: date, date, teams: {}, absence: {} };
+      }
+
+      if (isAbsent) {
+        newEntry.absence[userIdentifier] = {
+          reason: reason || newEntry.absence[userIdentifier]?.reason || "",
+        };
+      } else {
+        delete newEntry.absence[userIdentifier];
+      }
+
+      state.dirtyEntries[date] = newEntry;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -152,10 +210,13 @@ const rosterSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchRosterEntries.fulfilled, (state, action: PayloadAction<Record<string, RosterEntry>>) => {
-        state.entries = action.payload;
-        state.loading = false;
-      })
+      .addCase(
+        fetchRosterEntries.fulfilled,
+        (state, action: PayloadAction<Record<string, RosterEntry>>) => {
+          state.entries = action.payload;
+          state.loading = false;
+        },
+      )
       .addCase(fetchRosterEntries.rejected, (state, action) => {
         state.error = action.payload as string;
         state.loading = false;
@@ -176,5 +237,10 @@ const rosterSlice = createSlice({
   },
 });
 
-export const { clearError, updateLocalAssignment, resetRosterEdits } = rosterSlice.actions;
+export const {
+  clearError,
+  updateLocalAssignment,
+  resetRosterEdits,
+  updateLocalAbsence,
+} = rosterSlice.actions;
 export const rosterReducer = rosterSlice.reducer;
