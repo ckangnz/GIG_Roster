@@ -161,55 +161,6 @@
   opacity: 0.6;
 }
 
-/* Nav Zones - Full height, truly absolute */
-.carousel-nav-zone {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 15%; /* Matches the padding of the card wrapper */
-  background: transparent;
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  z-index: 20;
-  transition: all 0.2s;
-  color: var(--color-text-dim);
-  padding: 0;
-}
-
-.carousel-nav-zone:hover:not(:disabled) {
-  color: var(--color-link);
-  background: rgba(var(--color-link-rgb), 0.03);
-}
-
-.carousel-nav-zone.prev {
-  left: 0;
-}
-
-.carousel-nav-zone.next {
-  right: 0;
-}
-
-.nav-chevron {
-  font-size: 3rem;
-  line-height: 1;
-  opacity: 0.3;
-  transition: all 0.2s;
-}
-
-.carousel-nav-zone:hover .nav-chevron {
-  opacity: 1;
-  transform: scale(1.2);
-}
-
-.carousel-nav-zone:disabled {
-  opacity: 0;
-  cursor: default;
-  pointer-events: none;
-}
-
 .carousel-pagination {
   text-align: center;
   margin-top: 0.5rem;
@@ -236,14 +187,6 @@
 
   .team-cards-container {
     max-width: 90%;
-  }
-
-  .nav-chevron {
-    font-size: 2rem;
-  }
-
-  .carousel-nav-zone {
-    width: 10%;
   }
 }
 

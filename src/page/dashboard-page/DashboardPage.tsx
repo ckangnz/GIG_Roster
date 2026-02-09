@@ -144,17 +144,6 @@ const DashboardPage = () => {
     });
   };
 
-  const scrollToDate = (index: number) => {
-    if (!scrollRef.current) return;
-    const container = scrollRef.current;
-    const itemWidth = container.offsetWidth;
-    container.scrollTo({
-      left: itemWidth * index,
-      behavior: 'smooth',
-    });
-    setCurrentDateIndex(index);
-  };
-
   const handleScroll = () => {
     if (!scrollRef.current) return;
     const container = scrollRef.current;
