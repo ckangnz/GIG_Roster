@@ -3,7 +3,7 @@ import { User } from 'firebase/auth';
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 
 import { auth, db } from '../../firebase';
-import { AppUser } from '../../model/model';
+import { AppUser, generateIndexedAssignments } from '../../model/model';
 
 interface AuthState {
   firebaseUser: User | null;
@@ -39,6 +39,8 @@ export const initializeUserData = createAsyncThunk(
           isActive: true,
           teams: [],
           positions: [],
+          teamPositions: {},
+          indexedAssignments: [],
           gender: '',
         };
         await setDoc(userRef, newData);
@@ -61,8 +63,14 @@ export const updateUserProfile = createAsyncThunk(
   ) => {
     try {
       const userRef = doc(db, 'users', uid);
-      await updateDoc(userRef, data);
-      return data;
+      const finalData = { ...data };
+
+      if (finalData.teamPositions) {
+        finalData.indexedAssignments = generateIndexedAssignments(finalData.teamPositions);
+      }
+
+      await updateDoc(userRef, finalData);
+      return finalData;
     } catch (error) {
       return rejectWithValue(
         error instanceof Error ? error.message : 'Failed to update profile',

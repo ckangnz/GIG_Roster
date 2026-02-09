@@ -8,7 +8,7 @@ import {
 } from "firebase/firestore";
 
 import { db } from "../../firebase";
-import { AppUser } from "../../model/model";
+import { AppUser, generateIndexedAssignments } from "../../model/model";
 
 type AppUserWithId = AppUser & { id: string };
 
@@ -53,6 +53,12 @@ export const saveAllUserChanges = createAsyncThunk(
       const batch = writeBatch(db);
       users.forEach((u) => {
         const { id, ...data } = u;
+        // Recalculate indexedAssignments before saving
+        if (data.teamPositions) {
+          data.indexedAssignments = generateIndexedAssignments(
+            data.teamPositions,
+          );
+        }
         batch.update(doc(db, "users", id), data);
       });
       await batch.commit();
@@ -109,6 +115,42 @@ const userManagementSlice = createSlice({
           ? currentTeams.filter((t) => t !== teamName)
           : [...currentTeams, teamName];
         user.teams = newTeams;
+
+        // Sync teamPositions
+        if (!user.teamPositions) user.teamPositions = {};
+        if (newTeams.includes(teamName)) {
+          if (!user.teamPositions[teamName]) user.teamPositions[teamName] = [];
+        } else {
+          delete user.teamPositions[teamName];
+        }
+      }
+    },
+    toggleUserTeamPosition(
+      state,
+      action: PayloadAction<{
+        userId: string;
+        teamName: string;
+        posName: string;
+      }>,
+    ) {
+      const { userId, teamName, posName } = action.payload;
+      const user = state.allUsers.find((u) => u.id === userId);
+      if (user) {
+        if (!user.teamPositions) user.teamPositions = {};
+        if (!user.teamPositions[teamName]) user.teamPositions[teamName] = [];
+
+        const currentPos = user.teamPositions[teamName];
+        const newPos = currentPos.includes(posName)
+          ? currentPos.filter((p) => p !== posName)
+          : [...currentPos, posName];
+        user.teamPositions[teamName] = newPos;
+
+        // Sync legacy positions array
+        const allPos = new Set<string>();
+        Object.values(user.teamPositions).forEach((positions) => {
+          positions.forEach((p) => allPos.add(p));
+        });
+        user.positions = Array.from(allPos);
       }
     },
   },
@@ -143,6 +185,9 @@ const userManagementSlice = createSlice({
   },
 });
 
-export const { updateUserField, toggleUserPosition, toggleUserTeam } =
-  userManagementSlice.actions;
+export const {
+  updateUserField,
+  toggleUserTeam,
+  toggleUserTeamPosition,
+} = userManagementSlice.actions;
 export const userManagementReducer = userManagementSlice.reducer;

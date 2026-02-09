@@ -4,11 +4,10 @@ import {
   SettingsTableInputCell,
 } from "../../components/common/SettingsTable";
 import { useAppDispatch } from "../../hooks/redux";
-import { useComputedPositions } from "../../hooks/useComputedPositions";
 import { AppUser, Gender, Team } from "../../model/model";
 import {
-  toggleUserPosition,
   toggleUserTeam,
+  toggleUserTeamPosition,
   updateUserField,
 } from "../../store/slices/userManagementSlice";
 
@@ -24,10 +23,6 @@ const UserManagementRow = ({
   adminEmail,
 }: UserManagementRowProps) => {
   const dispatch = useAppDispatch();
-  const computedPositions = useComputedPositions(
-    user.teams || [],
-    availableTeams,
-  );
 
   const handleUpdate = (
     field: keyof AppUser,
@@ -40,8 +35,8 @@ const UserManagementRow = ({
     dispatch(toggleUserTeam({ userId: user.id, teamName }));
   };
 
-  const handleTogglePosition = (posName: string) => {
-    dispatch(toggleUserPosition({ userId: user.id, posName }));
+  const handleTogglePosition = (teamName: string, posName: string) => {
+    dispatch(toggleUserTeamPosition({ userId: user.id, teamName, posName }));
   };
 
   return (
@@ -86,21 +81,42 @@ const UserManagementRow = ({
         </PillGroup>
       </SettingsTableAnyCell>
       <SettingsTableAnyCell>
-        <PillGroup>
-          {computedPositions.map((pos) => {
-            const isSelected = user.positions?.includes(pos.name);
-            return (
-              <Pill
-                key={pos.name}
-                colour={pos.colour}
-                isActive={isSelected}
-                onClick={() => handleTogglePosition(pos.name)}
+        {user.teams?.map((teamName) => {
+          const team = availableTeams.find((t) => t.name === teamName);
+          if (!team) return null;
+          return (
+            <div key={teamName} style={{ marginBottom: "12px" }}>
+              <div
+                style={{
+                  fontSize: "0.65rem",
+                  fontWeight: "bold",
+                  marginBottom: "4px",
+                  color: "var(--color-text-dim)",
+                  textTransform: "uppercase",
+                }}
               >
-                {pos.emoji}
-              </Pill>
-            );
-          })}
-        </PillGroup>
+                {team.emoji} {team.name}
+              </div>
+              <PillGroup>
+                {team.positions?.map((pos) => {
+                  const isSelected = user.teamPositions?.[teamName]?.includes(
+                    pos.name,
+                  );
+                  return (
+                    <Pill
+                      key={pos.name}
+                      colour={pos.colour}
+                      isActive={isSelected}
+                      onClick={() => handleTogglePosition(teamName, pos.name)}
+                    >
+                      {pos.emoji}
+                    </Pill>
+                  );
+                })}
+              </PillGroup>
+            </div>
+          );
+        })}
       </SettingsTableAnyCell>
       <SettingsTableAnyCell>
         <Pill

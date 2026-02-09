@@ -13,6 +13,8 @@ export interface AppUser {
   email: string | null;
   teams: string[];
   positions: string[];
+  teamPositions?: Record<string, string[]>; // teamName -> positionNames[]
+  indexedAssignments?: string[]; // ["TeamName|PositionName", ...]
   gender: string;
   isApproved: boolean;
   isAdmin: boolean;
@@ -47,3 +49,15 @@ export interface RosterEntry {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export const generateIndexedAssignments = (
+  teamPositions: Record<string, string[]>,
+): string[] => {
+  const indexed: string[] = [];
+  Object.entries(teamPositions).forEach(([teamName, positions]) => {
+    positions.forEach((posName) => {
+      indexed.push(`${teamName}|${posName}`);
+    });
+  });
+  return indexed;
+};

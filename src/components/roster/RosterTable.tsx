@@ -5,7 +5,7 @@ import { useParams } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import {
   fetchTeamDataForRoster,
-  fetchUsersByPosition,
+  fetchUsersByTeamAndPosition,
 } from "../../store/slices/rosterViewSlice";
 import Spinner from "../common/Spinner";
 import "./roster-table.css";
@@ -18,10 +18,10 @@ const RosterTable = () => {
     useAppSelector((state) => state.rosterView);
 
   useEffect(() => {
-    if (activePosition) {
-      dispatch(fetchUsersByPosition(activePosition));
+    if (activePosition && teamName) {
+      dispatch(fetchUsersByTeamAndPosition({ teamName, positionName: activePosition }));
     }
-  }, [activePosition, dispatch]);
+  }, [activePosition, teamName, dispatch]);
 
   useEffect(() => {
     if (teamName) {

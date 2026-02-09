@@ -70,13 +70,19 @@ const initialState: RosterViewState = {
   error: null,
 };
 
-export const fetchUsersByPosition = createAsyncThunk(
+export const fetchUsersByTeamAndPosition = createAsyncThunk(
   'rosterView/fetchUsers',
-  async (activePosition: string, { rejectWithValue }) => {
-    if (!activePosition) return [];
+  async (
+    { teamName, positionName }: { teamName: string; positionName: string },
+    { rejectWithValue },
+  ) => {
+    if (!teamName || !positionName) return [];
     try {
       const usersCollectionRef = collection(db, 'users');
-      const q = query(usersCollectionRef, where('positions', 'array-contains', activePosition));
+      const q = query(
+        usersCollectionRef,
+        where('indexedAssignments', 'array-contains', `${teamName}|${positionName}`),
+      );
       const querySnapshot = await getDocs(q);
       const fetchedUsers: AppUser[] = [];
       querySnapshot.forEach((doc) => {
@@ -87,7 +93,7 @@ export const fetchUsersByPosition = createAsyncThunk(
       console.error('Error fetching users:', err);
       return rejectWithValue('Failed to load users.');
     }
-  }
+  },
 );
 
 export const fetchTeamDataForRoster = createAsyncThunk(
@@ -125,16 +131,19 @@ const rosterViewSlice = createSlice({
   extraReducers: (builder) => {
     builder
       // Fetch Users
-      .addCase(fetchUsersByPosition.pending, (state) => {
+      .addCase(fetchUsersByTeamAndPosition.pending, (state) => {
         state.loadingUsers = true;
         state.users = [];
         state.error = null;
       })
-      .addCase(fetchUsersByPosition.fulfilled, (state, action: PayloadAction<AppUser[]>) => {
-        state.users = action.payload;
-        state.loadingUsers = false;
-      })
-      .addCase(fetchUsersByPosition.rejected, (state, action) => {
+      .addCase(
+        fetchUsersByTeamAndPosition.fulfilled,
+        (state, action: PayloadAction<AppUser[]>) => {
+          state.users = action.payload;
+          state.loadingUsers = false;
+        },
+      )
+      .addCase(fetchUsersByTeamAndPosition.rejected, (state, action) => {
         state.error = action.payload as string;
         state.loadingUsers = false;
       })

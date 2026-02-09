@@ -3,7 +3,6 @@ import { useState } from 'react';
 import Pill, { PillGroup } from '../../components/common/Pill';
 import { auth } from '../../firebase';
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
-import { useComputedPositions } from '../../hooks/useComputedPositions';
 import { updateUserProfile } from '../../store/slices/authSlice';
 import './profile-settings.css';
 
@@ -14,25 +13,30 @@ const ProfileSettings = () => {
 
   const [name, setName] = useState(userData?.name || '');
   const [gender, setGender] = useState(userData?.gender || '');
-  const [selectedPositions, setSelectedPositions] = useState<string[]>(
-    userData?.positions || [],
-  );
   const [isActive, setIsActive] = useState(userData?.isActive ?? true);
   const [selectedTeams, setSelectedTeams] = useState<string[]>(userData?.teams || []);
+  const [teamPositions, setTeamPositions] = useState<Record<string, string[]>>(
+    userData?.teamPositions || {},
+  );
   const [status, setStatus] = useState('idle');
-
-  const computedPositions = useComputedPositions(selectedTeams, availableTeams);
 
   const handleSave = async () => {
     if (!firebaseUser) return;
     setStatus('saving');
     try {
+      // Sync legacy positions array
+      const allPos = new Set<string>();
+      Object.values(teamPositions).forEach((positions) => {
+        positions.forEach((p) => allPos.add(p));
+      });
+
       const updateData = {
         name,
         gender,
-        positions: selectedPositions,
         isActive,
         teams: selectedTeams,
+        teamPositions,
+        positions: Array.from(allPos),
       };
       await dispatch(updateUserProfile({ uid: firebaseUser.uid, data: updateData })).unwrap();
       setStatus('success');
@@ -43,18 +47,35 @@ const ProfileSettings = () => {
     }
   };
 
-  const togglePosition = (name: string) => {
-    setSelectedPositions((prev) =>
-      prev.includes(name) ? prev.filter((p) => p !== name) : [...prev, name],
-    );
+  const toggleTeam = (teamName: string) => {
+    setSelectedTeams((prev) => {
+      const isRemoving = prev.includes(teamName);
+      const newTeams = isRemoving
+        ? prev.filter((name) => name !== teamName)
+        : [...prev, teamName];
+
+      setTeamPositions((prevTP) => {
+        const nextTP = { ...prevTP };
+        if (isRemoving) {
+          delete nextTP[teamName];
+        } else if (!nextTP[teamName]) {
+          nextTP[teamName] = [];
+        }
+        return nextTP;
+      });
+
+      return newTeams;
+    });
   };
 
-  const toggleTeam = (teamName: string) => {
-    setSelectedTeams((prev) =>
-      prev.includes(teamName)
-        ? prev.filter((name) => name !== teamName)
-        : [...prev, teamName],
-    );
+  const toggleTeamPosition = (teamName: string, posName: string) => {
+    setTeamPositions((prev) => {
+      const current = prev[teamName] || [];
+      const updated = current.includes(posName)
+        ? current.filter((p) => p !== posName)
+        : [...current, posName];
+      return { ...prev, [teamName]: updated };
+    });
   };
 
   if (!userData) {
@@ -117,24 +138,38 @@ const ProfileSettings = () => {
         </PillGroup>
       </div>
 
-      <div className="form-group">
-        <label>My Positions</label>
-        <PillGroup>
-          {computedPositions.map((pos) => {
-            const isSelected = selectedPositions.includes(pos.name);
+      {selectedTeams.length > 0 && (
+        <div className="team-positions-section">
+          <label className="section-label">Positions per Team</label>
+          {selectedTeams.map((teamName) => {
+            const team = availableTeams.find((t) => t.name === teamName);
+            if (!team) return null;
+
             return (
-              <Pill
-                key={pos.name}
-                onClick={() => togglePosition(pos.name)}
-                isActive={isSelected}
-                colour={pos.colour}
-              >
-                <span>{pos.emoji}</span> {pos.name}
-              </Pill>
+              <div key={teamName} className="team-position-group">
+                <div className="team-position-header">
+                  {team.emoji} {team.name}
+                </div>
+                <PillGroup>
+                  {team.positions?.map((pos) => {
+                    const isSelected = teamPositions[teamName]?.includes(pos.name);
+                    return (
+                      <Pill
+                        key={pos.name}
+                        onClick={() => toggleTeamPosition(teamName, pos.name)}
+                        isActive={isSelected}
+                        colour={pos.colour}
+                      >
+                        <span>{pos.emoji}</span> {pos.name}
+                      </Pill>
+                    );
+                  })}
+                </PillGroup>
+              </div>
             );
           })}
-        </PillGroup>
-      </div>
+        </div>
+      )}
 
       <div className="form-group">
         <label>Availability Status</label>
