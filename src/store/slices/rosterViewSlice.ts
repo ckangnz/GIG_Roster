@@ -6,13 +6,18 @@ import { AppUser, Team, Weekday } from '../../model/model';
 import { RootState } from '../index';
 
 // Helper function from RosterTable.tsx
-export const getUpcomingDates = (preferredDays: Weekday[]): string[] => {
+export const getUpcomingDates = (
+  preferredDays: Weekday[],
+  startYear?: number,
+  endYear?: number,
+): string[] => {
   const dates: Date[] = [];
   const now = new Date();
   now.setHours(0, 0, 0, 0);
+
   const currentYear = now.getFullYear();
-  const endOfYear = new Date(currentYear, 11, 31);
-  endOfYear.setHours(0, 0, 0, 0);
+  const effectiveStartYear = startYear || currentYear;
+  const effectiveEndYear = endYear || currentYear;
 
   const weekdayMap: Record<Weekday, number> = {
     Sunday: 0,
@@ -26,21 +31,20 @@ export const getUpcomingDates = (preferredDays: Weekday[]): string[] => {
 
   const preferredDayNumbers = preferredDays.map((day) => weekdayMap[day]);
 
-  const startDate = new Date(now);
-  let foundFirstDate = false;
-  while (!foundFirstDate) {
-    if (preferredDayNumbers.includes(startDate.getDay())) {
-      foundFirstDate = true;
-    } else {
-      startDate.setDate(startDate.getDate() + 1);
-      if (startDate.getFullYear() > currentYear) {
-        return [];
-      }
-    }
+  // Start from Jan 1st of the start year OR today if start year is current year
+  let startDate: Date;
+  if (effectiveStartYear === currentYear) {
+    startDate = new Date(now);
+  } else {
+    startDate = new Date(effectiveStartYear, 0, 1);
   }
+  startDate.setHours(0, 0, 0, 0);
+
+  const finalEndDate = new Date(effectiveEndYear, 11, 31);
+  finalEndDate.setHours(23, 59, 59, 999);
 
   const currentDate = new Date(startDate);
-  while (currentDate.getTime() <= endOfYear.getTime()) {
+  while (currentDate.getTime() <= finalEndDate.getTime()) {
     if (preferredDayNumbers.includes(currentDate.getDay())) {
       dates.push(new Date(currentDate));
     }
@@ -209,6 +213,18 @@ const rosterViewSlice = createSlice({
       if (state.currentTeamData?.preferredDays) {
         state.rosterDates = getUpcomingDates(state.currentTeamData.preferredDays);
       }
+    },
+    loadNextYearDates(state) {
+      if (state.currentTeamData && state.rosterDates.length > 0) {
+        const lastDate = new Date(state.rosterDates[state.rosterDates.length - 1]);
+        const nextYear = lastDate.getFullYear() + 1;
+        const nextYearDates = getUpcomingDates(
+          state.currentTeamData.preferredDays,
+          nextYear,
+          nextYear
+        );
+        state.rosterDates = [...state.rosterDates, ...nextYearDates];
+      }
     }
   },
   extraReducers: (builder) => {
@@ -264,5 +280,6 @@ const rosterViewSlice = createSlice({
   },
 });
 
-export const { loadPreviousDates, resetToUpcomingDates } = rosterViewSlice.actions;
+export const { loadPreviousDates, resetToUpcomingDates, loadNextYearDates } =
+  rosterViewSlice.actions;
 export const rosterViewReducer = rosterViewSlice.reducer;

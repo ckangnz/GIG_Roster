@@ -16,6 +16,7 @@ import {
   fetchUsersByTeamAndPosition,
   loadPreviousDates,
   resetToUpcomingDates,
+  loadNextYearDates,
 } from '../../store/slices/rosterViewSlice';
 import { toggleUserVisibility } from '../../store/slices/uiSlice';
 import Spinner from '../common/Spinner';
@@ -94,6 +95,10 @@ const RosterTable = () => {
 
   const handleResetDates = () => {
     dispatch(resetToUpcomingDates());
+  };
+
+  const handleLoadNextYear = () => {
+    dispatch(loadNextYearDates());
   };
 
   const getPeekAssignedUsers = useCallback(
@@ -557,6 +562,11 @@ const RosterTable = () => {
               </tbody>
             </table>
           </div>
+          <div className="load-more-footer">
+            <button className="load-next-year-btn" onClick={handleLoadNextYear}>
+              Load Next Year ↓
+            </button>
+          </div>
         </div>
       ) : (
         <div className="roster-section absence-section">
@@ -700,6 +710,11 @@ const RosterTable = () => {
                 })}
               </tbody>
             </table>
+          </div>
+          <div className="load-more-footer">
+            <button className="load-next-year-btn" onClick={handleLoadNextYear}>
+              Load Next Year ↓
+            </button>
           </div>
         </div>
       )}

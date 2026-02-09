@@ -73,7 +73,31 @@
   flex-direction: column;
   flex: 1;
   position: relative;
-  padding-bottom: 80px; /* Space for footer */
+  padding-bottom: 120px; /* More space for footer and load button */
+}
+
+.load-more-footer {
+  display: flex;
+  justify-content: center;
+  padding: 2rem 0;
+}
+
+.load-next-year-btn {
+  background: transparent;
+  border: 1px solid var(--border-color-input);
+  color: var(--color-text-dim);
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.load-next-year-btn:hover {
+  background: var(--background-button-secondary);
+  border-color: var(--color-link);
+  color: var(--color-link);
 }
 
 .clickable {
