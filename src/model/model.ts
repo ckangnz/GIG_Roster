@@ -30,6 +30,7 @@ export interface Position {
   name: string;
   emoji: string;
   colour: string;
+  parentId?: string;
 }
 
 export interface Absence {
