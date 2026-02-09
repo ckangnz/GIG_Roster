@@ -7,6 +7,7 @@ import {
   fetchTeamDataForRoster,
   fetchUsersByPosition,
 } from "../../store/slices/rosterViewSlice";
+import Spinner from "../common/Spinner";
 import "./roster-table.css";
 
 const RosterTable = () => {
@@ -29,11 +30,19 @@ const RosterTable = () => {
   }, [teamName, dispatch]);
 
   if (loadingUsers || loadingTeam) {
-    return <div className="roster-table-loading">Loading roster data...</div>;
+    return <Spinner />;
   }
 
   if (error) {
     return <div className="roster-table-error">Error: {error}</div>;
+  }
+
+  if (users.length === 0) {
+    return (
+      <div className="roster-table-loading">
+        No users found for this position.
+      </div>
+    );
   }
 
   return (
@@ -65,3 +74,4 @@ const RosterTable = () => {
 };
 
 export default RosterTable;
+

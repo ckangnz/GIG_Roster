@@ -4,7 +4,7 @@ import ReactDOM from 'react-dom/client';
 import { Provider } from 'react-redux';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
-import { LoadingProvider } from './hooks/useLoading';
+import { LoadingProvider } from './hooks/LoadingProvider';
 import { ThemeProvider } from './hooks/useTheme.tsx';
 
 import { routes } from './router/routes';

@@ -1,8 +1,9 @@
-import "./loading-page.css";
+import Spinner from '../../components/common/Spinner';
+import './loading-page.css';
 
 const LoadingPage = () => (
   <div className="loading-container">
-    <div className="spinner" />
+    <Spinner container={false} />
   </div>
 );
 

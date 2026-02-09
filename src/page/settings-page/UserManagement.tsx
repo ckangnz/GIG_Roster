@@ -2,6 +2,7 @@ import { useEffect } from "react";
 
 import UserManagementRow from "./UserManagementRow";
 import SettingsTable from "../../components/common/SettingsTable";
+import Spinner from "../../components/common/Spinner";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import {
   fetchAllUsers,
@@ -24,7 +25,7 @@ const UserManagement = () => {
   };
 
   if (loading) {
-    return <div>Loading users...</div>;
+    return <Spinner />;
   }
 
   if (error) {

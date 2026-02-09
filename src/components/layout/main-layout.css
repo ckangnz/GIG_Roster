@@ -13,9 +13,14 @@
   overflow-y: auto;
   position: relative;
   animation: fadeIn 0.3s ease-in-out;
+  display: flex;
+  flex-direction: column;
 }
 
 .content-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
   min-height: 100%;
 }
 

@@ -5,6 +5,7 @@ import SettingsTable, {
   SettingsTableAnyCell,
   SettingsTableInputCell,
 } from '../../components/common/SettingsTable';
+import Spinner from '../../components/common/Spinner';
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
 import { Position, Team, Weekday } from '../../model/model';
 import { fetchPositions } from '../../store/slices/positionsSlice';
@@ -129,7 +130,7 @@ const TeamManagement = () => {
   };
 
   if (teamsLoading || positionsLoading) {
-    return <div>Loading data...</div>;
+    return <Spinner />;
   }
 
   return (

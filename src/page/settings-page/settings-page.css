@@ -3,6 +3,7 @@
   margin: 0 auto;
   display: flex;
   flex-direction: column;
+  flex: 1;
   min-height: 100%;
   box-sizing: border-box;
   padding: 16px;
@@ -30,6 +31,7 @@
 @media (min-width: 768px) {
   .settings-container {
     padding: 0;
+    width: 100%;
   }
 
   .settings-footer {

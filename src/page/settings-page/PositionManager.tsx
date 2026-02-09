@@ -7,6 +7,7 @@ import SettingsTable, {
   SettingsTableColourInputCell,
   SettingsTableInputCell,
 } from '../../components/common/SettingsTable';
+import Spinner from '../../components/common/Spinner';
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
 import { Position as GlobalPosition } from '../../model/model';
 import { fetchPositions, updatePositions } from '../../store/slices/positionsSlice';
@@ -238,7 +239,7 @@ const PositionManagement = () => {
   };
 
   if (positionsLoading) {
-    return <div>Loading data...</div>;
+    return <Spinner />;
   }
 
   return (
