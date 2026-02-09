@@ -158,6 +158,59 @@
   color: white;
 }
 
+.peek-toggle-btn {
+  color: var(--color-text-dim);
+}
+
+.peek-toggle-btn.active {
+  background: var(--color-link);
+  color: white;
+  border-color: var(--color-link);
+}
+
+.peek-header {
+  padding: 8px !important;
+  min-width: 180px;
+}
+
+.peek-selector {
+  width: 100%;
+  background: var(--background-input);
+  border: 1px solid var(--border-color-input);
+  color: var(--color-text-primary);
+  border-radius: 4px;
+  padding: 6px;
+  font-size: 0.8rem;
+  font-weight: normal;
+  cursor: pointer;
+}
+
+.peek-selector:focus {
+  outline: 1px solid var(--color-link);
+  border-color: var(--color-link);
+}
+
+.peek-cell {
+  background-color: var(--background-card-subtle) !important;
+  font-size: 0.85rem;
+  color: var(--color-text-primary);
+  font-weight: 500;
+  white-space: normal;
+  text-align: left !important;
+  line-height: 1.4;
+}
+
+.sticky-right {
+  position: sticky;
+  right: 0;
+  z-index: 30;
+  border-left: 2px solid var(--border-color-secondary) !important;
+}
+
+.roster-table th.sticky-right {
+  z-index: 40;
+}
+
 .clickable-header {
   cursor: pointer;
   transition: background-color 0.2s;

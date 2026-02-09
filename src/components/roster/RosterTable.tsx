@@ -29,6 +29,7 @@ const RosterTable = () => {
     users,
     allTeamUsers,
     rosterDates,
+    currentTeamData,
     loadingUsers,
     loadingTeam,
     loadingAllTeamUsers,
@@ -47,12 +48,20 @@ const RosterTable = () => {
     table: 'roster' | 'absence';
   } | null>(null);
 
+  const [showPeek, setShowPeek] = useState(false);
+  const [peekPositionName, setPeekPositionName] = useState<string | null>(null);
+
   const hasDirtyChanges = Object.keys(dirtyEntries).length > 0;
 
   const currentPosition = useMemo(
     () => allPositions.find((p) => p.name === activePosition),
     [allPositions, activePosition],
   );
+
+  const peekOptions = useMemo(() => {
+    if (!currentTeamData) return [];
+    return currentTeamData.positions.filter((p) => p.name !== activePosition);
+  }, [currentTeamData, activePosition]);
 
   const hiddenUserList = useMemo(() => {
     if (!teamName || !activePosition) return [];
@@ -86,6 +95,23 @@ const RosterTable = () => {
   const handleResetDates = () => {
     dispatch(resetToUpcomingDates());
   };
+
+  const getPeekAssignedUsers = useCallback(
+    (dateString: string) => {
+      if (!peekPositionName || !teamName) return [];
+      const dateKey = dateString.split('T')[0];
+      const entry = dirtyEntries[dateKey] || entries[dateKey];
+      if (!entry || !entry.teams[teamName]) return [];
+
+      return Object.entries(entry.teams[teamName])
+        .filter(([, assignments]) => assignments.includes(peekPositionName))
+        .map(([email]) => {
+          const user = allTeamUsers.find((u) => u.email === email);
+          return user?.name || email;
+        });
+    },
+    [peekPositionName, teamName, dirtyEntries, entries, allTeamUsers],
+  );
 
   useEffect(() => {
     dispatch(fetchRosterEntries());
@@ -405,6 +431,13 @@ const RosterTable = () => {
                             ↓
                           </button>
                         )}
+                        <button
+                          className={`load-prev-btn peek-toggle-btn ${showPeek ? 'active' : ''}`}
+                          onClick={() => setShowPeek(!showPeek)}
+                          title="Toggle Peek Feature"
+                        >
+                          👁
+                        </button>
                       </div>
                     </div>
                   </th>
@@ -423,6 +456,22 @@ const RosterTable = () => {
                       )}
                     </th>
                   ))}
+                  {showPeek && (
+                    <th className="roster-table-header-cell sticky-header sticky-right peek-header">
+                      <select
+                        className="peek-selector"
+                        value={peekPositionName || ''}
+                        onChange={(e) => setPeekPositionName(e.target.value || null)}
+                      >
+                        <option value="">Peek Position...</option>
+                        {peekOptions.map((opt) => (
+                          <option key={opt.name} value={opt.name}>
+                            {opt.emoji} {opt.name}
+                          </option>
+                        ))}
+                      </select>
+                    </th>
+                  )}
                 </tr>
               </thead>
               <tbody>
@@ -470,6 +519,11 @@ const RosterTable = () => {
                           </td>
                         );
                       })}
+                      {showPeek && (
+                        <td className="roster-cell peek-cell sticky-right">
+                          {getPeekAssignedUsers(dateString).join(', ') || '-'}
+                        </td>
+                      )}
                     </tr>
                   );
                 })}
@@ -504,6 +558,13 @@ const RosterTable = () => {
                             ↓
                           </button>
                         )}
+                        <button
+                          className={`load-prev-btn peek-toggle-btn ${showPeek ? 'active' : ''}`}
+                          onClick={() => setShowPeek(!showPeek)}
+                          title="Toggle Peek Feature"
+                        >
+                          👁
+                        </button>
                       </div>
                     </div>
                   </th>
@@ -512,6 +573,22 @@ const RosterTable = () => {
                       {user.name}
                     </th>
                   ))}
+                  {showPeek && (
+                    <th className="roster-table-header-cell sticky-header sticky-right peek-header">
+                      <select
+                        className="peek-selector"
+                        value={peekPositionName || ''}
+                        onChange={(e) => setPeekPositionName(e.target.value || null)}
+                      >
+                        <option value="">Peek Position...</option>
+                        {peekOptions.map((opt) => (
+                          <option key={opt.name} value={opt.name}>
+                            {opt.emoji} {opt.name}
+                          </option>
+                        ))}
+                      </select>
+                    </th>
+                  )}
                 </tr>
               </thead>
               <tbody>
@@ -586,6 +663,11 @@ const RosterTable = () => {
                           </td>
                         );
                       })}
+                      {showPeek && (
+                        <td className="roster-cell peek-cell sticky-right">
+                          {getPeekAssignedUsers(dateString).join(', ') || '-'}
+                        </td>
+                      )}
                     </tr>
                   );
                 })}
