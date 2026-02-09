@@ -1,17 +1,24 @@
-import React from "react";
+import React from 'react';
 
-import ReactDOM from "react-dom/client";
+import ReactDOM from 'react-dom/client';
+import { Provider } from 'react-redux';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
-import { ThemeProvider } from "./hooks/useTheme.tsx";
+import { ThemeProvider } from './hooks/useTheme.tsx';
 
-import App from "./App.tsx";
+import { routes } from './router/routes';
+import { store } from './store';
 
-import "./index.css";
+import './index.css';
 
-ReactDOM.createRoot(document.getElementById("root")!).render(
+const router = createBrowserRouter(routes);
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <ThemeProvider>
-      <App />
-    </ThemeProvider>
+    <Provider store={store}>
+      <ThemeProvider>
+        <RouterProvider router={router} />
+      </ThemeProvider>
+    </Provider>
   </React.StrictMode>,
 );
