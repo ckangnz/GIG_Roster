@@ -52,3 +52,19 @@ export const selectPositionsByNameFilter = (nameFilter: string) =>
         position.name.toLowerCase().includes(nameFilter.toLowerCase()),
       ),
   );
+
+export const selectRootPositions = createSelector([selectPositions], (positions) =>
+  positions.filter((p) => !p.parentId),
+);
+
+export const selectChildPositions = (parentName: string) =>
+  createSelector([selectPositions], (positions) =>
+    positions.filter((p) => p.parentId === parentName),
+  );
+
+export const selectPositionGroup = (parentName: string) =>
+  createSelector([selectPositions], (positions) => {
+    const parent = positions.find((p) => p.name === parentName);
+    const children = positions.filter((p) => p.parentId === parentName);
+    return parent ? [parent, ...children] : children;
+  });

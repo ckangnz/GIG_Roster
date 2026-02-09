@@ -131,10 +131,12 @@ const SideNav = () => {
                       </div>
                     )}
                     {isTeamExpanded &&
-                      team.positions?.map((pos) => {
-                        const isActive =
-                          activeSideItem === pos.name &&
-                          activeTeamName === team.name;
+                      team.positions
+                        ?.filter((pos) => !pos.parentId)
+                        ?.map((pos) => {
+                          const isActive =
+                            activeSideItem === pos.name &&
+                            activeTeamName === team.name;
                         return (
                           <button
                             key={pos.name}

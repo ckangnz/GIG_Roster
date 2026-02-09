@@ -3,6 +3,7 @@ import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firesto
 
 import { db } from '../../firebase';
 import { AppUser, Team, Weekday } from '../../model/model';
+import { RootState } from '../index';
 
 // Helper function from RosterTable.tsx
 const getUpcomingDates = (preferredDays: Weekday[]): string[] => {
@@ -48,9 +49,8 @@ const getUpcomingDates = (preferredDays: Weekday[]): string[] => {
 
   dates.sort((a, b) => a.getTime() - b.getTime());
 
-  return dates.map(date => date.toISOString());
+  return dates.map((date) => date.toISOString());
 };
-
 
 interface RosterViewState {
   users: AppUser[];
@@ -74,14 +74,24 @@ export const fetchUsersByTeamAndPosition = createAsyncThunk(
   'rosterView/fetchUsers',
   async (
     { teamName, positionName }: { teamName: string; positionName: string },
-    { rejectWithValue },
+    { rejectWithValue, getState },
   ) => {
     if (!teamName || !positionName) return [];
     try {
+      const state = getState() as RootState;
+      const allPositions = state.positions.positions;
+
+      // Find children of this position
+      const children = allPositions.filter((p) => p.parentId === positionName);
+      const positionGroup = [positionName, ...children.map((c) => c.name)];
+
+      // Create indexed keys for all positions in the group
+      const indexedKeys = positionGroup.map((pos) => `${teamName}|${pos}`);
+
       const usersCollectionRef = collection(db, 'users');
       const q = query(
         usersCollectionRef,
-        where('indexedAssignments', 'array-contains', `${teamName}|${positionName}`),
+        where('indexedAssignments', 'array-contains-any', indexedKeys),
       );
       const querySnapshot = await getDocs(q);
       const fetchedUsers: AppUser[] = [];

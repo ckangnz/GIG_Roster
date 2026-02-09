@@ -184,19 +184,21 @@ const TeamManagement = () => {
             />
             <SettingsTableAnyCell>
               <PillGroup nowrap>
-                {availablePositions.map((pos) => {
-                  const isActive = team.positions?.some((p) => p.name === pos.name);
-                  return (
-                    <Pill
-                      key={pos.name}
-                      colour={pos.colour}
-                      isActive={isActive}
-                      onClick={() => togglePosition(teamIndex, pos)}
-                    >
-                      {pos.emoji}
-                    </Pill>
-                  );
-                })}
+                {availablePositions
+                  ?.filter((pos) => !pos.parentId)
+                  ?.map((pos) => {
+                    const isActive = team.positions?.some((p) => p.name === pos.name);
+                    return (
+                      <Pill
+                        key={pos.name}
+                        colour={pos.colour}
+                        isActive={isActive}
+                        onClick={() => togglePosition(teamIndex, pos)}
+                      >
+                        {pos.emoji}
+                      </Pill>
+                    );
+                  })}
               </PillGroup>
             </SettingsTableAnyCell>
             <SettingsTableAnyCell>
@@ -241,27 +243,29 @@ const TeamManagement = () => {
           />
           <SettingsTableAnyCell>
             <PillGroup nowrap>
-              {availablePositions.map((pos) => {
-                const isActive = newTeam.positions?.some((p) => p.name === pos.name);
-                return (
-                  <Pill
-                    key={`new-${pos.name}`}
-                    colour={pos.colour}
-                    isActive={isActive}
-                    onClick={() =>
-                      setNewTeam((prev) => {
-                        const currentPositions = prev.positions || [];
-                        const newPositions = currentPositions.some((p) => p.name === pos.name)
-                          ? currentPositions.filter((p) => p.name !== pos.name)
-                          : [...currentPositions, pos];
-                        return { ...prev, positions: newPositions };
-                      })
-                    }
-                  >
-                    {pos.emoji}
-                  </Pill>
-                );
-              })}
+              {availablePositions
+                ?.filter((pos) => !pos.parentId)
+                ?.map((pos) => {
+                  const isActive = newTeam.positions?.some((p) => p.name === pos.name);
+                  return (
+                    <Pill
+                      key={`new-${pos.name}`}
+                      colour={pos.colour}
+                      isActive={isActive}
+                      onClick={() =>
+                        setNewTeam((prev) => {
+                          const currentPositions = prev.positions || [];
+                          const newPositions = currentPositions.some((p) => p.name === pos.name)
+                            ? currentPositions.filter((p) => p.name !== pos.name)
+                            : [...currentPositions, pos];
+                          return { ...prev, positions: newPositions };
+                        })
+                      }
+                    >
+                      {pos.emoji}
+                    </Pill>
+                  );
+                })}
             </PillGroup>
           </SettingsTableAnyCell>
           <SettingsTableAnyCell>

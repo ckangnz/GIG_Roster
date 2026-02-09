@@ -144,19 +144,21 @@ const ProfileSettings = () => {
                   {team.emoji} {team.name}
                 </div>
                 <PillGroup>
-                  {team.positions?.map((pos) => {
-                    const isSelected = teamPositions[teamName]?.includes(pos.name);
-                    return (
-                      <Pill
-                        key={pos.name}
-                        onClick={() => toggleTeamPosition(teamName, pos.name)}
-                        isActive={isSelected}
-                        colour={pos.colour}
-                      >
-                        <span>{pos.emoji}</span> {pos.name}
-                      </Pill>
-                    );
-                  })}
+                  {team.positions
+                    ?.filter((pos) => !pos.parentId)
+                    ?.map((pos) => {
+                      const isSelected = teamPositions[teamName]?.includes(pos.name);
+                      return (
+                        <Pill
+                          key={pos.name}
+                          onClick={() => toggleTeamPosition(teamName, pos.name)}
+                          isActive={isSelected}
+                          colour={pos.colour}
+                        >
+                          <span>{pos.emoji}</span> {pos.name}
+                        </Pill>
+                      );
+                    })}
                 </PillGroup>
               </div>
             );

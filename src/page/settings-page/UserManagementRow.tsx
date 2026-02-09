@@ -98,21 +98,23 @@ const UserManagementRow = ({
                 {team.emoji} {team.name}
               </div>
               <PillGroup>
-                {team.positions?.map((pos) => {
-                  const isSelected = user.teamPositions?.[teamName]?.includes(
-                    pos.name,
-                  );
-                  return (
-                    <Pill
-                      key={pos.name}
-                      colour={pos.colour}
-                      isActive={isSelected}
-                      onClick={() => handleTogglePosition(teamName, pos.name)}
-                    >
-                      {pos.emoji}
-                    </Pill>
-                  );
-                })}
+                {team.positions
+                  ?.filter((pos) => !pos.parentId)
+                  ?.map((pos) => {
+                    const isSelected = user.teamPositions?.[teamName]?.includes(
+                      pos.name,
+                    );
+                    return (
+                      <Pill
+                        key={pos.name}
+                        colour={pos.colour}
+                        isActive={isSelected}
+                        onClick={() => handleTogglePosition(teamName, pos.name)}
+                      >
+                        {pos.emoji}
+                      </Pill>
+                    );
+                  })}
               </PillGroup>
             </div>
           );
