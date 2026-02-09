@@ -197,7 +197,7 @@
 }
 
 .peek-cell {
-  background-color: var(--background-card-subtle) !important;
+  background-color: var(--background-card) !important;
   font-size: 0.85rem;
   color: var(--color-text-primary);
   font-weight: 500;
@@ -210,11 +210,20 @@
   position: sticky;
   right: 0;
   z-index: 30;
+  background-color: var(--background-card);
   border-left: 2px solid var(--border-color-secondary) !important;
+}
+
+@media (max-width: 767px) {
+  .sticky-right {
+    position: static; /* Disable stickiness on mobile */
+    border-left: 1px solid var(--border-color-secondary) !important;
+  }
 }
 
 .roster-table th.sticky-right {
   z-index: 40;
+  background-color: var(--background-table-header);
 }
 
 .clickable-header {
