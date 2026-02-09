@@ -6,7 +6,7 @@ import { AppUser, Team, Weekday } from '../../model/model';
 import { RootState } from '../index';
 
 // Helper function from RosterTable.tsx
-const getUpcomingDates = (preferredDays: Weekday[]): string[] => {
+export const getUpcomingDates = (preferredDays: Weekday[]): string[] => {
   const dates: Date[] = [];
   const now = new Date();
   now.setHours(0, 0, 0, 0);

@@ -1,0 +1,278 @@
+.dashboard-container {
+  max-width: 100%;
+  width: 100%;
+  margin: 0 auto;
+  padding: 1.5rem 0;
+  overflow-x: hidden; /* Absolute guard against horizontal page scroll */
+  box-sizing: border-box;
+}
+
+.dashboard-header {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.dashboard-header h1 {
+  font-size: 1.4rem;
+  color: var(--color-text-primary);
+  margin-bottom: 0.2rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Carousel Layout */
+.carousel-outer-wrapper {
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.events-carousel-track {
+  width: 100%;
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 1rem 0 2rem 0;
+}
+
+.events-carousel-track::-webkit-scrollbar {
+  display: none;
+}
+
+.event-card-wrapper {
+  flex: 0 0 100%; /* Each wrapper is exactly one viewport width */
+  scroll-snap-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-sizing: border-box;
+  padding: 0 15%; /* This creates the "peek" space */
+}
+
+.event-card-wrapper.peek {
+  opacity: 0.2;
+  transform: scale(0.85);
+  filter: blur(2px);
+}
+
+.event-card-wrapper.active {
+  opacity: 1;
+  transform: scale(1);
+  filter: none;
+}
+
+.event-card-date {
+  font-size: 1.1rem;
+  color: var(--color-link);
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 1.2rem;
+  width: 100%;
+}
+
+.team-cards-container {
+  width: 100%;
+  max-width: 500px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.team-event-card {
+  background: var(--background-card);
+  border: 1px solid var(--border-color-secondary);
+  border-radius: 12px;
+  padding: 1.2rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.team-event-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.8rem;
+  border-bottom: 1px solid var(--border-color-secondary);
+}
+
+.team-event-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--color-text-primary);
+  font-weight: 700;
+}
+
+.copy-roster-btn {
+  background: var(--background-button-secondary);
+  border: 1px solid var(--border-color-input);
+  color: var(--color-text-secondary);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s;
+  font-weight: 600;
+}
+
+.copy-roster-btn:hover {
+  background: var(--color-link);
+  color: white;
+  border-color: var(--color-link);
+}
+
+.team-event-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.pos-assignment-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pos-emoji-label {
+  font-size: 1.3rem;
+  min-width: 30px;
+  text-align: center;
+}
+
+.assigned-names {
+  font-size: 0.95rem;
+  color: var(--color-text-primary);
+  font-weight: 500;
+}
+
+.assigned-names.unassigned {
+  color: var(--color-text-dim);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 0.85rem;
+  opacity: 0.6;
+}
+
+/* Nav Zones - Full height, truly absolute */
+.carousel-nav-zone {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 15%; /* Matches the padding of the card wrapper */
+  background: transparent;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 20;
+  transition: all 0.2s;
+  color: var(--color-text-dim);
+  padding: 0;
+}
+
+.carousel-nav-zone:hover:not(:disabled) {
+  color: var(--color-link);
+  background: rgba(var(--color-link-rgb), 0.03);
+}
+
+.carousel-nav-zone.prev {
+  left: 0;
+}
+
+.carousel-nav-zone.next {
+  right: 0;
+}
+
+.nav-chevron {
+  font-size: 3rem;
+  line-height: 1;
+  opacity: 0.3;
+  transition: all 0.2s;
+}
+
+.carousel-nav-zone:hover .nav-chevron {
+  opacity: 1;
+  transform: scale(1.2);
+}
+
+.carousel-nav-zone:disabled {
+  opacity: 0;
+  cursor: default;
+  pointer-events: none;
+}
+
+.carousel-pagination {
+  text-align: center;
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--color-text-dim);
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.dashboard-empty {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--color-text-dim);
+}
+
+@media (max-width: 768px) {
+  .dashboard-container {
+    padding: 1rem 0;
+  }
+  
+  .event-card-wrapper {
+    padding: 0 10%; /* More focus on current card on mobile */
+  }
+
+  .team-cards-container {
+    max-width: 90%;
+  }
+
+  .nav-chevron {
+    font-size: 2rem;
+  }
+
+  .carousel-nav-zone {
+    width: 10%;
+  }
+}
+
+@media (min-width: 1024px) {
+  .dashboard-container {
+    max-width: 1000px;
+  }
+  
+  .dashboard-header h1 {
+    font-size: 1.8rem;
+  }
+
+  .event-card-date {
+    font-size: 1.4rem;
+  }
+
+  .team-cards-container {
+    max-width: 600px;
+  }
+
+  .team-event-header h3 {
+    font-size: 1.3rem;
+  }
+
+  .assigned-names {
+    font-size: 1.1rem;
+  }
+
+  .pos-emoji-label {
+    font-size: 1.6rem;
+  }
+}

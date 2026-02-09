@@ -7,7 +7,11 @@ const BottomNav = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const activeTab = location.pathname.includes('/settings') ? AppTab.SETTINGS : AppTab.ROSTER;
+  const activeTab = location.pathname.includes('/settings')
+    ? AppTab.SETTINGS
+    : location.pathname.includes('/dashboard')
+      ? AppTab.DASHBOARD
+      : AppTab.ROSTER;
 
   const handleTabChange = (tabId: string) => {
     navigate(`/app/${tabId}`);

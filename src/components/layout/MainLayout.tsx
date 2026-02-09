@@ -24,14 +24,18 @@ const MainLayout = () => {
     (state) => state.ui,
   );
 
-  const activeTab = location.pathname.includes("/settings")
+  const activeTab = location.pathname.includes('/settings')
     ? AppTab.SETTINGS
-    : AppTab.ROSTER;
+    : location.pathname.includes('/dashboard')
+      ? AppTab.DASHBOARD
+      : AppTab.ROSTER;
   const { teamName: activeTeamName, positionName, section } = params;
   const activeSideItem = positionName || section || null;
 
   useEffect(() => {
-    if (activeTab === AppTab.ROSTER && !activeTeamName && !activeSideItem) {
+    if (location.pathname === '/app' || location.pathname === '/app/') {
+      navigate('/app/dashboard', { replace: true });
+    } else if (activeTab === AppTab.ROSTER && !activeTeamName && !activeSideItem) {
       if (userData?.teams && userData.teams.length > 0 && allTeams.length > 0) {
         const firstTeamName = userData.teams[0];
         const team = allTeams.find((t) => t.name === firstTeamName);
@@ -44,7 +48,7 @@ const MainLayout = () => {
     } else if (activeTab === AppTab.SETTINGS && !activeSideItem) {
       navigate(`/app/settings/${SettingsSection.PROFILE}`, { replace: true });
     }
-  }, [activeTab, activeTeamName, activeSideItem, userData, allTeams, navigate]);
+  }, [activeTab, activeTeamName, activeSideItem, userData, allTeams, navigate, location.pathname]);
 
   const getHeaderTitle = () => {
     const currentTabInfo = BOTTOM_NAV_ITEMS.find(

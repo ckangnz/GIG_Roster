@@ -1,4 +1,5 @@
 export enum AppTab {
+  DASHBOARD = "dashboard",
   ROSTER = "roster",
   SETTINGS = "settings",
 }
@@ -11,6 +12,7 @@ export enum SettingsSection {
 }
 
 export const BOTTOM_NAV_ITEMS = [
+  { id: AppTab.DASHBOARD, label: "Dashboard", icon: "🏠" },
   { id: AppTab.ROSTER, label: "Roster", icon: "🗓️" },
   { id: AppTab.SETTINGS, label: "Settings", icon: "⚙️" },
 ];
