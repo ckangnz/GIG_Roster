@@ -47,7 +47,7 @@ const RosterTable = () => {
   }, [teamName, dispatch]);
 
   const handleCellClick = (dateString: string, userEmail: string) => {
-    if (!teamName || !activePosition) return;
+    if (!teamName || !activePosition || isCellDisabled(dateString, userEmail)) return;
 
     const currentTeam = allTeams.find((t) => t.name === teamName);
     const maxConflict = currentTeam?.maxConflict || 1;
@@ -65,6 +65,33 @@ const RosterTable = () => {
         maxConflict,
       }),
     );
+  };
+
+  const isCellDisabled = (dateString: string, userEmail: string) => {
+    if (!teamName || !activePosition) return false;
+
+    const dateKey = dateString.split('T')[0];
+    const entry = dirtyEntries[dateKey] || entries[dateKey];
+    const currentTeam = allTeams.find((t) => t.name === teamName);
+    const maxConflict = currentTeam?.maxConflict || 1;
+
+    if (!entry || !entry.teams[teamName] || !entry.teams[teamName][userEmail]) {
+      // If user has NO assignments at all, they can't be disabled (unless maxConflict < 1 which isn't possible)
+      return false;
+    }
+
+    const userAssignments = entry.teams[teamName][userEmail];
+    
+    // Find if user is already in this position group
+    const children = allPositions.filter((p) => p.parentId === activePosition);
+    const positionGroupNames = [activePosition, ...children.map((c) => c.name)];
+    const isInGroup = userAssignments.some(p => positionGroupNames.includes(p));
+
+    // If they ARE in the group, they can always click to cycle or remove
+    if (isInGroup) return false;
+
+    // If they ARE NOT in the group, they are disabled if they've reached maxConflict
+    return userAssignments.length >= maxConflict;
   };
 
   const handleSave = () => {
@@ -129,15 +156,20 @@ const RosterTable = () => {
             {rosterDates.map((dateString) => (
               <tr key={dateString}>
                 <td className="date-cell">{new Date(dateString).toLocaleDateString()}</td>
-                {users.map((user) => (
-                  <td
-                    key={user.email}
-                    className="roster-cell clickable"
-                    onClick={() => user.email && handleCellClick(dateString, user.email)}
-                  >
-                    {user.email && getCellContent(dateString, user.email)}
-                  </td>
-                ))}
+                {users.map((user) => {
+                  const disabled = user.email ? isCellDisabled(dateString, user.email) : false;
+                  return (
+                    <td
+                      key={user.email}
+                      className={`roster-cell ${!disabled ? 'clickable' : 'disabled'}`}
+                      onClick={() =>
+                        user.email && !disabled && handleCellClick(dateString, user.email)
+                      }
+                    >
+                      {user.email && getCellContent(dateString, user.email)}
+                    </td>
+                  );
+                })}
               </tr>
             ))}
           </tbody>

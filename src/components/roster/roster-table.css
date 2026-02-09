@@ -50,6 +50,12 @@
   background-color: var(--background-primary-subtle);
 }
 
+.disabled {
+  background-color: var(--background-body);
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 .date-cell {
   white-space: nowrap;
   font-size: 0.85rem;

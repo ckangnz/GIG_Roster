@@ -24,7 +24,13 @@ export const fetchTeams = createAsyncThunk('teams/fetchTeams', async (_, { rejec
     const snap = await getDoc(docRef);
     if (snap.exists()) {
       const data = snap.data();
-      return Array.isArray(data.list) ? data.list : [];
+      const teamsList = Array.isArray(data.list)
+        ? data.list.map((teamData: Team) => ({
+            ...teamData,
+            maxConflict: teamData.maxConflict || 1,
+          }))
+        : [];
+      return teamsList;
     }
     return [];
   } catch (error) {
