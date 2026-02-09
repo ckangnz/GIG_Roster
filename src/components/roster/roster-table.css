@@ -1,26 +1,61 @@
 .roster-table-container {
   width: 100%;
-  overflow-x: auto;
+  overflow: auto; /* Enable both x and y scrolling for sticky to work */
   display: flex;
   flex-direction: column;
   flex: 1;
+  border: 1px solid var(--border-color-secondary);
+  border-radius: 8px;
 }
 
 .roster-table {
   width: 100%;
-  border-collapse: collapse;
-  margin-top: 1rem;
+  border-collapse: separate; /* Required for sticky borders to look right */
+  border-spacing: 0;
 }
 
-.roster-table th,
+.roster-table th {
+  padding: 12px 8px;
+  text-align: center;
+  background-color: var(--background-table-header);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  border-bottom: 2px solid var(--border-color-secondary);
+  border-right: 1px solid var(--border-color-secondary);
+}
+
 .roster-table td {
-  border: 1px solid var(--border-color-secondary);
   padding: 8px;
+  border-bottom: 1px solid var(--border-color-secondary);
+  border-right: 1px solid var(--border-color-secondary);
+}
+
+.sticky-col {
+  position: sticky;
+  left: 0;
+  z-index: 30;
+  background-color: var(--background-card);
+  width: min-content;
+  white-space: nowrap;
+  border-right: 2px solid var(--border-color-secondary) !important;
+}
+
+.roster-table th.sticky-col {
+  z-index: 40; /* Corner cell needs highest z-index */
   text-align: left;
 }
 
+.roster-table tr:last-child td {
+  border-bottom: none;
+}
+
+.roster-table th:last-child,
+.roster-table td:last-child {
+  border-right: none;
+}
+
 .roster-table-header-cell {
-  background-color: var(--background-table-header);
   font-weight: bold;
   color: var(--color-text-primary);
 }
@@ -60,12 +95,13 @@
   white-space: nowrap;
   font-size: 0.85rem;
   color: var(--color-text-dim);
+  width: 1%; /* Shrink to fit */
 }
 
 .roster-cell {
   text-align: center !important;
   vertical-align: middle;
-  min-width: 80px;
+  min-width: 100px;
 }
 
 .assigned-positions {
@@ -93,39 +129,41 @@
 }
 
 .absent-strike {
-  text-decoration: line-through;
   opacity: 0.6;
   background-color: var(--background-body) !important;
 }
 
 .absent-cell {
-  background-color: rgba(255, 70, 70, 0.1) !important;
+  background-color: rgba(255, 70, 70, 0.05) !important;
 }
 
 .absence-input-container {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
   width: 100%;
 }
 
 .absence-reason-input {
   flex: 1;
-  background: transparent;
-  border: none;
+  background: var(--background-input);
+  border: 1px solid var(--border-color-input);
+  border-radius: 4px;
   color: var(--color-text-primary);
   text-align: left;
-  font-size: 0.85rem;
-  padding: 4px;
-  min-width: 0; /* Allow shrinking for ellipsis */
+  font-size: 0.8rem;
+  padding: 4px 6px;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  transition: border-color 0.2s;
 }
 
 .absence-reason-input:focus {
   outline: 1px solid var(--color-link);
-  background: var(--background-input);
+  border-color: var(--color-link);
+  background: var(--background-card);
   text-overflow: clip;
 }
 
@@ -133,14 +171,16 @@
   background: transparent;
   border: none;
   color: var(--color-text-dim);
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   cursor: pointer;
-  padding: 0 4px;
-  line-height: 1;
+  width: 20px;
+  height: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: color 0.2s;
+  flex-shrink: 0;
+  padding: 0;
 }
 
 .remove-absence-btn:hover {
@@ -148,7 +188,8 @@
 }
 
 .absence-roster-cell {
-  min-width: 120px !important;
+  min-width: 140px !important;
+  padding: 4px !important;
 }
 
 .gender-label {

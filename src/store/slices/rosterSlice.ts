@@ -195,7 +195,7 @@ const rosterSlice = createSlice({
 
       if (isAbsent) {
         newEntry.absence[userIdentifier] = {
-          reason: reason || newEntry.absence[userIdentifier]?.reason || "",
+          reason: reason ?? newEntry.absence[userIdentifier]?.reason ?? '',
         };
       } else {
         delete newEntry.absence[userIdentifier];

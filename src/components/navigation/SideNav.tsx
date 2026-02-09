@@ -182,7 +182,7 @@ const SideNav = () => {
                           }}
                         >
                           <span className="side-emoji">🏥</span>{' '}
-                          {isDesktopSidebarExpanded && 'Absence Roster'}
+                          {isDesktopSidebarExpanded && 'Absence'}
                         </button>
                       </div>
                     )}
