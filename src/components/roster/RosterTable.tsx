@@ -15,6 +15,7 @@ import {
   fetchUsersByTeamAndPosition,
   fetchAllTeamUsers,
 } from "../../store/slices/rosterViewSlice";
+import { toggleUserVisibility } from "../../store/slices/uiSlice";
 import Spinner from "../common/Spinner";
 import "./roster-table.css";
 
@@ -41,6 +42,7 @@ const RosterTable = () => {
   const { positions: allPositions } = useAppSelector(
     (state) => state.positions,
   );
+  const { hiddenUsers } = useAppSelector((state) => state.ui);
 
   const [focusedCell, setFocusedCell] = useState<{
     row: number;
@@ -55,8 +57,15 @@ const RosterTable = () => {
     [allPositions, activePosition],
   );
 
+  const hiddenUserList = useMemo(() => {
+    if (!teamName || !activePosition) return [];
+    return hiddenUsers[teamName]?.[activePosition] || [];
+  }, [hiddenUsers, teamName, activePosition]);
+
   const sortedUsers = useMemo(() => {
-    const list = [...users];
+    const list = users.filter(
+      (u) => u.email && !hiddenUserList.includes(u.email),
+    );
     if (currentPosition?.sortByGender) {
       return list.sort((a, b) => {
         if (a.gender === b.gender) {
@@ -68,7 +77,18 @@ const RosterTable = () => {
       });
     }
     return list;
-  }, [users, currentPosition]);
+  }, [users, currentPosition, hiddenUserList]);
+
+  const handleToggleVisibility = (userEmail: string) => {
+    if (!teamName || !activePosition) return;
+    dispatch(
+      toggleUserVisibility({
+        teamName,
+        positionName: activePosition,
+        userEmail,
+      }),
+    );
+  };
 
   useEffect(() => {
     dispatch(fetchRosterEntries());
@@ -362,6 +382,27 @@ const RosterTable = () => {
 
   return (
     <div className="roster-table-wrapper">
+      {!isAbsenceView && hiddenUserList.length > 0 && (
+        <div className="hidden-members-bar">
+          <span className="hidden-members-label">Hidden Members:</span>
+          <div className="hidden-members-list">
+            {hiddenUserList.map((email) => {
+              const user = users.find((u) => u.email === email);
+              return (
+                <button
+                  key={email}
+                  className="unhide-pill"
+                  onClick={() => handleToggleVisibility(email)}
+                  title="Click to unhide"
+                >
+                  {user?.name || email} <span>+</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {!isAbsenceView ? (
         <div className="roster-section">
           <div className="roster-table-container">
@@ -370,7 +411,12 @@ const RosterTable = () => {
                 <tr>
                   <th className="roster-table-header-cell sticky-col sticky-header">Date</th>
                   {sortedUsers.map((user) => (
-                    <th key={user.email} className="roster-table-header-cell sticky-header">
+                    <th
+                      key={user.email}
+                      className="roster-table-header-cell sticky-header clickable-header"
+                      onClick={() => user.email && handleToggleVisibility(user.email)}
+                      title="Click to hide member"
+                    >
                       {user.name}
                       {currentPosition?.sortByGender && (
                         <span className="gender-label">
