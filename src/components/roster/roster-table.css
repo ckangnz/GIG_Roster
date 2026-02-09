@@ -115,6 +115,49 @@
   font-size: 1.2rem;
 }
 
+.date-header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.date-header-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.load-prev-btn {
+  background: var(--background-button-secondary);
+  border: 1px solid var(--border-color-input);
+  color: var(--color-link);
+  border-radius: 4px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.2s;
+}
+
+.load-prev-btn:hover {
+  background: var(--color-link);
+  color: white;
+  border-color: var(--color-link);
+}
+
+.reset-dates-btn {
+  color: var(--color-text-dim);
+}
+
+.reset-dates-btn:hover {
+  background: var(--color-error);
+  border-color: var(--color-error);
+  color: white;
+}
+
 .clickable-header {
   cursor: pointer;
   transition: background-color 0.2s;
@@ -192,6 +235,50 @@
 .absent-strike {
   opacity: 0.6;
   background-color: var(--background-body) !important;
+}
+
+/* Date States */
+.past-date {
+  opacity: 0.6;
+}
+
+.past-date td:not(.sticky-col) {
+  background-color: var(--background-body);
+}
+
+.today-date {
+  background-color: var(--background-primary-subtle);
+}
+
+.today-date .sticky-col {
+  background-color: var(--background-primary-subtle);
+  color: var(--color-link);
+  font-weight: bold;
+}
+
+.today-date td {
+  border-bottom: 1px solid var(--color-link);
+  border-top: 1px solid var(--color-link);
+}
+
+.date-cell-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.today-badge {
+  font-size: 0.6rem;
+  background-color: var(--color-link);
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+  font-weight: 800;
+}
+
+.future-date {
+  /* Default styles */
 }
 
 .absent-cell {

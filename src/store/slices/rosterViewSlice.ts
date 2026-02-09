@@ -52,6 +52,40 @@ const getUpcomingDates = (preferredDays: Weekday[]): string[] => {
   return dates.map((date) => date.toISOString());
 };
 
+const getPreviousDates = (preferredDays: Weekday[], earliestDateStr: string, count: number = 5): string[] => {
+  const dates: Date[] = [];
+  const earliestDate = new Date(earliestDateStr);
+  earliestDate.setHours(0, 0, 0, 0);
+
+  const weekdayMap: Record<Weekday, number> = {
+    Sunday: 0,
+    Monday: 1,
+    Tuesday: 2,
+    Wednesday: 3,
+    Thursday: 4,
+    Friday: 5,
+    Saturday: 6,
+  };
+
+  const preferredDayNumbers = preferredDays.map((day) => weekdayMap[day]);
+  const currentDate = new Date(earliestDate);
+
+  while (dates.length < count) {
+    currentDate.setDate(currentDate.getDate() - 1);
+    // Safety check to prevent infinite loops if no days are selected (shouldn't happen with proper validation)
+    if (preferredDayNumbers.includes(currentDate.getDay())) {
+      dates.push(new Date(currentDate));
+    }
+    
+    // Stop if we go back too far (e.g., more than a year from the earliest date)
+    const limitDate = new Date(earliestDate);
+    limitDate.setFullYear(limitDate.getFullYear() - 1);
+    if (currentDate < limitDate) break;
+  }
+
+  return dates.map((date) => date.toISOString()).sort();
+};
+
 interface RosterViewState {
   users: AppUser[];
   allTeamUsers: AppUser[];
@@ -161,7 +195,22 @@ export const fetchTeamDataForRoster = createAsyncThunk(
 const rosterViewSlice = createSlice({
   name: 'rosterView',
   initialState,
-  reducers: {},
+  reducers: {
+    loadPreviousDates(state) {
+      if (state.currentTeamData && state.rosterDates.length > 0) {
+        const previous = getPreviousDates(
+          state.currentTeamData.preferredDays,
+          state.rosterDates[0]
+        );
+        state.rosterDates = [...previous, ...state.rosterDates];
+      }
+    },
+    resetToUpcomingDates(state) {
+      if (state.currentTeamData?.preferredDays) {
+        state.rosterDates = getUpcomingDates(state.currentTeamData.preferredDays);
+      }
+    }
+  },
   extraReducers: (builder) => {
     builder
       // Fetch Users
@@ -215,4 +264,5 @@ const rosterViewSlice = createSlice({
   },
 });
 
+export const { loadPreviousDates, resetToUpcomingDates } = rosterViewSlice.actions;
 export const rosterViewReducer = rosterViewSlice.reducer;
