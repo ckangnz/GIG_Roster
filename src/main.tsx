@@ -2,7 +2,7 @@ import React from 'react';
 
 import ReactDOM from 'react-dom/client';
 import { Provider } from 'react-redux';
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { createHashRouter, RouterProvider } from 'react-router-dom';
 
 import { LoadingProvider } from './hooks/LoadingProvider';
 import { ThemeProvider } from './hooks/useTheme.tsx';
@@ -12,9 +12,7 @@ import { store } from './store';
 
 import './index.css';
 
-const router = createBrowserRouter(routes, {
-  basename: import.meta.env.BASE_URL,
-});
+const router = createHashRouter(routes);
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
