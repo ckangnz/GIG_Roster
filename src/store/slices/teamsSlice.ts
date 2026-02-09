@@ -2,19 +2,7 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 
 import { db } from '../../firebase';
-
-export interface Team {
-  name: string;
-  emoji: string;
-  positions: Position[];
-  preferredDays: string[];
-}
-
-export interface Position {
-  name: string;
-  emoji: string;
-  colour: string;
-}
+import { Team } from '../../model/model';
 
 interface TeamsState {
   teams: Team[];

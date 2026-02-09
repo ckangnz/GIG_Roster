@@ -2,13 +2,7 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 
 import { db } from '../../firebase';
-
-export interface Position {
-  name: string;
-  emoji: string;
-  colour: string;
-  parentId?: string;
-}
+import { Position } from '../../model/model';
 
 interface PositionsState {
   positions: Position[];

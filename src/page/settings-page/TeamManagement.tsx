@@ -1,14 +1,13 @@
-import { useEffect, useState } from "react";
-
-import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { useState } from "react";
 
 import Pill, { PillGroup } from "../../components/common/Pill";
 import SettingsTable, {
   SettingsTableAnyCell,
   SettingsTableInputCell,
 } from "../../components/common/SettingsTable";
-import { db } from "../../firebase";
+import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { Position, Team, Weekday } from "../../model/model";
+import { updateTeams } from "../../store/slices/teamsSlice";
 
 const defaultTeam: Team = {
   name: "",
@@ -28,47 +27,12 @@ const WEEK_DAYS: Weekday[] = [
 ];
 
 const TeamManagement = () => {
-  const [teams, setTeams] = useState<Team[]>([]);
-  const [availablePositions, setAvailablePositions] = useState<Position[]>([]);
+  const dispatch = useAppDispatch();
+  const reduxTeams = useAppSelector((state) => state.teams.teams);
+  const availablePositions = useAppSelector((state) => state.positions.positions);
+  const [teams, setTeams] = useState<Team[]>(reduxTeams);
   const [newTeam, setNewTeam] = useState<Team>(defaultTeam);
   const [status, setStatus] = useState("idle");
-
-  useEffect(() => {
-    const fetchData = async () => {
-      let fetchedAvailablePositions: Position[] = [];
-      try {
-        const posDocRef = doc(db, "metadata", "positions");
-        const posSnap = await getDoc(posDocRef);
-        if (posSnap.exists()) {
-          const data = posSnap.data();
-          fetchedAvailablePositions = Array.isArray(data.list) ? data.list : [];
-          setAvailablePositions(fetchedAvailablePositions);
-        }
-      } catch (error) {
-        console.error("Error fetching positions:", error);
-      }
-
-      try {
-        const teamsDocRef = doc(db, "metadata", "teams");
-        const teamsSnap = await getDoc(teamsDocRef);
-        if (teamsSnap.exists()) {
-          const data = teamsSnap.data();
-          setTeams(
-            Array.isArray(data.list)
-              ? data.list.map((teamData: Team) => ({
-                  ...teamData,
-                  preferredDays: teamData.preferredDays || [],
-                  positions: teamData.positions || [],
-                }))
-              : [],
-          );
-        }
-      } catch (error) {
-        console.error("Error fetching teams:", error);
-      }
-    };
-    fetchData();
-  }, []);
 
   const handleUpdate = (
     index: number,
@@ -135,9 +99,7 @@ const TeamManagement = () => {
   const saveToFirebase = async () => {
     setStatus("saving");
     try {
-      const teamsDocRef = doc(db, "metadata", "teams");
-      const teamsToSave = teams.map(({ ...rest }) => rest);
-      await updateDoc(teamsDocRef, { list: teamsToSave });
+      await dispatch(updateTeams(teams)).unwrap();
       setStatus("success");
       setTimeout(() => setStatus("idle"), 2000);
     } catch (e) {

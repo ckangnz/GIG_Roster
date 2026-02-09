@@ -1,11 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
-import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { doc, updateDoc } from "firebase/firestore";
 
 import Pill, { PillGroup } from "../../components/common/Pill";
 import { db, auth } from "../../firebase";
+import { useAppSelector } from "../../hooks/redux";
 import { useComputedPositions } from "../../hooks/useComputedPositions";
-import { AppUser, Team } from "../../model/model";
+import { AppUser } from "../../model/model";
 
 import "./profile-settings.css";
 
@@ -24,35 +25,10 @@ const ProfileSettings = ({ userData, uid }: ProfileSettingsProps) => {
   const [selectedTeams, setSelectedTeams] = useState<string[]>(
     userData.teams || [],
   );
-
-  const [availableTeams, setAvailableTeams] = useState<Team[]>([]);
   const [status, setStatus] = useState("idle");
 
+  const availableTeams = useAppSelector((state) => state.teams.teams);
   const computedPositions = useComputedPositions(selectedTeams, availableTeams);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const teamsDocRef = doc(db, "metadata", "teams");
-        const teamsSnap = await getDoc(teamsDocRef);
-        if (teamsSnap.exists()) {
-          const data = teamsSnap.data();
-          setAvailableTeams(
-            Array.isArray(data.list)
-              ? data.list.map((teamData: Team) => ({
-                  ...teamData,
-                  preferredDays: teamData.preferredDays || [],
-                  positions: teamData.positions || [],
-                }))
-              : [],
-          );
-        }
-      } catch (e) {
-        console.error("Error fetching teams:", e);
-      }
-    };
-    fetchData();
-  }, []);
 
   const handleSave = async () => {
     if (!uid) return;
@@ -113,7 +89,7 @@ const ProfileSettings = ({ userData, uid }: ProfileSettingsProps) => {
           {[
             { value: "Male", colour: "var(--color-male)" },
             { value: "Female", colour: "var(--color-female)" },
-          ].map((g: { value: string; colour: string }) => (
+          ].map((g: { value: string; colour: string; }) => (
             <Pill
               key={g.value}
               colour={g.colour}

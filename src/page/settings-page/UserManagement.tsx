@@ -1,45 +1,27 @@
 import { useEffect, useState } from "react";
 
-import {
-  collection,
-  getDocs,
-  doc,
-  getDoc,
-  writeBatch,
-} from "firebase/firestore";
+import { collection, getDocs, doc, writeBatch } from "firebase/firestore";
 
 import UserManagementRow from "./UserManagementRow";
 import SettingsTable from "../../components/common/SettingsTable";
 import { db } from "../../firebase";
-import { AppUser, Team } from "../../model/model";
+import { useAppSelector } from "../../hooks/redux";
+import { AppUser } from "../../model/model";
 
 const UserManagement = () => {
-  const [users, setUsers] = useState<(AppUser & { id: string })[]>([]);
-  const [availableTeams, setAvailableTeams] = useState<Team[]>([]);
+  const [users, setUsers] = useState<(AppUser & { id: string; })[]>([]);
   const [status, setStatus] = useState("idle");
+  const availableTeams = useAppSelector((state) => state.teams.teams);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchUsers = async () => {
       const userSnap = await getDocs(collection(db, "users"));
       const userList = userSnap.docs.map(
-        (d) => ({ ...d.data(), id: d.id }) as AppUser & { id: string },
+        (d) => ({ ...d.data(), id: d.id }) as AppUser & { id: string; },
       );
       setUsers(userList.sort((a, b) => a.name!.localeCompare(b.name!)));
-
-      const teamsDocRef = await getDoc(doc(db, "metadata", "teams"));
-      if (teamsDocRef.exists()) {
-        const data = teamsDocRef.data();
-        setAvailableTeams(
-          Array.isArray(data.list)
-            ? data.list.map((team: Team) => ({
-                ...team,
-                preferredDays: team.preferredDays || [],
-              }))
-            : [],
-        );
-      }
     };
-    fetchData();
+    fetchUsers();
   }, []);
 
   const togglePosition = (userId: string, posName: string) => {

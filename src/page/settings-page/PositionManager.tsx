@@ -1,6 +1,5 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
-import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { CornerDownRight } from "lucide-react";
 
 import SettingsTable, {
@@ -8,8 +7,10 @@ import SettingsTable, {
   SettingsTableColourInputCell,
   SettingsTableInputCell,
 } from "../../components/common/SettingsTable";
-import { db } from "../../firebase";
+import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { Position as GlobalPosition } from "../../model/model";
+import { updatePositions } from "../../store/slices/positionsSlice";
+
 
 interface Position extends GlobalPosition {
   parentId?: string;
@@ -23,32 +24,11 @@ const defaultPosition: Position = {
 };
 
 const PositionManagement = () => {
-  const [positions, setPositions] = useState<Position[]>([]);
+  const dispatch = useAppDispatch();
+  const reduxPositions = useAppSelector((state) => state.positions.positions);
+  const [positions, setPositions] = useState<Position[]>(reduxPositions);
   const [newPos, setNewPos] = useState<Position>(defaultPosition);
   const [status, setStatus] = useState("idle");
-
-  useEffect(() => {
-    const fetchPositions = async () => {
-      try {
-        const docRef = doc(db, "metadata", "positions");
-        const snap = await getDoc(docRef);
-        if (snap.exists()) {
-          const data = snap.data();
-          setPositions(
-            Array.isArray(data.list)
-              ? data.list.map((p: GlobalPosition) => ({
-                  ...p,
-                  parentId: (p as Position).parentId || undefined,
-                }))
-              : [],
-          );
-        }
-      } catch (error) {
-        console.error("Error fetching positions:", error);
-      }
-    };
-    fetchPositions();
-  }, []);
 
   const handleUpdate = (
     index: number,
@@ -67,7 +47,7 @@ const PositionManagement = () => {
 
     const getBlockInfo = (
       startPosIndex: number,
-    ): { block: Position[]; startIndex: number; endIndex: number } => {
+    ): { block: Position[]; startIndex: number; endIndex: number; } => {
       const startPosition = updated[startPosIndex];
       if (!startPosition) return { block: [], startIndex: -1, endIndex: -1 };
 
@@ -215,12 +195,11 @@ const PositionManagement = () => {
   const saveToFirebase = async () => {
     setStatus("saving");
     try {
-      const docRef = doc(db, "metadata", "positions");
       const positionsToSave = positions.map((p) => ({
         ...p,
-        parentId: p.parentId === undefined ? null : p.parentId,
+        parentId: p.parentId === undefined ? undefined : p.parentId,
       }));
-      await updateDoc(docRef, { list: positionsToSave });
+      await dispatch(updatePositions(positionsToSave)).unwrap();
       setStatus("success");
       setTimeout(() => setStatus("idle"), 2000);
     } catch (e) {
