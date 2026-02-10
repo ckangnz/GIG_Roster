@@ -3,6 +3,7 @@
   flex-direction: column;
   height: 100vh;
   height: 100svh;
+  height: 100dvh;
   width: 100vw;
   background-color: var(--background-app-shell);
   color: var(--color-text-primary);
