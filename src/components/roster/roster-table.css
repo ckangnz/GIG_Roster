@@ -240,7 +240,7 @@ th.gender-divider-cell {
   color: var(--color-text-primary);
   font-weight: 500;
   white-space: normal;
-  text-align: left !important;
+  text-align: center !important;
   line-height: 1.4;
 }
 
@@ -338,6 +338,14 @@ th.gender-divider-cell {
 /* Date States */
 .past-date {
   opacity: 0.6;
+}
+
+.no-data {
+  opacity: 0.4;
+}
+
+.no-data td.date-cell {
+  cursor: default !important;
 }
 
 .past-date td:not(.sticky-col) {
@@ -453,6 +461,33 @@ th.gender-divider-cell {
 
 .roster-cell:focus {
   outline: none; /* We use the .focused class for custom styling */
+}
+
+.active .sticky-col.clickable:hover {
+  color: var(--color-link-hover);
+  text-decoration: underline;
+}
+
+.date-cell.clickable {
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--color-link);
+  font-weight: 600;
+}
+
+.date-cell.clickable:hover {
+  background-color: var(--background-primary-subtle);
+  text-decoration: underline;
+}
+
+.no-data {
+  opacity: 0.5;
+}
+
+.no-data .date-cell.clickable {
+  cursor: default !important;
+  color: var(--color-text-dim);
+  text-decoration: none !important;
 }
 
 /* Save Footer */

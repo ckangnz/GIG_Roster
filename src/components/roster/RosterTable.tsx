@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, Fragment } from 'react';
 
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
 import {
@@ -24,6 +24,7 @@ import './roster-table.css';
 
 const RosterTable = () => {
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const { teamName, positionName: activePosition } = useParams();
 
   const {
@@ -49,7 +50,6 @@ const RosterTable = () => {
     table: 'roster' | 'absence';
   } | null>(null);
 
-  const [showPeek, setShowPeek] = useState(false);
   const [peekPositionName, setPeekPositionName] = useState<string | null>(null);
 
   const hasDirtyChanges = Object.keys(dirtyEntries).length > 0;
@@ -109,6 +109,27 @@ const RosterTable = () => {
   const handleLoadNextYear = () => {
     dispatch(loadNextYearDates());
   };
+
+  const handleDateClick = (dateString: string) => {
+    const dateKey = dateString.split('T')[0];
+    if (checkHasAssignments(dateString)) {
+      navigate(`/app/dashboard?date=${dateKey}`);
+    }
+  };
+
+  const checkHasAssignments = useCallback(
+    (dateString: string) => {
+      const dateKey = dateString.split('T')[0];
+      const entry = dirtyEntries[dateKey] || entries[dateKey];
+      if (!entry) return false;
+
+      // Check if any team has any assignment
+      return Object.values(entry.teams).some((teamAssignments) =>
+        Object.values(teamAssignments).some((posList) => posList.length > 0),
+      );
+    },
+    [entries, dirtyEntries],
+  );
 
   const getPeekAssignedUsers = useCallback(
     (dateString: string) => {
@@ -472,13 +493,6 @@ const RosterTable = () => {
                             ↓
                           </button>
                         )}
-                        <button
-                          className={`load-prev-btn peek-toggle-btn ${showPeek ? 'active' : ''}`}
-                          onClick={() => setShowPeek(!showPeek)}
-                          title="Toggle Peek Feature"
-                        >
-                          👁
-                        </button>
                       </div>
                     </div>
                   </th>
@@ -501,31 +515,34 @@ const RosterTable = () => {
                       </th>
                     </Fragment>
                   ))}
-                  {showPeek && (
-                    <th className="roster-table-header-cell sticky-header sticky-right peek-header">
-                      <select
-                        className="peek-selector"
-                        value={peekPositionName || ''}
-                        onChange={(e) => setPeekPositionName(e.target.value || null)}
-                      >
-                        <option value="">Peek Position...</option>
-                        {peekOptions.map((opt) => (
-                          <option key={opt.name} value={opt.name}>
-                            {opt.emoji} {opt.name}
-                          </option>
-                        ))}
-                      </select>
-                    </th>
-                  )}
+                  <th className="gender-divider-cell sticky-header" />
+                  <th className="roster-table-header-cell sticky-header sticky-right peek-header">
+                    <select
+                      className="peek-selector"
+                      value={peekPositionName || ''}
+                      onChange={(e) => setPeekPositionName(e.target.value || null)}
+                    >
+                      <option value="">Peek Position...</option>
+                      {peekOptions.map((opt) => (
+                        <option key={opt.name} value={opt.name}>
+                          {opt.emoji} {opt.name}
+                        </option>
+                      ))}
+                    </select>
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {rosterDates.map((dateString, rowIndex) => {
                   const rowClass = getRowClass(dateString);
                   const isToday = rowClass === 'today-date';
+                  const hasData = checkHasAssignments(dateString);
                   return (
-                    <tr key={dateString} className={rowClass}>
-                      <td className="date-cell sticky-col">
+                    <tr key={dateString} className={`${rowClass} ${!hasData ? 'no-data' : ''}`}>
+                      <td
+                        className={`date-cell sticky-col ${hasData ? 'clickable' : ''}`}
+                        onClick={() => handleDateClick(dateString)}
+                      >
                         <div className="date-cell-content">
                           {new Date(dateString).toLocaleDateString()}
                           {isToday && <span className="today-badge">TODAY</span>}
@@ -568,11 +585,10 @@ const RosterTable = () => {
                           </Fragment>
                         );
                       })}
-                      {showPeek && (
-                        <td className="roster-cell peek-cell sticky-right">
-                          {getPeekAssignedUsers(dateString).join(', ') || '-'}
-                        </td>
-                      )}
+                      <td className="gender-divider-cell" />
+                      <td className="roster-cell peek-cell sticky-right">
+                        {getPeekAssignedUsers(dateString).join(', ') || '-'}
+                      </td>
                     </tr>
                   );
                 })}
@@ -587,7 +603,6 @@ const RosterTable = () => {
         </div>
       ) : (
         <div className="roster-section absence-section">
-          <h3 className="section-title">Team Absence Overview</h3>
           <div className="roster-table-container">
             <table className="roster-table absence-table">
               <thead>
@@ -612,13 +627,6 @@ const RosterTable = () => {
                             ↓
                           </button>
                         )}
-                        <button
-                          className={`load-prev-btn peek-toggle-btn ${showPeek ? 'active' : ''}`}
-                          onClick={() => setShowPeek(!showPeek)}
-                          title="Toggle Peek Feature"
-                        >
-                          👁
-                        </button>
                       </div>
                     </div>
                   </th>
@@ -627,31 +635,34 @@ const RosterTable = () => {
                       {user.name}
                     </th>
                   ))}
-                  {showPeek && (
-                    <th className="roster-table-header-cell sticky-header sticky-right peek-header">
-                      <select
-                        className="peek-selector"
-                        value={peekPositionName || ''}
-                        onChange={(e) => setPeekPositionName(e.target.value || null)}
-                      >
-                        <option value="">Peek Position...</option>
-                        {peekOptions.map((opt) => (
-                          <option key={opt.name} value={opt.name}>
-                            {opt.emoji} {opt.name}
-                          </option>
-                        ))}
-                      </select>
-                    </th>
-                  )}
+                  <th className="gender-divider-cell sticky-header" />
+                  <th className="roster-table-header-cell sticky-header sticky-right peek-header">
+                    <select
+                      className="peek-selector"
+                      value={peekPositionName || ''}
+                      onChange={(e) => setPeekPositionName(e.target.value || null)}
+                    >
+                      <option value="">Peek Position...</option>
+                      {peekOptions.map((opt) => (
+                        <option key={opt.name} value={opt.name}>
+                          {opt.emoji} {opt.name}
+                        </option>
+                      ))}
+                    </select>
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {rosterDates.map((dateString, rowIndex) => {
                   const rowClass = getRowClass(dateString);
                   const isToday = rowClass === 'today-date';
+                  const hasData = checkHasAssignments(dateString);
                   return (
-                    <tr key={dateString} className={rowClass}>
-                      <td className="date-cell sticky-col">
+                    <tr key={dateString} className={`${rowClass} ${!hasData ? 'no-data' : ''}`}>
+                      <td
+                        className={`date-cell sticky-col ${hasData ? 'clickable' : ''}`}
+                        onClick={() => handleDateClick(dateString)}
+                      >
                         <div className="date-cell-content">
                           {new Date(dateString).toLocaleDateString()}
                           {isToday && <span className="today-badge">TODAY</span>}
@@ -717,11 +728,10 @@ const RosterTable = () => {
                           </td>
                         );
                       })}
-                      {showPeek && (
-                        <td className="roster-cell peek-cell sticky-right">
-                          {getPeekAssignedUsers(dateString).join(', ') || '-'}
-                        </td>
-                      )}
+                      <td className="gender-divider-cell" />
+                      <td className="roster-cell peek-cell sticky-right">
+                        {getPeekAssignedUsers(dateString).join(', ') || '-'}
+                      </td>
                     </tr>
                   );
                 })}

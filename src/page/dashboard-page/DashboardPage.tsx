@@ -1,6 +1,7 @@
 import { useMemo, useEffect, useState, useCallback, useRef } from 'react';
 
 import { collection, query, where, getDocs } from 'firebase/firestore';
+import { useSearchParams } from 'react-router-dom';
 
 import Spinner from '../../components/common/Spinner';
 import { db } from '../../firebase';
@@ -13,6 +14,9 @@ import './dashboard-page.css';
 
 const DashboardPage = () => {
   const dispatch = useAppDispatch();
+  const [searchParams] = useSearchParams();
+  const targetDate = searchParams.get('date');
+
   const { userData } = useAppSelector((state) => state.auth);
   const { teams: allTeams } = useAppSelector((state) => state.teams);
   const { entries, loading: loadingRoster } = useAppSelector((state) => state.roster);
@@ -26,27 +30,6 @@ const DashboardPage = () => {
   useEffect(() => {
     dispatch(fetchRosterEntries());
   }, [dispatch]);
-
-  useEffect(() => {
-    const fetchMyTeamsUsers = async () => {
-      if (!userData?.teams || userData.teams.length === 0) return;
-      setLoadingUsers(true);
-      try {
-        const usersRef = collection(db, 'users');
-        const q = query(usersRef, where('teams', 'array-contains-any', userData.teams));
-        const snap = await getDocs(q);
-        const users: AppUser[] = [];
-        snap.forEach((doc) => users.push(doc.data() as AppUser));
-        setTeamUsers(users);
-      } catch (err) {
-        console.error('Error fetching users for dashboard:', err);
-      } finally {
-        setLoadingUsers(false);
-      }
-    };
-
-    fetchMyTeamsUsers();
-  }, [userData?.teams]);
 
   const rosterDates = useMemo(() => {
     if (!userData?.teams || allTeams.length === 0) return [];
@@ -73,6 +56,48 @@ const DashboardPage = () => {
         });
       });
   }, [userData, allTeams, entries]);
+
+  // Handle deep-linking to a specific date
+  useEffect(() => {
+    if (targetDate && rosterDates.length > 0 && scrollRef.current) {
+      const index = rosterDates.findIndex((d) => d.startsWith(targetDate));
+      if (index >= 0) {
+        // We delay slightly to ensure the track has rendered its children
+        setTimeout(() => {
+          if (scrollRef.current) {
+            const container = scrollRef.current;
+            const itemWidth = container.offsetWidth;
+            container.scrollTo({
+              left: itemWidth * index,
+              behavior: 'auto', // Direct jump for initial load
+            });
+            setCurrentDateIndex(index);
+          }
+        }, 100);
+      }
+    }
+  }, [targetDate, rosterDates]);
+
+  useEffect(() => {
+    const fetchMyTeamsUsers = async () => {
+      if (!userData?.teams || userData.teams.length === 0) return;
+      setLoadingUsers(true);
+      try {
+        const usersRef = collection(db, 'users');
+        const q = query(usersRef, where('teams', 'array-contains-any', userData.teams));
+        const snap = await getDocs(q);
+        const users: AppUser[] = [];
+        snap.forEach((doc) => users.push(doc.data() as AppUser));
+        setTeamUsers(users);
+      } catch (err) {
+        console.error('Error fetching users for dashboard:', err);
+      } finally {
+        setLoadingUsers(false);
+      }
+    };
+
+    fetchMyTeamsUsers();
+  }, [userData?.teams]);
 
   const getDashboardDataForDate = useCallback(
     (dateStr: string | null) => {
