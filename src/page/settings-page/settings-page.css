@@ -6,13 +6,12 @@
   flex: 1;
   min-height: 100%;
   box-sizing: border-box;
-  padding-bottom: 110px; /* Base (Mobile): Space for fixed footer + bottom nav */
+  padding-bottom: 110px;
 }
 
 .settings-footer {
-  /* Base (Mobile): Fixed bar just above BottomNav */
   position: fixed;
-  bottom: 80px;
+  bottom: calc(80px + env(safe-area-inset-bottom, 0px));
   left: 16px;
   right: 16px;
   z-index: 100;

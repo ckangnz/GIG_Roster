@@ -493,7 +493,7 @@ th.gender-divider-cell {
 /* Save Footer */
 .roster-save-footer {
   position: fixed;
-  bottom: 80px; /* Above BottomNav */
+  bottom: calc(80px + env(safe-area-inset-bottom, 0px));
   left: 0;
   right: 0;
   background: var(--background-card);
@@ -582,4 +582,3 @@ th.gender-divider-cell {
     left: 90px;
   }
 }
-
