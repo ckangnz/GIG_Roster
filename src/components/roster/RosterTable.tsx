@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, Fragment } from 'react';
 
 import { useParams } from 'react-router-dom';
 
@@ -83,6 +83,15 @@ const RosterTable = () => {
     }
     return list;
   }, [users, currentPosition, hiddenUserList]);
+
+  const genderDividerIndex = useMemo(() => {
+    if (!currentPosition?.sortByGender || sortedUsers.length === 0) return -1;
+    const firstFemaleIndex = sortedUsers.findIndex((u) => u.gender === 'Female');
+    if (firstFemaleIndex > 0 && firstFemaleIndex < sortedUsers.length) {
+      return firstFemaleIndex;
+    }
+    return -1;
+  }, [currentPosition, sortedUsers]);
 
   const handleToggleVisibility = (userEmail: string) => {
     if (!teamName || !activePosition) return;
@@ -473,20 +482,24 @@ const RosterTable = () => {
                       </div>
                     </div>
                   </th>
-                  {sortedUsers.map((user) => (
-                    <th
-                      key={user.email}
-                      className="roster-table-header-cell sticky-header clickable-header"
-                      onClick={() => user.email && handleToggleVisibility(user.email)}
-                      title="Click to hide member"
-                    >
-                      {user.name}
-                      {currentPosition?.sortByGender && (
-                        <span className="gender-label">
-                          ({user.gender === 'Male' ? 'M' : user.gender === 'Female' ? 'F' : '?'})
-                        </span>
+                  {sortedUsers.map((user, colIndex) => (
+                    <Fragment key={user.email}>
+                      {genderDividerIndex === colIndex && (
+                        <th className="gender-divider-cell sticky-header" />
                       )}
-                    </th>
+                      <th
+                        className="roster-table-header-cell sticky-header clickable-header"
+                        onClick={() => user.email && handleToggleVisibility(user.email)}
+                        title="Click to hide member"
+                      >
+                        {user.name}
+                        {currentPosition?.sortByGender && (
+                          <span className="gender-label">
+                            ({user.gender === 'Male' ? 'M' : user.gender === 'Female' ? 'F' : '?'})
+                          </span>
+                        )}
+                      </th>
+                    </Fragment>
                   ))}
                   {showPeek && (
                     <th className="roster-table-header-cell sticky-header sticky-right peek-header">
@@ -527,28 +540,32 @@ const RosterTable = () => {
                         const absent = user.email ? isUserAbsent(dateString, user.email) : false;
 
                         return (
-                          <td
-                            key={user.email}
-                            className={`roster-cell ${!disabled ? 'clickable' : 'disabled'} ${
-                              isFocused ? 'focused' : ''
-                            } ${absent ? 'absent-strike' : ''}`}
-                            onClick={() => {
-                              if (user.email && !disabled) {
-                                handleCellClick(dateString, user.email, rowIndex, colIndex);
+                          <Fragment key={user.email}>
+                            {genderDividerIndex === colIndex && (
+                              <td className="gender-divider-cell" />
+                            )}
+                            <td
+                              className={`roster-cell ${!disabled ? 'clickable' : 'disabled'} ${
+                                isFocused ? 'focused' : ''
+                              } ${absent ? 'absent-strike' : ''}`}
+                              onClick={() => {
+                                if (user.email && !disabled) {
+                                  handleCellClick(dateString, user.email, rowIndex, colIndex);
+                                }
+                              }}
+                              tabIndex={0}
+                              onFocus={() =>
+                                setFocusedCell({ row: rowIndex, col: colIndex, table: 'roster' })
                               }
-                            }}
-                            tabIndex={0}
-                            onFocus={() =>
-                              setFocusedCell({ row: rowIndex, col: colIndex, table: 'roster' })
-                            }
-                          >
-                            {user.email &&
-                              (absent ? (
-                                <span title={getAbsenceReason(dateString, user.email)}>❌</span>
-                              ) : (
-                                getCellContent(dateString, user.email)
-                              ))}
-                          </td>
+                            >
+                              {user.email &&
+                                (absent ? (
+                                  <span title={getAbsenceReason(dateString, user.email)}>❌</span>
+                                ) : (
+                                  getCellContent(dateString, user.email)
+                                ))}
+                            </td>
+                          </Fragment>
                         );
                       })}
                       {showPeek && (
