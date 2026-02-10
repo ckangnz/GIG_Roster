@@ -1,26 +1,30 @@
-import { useMemo, useEffect, useState, useCallback, useRef } from 'react';
+import { useMemo, useEffect, useState, useCallback, useRef } from "react";
 
-import { collection, query, where, getDocs } from 'firebase/firestore';
-import { useSearchParams } from 'react-router-dom';
+import { collection, query, where, getDocs } from "firebase/firestore";
+import { useSearchParams } from "react-router-dom";
 
-import Spinner from '../../components/common/Spinner';
-import { db } from '../../firebase';
-import { useAppDispatch, useAppSelector } from '../../hooks/redux';
-import { Weekday, AppUser } from '../../model/model';
-import { fetchRosterEntries } from '../../store/slices/rosterSlice';
-import { getUpcomingDates } from '../../store/slices/rosterViewSlice';
+import Spinner from "../../components/common/Spinner";
+import { db } from "../../firebase";
+import { useAppDispatch, useAppSelector } from "../../hooks/redux";
+import { Weekday, AppUser } from "../../model/model";
+import { fetchRosterEntries } from "../../store/slices/rosterSlice";
+import { getUpcomingDates } from "../../store/slices/rosterViewSlice";
 
-import './dashboard-page.css';
+import "./dashboard-page.css";
 
 const DashboardPage = () => {
   const dispatch = useAppDispatch();
   const [searchParams] = useSearchParams();
-  const targetDate = searchParams.get('date');
+  const targetDate = searchParams.get("date");
 
   const { userData } = useAppSelector((state) => state.auth);
   const { teams: allTeams } = useAppSelector((state) => state.teams);
-  const { entries, loading: loadingRoster } = useAppSelector((state) => state.roster);
-  const { positions: allPositions } = useAppSelector((state) => state.positions);
+  const { entries, loading: loadingRoster } = useAppSelector(
+    (state) => state.roster,
+  );
+  const { positions: allPositions } = useAppSelector(
+    (state) => state.positions,
+  );
 
   const [teamUsers, setTeamUsers] = useState<AppUser[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
@@ -46,13 +50,15 @@ const DashboardPage = () => {
     return Array.from(dateSet)
       .sort()
       .filter((dateStr) => {
-        const dateKey = dateStr.split('T')[0];
+        const dateKey = dateStr.split("T")[0];
         const entry = entries[dateKey];
         if (!entry) return false;
 
         return userTeams.some((team) => {
           const teamAssignments = entry.teams?.[team.name] || {};
-          return Object.values(teamAssignments).some((posList) => posList.length > 0);
+          return Object.values(teamAssignments).some(
+            (posList) => posList.length > 0,
+          );
         });
       });
   }, [userData, allTeams, entries]);
@@ -69,7 +75,7 @@ const DashboardPage = () => {
             const itemWidth = container.offsetWidth;
             container.scrollTo({
               left: itemWidth * index,
-              behavior: 'auto', // Direct jump for initial load
+              behavior: "auto", // Direct jump for initial load
             });
             setCurrentDateIndex(index);
           }
@@ -83,14 +89,17 @@ const DashboardPage = () => {
       if (!userData?.teams || userData.teams.length === 0) return;
       setLoadingUsers(true);
       try {
-        const usersRef = collection(db, 'users');
-        const q = query(usersRef, where('teams', 'array-contains-any', userData.teams));
+        const usersRef = collection(db, "users");
+        const q = query(
+          usersRef,
+          where("teams", "array-contains-any", userData.teams),
+        );
         const snap = await getDocs(q);
         const users: AppUser[] = [];
         snap.forEach((doc) => users.push(doc.data() as AppUser));
         setTeamUsers(users);
       } catch (err) {
-        console.error('Error fetching users for dashboard:', err);
+        console.error("Error fetching users for dashboard:", err);
       } finally {
         setLoadingUsers(false);
       }
@@ -102,7 +111,7 @@ const DashboardPage = () => {
   const getDashboardDataForDate = useCallback(
     (dateStr: string | null) => {
       if (!dateStr || !userData?.teams || allTeams.length === 0) return null;
-      const dateKey = dateStr.split('T')[0];
+      const dateKey = dateStr.split("T")[0];
       const entry = entries[dateKey];
 
       const userTeams = allTeams.filter((t) => userData.teams.includes(t.name));
@@ -110,27 +119,48 @@ const DashboardPage = () => {
       const data = userTeams.map((team) => {
         const teamAssignments = entry?.teams?.[team.name] || {};
 
-        const positionGroups: { posName: string; emoji: string; names: string[] }[] = [];
+        const positionGroups: {
+          posName: string;
+          emoji: string;
+          names: string[];
+        }[] = [];
         const teamPositionNames = team.positions.map((p) => p.name);
 
         let totalAssignedInTeam = 0;
 
         teamPositionNames.forEach((posName) => {
           const posInfo = allPositions.find((p) => p.name === posName);
-          const assignedNames: string[] = [];
+          const assignedUsers: AppUser[] = [];
 
           Object.entries(teamAssignments).forEach(([email, posList]) => {
             if (posList.includes(posName)) {
               const user = teamUsers.find((u) => u.email === email);
-              assignedNames.push(user?.name || email);
+              if (user) {
+                assignedUsers.push(user);
+              } else {
+                // Fallback for cases where user data might not be loaded yet
+                assignedUsers.push({ email, name: email } as AppUser);
+              }
               totalAssignedInTeam++;
             }
           });
 
+          // Sort assigned users
+          const sortedAssignedUsers = [...assignedUsers].sort((a, b) => {
+            if (posInfo?.sortByGender) {
+              if (a.gender !== b.gender) {
+                if (a.gender === "Male") return -1;
+                if (b.gender === "Male") return 1;
+                return (a.gender || "").localeCompare(b.gender || "");
+              }
+            }
+            return (a.name || "").localeCompare(b.name || "");
+          });
+
           positionGroups.push({
             posName,
-            emoji: posInfo?.emoji || '❓',
-            names: assignedNames,
+            emoji: posInfo?.emoji || "❓",
+            names: sortedAssignedUsers.map((u) => u.name || u.email || "Unknown"),
           });
         });
 
@@ -154,15 +184,15 @@ const DashboardPage = () => {
     teamEmoji: string,
     positions: { posName: string; emoji: string; names: string[] }[],
   ) => {
-    const formattedDate = new Date(dateStr).toLocaleDateString('en-GB', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
+    const formattedDate = new Date(dateStr).toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
     });
 
     let text = `${formattedDate} - ${teamEmoji} ${teamName}\n`;
     positions.forEach((p) => {
-      const namesText = p.names.length > 0 ? p.names.join(', ') : '-';
+      const namesText = p.names.length > 0 ? p.names.join(", ") : "-";
       text += `${p.emoji}: ${namesText}\n`;
     });
 
@@ -192,10 +222,10 @@ const DashboardPage = () => {
   }
 
   const formatDate = (dateStr: string) =>
-    new Date(dateStr).toLocaleDateString('en-GB', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
+    new Date(dateStr).toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
     });
 
   const renderTeamCards = (dateStr: string, isPeek: boolean = false) => {
@@ -215,7 +245,12 @@ const DashboardPage = () => {
                 <button
                   className="copy-roster-btn"
                   onClick={() =>
-                    handleCopy(dateStr, teamData.teamName, teamData.teamEmoji, teamData.positions)
+                    handleCopy(
+                      dateStr,
+                      teamData.teamName,
+                      teamData.teamEmoji,
+                      teamData.positions,
+                    )
                   }
                   title="Copy to clipboard"
                 >
@@ -230,8 +265,12 @@ const DashboardPage = () => {
                   <span className="pos-emoji-label" title={group.posName}>
                     {group.emoji}
                   </span>
-                  <span className={`assigned-names ${group.names.length === 0 ? 'unassigned' : ''}`}>
-                    {group.names.length > 0 ? group.names.join(', ') : 'Unassigned'}
+                  <span
+                    className={`assigned-names ${group.names.length === 0 ? "unassigned" : ""}`}
+                  >
+                    {group.names.length > 0
+                      ? group.names.join(", ")
+                      : "Unassigned"}
                   </span>
                 </div>
               ))}
@@ -249,11 +288,15 @@ const DashboardPage = () => {
       </div>
 
       <div className="carousel-outer-wrapper">
-        <div className="events-carousel-track" ref={scrollRef} onScroll={handleScroll}>
+        <div
+          className="events-carousel-track"
+          ref={scrollRef}
+          onScroll={handleScroll}
+        >
           {rosterDates.map((dateStr, index) => (
             <div
               key={dateStr}
-              className={`event-card-wrapper ${index === currentDateIndex ? 'active' : 'peek'}`}
+              className={`event-card-wrapper ${index === currentDateIndex ? "active" : "peek"}`}
             >
               <div className="event-card-date">{formatDate(dateStr)}</div>
               {renderTeamCards(dateStr, index !== currentDateIndex)}
