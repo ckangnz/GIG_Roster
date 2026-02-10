@@ -73,7 +73,7 @@
   flex-direction: column;
   flex: 1;
   position: relative;
-  padding-bottom: 120px; /* More space for footer and load button */
+  padding-bottom: 120px; /* Base (Mobile): Space for footer and load button */
 }
 
 .load-more-footer {
@@ -245,18 +245,10 @@ th.gender-divider-cell {
 }
 
 .sticky-right {
-  position: sticky;
-  right: 0;
-  z-index: 30;
+  /* Base (Mobile): Natural flow, not sticky */
+  position: static;
   background-color: var(--background-card);
-  border-left: 2px solid var(--border-color-secondary) !important;
-}
-
-@media (max-width: 767px) {
-  .sticky-right {
-    position: static; /* Disable stickiness on mobile */
-    border-left: 1px solid var(--border-color-secondary) !important;
-  }
+  border-left: 1px solid var(--border-color-secondary) !important;
 }
 
 .roster-table th.sticky-right {
@@ -525,7 +517,19 @@ th.gender-divider-cell {
   cursor: pointer;
 }
 
+/* Tablet and Desktop Styles */
 @media (min-width: 768px) {
+  .roster-table-wrapper {
+    padding-bottom: 80px;
+  }
+
+  .sticky-right {
+    position: sticky;
+    right: 0;
+    z-index: 30;
+    border-left: 2px solid var(--border-color-secondary) !important;
+  }
+
   .roster-save-footer {
     left: 260px; /* Account for Sidebar */
     bottom: 20px;
@@ -539,4 +543,3 @@ th.gender-divider-cell {
     left: 70px;
   }
 }
-

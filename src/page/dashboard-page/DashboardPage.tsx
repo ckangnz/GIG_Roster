@@ -111,6 +111,7 @@ const DashboardPage = () => {
 
         return {
           teamName: team.name,
+          teamEmoji: team.emoji,
           positions: positionGroups,
           hasAssignments: totalAssignedInTeam > 0,
         };
@@ -125,6 +126,7 @@ const DashboardPage = () => {
   const handleCopy = (
     dateStr: string,
     teamName: string,
+    teamEmoji: string,
     positions: { posName: string; emoji: string; names: string[] }[],
   ) => {
     const formattedDate = new Date(dateStr).toLocaleDateString('en-GB', {
@@ -133,7 +135,7 @@ const DashboardPage = () => {
       year: 'numeric',
     });
 
-    let text = `${formattedDate} - ${teamName}\n`;
+    let text = `${formattedDate} - ${teamEmoji} ${teamName}\n`;
     positions.forEach((p) => {
       const namesText = p.names.length > 0 ? p.names.join(', ') : '-';
       text += `${p.emoji}: ${namesText}\n`;
@@ -180,11 +182,16 @@ const DashboardPage = () => {
         {data.map((teamData) => (
           <div key={teamData.teamName} className="team-event-card">
             <div className="team-event-header">
-              <h3>{teamData.teamName}</h3>
+              <h3>
+                <span className="team-card-emoji">{teamData.teamEmoji}</span>
+                <span className="team-card-name">{teamData.teamName}</span>
+              </h3>
               {!isPeek && (
                 <button
                   className="copy-roster-btn"
-                  onClick={() => handleCopy(dateStr, teamData.teamName, teamData.positions)}
+                  onClick={() =>
+                    handleCopy(dateStr, teamData.teamName, teamData.teamEmoji, teamData.positions)
+                  }
                   title="Copy to clipboard"
                 >
                   📋 Copy
