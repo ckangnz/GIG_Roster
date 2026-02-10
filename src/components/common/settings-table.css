@@ -31,7 +31,7 @@
 .app-table td {
   padding: 8px;
   border-bottom: 1px solid var(--border-color-table);
-  vertical-align: middle;
+  vertical-align: top;
 }
 
 .app-table td.color-picker-group {
@@ -50,4 +50,9 @@
   background: var(--background-card);
   z-index: 10;
   border-right: 2px solid var(--border-color-secondary);
+}
+
+th.sticky-col {
+  background: var(--background-table-header);
+  z-index: 20;
 }
