@@ -534,18 +534,27 @@ const RosterTable = () => {
               </thead>
               <tbody>
                 {rosterDates.map((dateString, rowIndex) => {
+                  const dateKey = dateString.split("T")[0];
+                  const entry = dirtyEntries[dateKey] || entries[dateKey];
+                  const eventName = entry?.eventName;
+
                   const rowClass = getRowClass(dateString);
-                  const isToday = rowClass === 'today-date';
+                  const isToday = rowClass === "today-date";
                   const hasData = checkHasAssignments(dateString);
                   return (
-                    <tr key={dateString} className={`${rowClass} ${!hasData ? 'no-data' : ''}`}>
+                    <tr
+                      key={dateString}
+                      className={`${rowClass} ${!hasData ? "no-data" : ""} ${eventName ? "special-event-row" : ""}`}
+                    >
                       <td
-                        className={`date-cell sticky-col ${hasData ? 'clickable' : ''}`}
+                        className={`date-cell sticky-col ${hasData ? "clickable" : ""}`}
                         onClick={() => handleDateClick(dateString)}
+                        title={eventName}
                       >
                         <div className="date-cell-content">
                           {new Date(dateString).toLocaleDateString()}
                           {isToday && <span className="today-badge">TODAY</span>}
+                          {eventName && <span className="special-event-dot" />}
                         </div>
                       </td>
                       {sortedUsers.map((user, colIndex) => {
@@ -654,18 +663,27 @@ const RosterTable = () => {
               </thead>
               <tbody>
                 {rosterDates.map((dateString, rowIndex) => {
+                  const dateKey = dateString.split("T")[0];
+                  const entry = dirtyEntries[dateKey] || entries[dateKey];
+                  const eventName = entry?.eventName;
+
                   const rowClass = getRowClass(dateString);
-                  const isToday = rowClass === 'today-date';
+                  const isToday = rowClass === "today-date";
                   const hasData = checkHasAssignments(dateString);
                   return (
-                    <tr key={dateString} className={`${rowClass} ${!hasData ? 'no-data' : ''}`}>
+                    <tr
+                      key={dateString}
+                      className={`${rowClass} ${!hasData ? "no-data" : ""} ${eventName ? "special-event-row" : ""}`}
+                    >
                       <td
-                        className={`date-cell sticky-col ${hasData ? 'clickable' : ''}`}
+                        className={`date-cell sticky-col ${hasData ? "clickable" : ""}`}
                         onClick={() => handleDateClick(dateString)}
+                        title={eventName}
                       >
                         <div className="date-cell-content">
                           {new Date(dateString).toLocaleDateString()}
                           {isToday && <span className="today-badge">TODAY</span>}
+                          {eventName && <span className="special-event-dot" />}
                         </div>
                       </td>
                       {allTeamUsers.map((user, colIndex) => {

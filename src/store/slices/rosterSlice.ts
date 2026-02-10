@@ -170,6 +170,26 @@ const rosterSlice = createSlice({
 
       state.dirtyEntries[date] = newEntry;
     },
+    updateLocalEventName(
+      state,
+      action: PayloadAction<{
+        date: string;
+        eventName: string;
+      }>,
+    ) {
+      const { date, eventName } = action.payload;
+      const entry = state.dirtyEntries[date] || state.entries[date];
+
+      let newEntry: RosterEntry;
+      if (entry) {
+        newEntry = JSON.parse(JSON.stringify(entry));
+      } else {
+        newEntry = { id: date, date, teams: {}, absence: {} };
+      }
+
+      newEntry.eventName = eventName;
+      state.dirtyEntries[date] = newEntry;
+    },
     resetRosterEdits(state) {
       state.dirtyEntries = {};
       state.error = null;
@@ -240,6 +260,7 @@ const rosterSlice = createSlice({
 export const {
   clearError,
   updateLocalAssignment,
+  updateLocalEventName,
   resetRosterEdits,
   updateLocalAbsence,
 } = rosterSlice.actions;

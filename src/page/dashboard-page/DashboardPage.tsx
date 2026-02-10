@@ -7,7 +7,12 @@ import Spinner from "../../components/common/Spinner";
 import { db } from "../../firebase";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { Weekday, AppUser } from "../../model/model";
-import { fetchRosterEntries } from "../../store/slices/rosterSlice";
+import {
+  fetchRosterEntries,
+  saveRosterChanges,
+  updateLocalEventName,
+  resetRosterEdits,
+} from "../../store/slices/rosterSlice";
 import { getUpcomingDates } from "../../store/slices/rosterViewSlice";
 
 import "./dashboard-page.css";
@@ -19,9 +24,12 @@ const DashboardPage = () => {
 
   const { userData } = useAppSelector((state) => state.auth);
   const { teams: allTeams } = useAppSelector((state) => state.teams);
-  const { entries, loading: loadingRoster } = useAppSelector(
-    (state) => state.roster,
-  );
+  const {
+    entries,
+    dirtyEntries,
+    loading: loadingRoster,
+    saving,
+  } = useAppSelector((state) => state.roster);
   const { positions: allPositions } = useAppSelector(
     (state) => state.positions,
   );
@@ -30,6 +38,8 @@ const DashboardPage = () => {
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [currentDateIndex, setCurrentDateIndex] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const hasDirtyChanges = Object.keys(dirtyEntries).length > 0;
 
   useEffect(() => {
     dispatch(fetchRosterEntries());
@@ -51,7 +61,7 @@ const DashboardPage = () => {
       .sort()
       .filter((dateStr) => {
         const dateKey = dateStr.split("T")[0];
-        const entry = entries[dateKey];
+        const entry = entries[dateKey] || dirtyEntries[dateKey];
         if (!entry) return false;
 
         return userTeams.some((team) => {
@@ -61,7 +71,7 @@ const DashboardPage = () => {
           );
         });
       });
-  }, [userData, allTeams, entries]);
+  }, [userData, allTeams, entries, dirtyEntries]);
 
   // Handle deep-linking to a specific date
   useEffect(() => {
@@ -112,7 +122,7 @@ const DashboardPage = () => {
     (dateStr: string | null) => {
       if (!dateStr || !userData?.teams || allTeams.length === 0) return null;
       const dateKey = dateStr.split("T")[0];
-      const entry = entries[dateKey];
+      const entry = dirtyEntries[dateKey] || entries[dateKey];
 
       const userTeams = allTeams.filter((t) => userData.teams.includes(t.name));
 
@@ -215,6 +225,18 @@ const DashboardPage = () => {
     }
   };
 
+  const handleEventNameChange = (dateStr: string, eventName: string) => {
+    dispatch(updateLocalEventName({ date: dateStr.split("T")[0], eventName }));
+  };
+
+  const handleSave = () => {
+    dispatch(saveRosterChanges(dirtyEntries));
+  };
+
+  const handleCancel = () => {
+    dispatch(resetRosterEdits());
+  };
+
   if (loadingRoster || loadingUsers) return <Spinner />;
 
   if (rosterDates.length === 0) {
@@ -298,21 +320,63 @@ const DashboardPage = () => {
           ref={scrollRef}
           onScroll={handleScroll}
         >
-          {rosterDates.map((dateStr, index) => (
-            <div
-              key={dateStr}
-              className={`event-card-wrapper ${index === currentDateIndex ? "active" : "peek"}`}
-            >
-              <div className="event-card-date">{formatDate(dateStr)}</div>
-              {renderTeamCards(dateStr, index !== currentDateIndex)}
-            </div>
-          ))}
+          {rosterDates.map((dateStr, index) => {
+            const dateKey = dateStr.split("T")[0];
+            const entry = dirtyEntries[dateKey] || entries[dateKey];
+            const eventName = entry?.eventName || "";
+
+            return (
+              <div
+                key={dateStr}
+                className={`event-card-wrapper ${index === currentDateIndex ? "active" : "peek"}`}
+              >
+                <div className="event-name-container">
+                  <input
+                    type="text"
+                    className="dashboard-event-name-input"
+                    placeholder="Event name (e.g. Easter Sunday)"
+                    value={eventName}
+                    onChange={(e) =>
+                      handleEventNameChange(dateStr, e.target.value)
+                    }
+                    disabled={index !== currentDateIndex}
+                  />
+                </div>
+                <div className="event-card-date">{formatDate(dateStr)}</div>
+                {renderTeamCards(dateStr, index !== currentDateIndex)}
+              </div>
+            );
+          })}
         </div>
       </div>
 
       <div className="carousel-pagination">
         {currentDateIndex + 1} / {rosterDates.length}
       </div>
+
+      {hasDirtyChanges && (
+        <div className="roster-save-footer">
+          <div className="save-footer-content">
+            <span className="changes-label">Unsaved event labels</span>
+            <div className="save-footer-actions">
+              <button
+                className="cancel-btn"
+                onClick={handleCancel}
+                disabled={saving}
+              >
+                Discard
+              </button>
+              <button
+                className="save-btn"
+                onClick={handleSave}
+                disabled={saving}
+              >
+                {saving ? "Saving..." : "Save Changes"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

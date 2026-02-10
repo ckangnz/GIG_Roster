@@ -387,6 +387,25 @@ th.gender-divider-cell {
   /* Default styles */
 }
 
+.special-event-row td {
+  border-bottom: 1px solid #ff9800 !important;
+}
+
+.special-event-row td.date-cell {
+  background-color: var(--background-card-subtle) !important;
+}
+
+.special-event-dot {
+  width: 8px;
+  height: 8px;
+  background-color: #ff9800;
+  border-radius: 50%;
+  display: inline-block;
+  margin-left: 4px;
+  flex-shrink: 0;
+  box-shadow: 0 0 4px #ff9800;
+}
+
 .absent-cell {
   background-color: rgba(255, 70, 70, 0.05) !important;
 }

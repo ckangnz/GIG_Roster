@@ -45,6 +45,7 @@ export type TeamAssignments = Record<string, string[]>; // userEmail/uid -> posi
 export interface RosterEntry {
   id: string; // Document ID (usually date)
   date: string; // YYYY-MM-DD
+  eventName?: string; // Special occasion name
   teams: Record<string, TeamAssignments>; // teamName -> { userIdentifier -> positions[] }
   absence: Record<string, Absence>; // userIdentifier -> { reason }
   updatedAt?: number;
