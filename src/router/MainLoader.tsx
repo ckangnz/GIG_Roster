@@ -24,7 +24,7 @@ const MainLoader = () => {
     return <Navigate to="/guest" replace />;
   }
 
-  return <Navigate to="/app/roster" replace />;
+  return <Navigate to="/app/dashboard" replace />;
 };
 
 export default MainLoader;

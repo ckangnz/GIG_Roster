@@ -185,7 +185,7 @@ const DashboardPage = () => {
       const filtered = data.filter((t) => t.hasAssignments);
       return filtered.length > 0 ? filtered : null;
     },
-    [entries, userData, allTeams, allPositions, teamUsers],
+    [entries, dirtyEntries, userData, allTeams, allPositions, teamUsers],
   );
 
   const handleCopy = (
