@@ -1,11 +1,13 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 
 import { BOTTOM_NAV_ITEMS, AppTab } from '../../constants/navigation';
+import { useAppSelector } from '../../hooks/redux';
 import './bottom-nav.css';
 
 const BottomNav = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { lastVisitedPaths } = useAppSelector((state) => state.ui);
 
   const activeTab = location.pathname.includes('/settings')
     ? AppTab.SETTINGS
@@ -14,7 +16,14 @@ const BottomNav = () => {
       : AppTab.ROSTER;
 
   const handleTabChange = (tabId: string) => {
-    navigate(`/app/${tabId}`);
+    if (activeTab === tabId) return;
+
+    const savedPath = lastVisitedPaths[tabId];
+    if (savedPath) {
+      navigate(savedPath);
+    } else {
+      navigate(`/app/${tabId}`);
+    }
   };
 
   return (

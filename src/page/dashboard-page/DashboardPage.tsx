@@ -14,7 +14,7 @@ import "./dashboard-page.css";
 
 const DashboardPage = () => {
   const dispatch = useAppDispatch();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const targetDate = searchParams.get("date");
 
   const { userData } = useAppSelector((state) => state.auth);
@@ -207,6 +207,11 @@ const DashboardPage = () => {
     const index = Math.round(container.scrollLeft / container.offsetWidth);
     if (index !== currentDateIndex) {
       setCurrentDateIndex(index);
+      // Update URL search params to reflect current date for persistence
+      const date = rosterDates[index];
+      if (date) {
+        setSearchParams({ date: date.split("T")[0] }, { replace: true });
+      }
     }
   };
 

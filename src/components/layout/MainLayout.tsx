@@ -8,19 +8,21 @@ import {
   AppTab,
   SettingsSection,
 } from "../../constants/navigation";
-import { useAppSelector } from "../../hooks/redux";
+import { useAppDispatch, useAppSelector } from "../../hooks/redux";
+import { setLastVisitedPath } from "../../store/slices/uiSlice";
 import BottomNav from "../navigation/BottomNav";
 import SideNav from "../navigation/SideNav";
 import "./main-layout.css";
 
 const MainLayout = () => {
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const location = useLocation();
   const params = useParams();
 
   const { userData } = useAppSelector((state) => state.auth);
   const { teams: allTeams } = useAppSelector((state) => state.teams);
-  const { isMobileSidebarOpen, isDesktopSidebarExpanded } = useAppSelector(
+  const { isMobileSidebarOpen, isDesktopSidebarExpanded, lastVisitedPaths } = useAppSelector(
     (state) => state.ui,
   );
 
@@ -33,10 +35,30 @@ const MainLayout = () => {
   const activeSideItem = positionName || section || null;
 
   useEffect(() => {
-    if (location.pathname === '/app' || location.pathname === '/app/') {
-      navigate('/app/dashboard', { replace: true });
-    } else if (activeTab === AppTab.ROSTER && !activeTeamName && !activeSideItem) {
-      if (userData?.teams && userData.teams.length > 0 && allTeams.length > 0) {
+    // Only track if we are within the app sub-pages and not just the base /app path
+    if (location.pathname.startsWith('/app/') && location.pathname !== '/app' && location.pathname !== '/app/') {
+      const fullPath = location.pathname + location.search;
+      dispatch(setLastVisitedPath({ tabId: activeTab, path: fullPath }));
+    }
+  }, [location.pathname, location.search, activeTab, dispatch]);
+
+  useEffect(() => {
+    if (location.pathname === "/app" || location.pathname === "/app/") {
+      const savedDashboard = lastVisitedPaths[AppTab.DASHBOARD];
+      navigate(savedDashboard || "/app/dashboard", { replace: true });
+    } else if (
+      activeTab === AppTab.ROSTER &&
+      !activeTeamName &&
+      !activeSideItem
+    ) {
+      const savedRoster = lastVisitedPaths[AppTab.ROSTER];
+      if (savedRoster) {
+        navigate(savedRoster, { replace: true });
+      } else if (
+        userData?.teams &&
+        userData.teams.length > 0 &&
+        allTeams.length > 0
+      ) {
         const firstTeamName = userData.teams[0];
         const team = allTeams.find((t) => t.name === firstTeamName);
         if (team && team.positions && team.positions.length > 0) {
@@ -46,9 +68,21 @@ const MainLayout = () => {
         }
       }
     } else if (activeTab === AppTab.SETTINGS && !activeSideItem) {
-      navigate(`/app/settings/${SettingsSection.PROFILE}`, { replace: true });
+      const savedSettings = lastVisitedPaths[AppTab.SETTINGS];
+      navigate(savedSettings || `/app/settings/${SettingsSection.PROFILE}`, {
+        replace: true,
+      });
     }
-  }, [activeTab, activeTeamName, activeSideItem, userData, allTeams, navigate, location.pathname]);
+  }, [
+    activeTab,
+    activeTeamName,
+    activeSideItem,
+    userData,
+    allTeams,
+    navigate,
+    location.pathname,
+    lastVisitedPaths,
+  ]);
 
   const getHeaderTitle = () => {
     const currentTabInfo = BOTTOM_NAV_ITEMS.find(
