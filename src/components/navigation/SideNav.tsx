@@ -3,7 +3,11 @@ import { useCallback, useEffect } from "react";
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 
-import { AppTab, SETTINGS_NAV_ITEMS } from "../../constants/navigation";
+import {
+  BOTTOM_NAV_ITEMS,
+  AppTab,
+  SETTINGS_NAV_ITEMS,
+} from "../../constants/navigation";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { fetchPositions } from "../../store/slices/positionsSlice";
 import { fetchTeams } from "../../store/slices/teamsSlice";
@@ -36,7 +40,9 @@ const SideNav = () => {
 
   const activeTab = location.pathname.includes("/settings")
     ? AppTab.SETTINGS
-    : AppTab.ROSTER;
+    : location.pathname.includes("/dashboard")
+      ? AppTab.DASHBOARD
+      : AppTab.ROSTER;
   const { teamName: activeTeamName, positionName, section } = params;
   const activeSideItem = positionName || section;
 
@@ -61,12 +67,9 @@ const SideNav = () => {
   };
 
   const getHeaderTitle = () => {
-    const currentTabInfo =
-      activeTab === AppTab.ROSTER
-        ? { label: "Roster" }
-        : SETTINGS_NAV_ITEMS.find((item) => item.id === activeSideItem) || {
-            label: "Settings",
-          };
+    const currentTabInfo = BOTTOM_NAV_ITEMS.find(
+      (item) => item.id === activeTab,
+    );
     const tabLabel = currentTabInfo ? currentTabInfo.label : "GIG ROSTER";
 
     if (activeTeamName && activeSideItem) {
