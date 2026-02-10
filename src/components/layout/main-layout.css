@@ -61,4 +61,8 @@
   .app-shell.sidebar-collapsed .bottom-nav-container {
     left: 70px;
   }
+
+  .app-shell.no-sidebar .bottom-nav-container {
+    left: 0;
+  }
 }

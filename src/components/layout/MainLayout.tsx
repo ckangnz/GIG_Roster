@@ -34,42 +34,54 @@ const MainLayout = () => {
   const { teamName: activeTeamName, positionName, section } = params;
   const activeSideItem = positionName || section || null;
 
+  const hasSideNav = activeTab !== AppTab.DASHBOARD;
+
   useEffect(() => {
     // Only track if we are within the app sub-pages and not just the base /app path
-    if (location.pathname.startsWith('/app/') && location.pathname !== '/app' && location.pathname !== '/app/') {
+    const isBaseRoster = activeTab === AppTab.ROSTER && !activeTeamName;
+    const isBaseSettings = activeTab === AppTab.SETTINGS && !activeSideItem;
+
+    if (
+      location.pathname.startsWith("/app/") &&
+      !isBaseRoster &&
+      !isBaseSettings
+    ) {
       const fullPath = location.pathname + location.search;
       dispatch(setLastVisitedPath({ tabId: activeTab, path: fullPath }));
     }
-  }, [location.pathname, location.search, activeTab, dispatch]);
+  }, [
+    location.pathname,
+    location.search,
+    activeTab,
+    activeTeamName,
+    activeSideItem,
+    dispatch,
+  ]);
 
   useEffect(() => {
-    if (location.pathname === "/app" || location.pathname === "/app/") {
-      const savedDashboard = lastVisitedPaths[AppTab.DASHBOARD];
-      navigate(savedDashboard || "/app/dashboard", { replace: true });
-    } else if (
-      activeTab === AppTab.ROSTER &&
-      !activeTeamName &&
-      !activeSideItem
-    ) {
-      const savedRoster = lastVisitedPaths[AppTab.ROSTER];
-      if (savedRoster) {
-        navigate(savedRoster, { replace: true });
-      } else if (
-        userData?.teams &&
-        userData.teams.length > 0 &&
-        allTeams.length > 0
-      ) {
-        const firstTeamName = userData.teams[0];
-        const team = allTeams.find((t) => t.name === firstTeamName);
-        if (team && team.positions && team.positions.length > 0) {
+    const isBaseApp = location.pathname === "/app" || location.pathname === "/app/";
+    const isBaseRoster = activeTab === AppTab.ROSTER && !activeTeamName;
+    const isBaseSettings = activeTab === AppTab.SETTINGS && !activeSideItem;
+
+    if (isBaseApp) {
+      navigate(lastVisitedPaths[AppTab.DASHBOARD] || "/app/dashboard", {
+        replace: true,
+      });
+    } else if (isBaseRoster) {
+      const savedPath = lastVisitedPaths[AppTab.ROSTER];
+      if (savedPath) {
+        navigate(savedPath, { replace: true });
+      } else if (userData?.teams?.[0] && allTeams.length > 0) {
+        const team = allTeams.find((t) => t.name === userData.teams[0]);
+        if (team?.positions?.[0]) {
           navigate(`/app/roster/${team.name}/${team.positions[0].name}`, {
             replace: true,
           });
         }
       }
-    } else if (activeTab === AppTab.SETTINGS && !activeSideItem) {
-      const savedSettings = lastVisitedPaths[AppTab.SETTINGS];
-      navigate(savedSettings || `/app/settings/${SettingsSection.PROFILE}`, {
+    } else if (isBaseSettings) {
+      const savedPath = lastVisitedPaths[AppTab.SETTINGS];
+      navigate(savedPath || `/app/settings/${SettingsSection.PROFILE}`, {
         replace: true,
       });
     }
@@ -103,16 +115,17 @@ const MainLayout = () => {
     "app-shell",
     isMobileSidebarOpen ? "menu-open" : "",
     !isDesktopSidebarExpanded ? "sidebar-collapsed" : "sidebar-expanded",
+    !hasSideNav ? "no-sidebar" : "",
   ]
     .filter(Boolean)
     .join(" ");
 
   return (
     <>
-      <MobileHeader title={getHeaderTitle()} />
+      <MobileHeader title={getHeaderTitle()} hasSideNav={hasSideNav} />
 
       <div className={appShellClasses}>
-        <SideNav />
+        {hasSideNav && <SideNav />}
 
         <main className="main-content">
           <div className="content-container">

@@ -12,23 +12,23 @@ const ProtectedRoute = () => {
   const { firebaseUser, userData, loading } = useAppSelector(
     (state) => state.auth,
   );
-  const { fetched: teamsFetched } = useAppSelector((state) => state.teams);
-  const { fetched: positionsFetched } = useAppSelector(
+  const { fetched: teamsFetched, loading: teamsLoading } = useAppSelector((state) => state.teams);
+  const { fetched: positionsFetched, loading: positionsLoading } = useAppSelector(
     (state) => state.positions,
   );
 
   useEffect(() => {
-    if (firebaseUser) {
-      if (!teamsFetched) {
+    if (firebaseUser && userData?.isApproved) {
+      if (!teamsFetched && !teamsLoading) {
         dispatch(fetchTeams());
       }
-      if (!positionsFetched) {
+      if (!positionsFetched && !positionsLoading) {
         dispatch(fetchPositions());
       }
     }
-  }, [dispatch, firebaseUser, teamsFetched, positionsFetched]);
+  }, [dispatch, firebaseUser, userData, teamsFetched, teamsLoading, positionsFetched, positionsLoading]);
 
-  if (loading) {
+  if (loading || (userData?.isApproved && (!teamsFetched || !positionsFetched))) {
     return <LoadingPage />;
   }
 

@@ -22,15 +22,22 @@
   border: 1px solid var(--border-color-input);
   border-radius: 20px;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
 }
 
-.mobile-header-pill:active {
+.mobile-header-pill:active:not(.mobile-header-pill-disabled) {
   transform: scale(0.96);
 }
 
 .mobile-header-pill-active {
   border-color: var(--border-color-primary);
   background: var(--background-pill-active);
+}
+
+.mobile-header-pill-disabled {
+  cursor: default;
+  border-color: var(--border-color-secondary);
+  opacity: 0.8;
 }
 
 .mobile-header-text {
