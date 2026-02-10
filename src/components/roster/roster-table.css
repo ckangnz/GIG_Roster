@@ -505,8 +505,12 @@ th.gender-divider-cell {
 }
 
 @keyframes slideUp {
-  from { transform: translateY(100%); }
-  to { transform: translateY(0); }
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
 }
 
 .save-footer-content {
@@ -566,15 +570,16 @@ th.gender-divider-cell {
   }
 
   .roster-save-footer {
-    left: 260px; /* Account for Sidebar */
-    bottom: 20px;
+    left: 280px;
+    bottom: 84px;
     right: 20px;
     border-radius: 12px;
     border: 1px solid var(--border-color-secondary);
     width: auto;
   }
-  
+
   .app-shell.sidebar-collapsed .roster-save-footer {
-    left: 70px;
+    left: 90px;
   }
 }
+
