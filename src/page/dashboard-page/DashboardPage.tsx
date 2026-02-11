@@ -341,6 +341,8 @@ const DashboardPage = () => {
   const isPast = currentEventDate && currentEventDate < todayKey;
   const pageTitle = isPast ? "Previous Event" : "Upcoming Events";
 
+  const isSuperAdmin = userData?.isAdmin && userData?.email === import.meta.env.VITE_ADMIN_EMAIL;
+
   const formatDate = (dateStr: string) => {
     // Correct date interpretation for YYYY-MM-DD (force local time)
     const localDate = new Date(dateStr.replace(/-/g, "/"));
@@ -414,12 +416,16 @@ const DashboardPage = () => {
               Reset to upcoming
             </button>
           )}
-          <button className="migration-btn" onClick={() => runMigration(1)}>
-            Shift +1 Day
-          </button>
-          <button className="migration-btn" onClick={() => runMigration(-1)}>
-            Shift -1 Day
-          </button>
+          {isSuperAdmin && (
+            <>
+              <button className="migration-btn" onClick={() => runMigration(1)}>
+                Shift +1 Day
+              </button>
+              <button className="migration-btn" onClick={() => runMigration(-1)}>
+                Shift -1 Day
+              </button>
+            </>
+          )}
         </div>
       </div>
 
