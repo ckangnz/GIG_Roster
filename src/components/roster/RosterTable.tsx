@@ -1,16 +1,16 @@
-import { useCallback, useEffect, useMemo, useState, Fragment } from 'react';
+import { useCallback, useEffect, useMemo, useState, Fragment } from "react";
 
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from "react-router-dom";
 
-import { useAppDispatch, useAppSelector } from '../../hooks/redux';
-import { getTodayKey } from '../../model/model';
+import { useAppDispatch, useAppSelector } from "../../hooks/redux";
+import { getTodayKey } from "../../model/model";
 import {
   fetchRosterEntries,
   saveRosterChanges,
   updateLocalAssignment,
   resetRosterEdits,
   updateLocalAbsence,
-} from '../../store/slices/rosterSlice';
+} from "../../store/slices/rosterSlice";
 import {
   fetchAllTeamUsers,
   fetchTeamDataForRoster,
@@ -18,10 +18,10 @@ import {
   loadPreviousDates,
   resetToUpcomingDates,
   loadNextYearDates,
-} from '../../store/slices/rosterViewSlice';
-import { toggleUserVisibility } from '../../store/slices/uiSlice';
-import Spinner from '../common/Spinner';
-import './roster-table.css';
+} from "../../store/slices/rosterViewSlice";
+import { toggleUserVisibility } from "../../store/slices/uiSlice";
+import Spinner from "../common/Spinner";
+import "./roster-table.css";
 
 const RosterTable = () => {
   const dispatch = useAppDispatch();
@@ -38,17 +38,22 @@ const RosterTable = () => {
     loadingAllTeamUsers,
     error: viewError,
   } = useAppSelector((state) => state.rosterView);
-  const { entries, dirtyEntries, saving, error: rosterError } = useAppSelector(
-    (state) => state.roster,
-  );
+  const {
+    entries,
+    dirtyEntries,
+    saving,
+    error: rosterError,
+  } = useAppSelector((state) => state.roster);
   const { teams: allTeams } = useAppSelector((state) => state.teams);
-  const { positions: allPositions } = useAppSelector((state) => state.positions);
+  const { positions: allPositions } = useAppSelector(
+    (state) => state.positions,
+  );
   const { hiddenUsers } = useAppSelector((state) => state.ui);
 
   const [focusedCell, setFocusedCell] = useState<{
     row: number;
     col: number;
-    table: 'roster' | 'absence';
+    table: "roster" | "absence";
   } | null>(null);
 
   const [peekPositionName, setPeekPositionName] = useState<string | null>(null);
@@ -71,15 +76,17 @@ const RosterTable = () => {
   }, [hiddenUsers, teamName, activePosition]);
 
   const sortedUsers = useMemo(() => {
-    const list = users.filter((u) => u.email && !hiddenUserList.includes(u.email));
+    const list = users.filter(
+      (u) => u.email && !hiddenUserList.includes(u.email),
+    );
     if (currentPosition?.sortByGender) {
       return list.sort((a, b) => {
         if (a.gender === b.gender) {
-          return (a.name || '').localeCompare(b.name || '');
+          return (a.name || "").localeCompare(b.name || "");
         }
-        if (a.gender === 'Male') return -1;
-        if (b.gender === 'Male') return 1;
-        return (a.gender || '').localeCompare(b.gender || '');
+        if (a.gender === "Male") return -1;
+        if (b.gender === "Male") return 1;
+        return (a.gender || "").localeCompare(b.gender || "");
       });
     }
     return list;
@@ -87,7 +94,9 @@ const RosterTable = () => {
 
   const genderDividerIndex = useMemo(() => {
     if (!currentPosition?.sortByGender || sortedUsers.length === 0) return -1;
-    const firstFemaleIndex = sortedUsers.findIndex((u) => u.gender === 'Female');
+    const firstFemaleIndex = sortedUsers.findIndex(
+      (u) => u.gender === "Female",
+    );
     if (firstFemaleIndex > 0 && firstFemaleIndex < sortedUsers.length) {
       return firstFemaleIndex;
     }
@@ -96,7 +105,13 @@ const RosterTable = () => {
 
   const handleToggleVisibility = (userEmail: string) => {
     if (!teamName || !activePosition) return;
-    dispatch(toggleUserVisibility({ teamName, positionName: activePosition, userEmail }));
+    dispatch(
+      toggleUserVisibility({
+        teamName,
+        positionName: activePosition,
+        userEmail,
+      }),
+    );
   };
 
   const handleLoadPrevious = () => {
@@ -119,7 +134,7 @@ const RosterTable = () => {
 
   const checkHasAssignments = useCallback(
     (dateString: string) => {
-      const dateKey = dateString.split('T')[0];
+      const dateKey = dateString.split("T")[0];
       const entry = dirtyEntries[dateKey] || entries[dateKey];
       if (!entry) return false;
 
@@ -134,7 +149,7 @@ const RosterTable = () => {
   const getPeekAssignedUsers = useCallback(
     (dateString: string) => {
       if (!peekPositionName || !teamName) return [];
-      const dateKey = dateString.split('T')[0];
+      const dateKey = dateString.split("T")[0];
       const entry = dirtyEntries[dateKey] || entries[dateKey];
       if (!entry || !entry.teams[teamName]) return [];
 
@@ -153,8 +168,10 @@ const RosterTable = () => {
   }, [dispatch]);
 
   useEffect(() => {
-    if (activePosition && teamName && activePosition !== 'Absence') {
-      dispatch(fetchUsersByTeamAndPosition({ teamName, positionName: activePosition }));
+    if (activePosition && teamName && activePosition !== "Absence") {
+      dispatch(
+        fetchUsersByTeamAndPosition({ teamName, positionName: activePosition }),
+      );
     }
   }, [activePosition, teamName, dispatch]);
 
@@ -322,7 +339,7 @@ const RosterTable = () => {
     const dateKey = dateString;
     const entry = dirtyEntries[dateKey] || entries[dateKey];
     if (!entry || !teamName) {
-      return '-';
+      return "";
     }
 
     // Current team assignments
@@ -332,12 +349,18 @@ const RosterTable = () => {
     const otherTeamsAssignments: { team: string; positions: string[] }[] = [];
     Object.entries(entry.teams).forEach(([tName, teamData]) => {
       if (tName !== teamName && teamData[userEmail]) {
-        otherTeamsAssignments.push({ team: tName, positions: teamData[userEmail] });
+        otherTeamsAssignments.push({
+          team: tName,
+          positions: teamData[userEmail],
+        });
       }
     });
 
-    if (currentTeamAssignments.length === 0 && otherTeamsAssignments.length === 0) {
-      return '-';
+    if (
+      currentTeamAssignments.length === 0 &&
+      otherTeamsAssignments.length === 0
+    ) {
+      return "";
     }
 
     return (
@@ -345,8 +368,12 @@ const RosterTable = () => {
         {currentTeamAssignments.map((posName) => {
           const pos = allPositions.find((p) => p.name === posName);
           return (
-            <span key={posName} title={`${teamName}: ${posName}`} className="pos-emoji">
-              {pos?.emoji || '❓'}
+            <span
+              key={posName}
+              title={`${teamName}: ${posName}`}
+              className="pos-emoji"
+            >
+              {pos?.emoji || "❓"}
             </span>
           );
         })}
@@ -359,7 +386,7 @@ const RosterTable = () => {
                 title={`${ota.team}: ${posName}`}
                 className="pos-emoji other-team-emoji"
               >
-                {pos?.emoji || '❓'}
+                {pos?.emoji || "❓"}
               </span>
             );
           }),
@@ -373,7 +400,7 @@ const RosterTable = () => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
       // Ignore if user is typing in an input
       const target = e.target as HTMLElement;
-      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
+      if (target.tagName === "INPUT" || target.tagName === "TEXTAREA") {
         return;
       }
 
@@ -381,39 +408,42 @@ const RosterTable = () => {
 
       const { row, col, table } = focusedCell;
       const dateList = rosterDates;
-      const userList = table === 'roster' ? sortedUsers : allTeamUsers;
+      const userList = table === "roster" ? sortedUsers : allTeamUsers;
 
       switch (e.key) {
-        case 'ArrowUp':
+        case "ArrowUp":
           e.preventDefault();
           if (row > 0) setFocusedCell({ row: row - 1, col, table });
           break;
-        case 'ArrowDown':
+        case "ArrowDown":
           e.preventDefault();
-          if (row < dateList.length - 1) setFocusedCell({ row: row + 1, col, table });
+          if (row < dateList.length - 1)
+            setFocusedCell({ row: row + 1, col, table });
           break;
-        case 'ArrowLeft':
+        case "ArrowLeft":
           e.preventDefault();
           if (col > 0) setFocusedCell({ row, col: col - 1, table });
           break;
-        case 'ArrowRight':
+        case "ArrowRight":
           e.preventDefault();
-          if (col < userList.length - 1) setFocusedCell({ row, col: col + 1, table });
+          if (col < userList.length - 1)
+            setFocusedCell({ row, col: col + 1, table });
           break;
-        case 'Tab':
+        case "Tab":
           e.preventDefault();
           if (e.shiftKey) {
             if (row > 0) setFocusedCell({ row: row - 1, col, table });
           } else {
-            if (row < dateList.length - 1) setFocusedCell({ row: row + 1, col, table });
+            if (row < dateList.length - 1)
+              setFocusedCell({ row: row + 1, col, table });
           }
           break;
-        case ' ': {
+        case " ": {
           e.preventDefault();
           const dStr = rosterDates[row];
           const usr = userList[col];
           if (usr?.email) {
-            if (table === 'roster') {
+            if (table === "roster") {
               handleCellClick(dStr, usr.email, row, col);
             } else {
               handleAbsenceClick(dStr, usr.email, row, col);
@@ -421,13 +451,13 @@ const RosterTable = () => {
           }
           break;
         }
-        case 'Enter':
+        case "Enter":
           if (hasDirtyChanges) {
             e.preventDefault();
             handleSave();
           }
           break;
-        case 'Escape':
+        case "Escape":
           if (hasDirtyChanges) {
             e.preventDefault();
             handleCancel();
@@ -436,8 +466,8 @@ const RosterTable = () => {
       }
     };
 
-    window.addEventListener('keydown', handleGlobalKeyDown);
-    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+    window.addEventListener("keydown", handleGlobalKeyDown);
+    return () => window.removeEventListener("keydown", handleGlobalKeyDown);
   }, [
     focusedCell,
     rosterDates,
@@ -452,20 +482,59 @@ const RosterTable = () => {
 
   const hasPastDates = useMemo(() => {
     const todayKey = getTodayKey();
+
     if (rosterDates.length === 0) return false;
+
     return rosterDates[0] < todayKey;
   }, [rosterDates]);
 
-  const getRowClass = useCallback(
-    (dateString: string) => {
-      const todayKey = getTodayKey();
-      const dateKey = dateString.split("T")[0];
-      if (dateKey < todayKey) return "past-date";
-      if (dateKey === todayKey) return "today-date";
-      return "future-date";
-    },
-    [],
-  );
+  const closestNextDate = useMemo(() => {
+    const todayKey = getTodayKey();
+
+    return rosterDates.find((d) => d.split("T")[0] >= todayKey);
+  }, [rosterDates]);
+
+  const assignedOnClosestDate = useMemo(() => {
+    if (!closestNextDate || !teamName || !activePosition) return [];
+
+    const dateKey = closestNextDate.split("T")[0];
+
+    const entry = dirtyEntries[dateKey] || entries[dateKey];
+
+    if (!entry || !entry.teams[teamName]) return [];
+
+    const children = allPositions.filter((p) => p.parentId === activePosition);
+
+    const positionGroupNames = [activePosition, ...children.map((c) => c.name)];
+
+    return Object.entries(entry.teams[teamName])
+
+      .filter(([, positions]) =>
+        positions.some((p) => positionGroupNames.includes(p)),
+      )
+
+      .map(([email]) => email);
+  }, [
+    closestNextDate,
+
+    teamName,
+
+    activePosition,
+
+    dirtyEntries,
+
+    entries,
+
+    allPositions,
+  ]);
+
+  const getRowClass = useCallback((dateString: string) => {
+    const todayKey = getTodayKey();
+    const dateKey = dateString.split("T")[0];
+    if (dateKey < todayKey) return "past-date";
+    if (dateKey === todayKey) return "today-date";
+    return "future-date";
+  }, []);
 
   if (loadingUsers || loadingTeam || loadingAllTeamUsers) {
     return <Spinner />;
@@ -476,10 +545,14 @@ const RosterTable = () => {
     return <div className="roster-table-error">Error: {error}</div>;
   }
 
-  const isAbsenceView = activePosition === 'Absence';
+  const isAbsenceView = activePosition === "Absence";
 
   if (!isAbsenceView && sortedUsers.length === 0) {
-    return <div className="roster-table-loading">No users found for this position.</div>;
+    return (
+      <div className="roster-table-loading">
+        No users found for this position.
+      </div>
+    );
   }
 
   return (
@@ -539,15 +612,24 @@ const RosterTable = () => {
                       {genderDividerIndex === colIndex && (
                         <th className="gender-divider-cell sticky-header" />
                       )}
-                      <th
-                        className="roster-table-header-cell sticky-header clickable-header"
-                        onClick={() => user.email && handleToggleVisibility(user.email)}
-                        title="Click to hide member"
-                      >
-                        {user.name}
+                                            <th
+                                              className={`roster-table-header-cell sticky-header clickable-header ${
+                                                user.email && assignedOnClosestDate.includes(user.email) ? 'highlighted-header' : ''
+                                              }`}
+                                              onClick={() => user.email && handleToggleVisibility(user.email)}
+                                              title="Click to hide member"
+                                            >
+                                              {user.name}
+                      
                         {currentPosition?.sortByGender && (
                           <span className="gender-label">
-                            ({user.gender === 'Male' ? 'M' : user.gender === 'Female' ? 'F' : '?'})
+                            (
+                            {user.gender === "Male"
+                              ? "M"
+                              : user.gender === "Female"
+                                ? "F"
+                                : "?"}
+                            )
                           </span>
                         )}
                       </th>
@@ -557,8 +639,10 @@ const RosterTable = () => {
                   <th className="roster-table-header-cell sticky-header sticky-right peek-header">
                     <select
                       className="peek-selector"
-                      value={peekPositionName || ''}
-                      onChange={(e) => setPeekPositionName(e.target.value || null)}
+                      value={peekPositionName || ""}
+                      onChange={(e) =>
+                        setPeekPositionName(e.target.value || null)
+                      }
                     >
                       <option value="">Peek Position...</option>
                       {peekOptions.map((opt) => (
@@ -582,7 +666,9 @@ const RosterTable = () => {
                   return (
                     <tr
                       key={dateString}
-                      className={`${rowClass} ${!hasData ? "no-data" : ""} ${eventName ? "special-event-row" : ""}`}
+                      className={`${rowClass} ${!hasData ? "no-data" : ""} ${
+                        eventName ? "special-event-row" : ""
+                      } ${dateString === closestNextDate ? "closest-next-date-row" : ""}`}
                     >
                       <td
                         className={`date-cell sticky-col ${hasData ? "clickable" : ""}`}
@@ -590,18 +676,30 @@ const RosterTable = () => {
                         title={eventName}
                       >
                         <div className="date-cell-content">
-                          {new Date(dateString.replace(/-/g, "/")).toLocaleDateString()}
-                          {isToday && <span className="today-badge">TODAY</span>}
                           {eventName && <span className="special-event-dot" />}
+                          {new Date(
+                            dateString.replace(/-/g, "/"),
+                          ).toLocaleDateString()}
+                          {isToday && (
+                            <span className="today-badge">TODAY</span>
+                          )}
                         </div>
                       </td>
                       {sortedUsers.map((user, colIndex) => {
                         const isFocused =
                           focusedCell?.row === rowIndex &&
                           focusedCell?.col === colIndex &&
-                          focusedCell?.table === 'roster';
-                        const disabled = user.email ? isCellDisabled(dateString, user.email) : false;
-                        const absent = user.email ? isUserAbsent(dateString, user.email) : false;
+                          focusedCell?.table === "roster";
+                        const disabled = user.email
+                          ? isCellDisabled(dateString, user.email)
+                          : false;
+                        const absent = user.email
+                          ? isUserAbsent(dateString, user.email)
+                          : false;
+                        const isAssignedOnClosestDate =
+                          dateString === closestNextDate &&
+                          user.email &&
+                          assignedOnClosestDate.includes(user.email);
 
                         return (
                           <Fragment key={user.email}>
@@ -609,22 +707,40 @@ const RosterTable = () => {
                               <td className="gender-divider-cell" />
                             )}
                             <td
-                              className={`roster-cell ${!disabled ? 'clickable' : 'disabled'} ${
-                                isFocused ? 'focused' : ''
-                              } ${absent ? 'absent-strike' : ''}`}
+                              className={`roster-cell ${!disabled ? "clickable" : "disabled"} ${
+                                isFocused ? "focused" : ""
+                              } ${absent ? "absent-strike" : ""} ${
+                                isAssignedOnClosestDate ? "highlighted-cell" : ""
+                              }`}
                               onClick={() => {
                                 if (user.email && !disabled) {
-                                  handleCellClick(dateString, user.email, rowIndex, colIndex);
+                                  handleCellClick(
+                                    dateString,
+                                    user.email,
+                                    rowIndex,
+                                    colIndex,
+                                  );
                                 }
                               }}
                               tabIndex={0}
                               onFocus={() =>
-                                setFocusedCell({ row: rowIndex, col: colIndex, table: 'roster' })
+                                setFocusedCell({
+                                  row: rowIndex,
+                                  col: colIndex,
+                                  table: "roster",
+                                })
                               }
                             >
                               {user.email &&
                                 (absent ? (
-                                  <span title={getAbsenceReason(dateString, user.email)}>❌</span>
+                                  <span
+                                    title={getAbsenceReason(
+                                      dateString,
+                                      user.email,
+                                    )}
+                                  >
+                                    ❌
+                                  </span>
                                 ) : (
                                   getCellContent(dateString, user.email)
                                 ))}
@@ -634,7 +750,7 @@ const RosterTable = () => {
                       })}
                       <td className="gender-divider-cell" />
                       <td className="roster-cell peek-cell sticky-right">
-                        {getPeekAssignedUsers(dateString).join(', ') || '-'}
+                        {getPeekAssignedUsers(dateString).join(", ") || ""}
                       </td>
                     </tr>
                   );
@@ -677,17 +793,25 @@ const RosterTable = () => {
                       </div>
                     </div>
                   </th>
-                  {allTeamUsers.map((user) => (
-                    <th key={user.email} className="roster-table-header-cell sticky-header">
-                      {user.name}
-                    </th>
-                  ))}
+                                    {allTeamUsers.map((user) => (
+                                      <th
+                                        key={user.email}
+                                        className={`roster-table-header-cell sticky-header ${
+                                          user.email && assignedOnClosestDate.includes(user.email) ? 'highlighted-header' : ''
+                                        }`}
+                                      >
+                                        {user.name}
+                                      </th>
+                                    ))}
+                  
                   <th className="gender-divider-cell sticky-header" />
                   <th className="roster-table-header-cell sticky-header sticky-right peek-header">
                     <select
                       className="peek-selector"
-                      value={peekPositionName || ''}
-                      onChange={(e) => setPeekPositionName(e.target.value || null)}
+                      value={peekPositionName || ""}
+                      onChange={(e) =>
+                        setPeekPositionName(e.target.value || null)
+                      }
                     >
                       <option value="">Peek Position...</option>
                       {peekOptions.map((opt) => (
@@ -711,7 +835,9 @@ const RosterTable = () => {
                   return (
                     <tr
                       key={dateString}
-                      className={`${rowClass} ${!hasData ? "no-data" : ""} ${eventName ? "special-event-row" : ""}`}
+                      className={`${rowClass} ${!hasData ? "no-data" : ""} ${
+                        eventName ? "special-event-row" : ""
+                      } ${dateString === closestNextDate ? "closest-next-date-row" : ""}`}
                     >
                       <td
                         className={`date-cell sticky-col ${hasData ? "clickable" : ""}`}
@@ -719,33 +845,56 @@ const RosterTable = () => {
                         title={eventName}
                       >
                         <div className="date-cell-content">
-                          {new Date(dateString.replace(/-/g, "/")).toLocaleDateString()}
-                          {isToday && <span className="today-badge">TODAY</span>}
                           {eventName && <span className="special-event-dot" />}
+                          {new Date(
+                            dateString.replace(/-/g, "/"),
+                          ).toLocaleDateString()}
+                          {isToday && (
+                            <span className="today-badge">TODAY</span>
+                          )}
                         </div>
                       </td>
                       {allTeamUsers.map((user, colIndex) => {
                         const isFocused =
                           focusedCell?.row === rowIndex &&
                           focusedCell?.col === colIndex &&
-                          focusedCell?.table === 'absence';
-                        const absent = user.email ? isUserAbsent(dateString, user.email) : false;
-                        const reason = user.email ? getAbsenceReason(dateString, user.email) : '';
+                          focusedCell?.table === "absence";
+                        const absent = user.email
+                          ? isUserAbsent(dateString, user.email)
+                          : false;
+                        const reason = user.email
+                          ? getAbsenceReason(dateString, user.email)
+                          : "";
+                        const isAssignedOnClosestDate =
+                          dateString === closestNextDate &&
+                          user.email &&
+                          assignedOnClosestDate.includes(user.email);
 
                         return (
                           <td
                             key={user.email}
                             className={`roster-cell clickable absence-roster-cell ${
-                              isFocused ? 'focused' : ''
-                            } ${absent ? 'absent-cell' : ''}`}
+                              isFocused ? "focused" : ""
+                            } ${absent ? "absent-cell" : ""} ${
+                              isAssignedOnClosestDate ? "highlighted-cell" : ""
+                            }`}
                             onClick={() => {
                               if (user.email) {
-                                handleAbsenceClick(dateString, user.email, rowIndex, colIndex);
+                                handleAbsenceClick(
+                                  dateString,
+                                  user.email,
+                                  rowIndex,
+                                  colIndex,
+                                );
                               }
                             }}
                             tabIndex={0}
                             onFocus={() =>
-                              setFocusedCell({ row: rowIndex, col: colIndex, table: 'absence' })
+                              setFocusedCell({
+                                row: rowIndex,
+                                col: colIndex,
+                                table: "absence",
+                              })
                             }
                             title={reason}
                           >
@@ -761,7 +910,11 @@ const RosterTable = () => {
                                   onClick={(e) => e.stopPropagation()}
                                   onChange={(e) => {
                                     if (user.email) {
-                                      handleAbsenceReasonChange(dateString, user.email, e.target.value);
+                                      handleAbsenceReasonChange(
+                                        dateString,
+                                        user.email,
+                                        e.target.value,
+                                      );
                                     }
                                   }}
                                 />
@@ -770,7 +923,12 @@ const RosterTable = () => {
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     if (user.email) {
-                                      handleAbsenceClick(dateString, user.email, rowIndex, colIndex);
+                                      handleAbsenceClick(
+                                        dateString,
+                                        user.email,
+                                        rowIndex,
+                                        colIndex,
+                                      );
                                     }
                                   }}
                                   title="Mark as present"
@@ -779,14 +937,14 @@ const RosterTable = () => {
                                 </button>
                               </div>
                             ) : (
-                              '-'
+                              ""
                             )}
                           </td>
                         );
                       })}
                       <td className="gender-divider-cell" />
                       <td className="roster-cell peek-cell sticky-right">
-                        {getPeekAssignedUsers(dateString).join(', ') || '-'}
+                        {getPeekAssignedUsers(dateString).join(", ") || ""}
                       </td>
                     </tr>
                   );
@@ -807,11 +965,19 @@ const RosterTable = () => {
           <div className="save-footer-content">
             <span className="changes-label">You have unsaved changes</span>
             <div className="save-footer-actions">
-              <button className="cancel-btn" onClick={handleCancel} disabled={saving}>
+              <button
+                className="cancel-btn"
+                onClick={handleCancel}
+                disabled={saving}
+              >
                 Discard
               </button>
-              <button className="save-btn" onClick={handleSave} disabled={saving}>
-                {saving ? 'Saving...' : 'Save Roster'}
+              <button
+                className="save-btn"
+                onClick={handleSave}
+                disabled={saving}
+              >
+                {saving ? "Saving..." : "Save Roster"}
               </button>
             </div>
           </div>

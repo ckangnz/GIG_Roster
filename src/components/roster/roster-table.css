@@ -36,7 +36,6 @@
   position: sticky;
   left: 0;
   z-index: 30;
-  background-color: var(--background-card);
   width: min-content;
   white-space: nowrap;
   border-right: 2px solid var(--border-color-secondary) !important;
@@ -117,13 +116,13 @@
 
 .date-cell {
   white-space: nowrap;
+  background: var(--background-table-header) !important;
   font-size: 0.75rem;
   color: var(--color-text-dim);
   width: 1%; /* Shrink to fit */
 }
 
 .roster-cell {
-  text-align: center !important;
   vertical-align: middle;
   min-width: 80px;
 }
@@ -328,8 +327,8 @@ th.gender-divider-cell {
 }
 
 .absent-strike {
-  opacity: 0.6;
-  background-color: var(--background-body) !important;
+  opacity: 1;
+  background-color: var(--color-delete-dark) !important;
 }
 
 /* Date States */
@@ -366,6 +365,8 @@ th.gender-divider-cell {
 
 .date-cell-content {
   display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
   align-items: center;
   gap: 8px;
 }
@@ -380,16 +381,19 @@ th.gender-divider-cell {
   font-weight: 800;
 }
 
-.future-date {
-  /* Default styles */
+.closest-next-date-row {
+  position: relative;
+  background-color: var(--background-primary-subtle);
+  z-index: 5;
 }
 
-.special-event-row td {
-  border-bottom: 1px solid #ff9800 !important;
+.highlighted-header {
+  background-color: var(--background-primary-subtle) !important;
+  color: var(--color-link) !important;
 }
 
-.special-event-row td.date-cell {
-  background-color: var(--background-card-subtle) !important;
+.highlighted-cell {
+  background-color: var(--background-primary-subtle) !important;
 }
 
 .special-event-dot {
@@ -398,7 +402,7 @@ th.gender-divider-cell {
   background-color: #ff9800;
   border-radius: 50%;
   display: inline-block;
-  margin-left: 4px;
+  margin-right: 8px; /* Changed from margin-left to margin-right for left positioning */
   flex-shrink: 0;
   box-shadow: 0 0 4px #ff9800;
 }
@@ -458,7 +462,6 @@ th.gender-divider-cell {
 }
 
 .absence-roster-cell {
-  min-width: 140px !important;
   padding: 4px !important;
 }
 
@@ -685,10 +688,6 @@ th.gender-divider-cell {
     font-size: 1.1rem;
     width: 20px;
     height: 20px;
-  }
-
-  .absence-roster-cell {
-    min-width: 140px !important;
   }
 
   .gender-label {
