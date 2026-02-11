@@ -71,5 +71,13 @@ export const formatToDateKey = (date: Date): string => {
 };
 
 export const getTodayKey = (): string => {
-  return formatToDateKey(new Date());
+  // Always calculate "Today" relative to NZ time (Pacific/Auckland)
+  const nzDate = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Pacific/Auckland",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
+  // en-CA returns YYYY-MM-DD
+  return nzDate;
 };

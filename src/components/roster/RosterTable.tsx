@@ -112,9 +112,8 @@ const RosterTable = () => {
   };
 
   const handleDateClick = (dateString: string) => {
-    const dateKey = dateString.split('T')[0];
     if (checkHasAssignments(dateString)) {
-      navigate(`/app/dashboard?date=${dateKey}`);
+      navigate(`/app/dashboard?date=${dateString}`);
     }
   };
 

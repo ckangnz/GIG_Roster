@@ -84,39 +84,55 @@ const DashboardPage = () => {
 
   // Handle deep-linking and tab-reclick resets
   useEffect(() => {
-    if (rosterDates.length === 0 || !scrollRef.current) return;
+    if (rosterDates.length === 0 || !scrollRef.current || loadingRoster) return;
+
+    const container = scrollRef.current;
+
+    const performScroll = (index: number, smooth: boolean) => {
+      const itemWidth = container.offsetWidth;
+      if (itemWidth === 0) return; // Wait for layout
+
+      // Temporarily disable snap to prevent "fighting" the programmatic scroll
+      container.style.scrollSnapType = "none";
+      
+      container.scrollTo({
+        left: itemWidth * index,
+        behavior: smooth ? "smooth" : "auto",
+      });
+
+      // Re-enable snap after a short delay
+      setTimeout(() => {
+        if (container) {
+          container.style.scrollSnapType = "x mandatory";
+        }
+      }, 50);
+
+      setCurrentDateIndex(index);
+      hasInitialScrolled.current = true;
+    };
 
     if (targetDate) {
-      const index = rosterDates.findIndex((d) => d.startsWith(targetDate));
+      const index = rosterDates.findIndex((d) => d === targetDate);
       if (index >= 0) {
-        const container = scrollRef.current;
-        const itemWidth = container.offsetWidth;
-        const currentScrollIndex = Math.round(container.scrollLeft / itemWidth);
+        const currentScrollIndex = Math.round(
+          container.scrollLeft / (container.offsetWidth || 1),
+        );
 
         if (!hasInitialScrolled.current || currentScrollIndex !== index) {
-          // Micro-task to ensure layout is stable
-          Promise.resolve().then(() => {
-            if (scrollRef.current) {
-              scrollRef.current.scrollTo({
-                left: itemWidth * index,
-                behavior: hasInitialScrolled.current ? "smooth" : "auto",
-              });
-              setCurrentDateIndex(index);
-              hasInitialScrolled.current = true;
-            }
+          // Use RequestAnimationFrame for better timing with browser paint
+          requestAnimationFrame(() => {
+            performScroll(index, hasInitialScrolled.current);
           });
         }
       }
     } else {
       // Re-click or fresh load with no date: scroll to start
-      const container = scrollRef.current;
       if (container.scrollLeft !== 0) {
-        container.scrollTo({ left: 0, behavior: "smooth" });
-        setCurrentDateIndex(0);
+        performScroll(0, true);
       }
       hasInitialScrolled.current = true;
     }
-  }, [targetDate, rosterDates]);
+  }, [targetDate, rosterDates, loadingRoster]);
 
   const handleClearDate = () => {
     setSearchParams({}, { replace: true });
@@ -222,12 +238,13 @@ const DashboardPage = () => {
     teamEmoji: string,
     positions: { posName: string; emoji: string; names: string[] }[],
   ) => {
-    // Fix date display: replace '-' with '/' to force local time interpretation
-    const localDate = new Date(dateStr.replace(/-/g, "/"));
+    // Treat string as UTC midnight to prevent display shifts
+    const localDate = new Date(dateStr);
     const formattedDate = localDate.toLocaleDateString("en-GB", {
       day: "numeric",
       month: "short",
       year: "numeric",
+      timeZone: "UTC",
     });
 
     let text = `${formattedDate} - ${teamEmoji} ${teamName}\n`;
@@ -253,8 +270,8 @@ const DashboardPage = () => {
       const dateKey = rosterDates[index];
       if (targetDate !== dateKey) {
         const todayKey = getTodayKey();
-        if (index === 0 && !targetDate?.includes(todayKey)) {
-          // Keep URL clean for the first (default) item if it's the current list
+        if (index === 0 && todayKey === dateKey) {
+          // Keep URL clean for the first (default) item if it matches today
           setSearchParams({}, { replace: true });
         } else {
           setSearchParams({ date: dateKey }, { replace: true });
@@ -344,12 +361,13 @@ const DashboardPage = () => {
   const isSuperAdmin = userData?.isAdmin && userData?.email === import.meta.env.VITE_ADMIN_EMAIL;
 
   const formatDate = (dateStr: string) => {
-    // Correct date interpretation for YYYY-MM-DD (force local time)
-    const localDate = new Date(dateStr.replace(/-/g, "/"));
-    return localDate.toLocaleDateString("en-GB", {
+    // Treat string as UTC midnight to prevent display shifts
+    const dateObj = new Date(dateStr);
+    return dateObj.toLocaleDateString("en-GB", {
       day: "numeric",
       month: "long",
       year: "numeric",
+      timeZone: "UTC",
     });
   };
 
