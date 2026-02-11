@@ -5,8 +5,6 @@ import {
   query,
   where,
   getDocs,
-  writeBatch,
-  doc,
 } from "firebase/firestore";
 import { CopyIcon } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
@@ -335,56 +333,6 @@ const DashboardPage = () => {
     dispatch(resetRosterEdits());
   };
 
-  const runMigration = async (direction: 1 | -1) => {
-    const text = direction === 1 ? "FORWARD" : "BACKWARD";
-    if (
-      !window.confirm(
-        `This will shift ALL roster data 1 day ${text}. This is irreversible without a rollback. Continue?`,
-      )
-    )
-      return;
-
-    setLoadingUsers(true);
-    try {
-      const batch = writeBatch(db);
-      let count = 0;
-
-      Object.values(entries).forEach((entry) => {
-        const oldId = entry.id;
-        const [y, m, d] = oldId.split("-").map(Number);
-        // Create local date
-        const date = new Date(y, m - 1, d);
-        date.setDate(date.getDate() + direction);
-
-        const newY = date.getFullYear();
-        const newM = String(date.getMonth() + 1).padStart(2, "0");
-        const newD = String(date.getDate()).padStart(2, "0");
-        const newId = `${newY}-${newM}-${newD}`;
-
-        const newDocRef = doc(db, "roster", newId);
-        const oldDocRef = doc(db, "roster", oldId);
-
-        const newData = { ...entry, id: newId, date: newId };
-        batch.set(newDocRef, newData);
-        batch.delete(oldDocRef);
-        count++;
-      });
-
-      if (count > 0) {
-        await batch.commit();
-        alert(`Successfully migrated ${count} documents! Page will reload.`);
-        window.location.reload();
-      } else {
-        alert("No documents found to migrate.");
-      }
-    } catch (err) {
-      console.error(err);
-      alert("Migration failed. Check console for details.");
-    } finally {
-      setLoadingUsers(false);
-    }
-  };
-
   if (loadingRoster || loadingUsers) return <Spinner />;
 
   if (rosterDates.length === 0) {
@@ -400,9 +348,6 @@ const DashboardPage = () => {
   const todayKey = getTodayKey();
   const isPast = currentEventDate && currentEventDate < todayKey;
   const pageTitle = isPast ? "Previous Event" : "Upcoming Events";
-
-  const isSuperAdmin =
-    userData?.isAdmin && userData?.email === import.meta.env.VITE_ADMIN_EMAIL;
 
   const formatDate = (dateStr: string) => {
     // Treat string as UTC midnight to prevent display shifts
@@ -477,19 +422,6 @@ const DashboardPage = () => {
             <button className="clear-past-btn" onClick={handleClearDate}>
               Reset to upcoming
             </button>
-          )}
-          {isSuperAdmin && (
-            <>
-              <button className="migration-btn" onClick={() => runMigration(1)}>
-                Shift +1 Day
-              </button>
-              <button
-                className="migration-btn"
-                onClick={() => runMigration(-1)}
-              >
-                Shift -1 Day
-              </button>
-            </>
           )}
         </div>
       </div>
