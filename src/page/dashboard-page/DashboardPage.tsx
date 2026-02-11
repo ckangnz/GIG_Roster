@@ -1,15 +1,11 @@
 import { useMemo, useEffect, useState, useCallback, useRef } from "react";
 
-import {
-  collection,
-  query,
-  where,
-  getDocs,
-} from "firebase/firestore";
+import { collection, query, where, getDocs } from "firebase/firestore";
 import { CopyIcon } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 
 import Spinner from "../../components/common/Spinner";
+import ThemeToggleButton from "../../components/common/ThemeToggleButton";
 import { db } from "../../firebase";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { Weekday, AppUser, getTodayKey } from "../../model/model";
@@ -374,20 +370,25 @@ const DashboardPage = () => {
                 <span className="team-card-name">{teamData.teamName}</span>
               </h3>
               {!isPeek && (
-                <button
-                  className="copy-roster-btn"
-                  onClick={() =>
-                    handleCopy(
-                      dateStr,
-                      teamData.teamName,
-                      teamData.teamEmoji,
-                      teamData.positions,
-                    )
-                  }
-                  title="Copy to clipboard"
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
                 >
-                  <CopyIcon size={16} /> Copy
-                </button>
+                  <ThemeToggleButton />
+                  <button
+                    className="copy-roster-btn"
+                    onClick={() =>
+                      handleCopy(
+                        dateStr,
+                        teamData.teamName,
+                        teamData.teamEmoji,
+                        teamData.positions,
+                      )
+                    }
+                    title="Copy to clipboard"
+                  >
+                    <CopyIcon size={16} /> Copy
+                  </button>
+                </div>
               )}
             </div>
 
@@ -505,4 +506,3 @@ const DashboardPage = () => {
 };
 
 export default DashboardPage;
-
