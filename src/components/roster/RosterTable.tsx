@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState, Fragment } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
+import { getTodayKey } from '../../model/model';
 import {
   fetchRosterEntries,
   saveRosterChanges,
@@ -167,7 +168,7 @@ const RosterTable = () => {
 
   const isUserAbsent = useCallback(
     (dateString: string, userEmail: string) => {
-      const dateKey = dateString.split('T')[0];
+      const dateKey = dateString;
       const entry = dirtyEntries[dateKey] || entries[dateKey];
       return !!(entry && entry.absence && entry.absence[userEmail]);
     },
@@ -176,62 +177,92 @@ const RosterTable = () => {
 
   const getAbsenceReason = useCallback(
     (dateString: string, userEmail: string) => {
-      const dateKey = dateString.split('T')[0];
+      const dateKey = dateString;
       const entry = dirtyEntries[dateKey] || entries[dateKey];
-      return entry?.absence?.[userEmail]?.reason || '';
+      return entry?.absence?.[userEmail]?.reason || "";
     },
     [dirtyEntries, entries],
   );
 
   const isCellDisabled = useCallback(
     (dateString: string, userEmail: string) => {
-      if (!teamName || !activePosition || activePosition === 'Absence') return false;
+      if (!teamName || !activePosition || activePosition === "Absence")
+        return false;
 
       // 1. Check if user is absent
       if (isUserAbsent(dateString, userEmail)) return true;
 
       // 2. Check maxConflict
-      const dateKey = dateString.split('T')[0];
+      const dateKey = dateString;
       const entry = dirtyEntries[dateKey] || entries[dateKey];
       const currentTeam = allTeams.find((t) => t.name === teamName);
       const maxConflict = currentTeam?.maxConflict || 1;
 
-      if (!entry || !entry.teams[teamName] || !entry.teams[teamName][userEmail]) {
+      if (
+        !entry ||
+        !entry.teams[teamName] ||
+        !entry.teams[teamName][userEmail]
+      ) {
         return false;
       }
 
       const userAssignments = entry.teams[teamName][userEmail];
 
-      const children = allPositions.filter((p) => p.parentId === activePosition);
-      const positionGroupNames = [activePosition, ...children.map((c) => c.name)];
-      const isInGroup = userAssignments.some((p) => positionGroupNames.includes(p));
+      const children = allPositions.filter(
+        (p) => p.parentId === activePosition,
+      );
+      const positionGroupNames = [
+        activePosition,
+        ...children.map((c) => c.name),
+      ];
+      const isInGroup = userAssignments.some((p) =>
+        positionGroupNames.includes(p),
+      );
 
       if (isInGroup) return false;
 
       return userAssignments.length >= maxConflict;
     },
-    [teamName, activePosition, isUserAbsent, dirtyEntries, entries, allTeams, allPositions],
+    [
+      teamName,
+      activePosition,
+      isUserAbsent,
+      dirtyEntries,
+      entries,
+      allTeams,
+      allPositions,
+    ],
   );
 
   const handleCellClick = useCallback(
     (dateString: string, userEmail: string, row: number, col: number) => {
-      if (!teamName || !activePosition || activePosition === 'Absence' || isCellDisabled(dateString, userEmail)) {
-        setFocusedCell({ row, col, table: 'roster' });
+      if (
+        !teamName ||
+        !activePosition ||
+        activePosition === "Absence" ||
+        isCellDisabled(dateString, userEmail)
+      ) {
+        setFocusedCell({ row, col, table: "roster" });
         return;
       }
 
-      setFocusedCell({ row, col, table: 'roster' });
+      setFocusedCell({ row, col, table: "roster" });
 
       const currentTeam = allTeams.find((t) => t.name === teamName);
       const maxConflict = currentTeam?.maxConflict || 1;
 
       // Build the position group: [Parent, Child1, Child2...]
-      const children = allPositions.filter((p) => p.parentId === activePosition);
-      const positionGroupNames = [activePosition, ...children.map((c) => c.name)];
+      const children = allPositions.filter(
+        (p) => p.parentId === activePosition,
+      );
+      const positionGroupNames = [
+        activePosition,
+        ...children.map((c) => c.name),
+      ];
 
       dispatch(
         updateLocalAssignment({
-          date: dateString.split('T')[0],
+          date: dateString,
           teamName,
           userIdentifier: userEmail,
           positionGroupNames,
@@ -239,17 +270,24 @@ const RosterTable = () => {
         }),
       );
     },
-    [dispatch, teamName, activePosition, isCellDisabled, allTeams, allPositions],
+    [
+      dispatch,
+      teamName,
+      activePosition,
+      isCellDisabled,
+      allTeams,
+      allPositions,
+    ],
   );
 
   const handleAbsenceClick = useCallback(
     (dateString: string, userEmail: string, row: number, col: number) => {
-      setFocusedCell({ row, col, table: 'absence' });
+      setFocusedCell({ row, col, table: "absence" });
       const isCurrentlyAbsent = isUserAbsent(dateString, userEmail);
 
       dispatch(
         updateLocalAbsence({
-          date: dateString.split('T')[0],
+          date: dateString,
           userIdentifier: userEmail,
           isAbsent: !isCurrentlyAbsent,
         }),
@@ -262,7 +300,7 @@ const RosterTable = () => {
     (dateString: string, userEmail: string, reason: string) => {
       dispatch(
         updateLocalAbsence({
-          date: dateString.split('T')[0],
+          date: dateString,
           userIdentifier: userEmail,
           reason,
           isAbsent: true,
@@ -282,7 +320,7 @@ const RosterTable = () => {
   }, [dispatch]);
 
   const getCellContent = (dateString: string, userEmail: string) => {
-    const dateKey = dateString.split('T')[0];
+    const dateKey = dateString;
     const entry = dirtyEntries[dateKey] || entries[dateKey];
     if (!entry || !teamName) {
       return '-';
@@ -413,20 +451,21 @@ const RosterTable = () => {
     handleCancel,
   ]);
 
-  const todayKey = useMemo(() => new Date().toISOString().split('T')[0], []);
   const hasPastDates = useMemo(() => {
+    const todayKey = getTodayKey();
     if (rosterDates.length === 0) return false;
-    return rosterDates[0].split('T')[0] < todayKey;
-  }, [rosterDates, todayKey]);
+    return rosterDates[0] < todayKey;
+  }, [rosterDates]);
 
   const getRowClass = useCallback(
     (dateString: string) => {
-      const dateKey = dateString.split('T')[0];
-      if (dateKey < todayKey) return 'past-date';
-      if (dateKey === todayKey) return 'today-date';
-      return 'future-date';
+      const todayKey = getTodayKey();
+      const dateKey = dateString.split("T")[0];
+      if (dateKey < todayKey) return "past-date";
+      if (dateKey === todayKey) return "today-date";
+      return "future-date";
     },
-    [todayKey],
+    [],
   );
 
   if (loadingUsers || loadingTeam || loadingAllTeamUsers) {
@@ -552,7 +591,7 @@ const RosterTable = () => {
                         title={eventName}
                       >
                         <div className="date-cell-content">
-                          {new Date(dateString).toLocaleDateString()}
+                          {new Date(dateString.replace(/-/g, "/")).toLocaleDateString()}
                           {isToday && <span className="today-badge">TODAY</span>}
                           {eventName && <span className="special-event-dot" />}
                         </div>
@@ -681,7 +720,7 @@ const RosterTable = () => {
                         title={eventName}
                       >
                         <div className="date-cell-content">
-                          {new Date(dateString).toLocaleDateString()}
+                          {new Date(dateString.replace(/-/g, "/")).toLocaleDateString()}
                           {isToday && <span className="today-badge">TODAY</span>}
                           {eventName && <span className="special-event-dot" />}
                         </div>

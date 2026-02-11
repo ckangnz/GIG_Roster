@@ -44,7 +44,8 @@ const MainLayout = () => {
     if (
       location.pathname.startsWith("/app/") &&
       !isBaseRoster &&
-      !isBaseSettings
+      !isBaseSettings &&
+      activeTab !== AppTab.DASHBOARD
     ) {
       const fullPath = location.pathname + location.search;
       dispatch(setLastVisitedPath({ tabId: activeTab, path: fullPath }));
@@ -93,6 +94,7 @@ const MainLayout = () => {
     allTeams,
     navigate,
     location.pathname,
+    location.search,
     lastVisitedPaths,
   ]);
 

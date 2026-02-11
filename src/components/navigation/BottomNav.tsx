@@ -16,7 +16,13 @@ const BottomNav = () => {
       : AppTab.ROSTER;
 
   const handleTabChange = (tabId: string) => {
-    if (activeTab === tabId) return;
+    if (activeTab === tabId) {
+      // If re-clicking the same tab, and it's Dashboard, reset to today
+      if (tabId === AppTab.DASHBOARD) {
+        navigate('/app/dashboard');
+      }
+      return;
+    }
 
     const savedPath = lastVisitedPaths[tabId];
     if (savedPath) {

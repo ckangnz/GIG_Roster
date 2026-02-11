@@ -2,7 +2,7 @@ import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 
 import { db } from '../../firebase';
-import { AppUser, Team, Weekday } from '../../model/model';
+import { AppUser, Team, Weekday, formatToDateKey } from '../../model/model';
 import { RootState } from '../index';
 
 // Helper function from RosterTable.tsx
@@ -53,7 +53,7 @@ export const getUpcomingDates = (
 
   dates.sort((a, b) => a.getTime() - b.getTime());
 
-  return dates.map((date) => date.toISOString());
+  return dates.map((date) => formatToDateKey(date));
 };
 
 const getPreviousDates = (preferredDays: Weekday[], earliestDateStr: string, count: number = 5): string[] => {
@@ -87,7 +87,7 @@ const getPreviousDates = (preferredDays: Weekday[], earliestDateStr: string, cou
     if (currentDate < limitDate) break;
   }
 
-  return dates.map((date) => date.toISOString()).sort();
+  return dates.map((date) => formatToDateKey(date)).sort();
 };
 
 interface RosterViewState {

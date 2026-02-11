@@ -21,6 +21,50 @@
   letter-spacing: 1px;
 }
 
+.dashboard-header-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 0.5rem;
+}
+
+.migration-btn {
+  background: var(--background-button-secondary);
+  border: 1px solid var(--border-color-input);
+  color: var(--color-text-dim);
+  font-size: 0.65rem;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.migration-btn:hover {
+  background: var(--color-warning-dark);
+  color: white;
+  border-color: var(--color-warning-dark);
+}
+
+.clear-past-btn {
+  background: transparent;
+  border: none;
+  color: var(--color-link);
+  font-size: 0.75rem;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 4px 8px;
+  font-weight: 600;
+  transition: opacity 0.2s;
+}
+
+.clear-past-btn:hover {
+  opacity: 0.7;
+}
+
 .event-name-container {
   width: 100%;
   display: flex;

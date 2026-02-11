@@ -1,12 +1,12 @@
 import { useMemo, useEffect, useState, useCallback, useRef } from "react";
 
-import { collection, query, where, getDocs } from "firebase/firestore";
+import { collection, query, where, getDocs, writeBatch, doc } from "firebase/firestore";
 import { useSearchParams } from "react-router-dom";
 
 import Spinner from "../../components/common/Spinner";
 import { db } from "../../firebase";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
-import { Weekday, AppUser } from "../../model/model";
+import { Weekday, AppUser, getTodayKey } from "../../model/model";
 import {
   fetchRosterEntries,
   saveRosterChanges,
@@ -38,6 +38,7 @@ const DashboardPage = () => {
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [currentDateIndex, setCurrentDateIndex] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const hasInitialScrolled = useRef(false);
 
   const hasDirtyChanges = Object.keys(dirtyEntries).length > 0;
 
@@ -46,6 +47,7 @@ const DashboardPage = () => {
   }, [dispatch]);
 
   const rosterDates = useMemo(() => {
+    const todayKey = getTodayKey();
     if (!userData?.teams || allTeams.length === 0) return [];
 
     const userTeams = allTeams.filter((t) => userData.teams.includes(t.name));
@@ -56,43 +58,69 @@ const DashboardPage = () => {
       upcoming.forEach((d) => dateSet.add(d));
     });
 
-    // Filter dates: only keep dates that have at least one assignment in any of the user's teams
-    return Array.from(dateSet)
-      .sort()
-      .filter((dateStr) => {
-        const dateKey = dateStr.split("T")[0];
-        const entry = entries[dateKey] || dirtyEntries[dateKey];
-        if (!entry) return false;
+    const upcomingDates = Array.from(dateSet).sort();
 
-        return userTeams.some((team) => {
-          const teamAssignments = entry.teams?.[team.name] || {};
-          return Object.values(teamAssignments).some(
-            (posList) => posList.length > 0,
-          );
-        });
+    // If targetDate is in the past, show ONLY that date (disables scrolling)
+    if (targetDate && targetDate < todayKey) {
+      return [targetDate];
+    }
+
+    // Filter dates: keep if has assignments OR if it's the specific targetDate
+    return upcomingDates.filter((dateStr) => {
+      const dateKey = dateStr;
+      if (targetDate === dateKey) return true; // Never filter the date we specifically navigated to
+
+      const entry = entries[dateKey] || dirtyEntries[dateKey];
+      if (!entry) return false;
+
+      return userTeams.some((team) => {
+        const teamAssignments = entry.teams?.[team.name] || {};
+        return Object.values(teamAssignments).some(
+          (posList) => posList.length > 0,
+        );
       });
-  }, [userData, allTeams, entries, dirtyEntries]);
+    });
+  }, [userData, allTeams, entries, dirtyEntries, targetDate]);
 
-  // Handle deep-linking to a specific date
+  // Handle deep-linking and tab-reclick resets
   useEffect(() => {
-    if (targetDate && rosterDates.length > 0 && scrollRef.current) {
+    if (rosterDates.length === 0 || !scrollRef.current) return;
+
+    if (targetDate) {
       const index = rosterDates.findIndex((d) => d.startsWith(targetDate));
       if (index >= 0) {
-        // We delay slightly to ensure the track has rendered its children
-        setTimeout(() => {
-          if (scrollRef.current) {
-            const container = scrollRef.current;
-            const itemWidth = container.offsetWidth;
-            container.scrollTo({
-              left: itemWidth * index,
-              behavior: "auto", // Direct jump for initial load
-            });
-            setCurrentDateIndex(index);
-          }
-        }, 100);
+        const container = scrollRef.current;
+        const itemWidth = container.offsetWidth;
+        const currentScrollIndex = Math.round(container.scrollLeft / itemWidth);
+
+        if (!hasInitialScrolled.current || currentScrollIndex !== index) {
+          // Micro-task to ensure layout is stable
+          Promise.resolve().then(() => {
+            if (scrollRef.current) {
+              scrollRef.current.scrollTo({
+                left: itemWidth * index,
+                behavior: hasInitialScrolled.current ? "smooth" : "auto",
+              });
+              setCurrentDateIndex(index);
+              hasInitialScrolled.current = true;
+            }
+          });
+        }
       }
+    } else {
+      // Re-click or fresh load with no date: scroll to start
+      const container = scrollRef.current;
+      if (container.scrollLeft !== 0) {
+        container.scrollTo({ left: 0, behavior: "smooth" });
+        setCurrentDateIndex(0);
+      }
+      hasInitialScrolled.current = true;
     }
   }, [targetDate, rosterDates]);
+
+  const handleClearDate = () => {
+    setSearchParams({}, { replace: true });
+  };
 
   useEffect(() => {
     const fetchMyTeamsUsers = async () => {
@@ -121,7 +149,7 @@ const DashboardPage = () => {
   const getDashboardDataForDate = useCallback(
     (dateStr: string | null) => {
       if (!dateStr || !userData?.teams || allTeams.length === 0) return null;
-      const dateKey = dateStr.split("T")[0];
+      const dateKey = dateStr;
       const entry = dirtyEntries[dateKey] || entries[dateKey];
 
       const userTeams = allTeams.filter((t) => userData.teams.includes(t.name));
@@ -194,7 +222,9 @@ const DashboardPage = () => {
     teamEmoji: string,
     positions: { posName: string; emoji: string; names: string[] }[],
   ) => {
-    const formattedDate = new Date(dateStr).toLocaleDateString("en-GB", {
+    // Fix date display: replace '-' with '/' to force local time interpretation
+    const localDate = new Date(dateStr.replace(/-/g, "/"));
+    const formattedDate = localDate.toLocaleDateString("en-GB", {
       day: "numeric",
       month: "short",
       year: "numeric",
@@ -214,19 +244,27 @@ const DashboardPage = () => {
   const handleScroll = () => {
     if (!scrollRef.current) return;
     const container = scrollRef.current;
-    const index = Math.round(container.scrollLeft / container.offsetWidth);
-    if (index !== currentDateIndex) {
+    const itemWidth = container.offsetWidth;
+    const index = Math.round(container.scrollLeft / itemWidth);
+
+    if (index !== currentDateIndex && rosterDates[index]) {
       setCurrentDateIndex(index);
       // Update URL search params to reflect current date for persistence
-      const date = rosterDates[index];
-      if (date) {
-        setSearchParams({ date: date.split("T")[0] }, { replace: true });
+      const dateKey = rosterDates[index];
+      if (targetDate !== dateKey) {
+        const todayKey = getTodayKey();
+        if (index === 0 && !targetDate?.includes(todayKey)) {
+          // Keep URL clean for the first (default) item if it's the current list
+          setSearchParams({}, { replace: true });
+        } else {
+          setSearchParams({ date: dateKey }, { replace: true });
+        }
       }
     }
   };
 
   const handleEventNameChange = (dateStr: string, eventName: string) => {
-    dispatch(updateLocalEventName({ date: dateStr.split("T")[0], eventName }));
+    dispatch(updateLocalEventName({ date: dateStr, eventName }));
   };
 
   const handleSave = () => {
@@ -235,6 +273,56 @@ const DashboardPage = () => {
 
   const handleCancel = () => {
     dispatch(resetRosterEdits());
+  };
+
+  const runMigration = async (direction: 1 | -1) => {
+    const text = direction === 1 ? "FORWARD" : "BACKWARD";
+    if (
+      !window.confirm(
+        `This will shift ALL roster data 1 day ${text}. This is irreversible without a rollback. Continue?`,
+      )
+    )
+      return;
+
+    setLoadingUsers(true);
+    try {
+      const batch = writeBatch(db);
+      let count = 0;
+
+      Object.values(entries).forEach((entry) => {
+        const oldId = entry.id;
+        const [y, m, d] = oldId.split("-").map(Number);
+        // Create local date
+        const date = new Date(y, m - 1, d);
+        date.setDate(date.getDate() + direction);
+
+        const newY = date.getFullYear();
+        const newM = String(date.getMonth() + 1).padStart(2, "0");
+        const newD = String(date.getDate()).padStart(2, "0");
+        const newId = `${newY}-${newM}-${newD}`;
+
+        const newDocRef = doc(db, "roster", newId);
+        const oldDocRef = doc(db, "roster", oldId);
+
+        const newData = { ...entry, id: newId, date: newId };
+        batch.set(newDocRef, newData);
+        batch.delete(oldDocRef);
+        count++;
+      });
+
+      if (count > 0) {
+        await batch.commit();
+        alert(`Successfully migrated ${count} documents! Page will reload.`);
+        window.location.reload();
+      } else {
+        alert("No documents found to migrate.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Migration failed. Check console for details.");
+    } finally {
+      setLoadingUsers(false);
+    }
   };
 
   if (loadingRoster || loadingUsers) return <Spinner />;
@@ -248,12 +336,20 @@ const DashboardPage = () => {
     );
   }
 
-  const formatDate = (dateStr: string) =>
-    new Date(dateStr).toLocaleDateString("en-GB", {
+  const currentEventDate = rosterDates[currentDateIndex];
+  const todayKey = getTodayKey();
+  const isPast = currentEventDate && currentEventDate < todayKey;
+  const pageTitle = isPast ? "Previous Event" : "Upcoming Events";
+
+  const formatDate = (dateStr: string) => {
+    // Correct date interpretation for YYYY-MM-DD (force local time)
+    const localDate = new Date(dateStr.replace(/-/g, "/"));
+    return localDate.toLocaleDateString("en-GB", {
       day: "numeric",
       month: "long",
       year: "numeric",
     });
+  };
 
   const renderTeamCards = (dateStr: string, isPeek: boolean = false) => {
     const data = getDashboardDataForDate(dateStr);
@@ -311,7 +407,20 @@ const DashboardPage = () => {
   return (
     <div className="dashboard-container">
       <div className="dashboard-header">
-        <h1>Upcoming Events</h1>
+        <h1>{pageTitle}</h1>
+        <div className="dashboard-header-actions">
+          {isPast && (
+            <button className="clear-past-btn" onClick={handleClearDate}>
+              Reset to upcoming
+            </button>
+          )}
+          <button className="migration-btn" onClick={() => runMigration(1)}>
+            Shift +1 Day
+          </button>
+          <button className="migration-btn" onClick={() => runMigration(-1)}>
+            Shift -1 Day
+          </button>
+        </div>
       </div>
 
       <div className="carousel-outer-wrapper">
@@ -321,7 +430,7 @@ const DashboardPage = () => {
           onScroll={handleScroll}
         >
           {rosterDates.map((dateStr, index) => {
-            const dateKey = dateStr.split("T")[0];
+            const dateKey = dateStr;
             const entry = dirtyEntries[dateKey] || entries[dateKey];
             const eventName = entry?.eventName || "";
 
