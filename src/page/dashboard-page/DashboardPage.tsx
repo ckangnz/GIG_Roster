@@ -1,6 +1,14 @@
 import { useMemo, useEffect, useState, useCallback, useRef } from "react";
 
-import { collection, query, where, getDocs, writeBatch, doc } from "firebase/firestore";
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  writeBatch,
+  doc,
+} from "firebase/firestore";
+import { CopyIcon } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 
 import Spinner from "../../components/common/Spinner";
@@ -94,7 +102,7 @@ const DashboardPage = () => {
 
       // Temporarily disable snap to prevent "fighting" the programmatic scroll
       container.style.scrollSnapType = "none";
-      
+
       container.scrollTo({
         left: itemWidth * index,
         behavior: smooth ? "smooth" : "auto",
@@ -214,7 +222,9 @@ const DashboardPage = () => {
           positionGroups.push({
             posName,
             emoji: posInfo?.emoji || "❓",
-            names: sortedAssignedUsers.map((u) => u.name || u.email || "Unknown"),
+            names: sortedAssignedUsers.map(
+              (u) => u.name || u.email || "Unknown",
+            ),
           });
         });
 
@@ -358,7 +368,8 @@ const DashboardPage = () => {
   const isPast = currentEventDate && currentEventDate < todayKey;
   const pageTitle = isPast ? "Previous Event" : "Upcoming Events";
 
-  const isSuperAdmin = userData?.isAdmin && userData?.email === import.meta.env.VITE_ADMIN_EMAIL;
+  const isSuperAdmin =
+    userData?.isAdmin && userData?.email === import.meta.env.VITE_ADMIN_EMAIL;
 
   const formatDate = (dateStr: string) => {
     // Treat string as UTC midnight to prevent display shifts
@@ -397,7 +408,7 @@ const DashboardPage = () => {
                   }
                   title="Copy to clipboard"
                 >
-                  📋 Copy
+                  <CopyIcon size={16} /> Copy
                 </button>
               )}
             </div>
@@ -439,7 +450,10 @@ const DashboardPage = () => {
               <button className="migration-btn" onClick={() => runMigration(1)}>
                 Shift +1 Day
               </button>
-              <button className="migration-btn" onClick={() => runMigration(-1)}>
+              <button
+                className="migration-btn"
+                onClick={() => runMigration(-1)}
+              >
                 Shift -1 Day
               </button>
             </>
@@ -515,3 +529,4 @@ const DashboardPage = () => {
 };
 
 export default DashboardPage;
+
