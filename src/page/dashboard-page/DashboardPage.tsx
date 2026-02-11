@@ -45,6 +45,8 @@ const DashboardPage = () => {
   const [teamUsers, setTeamUsers] = useState<AppUser[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [currentDateIndex, setCurrentDateIndex] = useState(0);
+  const [containerWidth, setContainerWidth] = useState(0);
+  const [isInitialized, setIsInitialized] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const hasInitialScrolled = useRef(false);
 
@@ -53,6 +55,24 @@ const DashboardPage = () => {
   useEffect(() => {
     dispatch(fetchRosterEntries());
   }, [dispatch]);
+
+  // Use ResizeObserver to detect when the container has a width
+  useEffect(() => {
+    const container = scrollRef.current;
+    if (!container) return;
+
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const width = entry.contentRect.width;
+        if (width > 0) {
+          setContainerWidth(width);
+        }
+      }
+    });
+
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, [loadingRoster, loadingUsers]);
 
   const rosterDates = useMemo(() => {
     const todayKey = getTodayKey();
@@ -92,12 +112,18 @@ const DashboardPage = () => {
 
   // Handle deep-linking and tab-reclick resets
   useEffect(() => {
-    if (rosterDates.length === 0 || !scrollRef.current || loadingRoster) return;
+    if (
+      rosterDates.length === 0 ||
+      !scrollRef.current ||
+      loadingRoster ||
+      containerWidth === 0
+    )
+      return;
 
     const container = scrollRef.current;
 
     const performScroll = (index: number, smooth: boolean) => {
-      const itemWidth = container.offsetWidth;
+      const itemWidth = container.offsetWidth || containerWidth;
       if (itemWidth === 0) return; // Wait for layout
 
       // Temporarily disable snap to prevent "fighting" the programmatic scroll
@@ -113,6 +139,7 @@ const DashboardPage = () => {
         if (container) {
           container.style.scrollSnapType = "x mandatory";
         }
+        setIsInitialized(true);
       }, 50);
 
       setCurrentDateIndex(index);
@@ -123,7 +150,7 @@ const DashboardPage = () => {
       const index = rosterDates.findIndex((d) => d === targetDate);
       if (index >= 0) {
         const currentScrollIndex = Math.round(
-          container.scrollLeft / (container.offsetWidth || 1),
+          container.scrollLeft / (container.offsetWidth || containerWidth || 1),
         );
 
         if (!hasInitialScrolled.current || currentScrollIndex !== index) {
@@ -131,16 +158,22 @@ const DashboardPage = () => {
           requestAnimationFrame(() => {
             performScroll(index, hasInitialScrolled.current);
           });
+        } else {
+          setIsInitialized(true);
         }
+      } else {
+        setIsInitialized(true);
       }
     } else {
       // Re-click or fresh load with no date: scroll to start
       if (container.scrollLeft !== 0) {
         performScroll(0, true);
+      } else {
+        setIsInitialized(true);
       }
       hasInitialScrolled.current = true;
     }
-  }, [targetDate, rosterDates, loadingRoster]);
+  }, [targetDate, rosterDates, loadingRoster, containerWidth]);
 
   const handleClearDate = () => {
     setSearchParams({}, { replace: true });
@@ -461,7 +494,13 @@ const DashboardPage = () => {
         </div>
       </div>
 
-      <div className="carousel-outer-wrapper">
+      <div
+        className="carousel-outer-wrapper"
+        style={{
+          opacity: isInitialized ? 1 : 0,
+          transition: "opacity 0.3s ease-in-out",
+        }}
+      >
         <div
           className="events-carousel-track"
           ref={scrollRef}
