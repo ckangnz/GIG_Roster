@@ -348,17 +348,21 @@ th.gender-divider-cell {
   background-color: var(--background-body);
 }
 
+.closest-next-date-row,
 .today-date {
   background-color: var(--background-primary-subtle);
 }
 
+.closest-next-date-row .sticky-col,
 .today-date .sticky-col {
   background-color: var(--background-primary-subtle);
   color: var(--color-link);
   font-weight: bold;
 }
 
-.today-date td {
+.closest-next-date-row td:not(.peek-cell),
+.today-date td:not(.peek-cell) {
+  color: var(--color-link) !important;
   border-bottom: 1px solid var(--color-link);
   border-top: 1px solid var(--color-link);
 }
@@ -399,7 +403,18 @@ th.gender-divider-cell {
 .special-event-dot {
   width: 8px;
   height: 8px;
-  background-color: #ff9800;
+  background-color: var(--color-warning-light);
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 8px; /* Changed from margin-left to margin-right for left positioning */
+  flex-shrink: 0;
+  box-shadow: 0 0 4px #ff9800;
+}
+
+.roster-today-dot {
+  width: 8px;
+  height: 8px;
+  background-color: var(--color-link);
   border-radius: 50%;
   display: inline-block;
   margin-right: 8px; /* Changed from margin-left to margin-right for left positioning */
@@ -490,7 +505,7 @@ th.gender-divider-cell {
 .date-cell.clickable {
   cursor: pointer;
   transition: all 0.2s;
-  color: var(--color-link);
+  color: var(--color-text-primary);
   font-weight: 600;
 }
 
@@ -708,6 +723,11 @@ th.gender-divider-cell {
     border-radius: 12px;
     border: 1px solid var(--border-color-secondary);
     width: auto;
+  }
+
+  .app-shell .dashboard-container .roster-save-footer {
+    left: 90px;
+    right: 90px;
   }
 
   .app-shell.sidebar-collapsed .roster-save-footer {

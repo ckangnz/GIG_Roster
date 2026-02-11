@@ -451,7 +451,7 @@ const DashboardPage = () => {
                 <div className="event-name-container">
                   <input
                     type="text"
-                    className="dashboard-event-name-input"
+                    className={`dashboard-event-name-input ${eventName ? "dashboard-event-name-input--has-event" : ""}`}
                     placeholder="Event name (e.g. Easter Sunday)"
                     value={eventName}
                     onChange={(e) =>
@@ -460,7 +460,12 @@ const DashboardPage = () => {
                     disabled={index !== currentDateIndex}
                   />
                 </div>
-                <div className="event-card-date">{formatDate(dateStr)}</div>
+                <div className="event-card-date">
+                  {formatDate(dateStr)}
+                  {dateStr === todayKey && (
+                    <span className="dashboard-today-badge">TODAY</span>
+                  )}
+                </div>
                 {renderTeamCards(dateStr, index !== currentDateIndex)}
               </div>
             );

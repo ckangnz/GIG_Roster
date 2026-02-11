@@ -550,6 +550,26 @@ const RosterTable = () => {
   if (!isAbsenceView && sortedUsers.length === 0) {
     return (
       <div className="roster-table-loading">
+        {!isAbsenceView && hiddenUserList.length > 0 && (
+          <div className="hidden-members-bar">
+            <span className="hidden-members-label">Hidden Members:</span>
+            <div className="hidden-members-list">
+              {hiddenUserList.map((email) => {
+                const user = users.find((u) => u.email === email);
+                return (
+                  <button
+                    key={email}
+                    className="unhide-pill"
+                    onClick={() => handleToggleVisibility(email)}
+                    title="Click to unhide"
+                  >
+                    {user?.name || email} <span>+</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
         No users found for this position.
       </div>
     );
@@ -612,15 +632,20 @@ const RosterTable = () => {
                       {genderDividerIndex === colIndex && (
                         <th className="gender-divider-cell sticky-header" />
                       )}
-                                            <th
-                                              className={`roster-table-header-cell sticky-header clickable-header ${
-                                                user.email && assignedOnClosestDate.includes(user.email) ? 'highlighted-header' : ''
-                                              }`}
-                                              onClick={() => user.email && handleToggleVisibility(user.email)}
-                                              title="Click to hide member"
-                                            >
-                                              {user.name}
-                      
+                      <th
+                        className={`roster-table-header-cell sticky-header clickable-header ${
+                          user.email &&
+                          assignedOnClosestDate.includes(user.email)
+                            ? "highlighted-header"
+                            : ""
+                        }`}
+                        onClick={() =>
+                          user.email && handleToggleVisibility(user.email)
+                        }
+                        title="Click to hide member"
+                      >
+                        {user.name}
+
                         {currentPosition?.sortByGender && (
                           <span className="gender-label">
                             (
@@ -677,12 +702,12 @@ const RosterTable = () => {
                       >
                         <div className="date-cell-content">
                           {eventName && <span className="special-event-dot" />}
+                          {isToday && (
+                            <span className="roster-today-dot" title="Today" />
+                          )}
                           {new Date(
                             dateString.replace(/-/g, "/"),
                           ).toLocaleDateString()}
-                          {isToday && (
-                            <span className="today-badge">TODAY</span>
-                          )}
                         </div>
                       </td>
                       {sortedUsers.map((user, colIndex) => {
@@ -710,7 +735,9 @@ const RosterTable = () => {
                               className={`roster-cell ${!disabled ? "clickable" : "disabled"} ${
                                 isFocused ? "focused" : ""
                               } ${absent ? "absent-strike" : ""} ${
-                                isAssignedOnClosestDate ? "highlighted-cell" : ""
+                                isAssignedOnClosestDate
+                                  ? "highlighted-cell"
+                                  : ""
                               }`}
                               onClick={() => {
                                 if (user.email && !disabled) {
@@ -793,17 +820,19 @@ const RosterTable = () => {
                       </div>
                     </div>
                   </th>
-                                    {allTeamUsers.map((user) => (
-                                      <th
-                                        key={user.email}
-                                        className={`roster-table-header-cell sticky-header ${
-                                          user.email && assignedOnClosestDate.includes(user.email) ? 'highlighted-header' : ''
-                                        }`}
-                                      >
-                                        {user.name}
-                                      </th>
-                                    ))}
-                  
+                  {allTeamUsers.map((user) => (
+                    <th
+                      key={user.email}
+                      className={`roster-table-header-cell sticky-header ${
+                        user.email && assignedOnClosestDate.includes(user.email)
+                          ? "highlighted-header"
+                          : ""
+                      }`}
+                    >
+                      {user.name}
+                    </th>
+                  ))}
+
                   <th className="gender-divider-cell sticky-header" />
                   <th className="roster-table-header-cell sticky-header sticky-right peek-header">
                     <select
@@ -850,7 +879,7 @@ const RosterTable = () => {
                             dateString.replace(/-/g, "/"),
                           ).toLocaleDateString()}
                           {isToday && (
-                            <span className="today-badge">TODAY</span>
+                            <span className="roster-today-dot" title="Today" />
                           )}
                         </div>
                       </td>
