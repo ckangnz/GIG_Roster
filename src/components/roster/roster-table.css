@@ -74,7 +74,6 @@
   flex-direction: column;
   flex: 1;
   position: relative;
-  padding-bottom: 120px; /* Base (Mobile): Space for footer and load button */
 }
 
 .load-more-footer {
@@ -317,10 +316,6 @@ th.gender-divider-cell {
 .unhide-pill span {
   font-weight: bold;
   font-size: 1rem;
-}
-
-.roster-section {
-  margin-bottom: 3rem;
 }
 
 .section-title {
@@ -665,10 +660,6 @@ th.gender-divider-cell {
 
   .unhide-pill span {
     font-size: 1rem;
-  }
-
-  .roster-section {
-    margin-bottom: 3rem;
   }
 
   .section-title {
