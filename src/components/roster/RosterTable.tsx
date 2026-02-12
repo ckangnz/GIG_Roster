@@ -77,7 +77,7 @@ const RosterTable = () => {
 
   const sortedUsers = useMemo(() => {
     const list = users.filter(
-      (u) => u.email && !hiddenUserList.includes(u.email),
+      (u) => u.email && !hiddenUserList.includes(u.email) && u.isActive,
     );
     if (currentPosition?.sortByGender) {
       return list.sort((a, b) => {
