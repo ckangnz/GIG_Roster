@@ -192,6 +192,10 @@
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 
+.team-event-card .theme-toggle-button {
+  display: none;
+}
+
 .team-event-header {
   display: flex;
   justify-content: space-between;
@@ -313,6 +317,10 @@
     padding: 1.2rem;
   }
 
+  .team-event-card .theme-toggle-button {
+    display: flex;
+  }
+
   .pos-emoji-label {
     font-size: 1.3rem;
     min-width: 30px;
@@ -334,7 +342,7 @@
   .dashboard-container {
     max-width: 1000px;
   }
-  
+
   .dashboard-header h1 {
     font-size: 1.8rem;
   }
