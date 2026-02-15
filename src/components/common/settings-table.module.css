@@ -1,4 +1,4 @@
-.app-table-container {
+.appTableContainer {
   width: 100%;
   max-width: 100%;
   overflow-x: auto;
@@ -8,7 +8,7 @@
   box-sizing: border-box;
 }
 
-.app-table {
+.appTable {
   width: 100%;
   border-collapse: collapse;
   border-spacing: 0;
@@ -16,7 +16,7 @@
   color: var(--color-text-primary);
 }
 
-.app-table th {
+.appTable th {
   background: var(--background-table-header);
   padding: 12px 8px;
   text-align: left;
@@ -28,23 +28,23 @@
   white-space: nowrap;
 }
 
-.app-table td {
+.appTable td {
   padding: 8px;
   border-bottom: 1px solid var(--border-color-table);
   vertical-align: top;
 }
 
-.app-table td.color-picker-group {
+.appTable td.colorPickerGroup {
   display: flex;
   align-items: center;
   background: transparent;
 }
 
-.app-table tbody tr:last-child td {
+.appTable tbody tr:last-child td {
   border-bottom: none;
 }
 
-.sticky-col {
+.stickyCol {
   position: sticky;
   left: 0;
   background: var(--background-card);
@@ -52,7 +52,7 @@
   border-right: 2px solid var(--border-color-secondary);
 }
 
-th.sticky-col {
+.appTable th.stickyCol {
   background: var(--background-table-header);
   z-index: 20;
 }

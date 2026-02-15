@@ -524,72 +524,6 @@ th.gender-divider-cell {
   text-decoration: none !important;
 }
 
-/* Save Footer */
-.roster-save-footer {
-  position: fixed;
-  bottom: calc(80px + env(safe-area-inset-bottom, 0px));
-  left: 0;
-  right: 0;
-  background: var(--background-card);
-  border-top: 1px solid var(--border-color-secondary);
-  padding: 1rem 2rem;
-  box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.3);
-  z-index: 100;
-  animation: slideUp 0.3s ease-out;
-}
-
-@keyframes slideUp {
-  from {
-    transform: translateY(100%);
-  }
-  to {
-    transform: translateY(0);
-  }
-}
-
-.save-footer-content {
-  max-width: 1200px;
-  margin: 0 auto;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-}
-
-.changes-label {
-  color: var(--color-text-secondary);
-  font-weight: 500;
-}
-
-.save-footer-actions {
-  display: flex;
-  gap: 12px;
-}
-
-.save-btn {
-  background: var(--color-link);
-  color: white;
-  border: none;
-  padding: 10px 24px;
-  border-radius: 8px;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.save-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.cancel-btn {
-  background: transparent;
-  color: var(--color-text-dim);
-  border: 1px solid var(--border-color-input);
-  padding: 10px 20px;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
 /* Tablet and Desktop Styles */
 @media (min-width: 768px) {
   .roster-table th {
@@ -714,23 +648,5 @@ th.gender-divider-cell {
     right: 0;
     z-index: 30;
     border-left: 2px solid var(--border-color-secondary) !important;
-  }
-
-  .roster-save-footer {
-    left: 280px;
-    bottom: 84px;
-    right: 20px;
-    border-radius: 12px;
-    border: 1px solid var(--border-color-secondary);
-    width: auto;
-  }
-
-  .app-shell .dashboard-container .roster-save-footer {
-    left: 90px;
-    right: 90px;
-  }
-
-  .app-shell.sidebar-collapsed .roster-save-footer {
-    left: 90px;
   }
 }

@@ -1,13 +1,20 @@
 import { Sun, Moon } from "lucide-react";
 
 import { useTheme } from "../../hooks/useThemeHook";
-import "./theme-toggle-button.css";
 
-const ThemeToggleButton = ({ showText }: { showText?: boolean }) => {
+import styles from "./theme-toggle-button.module.css";
+
+const ThemeToggleButton = ({
+  showText,
+  className,
+}: {
+  showText?: boolean;
+  className?: string;
+}) => {
   const { theme, toggleTheme } = useTheme();
   return (
     <button
-      className="theme-toggle-button"
+      className={`${styles.themeToggleButton} ${className || ""}`}
       onClick={toggleTheme}
       aria-label="Toggle theme"
     >

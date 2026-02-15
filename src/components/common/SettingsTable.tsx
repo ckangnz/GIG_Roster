@@ -1,5 +1,6 @@
 import { CornerDownRight } from "lucide-react";
-import "./settings-table.css";
+
+import styles from "./settings-table.module.css";
 
 interface SettingsTableHeaderProps {
   text: string;
@@ -18,7 +19,7 @@ export const SettingsTableHeader = ({
 }: SettingsTableHeaderProps) => {
   return (
     <th
-      className={isSticky ? "sticky-col" : undefined}
+      className={isSticky ? styles.stickyCol : undefined}
       style={{
         textAlign: textAlign,
         width: width ? `${width}px` : "auto",
@@ -45,7 +46,7 @@ export const SettingsTableAnyCell = ({
     style={{
       textAlign: textAlign,
     }}
-    className={`${className ? className : ""} ${isSticky ? "sticky-col" : ""}
+    className={`${className ? className : ""} ${isSticky ? styles.stickyCol : ""}
 `}
   >
     {children}
@@ -96,7 +97,7 @@ export const SettingsTableColourInputCell = ({
   placeholder?: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }) => (
-  <SettingsTableAnyCell className="color-picker-group">
+  <SettingsTableAnyCell className={styles.colorPickerGroup}>
     <input
       name={name}
       type="color"
@@ -120,8 +121,8 @@ interface SettingsTableProps {
 
 const SettingsTable = ({ headers, children }: SettingsTableProps) => {
   return (
-    <div className="app-table-container">
-      <table className="app-table">
+    <div className={styles.appTableContainer}>
+      <table className={styles.appTable}>
         <thead>
           <tr>
             {headers.map((headerProps, i) => (

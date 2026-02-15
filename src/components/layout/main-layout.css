@@ -15,7 +15,6 @@
   animation: fadeIn 0.3s ease-in-out;
   display: flex;
   flex-direction: column;
-  padding-bottom: 110px;
 }
 
 .content-container {
@@ -28,10 +27,6 @@
 @media (min-width: 768px) {
   .app-shell {
     flex-direction: row;
-  }
-
-  .main-content {
-    padding-bottom: 0;
   }
 
   .content-container {

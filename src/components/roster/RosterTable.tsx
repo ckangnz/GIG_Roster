@@ -20,6 +20,7 @@ import {
   loadNextYearDates,
 } from "../../store/slices/rosterViewSlice";
 import { toggleUserVisibility } from "../../store/slices/uiSlice";
+import SaveFooter from "../common/SaveFooter";
 import Spinner from "../common/Spinner";
 import "./roster-table.css";
 
@@ -990,27 +991,12 @@ const RosterTable = () => {
       )}
 
       {hasDirtyChanges && (
-        <div className="roster-save-footer">
-          <div className="save-footer-content">
-            <span className="changes-label">You have unsaved changes</span>
-            <div className="save-footer-actions">
-              <button
-                className="cancel-btn"
-                onClick={handleCancel}
-                disabled={saving}
-              >
-                Discard
-              </button>
-              <button
-                className="save-btn"
-                onClick={handleSave}
-                disabled={saving}
-              >
-                {saving ? "Saving..." : "Save Roster"}
-              </button>
-            </div>
-          </div>
-        </div>
+        <SaveFooter
+          onSave={handleSave}
+          onCancel={handleCancel}
+          isSaving={saving}
+          saveText="Save Roster"
+        />
       )}
     </div>
   );

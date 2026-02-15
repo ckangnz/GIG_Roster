@@ -8,63 +8,10 @@
   box-sizing: border-box;
 }
 
-.settings-footer {
-  position: fixed;
-  bottom: calc(80px + env(safe-area-inset-bottom, 0px));
-  left: 16px;
-  right: 16px;
-  z-index: 100;
-  display: flex;
-  justify-content: center;
-  padding: 12px;
-  box-sizing: border-box;
-  background: var(--background-card);
-  border: 1px solid var(--border-color-secondary);
-  border-radius: 12px;
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.2);
-  pointer-events: auto;
-}
-
-.settings-footer .save-button {
-  width: 100%; /* Base (Mobile): Full width touch target */
-  padding: 12px 24px;
-  border-radius: 8px;
-  border: none;
-  background: var(--color-link);
-  color: white;
-  font-weight: 700;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  transition: all 0.2s;
-  cursor: pointer;
-}
-
-.settings-footer .save-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
-}
-
 /* Tablet and Desktop Styles */
 @media (min-width: 768px) {
   .settings-container {
     width: 100%;
     padding-bottom: 0;
-  }
-
-  .settings-footer {
-    /* Desktop: Relative position at the end of the content */
-    position: relative;
-    bottom: auto;
-    left: auto;
-    right: auto;
-    background: transparent;
-    border: none;
-    border-radius: 0;
-    box-shadow: none;
-    padding: 20px 16px;
-    justify-content: flex-start;
-  }
-
-  .settings-footer .save-button {
-    width: auto; /* Desktop: Natural width */
   }
 }

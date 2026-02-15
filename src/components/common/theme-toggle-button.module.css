@@ -1,4 +1,4 @@
-.theme-toggle-button {
+.themeToggleButton {
   border: none;
   background: transparent;
   color: var(--color-text-primary);
@@ -10,7 +10,7 @@
   gap: 16px;
 }
 
-.theme-toggle-button:hover {
+.themeToggleButton:hover {
   color: var(--color-text-muted);
   background: transparent;
   transform: translateY(0);

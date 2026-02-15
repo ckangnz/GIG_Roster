@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 
 import Pill, { PillGroup } from '../../components/common/Pill';
+import SaveFooter from '../../components/common/SaveFooter';
 import { auth } from '../../firebase';
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
 import { updateUserProfile } from '../../store/slices/authSlice';
@@ -20,6 +21,25 @@ const ProfileSettings = () => {
   );
   const [status, setStatus] = useState('idle');
 
+  const hasChanges = useMemo(() => {
+    if (!userData) return false;
+    const currentData = {
+      name,
+      gender,
+      isActive,
+      teams: selectedTeams,
+      teamPositions,
+    };
+    const originalData = {
+      name: userData.name || '',
+      gender: userData.gender || '',
+      isActive: userData.isActive ?? true,
+      teams: userData.teams || [],
+      teamPositions: userData.teamPositions || {},
+    };
+    return JSON.stringify(currentData) !== JSON.stringify(originalData);
+  }, [name, gender, isActive, selectedTeams, teamPositions, userData]);
+
   const handleSave = async () => {
     if (!firebaseUser) return;
     setStatus('saving');
@@ -38,6 +58,15 @@ const ProfileSettings = () => {
       console.error(e);
       setStatus('idle');
     }
+  };
+
+  const handleCancel = () => {
+    if (!userData) return;
+    setName(userData.name || '');
+    setGender(userData.gender || '');
+    setIsActive(userData.isActive ?? true);
+    setSelectedTeams(userData.teams || []);
+    setTeamPositions(userData.teamPositions || {});
   };
 
   const toggleTeam = (teamName: string) => {
@@ -181,21 +210,20 @@ const ProfileSettings = () => {
       </div>
 
       <div className="action-container">
-        <button
-          onClick={handleSave}
-          disabled={status !== 'idle'}
-          className={`save-button ${status}`}
-        >
-          {status === 'saving'
-            ? 'Saving...'
-            : status === 'success'
-            ? 'Done ✓'
-            : 'Update Profile'}
-        </button>
         <button onClick={() => auth.signOut()} className="logout-btn">
           Logout
         </button>
       </div>
+
+      {hasChanges && (
+        <SaveFooter
+          label="Unsaved profile changes"
+          saveText="Update Profile"
+          onSave={handleSave}
+          onCancel={handleCancel}
+          isSaving={status === 'saving'}
+        />
+      )}
     </section>
   );
 };

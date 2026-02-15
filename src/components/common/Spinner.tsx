@@ -1,14 +1,14 @@
-import './spinner.css';
+import styles from './spinner.module.css';
 
 interface SpinnerProps {
   container?: boolean;
 }
 
 const Spinner = ({ container = true }: SpinnerProps) => {
-  const spinner = <div className="spinner" />;
+  const spinner = <div className={styles.spinner} />;
 
   if (container) {
-    return <div className="spinner-container">{spinner}</div>;
+    return <div className={styles.spinnerContainer}>{spinner}</div>;
   }
 
   return spinner;

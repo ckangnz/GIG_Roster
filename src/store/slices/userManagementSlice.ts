@@ -14,6 +14,7 @@ type AppUserWithId = AppUser & { id: string };
 
 interface UserManagementState {
   allUsers: AppUserWithId[];
+  originalUsers: AppUserWithId[];
   loading: boolean;
   saving: boolean;
   error: string | null;
@@ -21,6 +22,7 @@ interface UserManagementState {
 
 const initialState: UserManagementState = {
   allUsers: [],
+  originalUsers: [],
   loading: false,
   saving: false,
   error: null,
@@ -132,6 +134,9 @@ const userManagementSlice = createSlice({
         user.teamPositions[teamName] = newPos;
       }
     },
+    resetUserChanges(state) {
+      state.allUsers = JSON.parse(JSON.stringify(state.originalUsers));
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -143,6 +148,7 @@ const userManagementSlice = createSlice({
         fetchAllUsers.fulfilled,
         (state, action: PayloadAction<AppUserWithId[]>) => {
           state.allUsers = action.payload;
+          state.originalUsers = JSON.parse(JSON.stringify(action.payload));
           state.loading = false;
         },
       )
@@ -156,6 +162,7 @@ const userManagementSlice = createSlice({
       })
       .addCase(saveAllUserChanges.fulfilled, (state) => {
         state.saving = false;
+        state.originalUsers = JSON.parse(JSON.stringify(state.allUsers));
       })
       .addCase(saveAllUserChanges.rejected, (state, action) => {
         state.error = action.payload as string;
@@ -168,5 +175,6 @@ export const {
   updateUserField,
   toggleUserTeam,
   toggleUserTeamPosition,
+  resetUserChanges,
 } = userManagementSlice.actions;
 export const userManagementReducer = userManagementSlice.reducer;

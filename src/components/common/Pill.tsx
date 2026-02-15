@@ -2,7 +2,7 @@ import { useState } from "react";
 
 import { ChevronUp } from "lucide-react";
 
-import "./pill.css";
+import styles from "./pill.module.css";
 
 interface PillProps {
   colour?: string;
@@ -21,7 +21,7 @@ export const PillGroup = ({
   children: React.ReactNode;
   nowrap?: boolean;
 }) => (
-  <div className={`pill-group ${nowrap ? "pill-group-nowrap" : ""}`}>
+  <div className={`${styles.pillGroup} ${nowrap ? styles.pillGroupNowrap : ""}`}>
     {children}
   </div>
 );
@@ -45,7 +45,7 @@ const Pill = ({
 
   return (
     <div
-      className={`pill pill--text ${isActive ? "pill-active" : ""} ${isDisabled ? "pill-disabled" : ""}`}
+      className={`${styles.pill} ${styles.pillText} ${isActive ? styles.pillActive : ""} ${isDisabled ? styles.pillDisabled : ""}`}
       style={
         {
           "--pill-colour": colour ? colour : "var(--color-link)",

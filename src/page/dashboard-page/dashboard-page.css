@@ -192,7 +192,7 @@
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 
-.team-event-card .theme-toggle-button {
+.team-event-card .dashboard-theme-toggle {
   display: none;
 }
 
@@ -317,7 +317,7 @@
     padding: 1.2rem;
   }
 
-  .team-event-card .theme-toggle-button {
+  .team-event-card .dashboard-theme-toggle {
     display: flex;
   }
 

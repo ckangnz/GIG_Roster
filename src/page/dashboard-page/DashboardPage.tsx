@@ -4,6 +4,7 @@ import { collection, query, where, getDocs } from "firebase/firestore";
 import { CopyIcon } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 
+import SaveFooter from "../../components/common/SaveFooter";
 import Spinner from "../../components/common/Spinner";
 import ThemeToggleButton from "../../components/common/ThemeToggleButton";
 import { db } from "../../firebase";
@@ -373,7 +374,7 @@ const DashboardPage = () => {
                 <div
                   style={{ display: "flex", alignItems: "center", gap: "8px" }}
                 >
-                  <ThemeToggleButton />
+                  <ThemeToggleButton className="dashboard-theme-toggle" />
                   <button
                     className="copy-roster-btn"
                     onClick={() =>
@@ -479,27 +480,14 @@ const DashboardPage = () => {
       </div>
 
       {hasDirtyChanges && (
-        <div className="roster-save-footer">
-          <div className="save-footer-content">
-            <span className="changes-label">Unsaved event labels</span>
-            <div className="save-footer-actions">
-              <button
-                className="cancel-btn"
-                onClick={handleCancel}
-                disabled={saving}
-              >
-                Discard
-              </button>
-              <button
-                className="save-btn"
-                onClick={handleSave}
-                disabled={saving}
-              >
-                {saving ? "Saving..." : "Save Changes"}
-              </button>
-            </div>
-          </div>
-        </div>
+        <SaveFooter
+          label="Unsaved event labels"
+          saveText="Save Changes"
+          onSave={handleSave}
+          onCancel={handleCancel}
+          isSaving={saving}
+          hasSideNav={false}
+        />
       )}
     </div>
   );

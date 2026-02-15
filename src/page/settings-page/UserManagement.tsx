@@ -1,20 +1,26 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 
 import UserManagementRow from "./UserManagementRow";
+import SaveFooter from "../../components/common/SaveFooter";
 import SettingsTable from "../../components/common/SettingsTable";
 import Spinner from "../../components/common/Spinner";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import {
   fetchAllUsers,
   saveAllUserChanges,
+  resetUserChanges,
 } from "../../store/slices/userManagementSlice";
 
 const UserManagement = () => {
   const dispatch = useAppDispatch();
-  const { allUsers, loading, saving, error } = useAppSelector(
+  const { allUsers, originalUsers, loading, saving, error } = useAppSelector(
     (state) => state.userManagement,
   );
   const availableTeams = useAppSelector((state) => state.teams.teams);
+
+  const hasChanges = useMemo(() => {
+    return JSON.stringify(allUsers) !== JSON.stringify(originalUsers);
+  }, [allUsers, originalUsers]);
 
   useEffect(() => {
     dispatch(fetchAllUsers());
@@ -22,6 +28,10 @@ const UserManagement = () => {
 
   const handleSaveChanges = () => {
     dispatch(saveAllUserChanges(allUsers));
+  };
+
+  const handleCancelChanges = () => {
+    dispatch(resetUserChanges());
   };
 
   if (loading) {
@@ -56,15 +66,15 @@ const UserManagement = () => {
         ))}
       </SettingsTable>
 
-      <div className="settings-footer">
-        <button
-          className={`save-button ${saving ? "saving" : ""}`}
-          onClick={handleSaveChanges}
-          disabled={saving}
-        >
-          {saving ? "Saving Changes..." : "Save All User Changes"}
-        </button>
-      </div>
+      {hasChanges && (
+        <SaveFooter
+          label="Unsaved user changes"
+          saveText="Save All User Changes"
+          onSave={handleSaveChanges}
+          onCancel={handleCancelChanges}
+          isSaving={saving}
+        />
+      )}
     </>
   );
 };
