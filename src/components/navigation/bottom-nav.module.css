@@ -13,7 +13,6 @@
   width: 100%;
   max-width: 600px;
   justify-content: space-around;
-  padding: 8px 0;
 }
 
 .bottomNavBtn {
@@ -30,6 +29,7 @@
   outline: none;
   -webkit-tap-highlight-color: transparent;
   height: auto;
+  padding: 16px 8px;
 }
 
 @media (hover: hover) {
