@@ -1,25 +1,44 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from "react";
 
-import Pill, { PillGroup } from '../../components/common/Pill';
-import SaveFooter from '../../components/common/SaveFooter';
-import { auth } from '../../firebase';
-import { useAppDispatch, useAppSelector } from '../../hooks/redux';
-import { updateUserProfile } from '../../store/slices/authSlice';
-import './profile-settings.css';
+import Pill, { PillGroup } from "../../components/common/Pill";
+import SaveFooter from "../../components/common/SaveFooter";
+import { auth } from "../../firebase";
+import { useAppDispatch, useAppSelector } from "../../hooks/redux";
+import { updateUserProfile } from "../../store/slices/authSlice";
+import { fetchPositions } from "../../store/slices/positionsSlice";
+import { fetchTeams } from "../../store/slices/teamsSlice";
 
-const ProfileSettings = () => {
+import styles from "./profile-settings.module.css";
+
+const ProfileSettings = ({ className }: { className?: string }) => {
   const dispatch = useAppDispatch();
   const { userData, firebaseUser } = useAppSelector((state) => state.auth);
-  const availableTeams = useAppSelector((state) => state.teams.teams);
+  const { teams: availableTeams, fetched: teamsFetched } = useAppSelector(
+    (state) => state.teams,
+  );
+  const { fetched: positionsFetched } = useAppSelector(
+    (state) => state.positions,
+  );
 
-  const [name, setName] = useState(userData?.name || '');
-  const [gender, setGender] = useState(userData?.gender || '');
+  const [name, setName] = useState(userData?.name || "");
+  const [gender, setGender] = useState(userData?.gender || "");
   const [isActive, setIsActive] = useState(userData?.isActive ?? true);
-  const [selectedTeams, setSelectedTeams] = useState<string[]>(userData?.teams || []);
+  const [selectedTeams, setSelectedTeams] = useState<string[]>(
+    userData?.teams || [],
+  );
   const [teamPositions, setTeamPositions] = useState<Record<string, string[]>>(
     userData?.teamPositions || {},
   );
-  const [status, setStatus] = useState('idle');
+  const [status, setStatus] = useState("idle");
+
+  useEffect(() => {
+    if (!teamsFetched) {
+      dispatch(fetchTeams());
+    }
+    if (!positionsFetched) {
+      dispatch(fetchPositions());
+    }
+  }, [dispatch, teamsFetched, positionsFetched]);
 
   const hasChanges = useMemo(() => {
     if (!userData) return false;
@@ -31,8 +50,8 @@ const ProfileSettings = () => {
       teamPositions,
     };
     const originalData = {
-      name: userData.name || '',
-      gender: userData.gender || '',
+      name: userData.name || "",
+      gender: userData.gender || "",
       isActive: userData.isActive ?? true,
       teams: userData.teams || [],
       teamPositions: userData.teamPositions || {},
@@ -42,7 +61,7 @@ const ProfileSettings = () => {
 
   const handleSave = async () => {
     if (!firebaseUser) return;
-    setStatus('saving');
+    setStatus("saving");
     try {
       const updateData = {
         name,
@@ -51,19 +70,21 @@ const ProfileSettings = () => {
         teams: selectedTeams,
         teamPositions,
       };
-      await dispatch(updateUserProfile({ uid: firebaseUser.uid, data: updateData })).unwrap();
-      setStatus('success');
-      setTimeout(() => setStatus('idle'), 2000);
+      await dispatch(
+        updateUserProfile({ uid: firebaseUser.uid, data: updateData }),
+      ).unwrap();
+      setStatus("success");
+      setTimeout(() => setStatus("idle"), 2000);
     } catch (e) {
       console.error(e);
-      setStatus('idle');
+      setStatus("idle");
     }
   };
 
   const handleCancel = () => {
     if (!userData) return;
-    setName(userData.name || '');
-    setGender(userData.gender || '');
+    setName(userData.name || "");
+    setGender(userData.gender || "");
     setIsActive(userData.isActive ?? true);
     setSelectedTeams(userData.teams || []);
     setTeamPositions(userData.teamPositions || {});
@@ -105,8 +126,8 @@ const ProfileSettings = () => {
   }
 
   return (
-    <section className="profile-card">
-      <div className="profile-readonly">
+    <section className={`${styles.profileCard} ${className || ""}`}>
+      <div className={styles.profileReadonly}>
         <p>
           <strong>Email:</strong> {userData.email}
         </p>
@@ -127,8 +148,8 @@ const ProfileSettings = () => {
         <label>Gender</label>
         <PillGroup>
           {[
-            { value: 'Male', colour: 'var(--color-male)' },
-            { value: 'Female', colour: 'var(--color-female)' },
+            { value: "Male", colour: "var(--color-male)" },
+            { value: "Female", colour: "var(--color-female)" },
           ].map((g: { value: string; colour: string }) => (
             <Pill
               key={g.value}
@@ -161,22 +182,24 @@ const ProfileSettings = () => {
       </div>
 
       {selectedTeams.length > 0 && (
-        <div className="team-positions-section">
-          <label className="section-label">Positions per Team</label>
+        <div className={styles.teamPositionsSection}>
+          <label className={styles.sectionLabel}>Positions per Team</label>
           {selectedTeams.map((teamName) => {
             const team = availableTeams.find((t) => t.name === teamName);
             if (!team) return null;
 
             return (
-              <div key={teamName} className="team-position-group">
-                <div className="team-position-header">
+              <div key={teamName} className={styles.teamPositionGroup}>
+                <div className={styles.teamPositionHeader}>
                   {team.emoji} {team.name}
                 </div>
                 <PillGroup>
                   {team.positions
                     ?.filter((pos) => !pos.parentId)
                     ?.map((pos) => {
-                      const isSelected = teamPositions[teamName]?.includes(pos.name);
+                      const isSelected = teamPositions[teamName]?.includes(
+                        pos.name,
+                      );
                       return (
                         <Pill
                           key={pos.name}
@@ -198,19 +221,21 @@ const ProfileSettings = () => {
       <div className="form-group">
         <label>Availability Status</label>
         <Pill
-          colour={isActive ? 'var(--color-success-dark)' : 'var(--color-warning-dark)'}
+          colour={
+            isActive ? "var(--color-success-dark)" : "var(--color-warning-dark)"
+          }
           onClick={() => setIsActive(!isActive)}
           isActive
         >
-          {isActive ? 'ACTIVE & AVAILABLE' : 'INACTIVE / AWAY'}
+          {isActive ? "ACTIVE & AVAILABLE" : "INACTIVE / AWAY"}
         </Pill>
         <p className="form-field-hint">
           Turn off if you want to be hidden from the roster.
         </p>
       </div>
 
-      <div className="action-container">
-        <button onClick={() => auth.signOut()} className="logout-btn">
+      <div className={styles.actionContainer}>
+        <button onClick={() => auth.signOut()} className={styles.logoutBtn}>
           Logout
         </button>
       </div>
@@ -221,7 +246,7 @@ const ProfileSettings = () => {
           saveText="Update Profile"
           onSave={handleSave}
           onCancel={handleCancel}
-          isSaving={status === 'saving'}
+          isSaving={status === "saving"}
         />
       )}
     </section>

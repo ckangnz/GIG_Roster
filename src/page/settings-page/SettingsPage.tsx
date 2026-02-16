@@ -2,11 +2,12 @@ import { useParams } from "react-router-dom";
 
 import PositionManagement from "./PositionManager";
 import ProfileSettings from "./ProfileSettings";
-import "./settings-page.css";
 import TeamManagement from "./TeamManagement";
 import UserManagement from "./UserManagement";
 import { SettingsSection } from "../../constants/navigation";
 import { useAppSelector } from "../../hooks/redux";
+
+import styles from "./settings-page.module.css";
 
 const SettingsPage = () => {
   const { userData } = useAppSelector((state) => state.auth);
@@ -15,7 +16,7 @@ const SettingsPage = () => {
   if (!userData) return null;
 
   return (
-    <div className="settings-container">
+    <div className={styles.settingsContainer}>
       {activeSection === SettingsSection.PROFILE && <ProfileSettings />}
 
       {activeSection === SettingsSection.USER_MANAGEMENT &&

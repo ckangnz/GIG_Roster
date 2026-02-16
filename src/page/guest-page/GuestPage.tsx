@@ -4,7 +4,8 @@ import ThemeToggleButton from "../../components/common/ThemeToggleButton";
 import { useAppSelector } from "../../hooks/redux";
 import LoadingPage from "../loading-page/LoadingPage";
 import ProfileSettings from "../settings-page/ProfileSettings";
-import "./guest-page.css";
+
+import styles from "./guest-page.module.css";
 
 const GuestPage = () => {
   const { userData, firebaseUser, loading } = useAppSelector(
@@ -26,16 +27,16 @@ const GuestPage = () => {
   }
 
   return (
-    <div className="guest-container">
-      <header className="guest-header">
-        <h2 className="brand-title">God is Good</h2>
-        <p className="pending-label">PENDING ADMIN APPROVAL</p>
-        <div className="guest-theme-toggle-container">
+    <div className={styles.guestContainer}>
+      <header className={styles.guestHeader}>
+        <h2 className={styles.brandTitle}>God is Good</h2>
+        <p className={styles.pendingLabel}>PENDING ADMIN APPROVAL</p>
+        <div className={styles.guestThemeToggleContainer}>
           <ThemeToggleButton />
         </div>
       </header>
 
-      <ProfileSettings />
+      <ProfileSettings className={styles.profileCardOverride} />
     </div>
   );
 };

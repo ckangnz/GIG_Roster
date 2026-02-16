@@ -1,4 +1,4 @@
-.profile-card {
+.profileCard {
   background: var(--background-card);
   padding: 24px;
   border-radius: 16px;
@@ -9,38 +9,38 @@
 }
 
 @media (min-width: 768px) {
-  .profile-card {
+  .profileCard {
     border: none;
     border-radius: 0;
-    height: 100vh;
+    /* Removed height: 100vh to fix guest page height issue */
   }
 }
 
-.profile-readonly {
+.profileReadonly {
   text-align: left;
   margin-bottom: 24px;
   padding-bottom: 20px;
   border-bottom: 1px solid var(--border-color-input);
 }
 
-.profile-readonly p {
+.profileReadonly p {
   margin: 8px 0;
   font-size: 0.95rem;
   color: var(--color-text-secondary);
 }
-.profile-readonly strong {
+.profileReadonly strong {
   color: var(--color-text-faded);
   font-size: 0.7rem;
   text-transform: uppercase;
 }
 
-.team-positions-section {
+.teamPositionsSection {
   margin-top: 24px;
   padding-top: 20px;
   border-top: 1px solid var(--border-color-input);
 }
 
-.section-label {
+.sectionLabel {
   display: block;
   font-size: 0.75rem;
   font-weight: 700;
@@ -50,11 +50,11 @@
   margin-bottom: 16px;
 }
 
-.team-position-group {
+.teamPositionGroup {
   margin-bottom: 24px;
 }
 
-.team-position-header {
+.teamPositionHeader {
   font-size: 0.9rem;
   font-weight: 600;
   color: var(--color-text-primary);
@@ -64,14 +64,14 @@
   gap: 8px;
 }
 
-.action-container {
+.actionContainer {
   margin-top: 20px;
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-.logout-btn {
+.logoutBtn {
   background: transparent;
   color: var(--color-error);
   padding: 12px;
@@ -80,7 +80,7 @@
 }
 
 @media (hover: hover) {
-  .logout-btn:hover {
+  .logoutBtn:hover {
     background: rgba(255, 70, 70, 0.1);
     color: var(--color-error);
     border-color: transparent;

@@ -11,6 +11,8 @@ import {
   resetUserChanges,
 } from "../../store/slices/userManagementSlice";
 
+import styles from "./settings-page.module.css";
+
 const UserManagement = () => {
   const dispatch = useAppDispatch();
   const { allUsers, originalUsers, loading, saving, error } = useAppSelector(
@@ -43,7 +45,7 @@ const UserManagement = () => {
   }
 
   return (
-    <>
+    <div className={styles.managementWrapper}>
       <SettingsTable
         headers={[
           { text: "Name", minWidth: 70, isSticky: true },
@@ -75,7 +77,7 @@ const UserManagement = () => {
           isSaving={saving}
         />
       )}
-    </>
+    </div>
   );
 };
 

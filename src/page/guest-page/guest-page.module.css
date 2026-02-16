@@ -1,0 +1,44 @@
+.guestContainer {
+  max-width: 600px;
+  margin: auto;
+  padding: 20px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+/* Override profile card styles when inside guest container */
+.profileCardOverride {
+  border-radius: 16px !important;
+  margin: 0 !important;
+  height: auto !important;
+  border: 1px solid var(--border-color-secondary) !important;
+}
+
+.guestHeader {
+  position: relative;
+  text-align: center;
+  flex-shrink: 0;
+  margin-bottom: 20px;
+}
+
+.brandTitle {
+  margin: 0;
+}
+
+.guestThemeToggleContainer {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+.pendingLabel {
+  color: orange;
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  margin-top: 8px;
+}

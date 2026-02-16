@@ -1,4 +1,4 @@
-.login-container {
+.loginContainer {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -9,11 +9,11 @@
   width: 100%;
 }
 
-.login-header {
+.loginHeader {
   margin-bottom: 3rem;
 }
 
-.brand-title {
+.brandTitle {
   font-size: 3rem;
   font-weight: 800;
   margin: 0;
@@ -21,7 +21,7 @@
   letter-spacing: -0.02em;
 }
 
-.brand-subtitle {
+.brandSubtitle {
   font-size: 1rem;
   font-weight: 500;
   margin-top: 0.5rem;
@@ -30,22 +30,27 @@
   letter-spacing: 0.15em;
 }
 
-.login-button-container {
+.loginButtonContainer {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-.login-button {
+.loginButton {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
   width: 280px;
   transition: transform 0.1s ease;
+  border-radius: 8px;
+  padding: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
 }
 
-.login-button:active {
+.loginButton:active {
   transform: scale(0.98);
 }
 
@@ -61,6 +66,6 @@
   border: 1px solid #333;
 }
 
-.apple-icon {
+.appleIcon {
   filter: invert(1);
 }

@@ -18,7 +18,7 @@ import {
 } from "../../store/slices/rosterSlice";
 import { getUpcomingDates } from "../../store/slices/rosterViewSlice";
 
-import "./dashboard-page.css";
+import styles from "./dashboard-page.module.css";
 
 const DashboardPage = () => {
   const dispatch = useAppDispatch();
@@ -334,7 +334,7 @@ const DashboardPage = () => {
 
   if (rosterDates.length === 0) {
     return (
-      <div className="dashboard-empty">
+      <div className={styles.dashboardEmpty}>
         <h2>No upcoming events found</h2>
         <p>You are not rostered for any upcoming team events.</p>
       </div>
@@ -362,21 +362,21 @@ const DashboardPage = () => {
     if (!data) return null;
 
     return (
-      <div className="team-cards-container">
+      <div className={styles.teamCardsContainer}>
         {data.map((teamData) => (
-          <div key={teamData.teamName} className="team-event-card">
-            <div className="team-event-header">
+          <div key={teamData.teamName} className={styles.teamEventCard}>
+            <div className={styles.teamEventHeader}>
               <h3>
-                <span className="team-card-emoji">{teamData.teamEmoji}</span>
-                <span className="team-card-name">{teamData.teamName}</span>
+                <span className={styles.teamCardEmoji}>{teamData.teamEmoji}</span>
+                <span className={styles.teamCardName}>{teamData.teamName}</span>
               </h3>
               {!isPeek && (
                 <div
                   style={{ display: "flex", alignItems: "center", gap: "8px" }}
                 >
-                  <ThemeToggleButton className="dashboard-theme-toggle" />
+                  <ThemeToggleButton className={styles.dashboardThemeToggle} />
                   <button
-                    className="copy-roster-btn"
+                    className={styles.copyRosterBtn}
                     onClick={() =>
                       handleCopy(
                         dateStr,
@@ -393,14 +393,14 @@ const DashboardPage = () => {
               )}
             </div>
 
-            <div className="team-event-details">
+            <div className={styles.teamEventDetails}>
               {teamData.positions.map((group) => (
-                <div key={group.posName} className="pos-assignment-row">
-                  <span className="pos-emoji-label" title={group.posName}>
+                <div key={group.posName} className={styles.posAssignmentRow}>
+                  <span className={styles.posEmojiLabel} title={group.posName}>
                     {group.emoji}
                   </span>
                   <span
-                    className={`assigned-names ${group.names.length === 0 ? "unassigned" : ""}`}
+                    className={`${styles.assignedNames} ${group.names.length === 0 ? styles.unassigned : ""}`}
                   >
                     {group.names.length > 0
                       ? group.names.join(", ")
@@ -416,12 +416,12 @@ const DashboardPage = () => {
   };
 
   return (
-    <div className="dashboard-container">
-      <div className="dashboard-header">
+    <div className={styles.dashboardContainer}>
+      <div className={styles.dashboardHeader}>
         <h1>{pageTitle}</h1>
-        <div className="dashboard-header-actions">
+        <div className={styles.dashboardHeaderActions}>
           {isPast && (
-            <button className="clear-past-btn" onClick={handleClearDate}>
+            <button className={styles.clearPastBtn} onClick={handleClearDate}>
               Reset to upcoming
             </button>
           )}
@@ -429,14 +429,14 @@ const DashboardPage = () => {
       </div>
 
       <div
-        className="carousel-outer-wrapper"
+        className={styles.carouselOuterWrapper}
         style={{
           opacity: isInitialized ? 1 : 0,
           transition: "opacity 0.3s ease-in-out",
         }}
       >
         <div
-          className="events-carousel-track"
+          className={styles.eventsCarouselTrack}
           ref={scrollRef}
           onScroll={handleScroll}
         >
@@ -448,12 +448,12 @@ const DashboardPage = () => {
             return (
               <div
                 key={dateStr}
-                className={`event-card-wrapper ${index === currentDateIndex ? "active" : "peek"}`}
+                className={`${styles.eventCardWrapper} ${index === currentDateIndex ? styles.active : styles.peek}`}
               >
-                <div className="event-name-container">
+                <div className={styles.eventNameContainer}>
                   <input
                     type="text"
-                    className={`dashboard-event-name-input ${eventName ? "dashboard-event-name-input--has-event" : ""}`}
+                    className={`${styles.dashboardEventNameInput} ${eventName ? styles.dashboardEventNameInputHasEvent : ""}`}
                     placeholder="Event name (e.g. Easter Sunday)"
                     value={eventName}
                     onChange={(e) =>
@@ -462,10 +462,10 @@ const DashboardPage = () => {
                     disabled={index !== currentDateIndex}
                   />
                 </div>
-                <div className="event-card-date">
+                <div className={styles.eventCardDate}>
                   {formatDate(dateStr)}
                   {dateStr === todayKey && (
-                    <span className="dashboard-today-badge">TODAY</span>
+                    <span className={styles.dashboardTodayBadge}>TODAY</span>
                   )}
                 </div>
                 {renderTeamCards(dateStr, index !== currentDateIndex)}
@@ -475,7 +475,7 @@ const DashboardPage = () => {
         </div>
       </div>
 
-      <div className="carousel-pagination">
+      <div className={styles.carouselPagination}>
         {currentDateIndex + 1} / {rosterDates.length}
       </div>
 

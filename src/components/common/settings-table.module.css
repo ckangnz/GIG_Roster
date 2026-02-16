@@ -10,7 +10,7 @@
 
 .appTable {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
   border-spacing: 0;
   table-layout: auto;
   color: var(--color-text-primary);
@@ -25,13 +25,20 @@
   text-transform: uppercase;
   letter-spacing: 1px;
   border-bottom: 1px solid var(--border-color-secondary);
+  border-right: 1px solid var(--border-color-secondary);
   white-space: nowrap;
 }
 
 .appTable td {
   padding: 8px;
   border-bottom: 1px solid var(--border-color-table);
+  border-right: 1px solid var(--border-color-secondary);
   vertical-align: top;
+}
+
+.appTable th:last-child,
+.appTable td:last-child {
+  border-right: none;
 }
 
 .appTable td.colorPickerGroup {
@@ -49,7 +56,7 @@
   left: 0;
   background: var(--background-card);
   z-index: 10;
-  border-right: 2px solid var(--border-color-secondary);
+  border-right: 2px solid var(--border-color-secondary) !important;
 }
 
 .appTable th.stickyCol {

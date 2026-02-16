@@ -12,6 +12,8 @@ import { Position, Team, Weekday } from "../../model/model";
 import { fetchPositions } from "../../store/slices/positionsSlice";
 import { fetchTeams, updateTeams } from "../../store/slices/teamsSlice";
 
+import styles from "./settings-page.module.css";
+
 const defaultTeam: Team = {
   name: "",
   emoji: "",
@@ -150,7 +152,7 @@ const TeamManagement = () => {
   }
 
   return (
-    <>
+    <div className={styles.managementWrapper}>
       <SettingsTable
         headers={[
           { text: "Order", minWidth: 50, textAlign: "center" },
@@ -361,7 +363,7 @@ const TeamManagement = () => {
           isSaving={status === "saving"}
         />
       )}
-    </>
+    </div>
   );
 };
 

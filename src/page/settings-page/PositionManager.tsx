@@ -17,6 +17,8 @@ import {
   updatePositions,
 } from "../../store/slices/positionsSlice";
 
+import styles from "./settings-page.module.css";
+
 interface Position extends GlobalPosition {
   parentId?: string;
 }
@@ -270,7 +272,7 @@ const PositionManagement = () => {
   }
 
   return (
-    <>
+    <div className={styles.managementWrapper}>
       <SettingsTable
         headers={[
           { text: "Order", minWidth: 50, textAlign: "center" },
@@ -417,7 +419,7 @@ const PositionManagement = () => {
           isSaving={status === "saving"}
         />
       )}
-    </>
+    </div>
   );
 };
 

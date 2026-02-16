@@ -1,8 +1,10 @@
 import RosterTable from "../../components/roster/RosterTable";
 
+import styles from "./roster-page.module.css";
+
 const RosterPage = () => {
   return (
-    <div className="roster-page" style={{ height: "100%" }}>
+    <div className={styles.rosterPage}>
       <RosterTable />
     </div>
   );
