@@ -53,6 +53,12 @@ const uiSlice = createSlice({
         state.expandedTeams.push(teamName);
       }
     },
+    expandTeam: (state, action: PayloadAction<string>) => {
+      const teamName = action.payload;
+      if (!state.expandedTeams.includes(teamName)) {
+        state.expandedTeams.push(teamName);
+      }
+    },
     toggleUserVisibility: (
       state,
       action: PayloadAction<{ teamName: string; positionName: string; userEmail: string }>,
@@ -79,6 +85,7 @@ export const {
   setRosterAllViewMode,
   setLastVisitedPath,
   toggleTeamExpansion,
+  expandTeam,
   toggleUserVisibility,
 } = uiSlice.actions;
 export const uiReducer = uiSlice.reducer;

@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useRef } from "react";
 
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
@@ -15,6 +15,7 @@ import {
   setDesktopSidebarExpanded,
   setMobileSidebarOpen,
   toggleTeamExpansion,
+  expandTeam,
 } from "../../store/slices/uiSlice";
 import ThemeToggleButton from "../common/ThemeToggleButton";
 
@@ -45,6 +46,15 @@ const SideNav = () => {
       : AppTab.ROSTER;
   const { teamName: activeTeamName, positionName, section } = params;
   const activeSideItem = positionName || section;
+
+  const prevTeamRef = useRef<string | undefined>(undefined);
+
+  useEffect(() => {
+    if (activeTeamName && activeTab === AppTab.ROSTER && activeTeamName !== prevTeamRef.current) {
+      dispatch(expandTeam(activeTeamName));
+    }
+    prevTeamRef.current = activeTeamName;
+  }, [activeTeamName, activeTab, dispatch]);
 
   useEffect(() => {
     if (!teamsFetched) {
