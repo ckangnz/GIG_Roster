@@ -204,9 +204,25 @@ const TeamManagement = () => {
   }
 
   const getNewTeamPositionsSummary = () => {
-    if (!newTeam.positions || newTeam.positions.length === 0)
+    if (!newTeam.positions || newTeam.positions.length === 0) {
       return "No positions";
-    return newTeam.positions.map((p) => p.emoji).join(" ");
+    }
+
+    const displayEmojis = newTeam.positions.slice(0, 3).map((p) => (
+      <span key={p.name} className={styles.summaryEmoji}>
+        {p.emoji}
+      </span>
+    ));
+    const remainingCount = newTeam.positions.length - 3;
+
+    return (
+      <>
+        {displayEmojis}
+        {remainingCount > 0 && (
+          <span className={styles.remainingCount}>+{remainingCount}</span>
+        )}
+      </>
+    );
   };
 
   const getNewTeamDaysSummary = () => {

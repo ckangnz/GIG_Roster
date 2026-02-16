@@ -10,6 +10,7 @@ import {
 } from "../../components/common/SettingsTable";
 import SummaryCell from "../../components/common/SummaryCell";
 import { Position, Team, Weekday } from "../../model/model";
+import styles from "../../styles/settings-common.module.css";
 
 interface TeamManagementRowProps {
   team: Team;
@@ -41,8 +42,27 @@ const TeamManagementRow = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const getPositionsSummary = () => {
-    if (!team.positions || team.positions.length === 0) return "No positions";
-    return team.positions.map((p) => p.emoji).join(" ");
+    if (!team.positions || team.positions.length === 0) {
+      return "No positions";
+    }
+
+    const displayEmojis = team.positions
+      .slice(0, 3)
+      .map((p) => (
+        <span key={p.name} className={styles.summaryEmoji}>
+          {p.emoji}
+        </span>
+      ));
+    const remainingCount = team.positions.length - 3;
+
+    return (
+      <>
+        {displayEmojis}
+        {remainingCount > 0 && (
+          <span className={styles.remainingCount}>+{remainingCount}</span>
+        )}
+      </>
+    );
   };
 
   const getDaysSummary = () => {

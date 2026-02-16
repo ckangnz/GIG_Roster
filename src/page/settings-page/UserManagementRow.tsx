@@ -11,6 +11,7 @@ import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { AppUser, Gender, Team } from "../../model/model";
 import { updateUserField } from "../../store/slices/userManagementSlice";
 import formStyles from "../../styles/form.module.css";
+import styles from "../../styles/settings-common.module.css";
 
 interface UserManagementRowProps {
   user: AppUser & { id: string };
@@ -35,13 +36,32 @@ const UserManagementRow = ({
   };
 
   const getTeamSummary = () => {
-    if (!user.teams || user.teams.length === 0) return "No teams";
-    return user.teams
+    if (!user.teams || user.teams.length === 0) {
+      return "No teams";
+    }
+
+    const teamEmojis = user.teams
       .map((tName) => {
         const team = availableTeams.find((t) => t.name === tName);
         return team?.emoji || "";
       })
-      .join(" ");
+      .filter(Boolean);
+
+    const displayEmojis = teamEmojis.slice(0, 3).map((emoji, i) => (
+      <span key={i} className={styles.summaryEmoji}>
+        {emoji}
+      </span>
+    ));
+    const remainingCount = teamEmojis.length - 3;
+
+    return (
+      <>
+        {displayEmojis}
+        {remainingCount > 0 && (
+          <span className={styles.remainingCount}>+{remainingCount}</span>
+        )}
+      </>
+    );
   };
 
   const getPositionCount = () => {
