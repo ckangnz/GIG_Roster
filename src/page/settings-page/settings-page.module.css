@@ -24,4 +24,7 @@
     width: 100%;
     padding-bottom: 0;
   }
+  .managementWrapper {
+    padding-bottom: 110px;
+  }
 }
