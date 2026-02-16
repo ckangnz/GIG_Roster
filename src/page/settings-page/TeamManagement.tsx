@@ -1,5 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 
+import { Plus } from "lucide-react";
+
 import TeamEditModal from "./TeamEditModal";
 import TeamManagementRow from "./TeamManagementRow";
 import Button from "../../components/common/Button";
@@ -44,7 +46,17 @@ const TeamManagement = () => {
   const [isNewTeamModalOpen, setIsNewTeamModalOpen] = useState(false);
 
   const hasChanges = useMemo(() => {
-    return JSON.stringify(teams) !== JSON.stringify(reduxTeams);
+    const normalize = (list: Team[]) =>
+      list.map((t) => ({
+        name: t.name || "",
+        emoji: t.emoji || "",
+        positions: (t.positions || []).map((p) => p.name).sort(),
+        preferredDays: [...(t.preferredDays || [])].sort(),
+        maxConflict: t.maxConflict || 1,
+      }));
+    return (
+      JSON.stringify(normalize(teams)) !== JSON.stringify(normalize(reduxTeams))
+    );
   }, [teams, reduxTeams]);
 
   useEffect(() => {
@@ -141,14 +153,25 @@ const TeamManagement = () => {
   const saveToFirebase = async () => {
     setStatus("saving");
     try {
-      await dispatch(updateTeams(teams)).unwrap();
+      const teamsToSave = teams.map((t) => ({
+        name: t.name || "",
+        emoji: t.emoji || "",
+        maxConflict: t.maxConflict || 1,
+        preferredDays: t.preferredDays || [],
+        positions: (t.positions || []).map(p => ({
+          name: p.name || "",
+          emoji: p.emoji || "",
+          colour: p.colour || "",
+          sortByGender: !!p.sortByGender,
+          ...(p.parentId ? { parentId: p.parentId } : {})
+        }))
+      }));
+      await dispatch(updateTeams(teamsToSave)).unwrap();
       setStatus("success");
       setTimeout(() => setStatus("idle"), 2000);
     } catch (e) {
       console.error("Save Error:", e);
-      alert(
-        "Check Firestore Rules: You may lack permission to write to 'metadata'.",
-      );
+      alert("Error saving: " + (e instanceof Error ? e.message : "Unknown error"));
       setStatus("idle");
     }
   };
@@ -238,7 +261,8 @@ const TeamManagement = () => {
               onClick={addTeam}
               disabled={!newTeam.name.trim() || !newTeam.emoji.trim()}
             >
-              +
+              <Plus size={16} style={{ marginRight: "6px" }} />
+              Add
             </Button>
           </SettingsTableAnyCell>
         </tr>

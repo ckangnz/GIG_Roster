@@ -44,7 +44,6 @@
 .appTable td.colorPickerGroup {
   display: flex;
   align-items: center;
-  gap: 8px;
   background: transparent;
 }
 

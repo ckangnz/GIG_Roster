@@ -84,7 +84,7 @@ const UserManagementRow = ({
             onClick={() => setIsModalOpen(true)}
           />
         </SettingsTableAnyCell>
-        <SettingsTableAnyCell>
+        <SettingsTableAnyCell textAlign="center">
           <Pill
             colour={
               user.isActive
@@ -98,7 +98,7 @@ const UserManagementRow = ({
             {user.isActive ? "YES" : "NO"}
           </Pill>
         </SettingsTableAnyCell>
-        <SettingsTableAnyCell>
+        <SettingsTableAnyCell textAlign="center">
           <Pill
             colour={
               user.isApproved
@@ -112,7 +112,7 @@ const UserManagementRow = ({
             {user.isApproved ? "YES" : "NO"}
           </Pill>
         </SettingsTableAnyCell>
-        <SettingsTableAnyCell>
+        <SettingsTableAnyCell textAlign="center">
           <Pill
             colour={
               user.isAdmin

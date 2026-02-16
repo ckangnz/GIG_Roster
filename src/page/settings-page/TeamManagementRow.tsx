@@ -1,5 +1,7 @@
 import { useState } from "react";
 
+import { Trash2 } from "lucide-react";
+
 import TeamEditModal from "./TeamEditModal";
 import Button from "../../components/common/Button";
 import {
@@ -104,10 +106,10 @@ const TeamManagementRow = ({
           <Button
             variant="delete"
             size="small"
-            isIcon
             onClick={() => onDelete(teamIndex)}
           >
-            ×
+            <Trash2 size={14} style={{ marginRight: "6px" }} />
+            Delete
           </Button>
         </SettingsTableAnyCell>
       </tr>

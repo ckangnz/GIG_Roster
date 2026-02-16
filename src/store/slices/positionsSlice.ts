@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 import { db } from '../../firebase';
 import { Position } from '../../model/model';
@@ -42,7 +42,7 @@ export const updatePositions = createAsyncThunk(
   async (positions: Position[], { rejectWithValue }) => {
     try {
       const docRef = doc(db, 'metadata', 'positions');
-      await updateDoc(docRef, { list: positions });
+      await setDoc(docRef, { list: positions });
       return positions;
     } catch (error) {
       return rejectWithValue(

@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 import { db } from '../../firebase';
 import { Team } from '../../model/model';
@@ -43,7 +43,7 @@ export const updateTeams = createAsyncThunk(
   async (teams: Team[], { rejectWithValue }) => {
     try {
       const docRef = doc(db, 'metadata', 'teams');
-      await updateDoc(docRef, { list: teams });
+      await setDoc(docRef, { list: teams });
       return teams;
     } catch (error) {
       return rejectWithValue(error instanceof Error ? error.message : 'Failed to update teams');

@@ -5,6 +5,7 @@ import SaveFooter from "../../components/common/SaveFooter";
 import SettingsTable from "../../components/common/SettingsTable";
 import Spinner from "../../components/common/Spinner";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
+import { AppUser } from "../../model/model";
 import {
   fetchAllUsers,
   saveAllUserChanges,
@@ -21,7 +22,25 @@ const UserManagement = () => {
   const availableTeams = useAppSelector((state) => state.teams.teams);
 
   const hasChanges = useMemo(() => {
-    return JSON.stringify(allUsers) !== JSON.stringify(originalUsers);
+    const normalize = (list: AppUser[]) =>
+      list.map((u) => ({
+        name: u.name || "",
+        gender: u.gender || "",
+        teams: [...(u.teams || [])].sort(),
+        teamPositions: Object.keys(u.teamPositions || {})
+          .sort()
+          .reduce((acc: Record<string, string[]>, team) => {
+            acc[team] = [...(u.teamPositions?.[team] || [])].sort();
+            return acc;
+          }, {}),
+        isActive: !!u.isActive,
+        isApproved: !!u.isApproved,
+        isAdmin: !!u.isAdmin,
+      }));
+    return (
+      JSON.stringify(normalize(allUsers)) !==
+      JSON.stringify(normalize(originalUsers))
+    );
   }, [allUsers, originalUsers]);
 
   useEffect(() => {

@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 
-import { CornerDownRight } from "lucide-react";
+import { CornerDownRight, Plus, Trash2 } from "lucide-react";
 
 import Button from "../../components/common/Button";
 import Pill from "../../components/common/Pill";
@@ -44,7 +44,18 @@ const PositionManagement = () => {
   const [status, setStatus] = useState("idle");
 
   const hasChanges = useMemo(() => {
-    return JSON.stringify(positions) !== JSON.stringify(reduxPositions);
+    const normalize = (list: Position[]) =>
+      list.map((p) => ({
+        name: p.name || "",
+        emoji: p.emoji || "",
+        colour: p.colour || "",
+        parentId: p.parentId || undefined,
+        sortByGender: !!p.sortByGender,
+      }));
+    return (
+      JSON.stringify(normalize(positions)) !==
+      JSON.stringify(normalize(reduxPositions))
+    );
   }, [positions, reduxPositions]);
 
   useEffect(() => {
@@ -222,18 +233,22 @@ const PositionManagement = () => {
   const saveToFirebase = async () => {
     setStatus("saving");
     try {
-      const positionsToSave = positions.map((p) => ({
-        ...p,
-        parentId: p.parentId === undefined ? undefined : p.parentId,
-      }));
+      const positionsToSave = positions.map((p) => {
+        const cleanPos: Position = {
+          name: p.name || "",
+          emoji: p.emoji || "",
+          colour: p.colour || "",
+          sortByGender: !!p.sortByGender,
+        };
+        if (p.parentId) cleanPos.parentId = p.parentId;
+        return cleanPos;
+      });
       await dispatch(updatePositions(positionsToSave)).unwrap();
       setStatus("success");
       setTimeout(() => setStatus("idle"), 2000);
     } catch (e) {
       console.error("Save Error:", e);
-      alert(
-        "Check Firestore Rules: You may lack permission to write to 'metadata'.",
-      );
+      alert("Error saving: " + (e instanceof Error ? e.message : "Unknown error"));
       setStatus("idle");
     }
   };
@@ -356,7 +371,8 @@ const PositionManagement = () => {
                   onClick={() => addChildPosition(p.name)}
                   title="Add Child Position"
                 >
-                  +
+                  <Plus size={14} style={{ marginRight: "4px" }} />
+                  Add
                 </Button>
               )}
             </SettingsTableAnyCell>
@@ -366,7 +382,8 @@ const PositionManagement = () => {
                 size="small"
                 onClick={() => deletePosition(i)}
               >
-                ×
+                <Trash2 size={14} style={{ marginRight: "4px" }} />
+                Delete
               </Button>
             </SettingsTableAnyCell>
           </tr>
@@ -379,7 +396,7 @@ const PositionManagement = () => {
             onChange={(e) => setNewPos({ ...newPos, name: e.target.value })}
             isSticky
           />
-          <td className="">{""}</td>
+          <SettingsTableAnyCell textAlign="center">{""}</SettingsTableAnyCell>
           <SettingsTableInputCell
             name={`new-emoji`}
             value={newPos.emoji}
@@ -412,9 +429,11 @@ const PositionManagement = () => {
               onClick={addPosition}
               disabled={!newPos.name.trim() || !newPos.emoji.trim()}
             >
+              <Plus size={16} style={{ marginRight: "6px" }} />
               Add
             </Button>
           </SettingsTableAnyCell>
+          <SettingsTableAnyCell textAlign="center">{""}</SettingsTableAnyCell>
         </tr>
       </SettingsTable>
 

@@ -8,6 +8,7 @@ import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { updateUserProfile } from "../../store/slices/authSlice";
 import { fetchPositions } from "../../store/slices/positionsSlice";
 import { fetchTeams } from "../../store/slices/teamsSlice";
+import formStyles from "../../styles/form.module.css";
 
 import styles from "./profile-settings.module.css";
 
@@ -134,18 +135,16 @@ const ProfileSettings = ({ className }: { className?: string }) => {
         </p>
       </div>
 
-      <div className="form-group">
+      <div className={formStyles.formGroup}>
         <label>Name</label>
-        <PillGroup>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="form-input form-input-width-auto"
-          />
-        </PillGroup>
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          className={formStyles.formInput}
+        />
       </div>
-      <div className="form-group">
+      <div className={formStyles.formGroup}>
         <label>Gender</label>
         <PillGroup>
           {[
@@ -164,7 +163,7 @@ const ProfileSettings = ({ className }: { className?: string }) => {
         </PillGroup>
       </div>
 
-      <div className="form-group">
+      <div className={formStyles.formGroup}>
         <label>My Teams</label>
         <PillGroup>
           {availableTeams.map((team) => {
@@ -219,7 +218,7 @@ const ProfileSettings = ({ className }: { className?: string }) => {
         </div>
       )}
 
-      <div className="form-group">
+      <div className={formStyles.formGroup}>
         <label>Availability Status</label>
         <Pill
           colour={
@@ -230,7 +229,7 @@ const ProfileSettings = ({ className }: { className?: string }) => {
         >
           {isActive ? "ACTIVE & AVAILABLE" : "INACTIVE / AWAY"}
         </Pill>
-        <p className="form-field-hint">
+        <p className={formStyles.fieldHint}>
           Turn off if you want to be hidden from the roster.
         </p>
       </div>

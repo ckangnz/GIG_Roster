@@ -47,11 +47,27 @@ export const SettingsTableAnyCell = ({
   <td
     style={{
       textAlign: textAlign,
+      display: textAlign === "center" ? "table-cell" : undefined,
     }}
     className={`${className ? className : ""} ${isSticky ? styles.stickyCol : ""}
 `}
   >
-    {children}
+    <div
+      style={{
+        display: "flex",
+        justifyContent:
+          textAlign === "center"
+            ? "center"
+            : textAlign === "right"
+              ? "flex-end"
+              : "flex-start",
+        alignItems: "center",
+        gap: "8px",
+        height: "100%",
+      }}
+    >
+      {children}
+    </div>
   </td>
 );
 
