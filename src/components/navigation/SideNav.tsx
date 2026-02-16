@@ -145,6 +145,40 @@ const SideNav = () => {
                     )}
                     {isTeamExpanded && (
                       <div className={styles.sideNavSubItems}>
+                        <button
+                          className={`${styles.sideNavItem} ${styles.sideNavItemSub} ${
+                            activeSideItem === "All" &&
+                            activeTeamName === team.name
+                              ? styles.sideNavItemActive
+                              : ""
+                          }`}
+                          onClick={() => {
+                            handleNavItemClick(
+                              `/app/roster/${team.name}/All`,
+                            );
+                            dispatch(setMobileSidebarOpen(false));
+                          }}
+                          style={{
+                            borderLeft:
+                              activeSideItem === "All" &&
+                              activeTeamName === team.name
+                                ? "4px solid var(--color-primary)"
+                                : "4px solid transparent",
+                            backgroundColor:
+                              activeSideItem === "All" &&
+                              activeTeamName === team.name
+                                ? "var(--background-toggle-on-transparent)"
+                                : "transparent",
+                            color:
+                              activeSideItem === "All" &&
+                              activeTeamName === team.name
+                                ? "var(--color-primary)"
+                                : "",
+                          }}
+                        >
+                          <span className={styles.sideEmoji}>📋</span>{" "}
+                          {isDesktopSidebarExpanded && "All"}
+                        </button>
                         {team.positions
                           ?.filter((pos) => !pos.parentId)
                           ?.map((pos) => {

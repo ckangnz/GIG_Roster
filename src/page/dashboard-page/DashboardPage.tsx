@@ -285,7 +285,7 @@ const DashboardPage = () => {
       timeZone: "UTC",
     });
 
-    let text = `${formattedDate} - ${teamEmoji} ${teamName}\n`;
+    let text = `${teamEmoji} ${teamName} - ${formattedDate}\n`;
     positions.forEach((p) => {
       const namesText = p.names.length > 0 ? p.names.join(", ") : "-";
       text += `${p.emoji}: ${namesText}\n`;
@@ -367,7 +367,9 @@ const DashboardPage = () => {
           <div key={teamData.teamName} className={styles.teamEventCard}>
             <div className={styles.teamEventHeader}>
               <h3>
-                <span className={styles.teamCardEmoji}>{teamData.teamEmoji}</span>
+                <span className={styles.teamCardEmoji}>
+                  {teamData.teamEmoji}
+                </span>
                 <span className={styles.teamCardName}>{teamData.teamName}</span>
               </h3>
               {!isPeek && (

@@ -1,11 +1,16 @@
 import { useCallback, useEffect, useMemo, useState, Fragment } from "react";
 
-import { Plus } from "lucide-react";
+import { Plus, Users, LayoutGrid } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
-import { getTodayKey } from "../../model/model";
-import { updatePositionCustomLabels } from "../../store/slices/positionsSlice";
+import { getTodayKey, AppUser, Position } from "../../model/model";
+import {
+  updatePositionCustomLabels,
+  updatePositions,
+  resetPositionsDirty,
+  fetchPositions,
+} from "../../store/slices/positionsSlice";
 import {
   fetchRosterEntries,
   saveRosterChanges,
@@ -21,7 +26,10 @@ import {
   resetToUpcomingDates,
   loadNextYearDates,
 } from "../../store/slices/rosterViewSlice";
-import { toggleUserVisibility } from "../../store/slices/uiSlice";
+import {
+  toggleUserVisibility,
+  setRosterAllViewMode,
+} from "../../store/slices/uiSlice";
 import SaveFooter from "../common/SaveFooter";
 import Spinner from "../common/Spinner";
 
@@ -48,21 +56,27 @@ const RosterTable = () => {
     saving,
     error: rosterError,
   } = useAppSelector((state) => state.roster);
-  const { teams: allTeams } = useAppSelector((state) => state.teams);
-  const { positions: allPositions } = useAppSelector(
+  const { positions: allPositions, isDirty: positionsDirty } = useAppSelector(
     (state) => state.positions,
   );
-  const { hiddenUsers } = useAppSelector((state) => state.ui);
+  const { teams: allTeams } = useAppSelector((state) => state.teams);
+  const { hiddenUsers, rosterAllViewMode } = useAppSelector(
+    (state) => state.ui,
+  );
 
   const [focusedCell, setFocusedCell] = useState<{
     row: number;
     col: number;
-    table: "roster" | "absence";
+    table: "roster" | "absence" | "all";
   } | null>(null);
 
   const [peekPositionName, setPeekPositionName] = useState<string | null>(null);
 
-  const hasDirtyChanges = Object.keys(dirtyEntries).length > 0;
+  const hasRosterChanges = Object.keys(dirtyEntries).length > 0;
+  const hasDirtyChanges = hasRosterChanges || positionsDirty;
+
+  const isAbsenceView = activePosition === "Absence";
+  const isAllView = activePosition === "All";
 
   const currentPosition = useMemo(
     () => allPositions.find((p) => p.name === activePosition),
@@ -78,6 +92,39 @@ const RosterTable = () => {
     if (!teamName || !activePosition) return [];
     return hiddenUsers[teamName]?.[activePosition] || [];
   }, [hiddenUsers, teamName, activePosition]);
+
+  const filteredAllTeamUsers = useMemo(() => {
+    return allTeamUsers.filter((u) => {
+      if (!u.isActive || !teamName) return false;
+      const userTeamPositions = u.teamPositions?.[teamName] || [];
+      return userTeamPositions.length > 0;
+    });
+  }, [allTeamUsers, teamName]);
+
+  const allViewColumns = useMemo(() => {
+    const userCols = filteredAllTeamUsers.map((u) => ({
+      id: u.email || "",
+      name: u.name || "",
+      isUser: true,
+      gender: u.gender,
+    }));
+
+    if (!currentTeamData) return userCols;
+
+    const teamPositionNames = currentTeamData.positions.map((p) => p.name);
+
+    const customLabels = Array.from(
+      new Set(
+        allPositions
+          .filter((p) => teamPositionNames.includes(p.name) && p.isCustom)
+          .flatMap((p) => p.customLabels || [])
+          .map((l) => l.trim())
+          .filter((l) => l !== ""),
+      ),
+    ).map((l) => ({ id: l, name: l, isUser: false }));
+
+    return [...userCols, ...customLabels];
+  }, [filteredAllTeamUsers, currentTeamData, allPositions]);
 
   const sortedUsers = useMemo(() => {
     const list = users.filter(
@@ -172,7 +219,11 @@ const RosterTable = () => {
   }, [dispatch]);
 
   useEffect(() => {
-    if (activePosition && teamName && activePosition !== "Absence") {
+    if (
+      activePosition &&
+      teamName &&
+      !["Absence", "All"].includes(activePosition)
+    ) {
       dispatch(
         fetchUsersByTeamAndPosition({ teamName, positionName: activePosition }),
       );
@@ -331,8 +382,13 @@ const RosterTable = () => {
   );
 
   const handleSave = useCallback(() => {
-    dispatch(saveRosterChanges(dirtyEntries));
-  }, [dispatch, dirtyEntries]);
+    if (hasRosterChanges) {
+      dispatch(saveRosterChanges(dirtyEntries));
+    }
+    if (positionsDirty) {
+      dispatch(updatePositions(allPositions));
+    }
+  }, [dispatch, dirtyEntries, allPositions, hasRosterChanges, positionsDirty]);
 
   const handleAddCustomLabel = () => {
     if (!currentPosition || !activePosition) return;
@@ -358,9 +414,98 @@ const RosterTable = () => {
   };
 
   const handleCancel = useCallback(() => {
-    dispatch(resetRosterEdits());
+    if (hasRosterChanges) {
+      dispatch(resetRosterEdits());
+    }
+    if (positionsDirty) {
+      dispatch(resetPositionsDirty());
+      // Refresh positions from server to discard local changes
+      dispatch(fetchPositions());
+    }
     setFocusedCell(null);
-  }, [dispatch]);
+  }, [dispatch, hasRosterChanges, positionsDirty]);
+
+  const getAssignmentsForIdentifier = (
+    dateString: string,
+    identifier: string,
+  ) => {
+    const dateKey = dateString.split("T")[0];
+    const entry = dirtyEntries[dateKey] || entries[dateKey];
+    if (!entry || !teamName || !entry.teams[teamName]) return [];
+
+    let assignments = entry.teams[teamName][identifier] || [];
+    if (assignments.length === 0) {
+      const target = identifier.trim();
+      const matchingKey = Object.keys(entry.teams[teamName]).find(
+        (k) => k.trim() === target,
+      );
+      if (matchingKey) {
+        assignments = entry.teams[teamName][matchingKey];
+      }
+    }
+    return assignments;
+  };
+
+  const getAllViewUserCellContent = (
+    dateString: string,
+    userIdentifier: string,
+  ) => {
+    const userAssignments = getAssignmentsForIdentifier(
+      dateString,
+      userIdentifier,
+    );
+    if (userAssignments.length === 0) return "";
+
+    return (
+      <div className={styles.assignedPositions}>
+        {userAssignments.map((posName) => {
+          const pos = allPositions.find((p) => p.name === posName);
+          return (
+            <span
+              key={posName}
+              className={styles.posEmoji}
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/app/roster/${teamName}/${posName}`);
+              }}
+              title={posName}
+              style={{ cursor: "pointer" }}
+            >
+              {pos?.emoji || "❓"}
+            </span>
+          );
+        })}
+      </div>
+    );
+  };
+
+  const getAllViewPositionCellContent = (
+    dateString: string,
+    positionName: string,
+  ) => {
+    const dateKey = dateString.split("T")[0];
+    const entry = dirtyEntries[dateKey] || entries[dateKey];
+    if (!entry || !teamName) return "";
+
+    // Find children of this position to group them
+    const children = allPositions.filter((p) => p.parentId === positionName);
+    const positionGroup = [positionName, ...children.map((c) => c.name)];
+
+    const assignedUsers = Object.entries(entry.teams[teamName] || {})
+      .filter(([, positions]) =>
+        positions.some((p) => positionGroup.includes(p)),
+      )
+      .map(([id]) => {
+        const user = filteredAllTeamUsers.find((u) => u.email === id);
+        if (user) return user.name;
+        // If not a user, it's a custom label
+        return id;
+      });
+
+    return (
+      <div className={styles.assignedUsersText}>{assignedUsers.join(", ")}</div>
+    );
+  };
 
   const getCellContent = (dateString: string, userEmail: string) => {
     const dateKey = dateString;
@@ -435,7 +580,19 @@ const RosterTable = () => {
 
       const { row, col, table } = focusedCell;
       const dateList = rosterDates;
-      const userList = table === "roster" ? sortedUsers : allTeamUsers;
+      let userList: (
+        | AppUser
+        | Position
+        | { id: string; name: string; isUser: boolean }
+      )[] = [];
+      if (table === "roster") userList = sortedUsers;
+      else if (table === "absence") userList = allTeamUsers;
+      else if (table === "all") {
+        userList =
+          rosterAllViewMode === "user"
+            ? allViewColumns
+            : currentTeamData?.positions || [];
+      }
 
       switch (e.key) {
         case "ArrowUp":
@@ -467,8 +624,9 @@ const RosterTable = () => {
           break;
         case " ": {
           e.preventDefault();
+          if (table === "all") break;
           const dStr = rosterDates[row];
-          const usr = userList[col];
+          const usr = userList[col] as AppUser;
           if (usr?.email) {
             if (table === "roster") {
               handleCellClick(dStr, usr.email, row, col);
@@ -505,6 +663,9 @@ const RosterTable = () => {
     handleAbsenceClick,
     handleSave,
     handleCancel,
+    rosterAllViewMode,
+    allViewColumns,
+    currentTeamData?.positions,
   ]);
 
   const hasPastDates = useMemo(() => {
@@ -572,7 +733,245 @@ const RosterTable = () => {
     return <div className={styles.rosterTableError}>Error: {error}</div>;
   }
 
-  const isAbsenceView = activePosition === "Absence";
+  if (isAllView) {
+    return (
+      <div className={styles.rosterTableWrapper}>
+        <div className={styles.viewToggleBar}>
+          <button
+            className={`${styles.toggleBtn} ${rosterAllViewMode === "user" ? styles.activeToggle : ""}`}
+            onClick={() => dispatch(setRosterAllViewMode("user"))}
+          >
+            <Users size={18} /> <span>User View</span>
+          </button>
+          <button
+            className={`${styles.toggleBtn} ${rosterAllViewMode === "position" ? styles.activeToggle : ""}`}
+            onClick={() => dispatch(setRosterAllViewMode("position"))}
+          >
+            <LayoutGrid size={18} /> <span>Position View</span>
+          </button>
+        </div>
+
+        <div className={styles.rosterSection}>
+          <div className={styles.rosterTableContainer}>
+            <table className={styles.rosterTable}>
+              <thead>
+                <tr>
+                  <th
+                    className={`${styles.rosterTableHeaderCell} ${styles.stickyCol} sticky-header`}
+                  >
+                    <div className={styles.dateHeaderContent}>
+                      Date
+                      <div className={styles.dateHeaderActions}>
+                        <button
+                          className={styles.loadPrevBtn}
+                          onClick={handleLoadPrevious}
+                          title="Load 5 previous dates"
+                        >
+                          ↑
+                        </button>
+                        {hasPastDates && (
+                          <button
+                            className={`${styles.loadPrevBtn} ${styles.resetDatesBtn}`}
+                            onClick={handleResetDates}
+                            title="Hide previous dates"
+                          >
+                            ↓
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </th>
+                  {rosterAllViewMode === "user"
+                    ? allViewColumns.map((col) => (
+                        <th
+                          key={col.id}
+                          className={`${styles.rosterTableHeaderCell} sticky-header ${
+                            col.id &&
+                            assignedOnClosestDate.includes(col.id)
+                              ? styles.highlightedHeader
+                              : ""
+                          }`}
+                        >
+                          {col.name}
+                        </th>
+                      ))
+                    : (currentTeamData?.positions || [])
+                        .filter((p) => !p.parentId)
+                        .map((pos) => (
+                          <th
+                            key={pos.name}
+                            className={`${styles.rosterTableHeaderCell} ${styles.clickableHeader} sticky-header`}
+                            onClick={() =>
+                              navigate(`/app/roster/${teamName}/${pos.name}`)
+                            }
+                          >
+                            <div className={styles.allViewPositionHeader}>
+                              <span>{pos.emoji}</span>
+                              <span className={styles.allViewPositionName}>
+                                {pos.name}
+                              </span>
+                            </div>
+                          </th>
+                        ))}
+                </tr>
+              </thead>
+              <tbody>
+                {rosterDates.map((dateString, rowIndex) => {
+                  const dateKey = dateString.split("T")[0];
+                  const entry = dirtyEntries[dateKey] || entries[dateKey];
+                  const eventName = entry?.eventName;
+
+                  const rowClass = getRowClass(dateString);
+                  const isToday = rowClass === "today-date";
+                  const hasData = checkHasAssignments(dateString);
+
+                  const trClasses = [
+                    rowClass === "past-date" ? styles.pastDate : "",
+                    rowClass === "today-date" ? styles.todayDate : "",
+                    rowClass === "future-date" ? styles.futureDate : "",
+                    !hasData ? styles.noData : "",
+                    eventName ? styles.specialEventRow : "",
+                    dateString === closestNextDate
+                      ? styles.closestNextDateRow
+                      : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" ");
+
+                  return (
+                    <tr key={dateString} className={trClasses}>
+                      <td
+                        className={`${styles.dateCell} ${styles.stickyCol} ${hasData ? styles.clickable : ""}`}
+                        onClick={() => handleDateClick(dateString)}
+                        title={eventName}
+                      >
+                        <div className={styles.dateCellContent}>
+                          {eventName && (
+                            <span className={styles.specialEventDot} />
+                          )}
+                          {isToday && (
+                            <span
+                              className={styles.rosterTodayDot}
+                              title="Today"
+                            />
+                          )}
+                          {new Date(
+                            dateString.replace(/-/g, "/"),
+                          ).toLocaleDateString()}
+                        </div>
+                      </td>
+                      {rosterAllViewMode === "user"
+                        ? allViewColumns.map((col, colIndex) => {
+                            const isFocused =
+                              focusedCell?.row === rowIndex &&
+                              focusedCell?.col === colIndex &&
+                              focusedCell?.table === "all";
+                            const absent = col.id
+                              ? isUserAbsent(dateString, col.id)
+                              : false;
+                            const isAssignedOnClosestDate =
+                              dateString === closestNextDate &&
+                              col.id &&
+                              assignedOnClosestDate.includes(col.id);
+
+                            return (
+                              <td
+                                key={col.id}
+                                className={`${styles.rosterCell} ${styles.clickable} ${
+                                  isFocused ? styles.focused : ""
+                                } ${absent ? styles.absentStrike : ""} ${
+                                  isAssignedOnClosestDate
+                                    ? styles.highlightedCell
+                                    : ""
+                                }`}
+                                tabIndex={0}
+                                onClick={() => {
+                                  const assignments =
+                                    getAssignmentsForIdentifier(
+                                      dateString,
+                                      col.id,
+                                    );
+                                  if (assignments.length > 0) {
+                                    navigate(
+                                      `/app/roster/${teamName}/${assignments[0]}`,
+                                    );
+                                  }
+                                }}
+                                onFocus={() =>
+                                  setFocusedCell({
+                                    row: rowIndex,
+                                    col: colIndex,
+                                    table: "all",
+                                  })
+                                }
+                              >
+                                {col.id &&
+                                  (absent ? (
+                                    <span
+                                      title={getAbsenceReason(
+                                        dateString,
+                                        col.id,
+                                      )}
+                                    >
+                                      ❌
+                                    </span>
+                                  ) : (
+                                    getAllViewUserCellContent(
+                                      dateString,
+                                      col.id,
+                                    )
+                                  ))}
+                              </td>
+                            );
+                          })
+                        : (currentTeamData?.positions || [])
+                            .filter((p) => !p.parentId)
+                            .map((pos, colIndex) => {
+                              const isFocused =
+                                focusedCell?.row === rowIndex &&
+                                focusedCell?.col === colIndex &&
+                                focusedCell?.table === "all";
+
+                              return (
+                                <td
+                                  key={pos.name}
+                                  className={`${styles.rosterCell} ${
+                                    isFocused ? styles.focused : ""
+                                  }`}
+                                  tabIndex={0}
+                                  onFocus={() =>
+                                    setFocusedCell({
+                                      row: rowIndex,
+                                      col: colIndex,
+                                      table: "all",
+                                    })
+                                  }
+                                >
+                                  {getAllViewPositionCellContent(
+                                    dateString,
+                                    pos.name,
+                                  )}
+                                </td>
+                              );
+                            })}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+          <div className={styles.loadMoreFooter}>
+            <button
+              className={styles.loadNextYearBtn}
+              onClick={handleLoadNextYear}
+            >
+              Load Next Year ↓
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (
     !isAbsenceView &&
@@ -779,9 +1178,14 @@ const RosterTable = () => {
                         title={eventName}
                       >
                         <div className={styles.dateCellContent}>
-                          {eventName && <span className={styles.specialEventDot} />}
+                          {eventName && (
+                            <span className={styles.specialEventDot} />
+                          )}
                           {isToday && (
-                            <span className={styles.rosterTodayDot} title="Today" />
+                            <span
+                              className={styles.rosterTodayDot}
+                              title="Today"
+                            />
                           )}
                           {new Date(
                             dateString.replace(/-/g, "/"),
@@ -1010,12 +1414,17 @@ const RosterTable = () => {
                         title={eventName}
                       >
                         <div className={styles.dateCellContent}>
-                          {eventName && <span className={styles.specialEventDot} />}
+                          {eventName && (
+                            <span className={styles.specialEventDot} />
+                          )}
                           {new Date(
                             dateString.replace(/-/g, "/"),
                           ).toLocaleDateString()}
                           {isToday && (
-                            <span className={styles.rosterTodayDot} title="Today" />
+                            <span
+                              className={styles.rosterTodayDot}
+                              title="Today"
+                            />
                           )}
                         </div>
                       </td>

@@ -6,6 +6,7 @@ interface UIState {
   expandedTeams: string[];
   hiddenUsers: Record<string, Record<string, string[]>>; // team -> position -> userEmails[]
   lastVisitedPaths: Record<string, string>; // tabId -> fullPathWithSearch
+  rosterAllViewMode: 'user' | 'position';
 }
 
 const loadHiddenUsers = (): Record<string, Record<string, string[]>> => {
@@ -23,6 +24,7 @@ const initialState: UIState = {
   expandedTeams: [],
   hiddenUsers: loadHiddenUsers(),
   lastVisitedPaths: {},
+  rosterAllViewMode: 'user',
 };
 
 const uiSlice = createSlice({
@@ -34,6 +36,9 @@ const uiSlice = createSlice({
     },
     setDesktopSidebarExpanded: (state, action: PayloadAction<boolean>) => {
       state.isDesktopSidebarExpanded = action.payload;
+    },
+    setRosterAllViewMode: (state, action: PayloadAction<'user' | 'position'>) => {
+      state.rosterAllViewMode = action.payload;
     },
     setLastVisitedPath: (state, action: PayloadAction<{ tabId: string; path: string }>) => {
       const { tabId, path } = action.payload;
@@ -71,6 +76,7 @@ const uiSlice = createSlice({
 export const {
   setMobileSidebarOpen,
   setDesktopSidebarExpanded,
+  setRosterAllViewMode,
   setLastVisitedPath,
   toggleTeamExpansion,
   toggleUserVisibility,

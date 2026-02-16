@@ -9,6 +9,7 @@ interface PositionsState {
   loading: boolean;
   error: string | null;
   fetched: boolean;
+  isDirty: boolean;
 }
 
 const initialState: PositionsState = {
@@ -16,6 +17,7 @@ const initialState: PositionsState = {
   loading: false,
   error: null,
   fetched: false,
+  isDirty: false,
 };
 
 export const fetchPositions = createAsyncThunk(
@@ -60,27 +62,35 @@ const positionsSlice = createSlice({
 
   reducers: {
 
-    updatePositionCustomLabels: (
+        updatePositionCustomLabels: (
 
-      state,
+          state,
 
-      action: PayloadAction<{ positionName: string; labels: string[] }>,
+          action: PayloadAction<{ positionName: string; labels: string[] }>,
 
-    ) => {
+        ) => {
 
-      const { positionName, labels } = action.payload;
+          const { positionName, labels } = action.payload;
 
-      const pos = state.positions.find((p) => p.name === positionName);
+          const pos = state.positions.find((p) => p.name === positionName);
 
-      if (pos) {
+          if (pos) {
 
-        pos.customLabels = labels;
+            pos.customLabels = labels;
 
-      }
+            state.isDirty = true;
 
-    },
+          }
 
-  },
+        },
+
+        resetPositionsDirty: (state) => {
+
+          state.isDirty = false;
+
+        },
+
+      },
 
   extraReducers: (builder) => {
 
@@ -112,18 +122,22 @@ const positionsSlice = createSlice({
 
       })
 
-      .addCase(updatePositions.fulfilled, (state, action) => {
+            .addCase(updatePositions.fulfilled, (state, action) => {
 
-        state.positions = action.payload;
+              state.positions = action.payload;
+
+              state.isDirty = false;
+
+            });
+
+        },
 
       });
 
-  },
+      
 
-});
+      export const { updatePositionCustomLabels, resetPositionsDirty } =
 
+        positionsSlice.actions;
 
-
-export const { updatePositionCustomLabels } = positionsSlice.actions;
-
-export const positionsReducer = positionsSlice.reducer;
+      export const positionsReducer = positionsSlice.reducer;

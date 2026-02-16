@@ -164,6 +164,7 @@ const TeamManagement = () => {
           colour: p.colour || "",
           sortByGender: !!p.sortByGender,
           isCustom: !!p.isCustom,
+          customLabels: p.customLabels || [],
           ...(p.parentId ? { parentId: p.parentId } : {}),
         })),
       }));
