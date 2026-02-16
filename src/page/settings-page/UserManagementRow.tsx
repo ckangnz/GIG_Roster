@@ -1,15 +1,14 @@
-import Pill, { PillGroup } from "../../components/common/Pill";
+import { useState } from "react";
+
+import UserEditModal from "./UserEditModal";
+import Pill from "../../components/common/Pill";
 import {
   SettingsTableAnyCell,
   SettingsTableInputCell,
 } from "../../components/common/SettingsTable";
 import { useAppDispatch } from "../../hooks/redux";
 import { AppUser, Gender, Team } from "../../model/model";
-import {
-  toggleUserTeam,
-  toggleUserTeamPosition,
-  updateUserField,
-} from "../../store/slices/userManagementSlice";
+import { updateUserField } from "../../store/slices/userManagementSlice";
 
 interface UserManagementRowProps {
   user: AppUser & { id: string };
@@ -23,6 +22,7 @@ const UserManagementRow = ({
   adminEmail,
 }: UserManagementRowProps) => {
   const dispatch = useAppDispatch();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleUpdate = (
     field: keyof AppUser,
@@ -31,139 +31,120 @@ const UserManagementRow = ({
     dispatch(updateUserField({ id: user.id, field, value }));
   };
 
-  const handleToggleTeam = (teamName: string) => {
-    dispatch(toggleUserTeam({ userId: user.id, teamName }));
+  const getTeamSummary = () => {
+    if (!user.teams || user.teams.length === 0) return "No teams";
+    return user.teams
+      .map((tName) => {
+        const team = availableTeams.find((t) => t.name === tName);
+        return team?.emoji || "";
+      })
+      .join(" ");
   };
 
-  const handleTogglePosition = (teamName: string, posName: string) => {
-    dispatch(toggleUserTeamPosition({ userId: user.id, teamName, posName }));
+  const getPositionCount = () => {
+    if (!user.teamPositions) return 0;
+    return Object.values(user.teamPositions).reduce(
+      (acc, posList) => acc + posList.length,
+      0,
+    );
   };
 
   return (
-    <tr key={user.id}>
-      <SettingsTableInputCell
-        name={`name-${user.id}`}
-        value={user.name || ""}
-        onChange={(e) => handleUpdate("name", e.target.value)}
-        isSticky
+    <>
+      <tr key={user.id}>
+        <SettingsTableInputCell
+          name={`name-${user.id}`}
+          value={user.name || ""}
+          onChange={(e) => handleUpdate("name", e.target.value)}
+          isSticky
+        />
+        <SettingsTableInputCell
+          name={`email-${user.id}`}
+          value={user.email || ""}
+          isReadOnly
+        />
+        <SettingsTableAnyCell>
+          <select
+            name={`gender-${user.id}`}
+            className="form-select"
+            value={user.gender}
+            onChange={(e) => handleUpdate("gender", e.target.value as Gender)}
+          >
+            <option value="">-</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+          </select>
+        </SettingsTableAnyCell>
+        <SettingsTableAnyCell>
+          <button
+            className="icon-button icon-button--secondary"
+            style={{
+              width: "100%",
+              justifyContent: "flex-start",
+              padding: "8px 12px",
+            }}
+            onClick={() => setIsModalOpen(true)}
+          >
+            <span style={{ fontSize: "1.1rem", marginRight: "8px" }}>
+              {getTeamSummary()}
+            </span>
+            <span style={{ fontSize: "0.75rem", opacity: 0.7 }}>
+              ({getPositionCount()} pos)
+            </span>
+          </button>
+        </SettingsTableAnyCell>
+        <SettingsTableAnyCell>
+          <Pill
+            colour={
+              user.isActive
+                ? "var(--color-success-dark)"
+                : "var(--color-warning-dark)"
+            }
+            minWidth={35}
+            onClick={() => handleUpdate("isActive", !user.isActive)}
+            isActive
+          >
+            {user.isActive ? "YES" : "NO"}
+          </Pill>
+        </SettingsTableAnyCell>
+        <SettingsTableAnyCell>
+          <Pill
+            colour={
+              user.isApproved
+                ? "var(--color-success-dark)"
+                : "var(--color-warning-dark)"
+            }
+            minWidth={35}
+            onClick={() => handleUpdate("isApproved", !user.isApproved)}
+            isActive
+          >
+            {user.isApproved ? "YES" : "NO"}
+          </Pill>
+        </SettingsTableAnyCell>
+        <SettingsTableAnyCell>
+          <Pill
+            colour={
+              user.isAdmin
+                ? "var(--color-success-dark)"
+                : "var(--color-warning-dark)"
+            }
+            minWidth={35}
+            onClick={() => handleUpdate("isAdmin", !user.isAdmin)}
+            isActive
+            isDisabled={user.email === adminEmail}
+          >
+            {user.isAdmin ? "YES" : "NO"}
+          </Pill>
+        </SettingsTableAnyCell>
+      </tr>
+
+      <UserEditModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        user={user}
+        availableTeams={availableTeams}
       />
-      <SettingsTableInputCell
-        name={`email-${user.id}`}
-        value={user.email || ""}
-        isReadOnly
-      />
-      <SettingsTableAnyCell>
-        <select
-          name={`gender-${user.id}`}
-          className="form-select"
-          value={user.gender}
-          onChange={(e) => handleUpdate("gender", e.target.value as Gender)}
-        >
-          <option value="">-</option>
-          <option value="Male">Male</option>
-          <option value="Female">Female</option>
-        </select>
-      </SettingsTableAnyCell>
-      <SettingsTableAnyCell>
-        <PillGroup>
-          {availableTeams.map((team) => {
-            const isSelected = user.teams?.includes(team.name);
-            return (
-              <Pill
-                key={team.name}
-                onClick={() => handleToggleTeam(team.name)}
-                isActive={isSelected}
-              >
-                <span>{team.emoji}</span> {team.name}
-              </Pill>
-            );
-          })}
-        </PillGroup>
-      </SettingsTableAnyCell>
-      <SettingsTableAnyCell>
-        {user.teams?.map((teamName) => {
-          const team = availableTeams.find((t) => t.name === teamName);
-          if (!team) return null;
-          return (
-            <div key={teamName} style={{ marginBottom: "12px" }}>
-              <div
-                style={{
-                  fontSize: "0.65rem",
-                  fontWeight: "bold",
-                  marginBottom: "4px",
-                  color: "var(--color-text-dim)",
-                  textTransform: "uppercase",
-                }}
-              >
-                {team.emoji} {team.name}
-              </div>
-              <PillGroup>
-                {team.positions
-                  ?.filter((pos) => !pos.parentId)
-                  ?.map((pos) => {
-                    const isSelected = user.teamPositions?.[teamName]?.includes(
-                      pos.name,
-                    );
-                    return (
-                      <Pill
-                        key={pos.name}
-                        colour={pos.colour}
-                        isActive={isSelected}
-                        onClick={() => handleTogglePosition(teamName, pos.name)}
-                      >
-                        {pos.emoji}
-                      </Pill>
-                    );
-                  })}
-              </PillGroup>
-            </div>
-          );
-        })}
-      </SettingsTableAnyCell>
-      <SettingsTableAnyCell>
-        <Pill
-          colour={
-            user.isActive
-              ? "var(--color-success-dark)"
-              : "var(--color-warning-dark)"
-          }
-          minWidth={35}
-          onClick={() => handleUpdate("isActive", !user.isActive)}
-          isActive
-        >
-          {user.isActive ? "YES" : "NO"}
-        </Pill>
-      </SettingsTableAnyCell>
-      <SettingsTableAnyCell>
-        <Pill
-          colour={
-            user.isApproved
-              ? "var(--color-success-dark)"
-              : "var(--color-warning-dark)"
-          }
-          minWidth={35}
-          onClick={() => handleUpdate("isApproved", !user.isApproved)}
-          isActive
-        >
-          {user.isApproved ? "YES" : "NO"}
-        </Pill>
-      </SettingsTableAnyCell>
-      <SettingsTableAnyCell>
-        <Pill
-          colour={
-            user.isAdmin
-              ? "var(--color-success-dark)"
-              : "var(--color-warning-dark)"
-          }
-          minWidth={35}
-          onClick={() => handleUpdate("isAdmin", !user.isAdmin)}
-          isActive
-          isDisabled={user.email === adminEmail}
-        >
-          {user.isAdmin ? "YES" : "NO"}
-        </Pill>
-      </SettingsTableAnyCell>
-    </tr>
+    </>
   );
 };
 
