@@ -1,7 +1,7 @@
-import { useMemo, useEffect, useState, useCallback, useRef } from "react";
+import { useMemo, useEffect, useState, useCallback, useRef, Fragment } from "react";
 
 import { collection, query, where, getDocs } from "firebase/firestore";
-import { CopyIcon } from "lucide-react";
+import { CopyIcon, CheckCircle2 } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 
 import SaveFooter from "../../components/common/SaveFooter";
@@ -39,6 +39,7 @@ const DashboardPage = () => {
 
   const [teamUsers, setTeamUsers] = useState<AppUser[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   const [currentDateIndex, setCurrentDateIndex] = useState(0);
   const [containerWidth, setContainerWidth] = useState(0);
   const [isInitialized, setIsInitialized] = useState(false);
@@ -204,7 +205,13 @@ const DashboardPage = () => {
       const dateKey = dateStr;
       const entry = dirtyEntries[dateKey] || entries[dateKey];
 
-      const userTeams = allTeams.filter((t) => userData.teams.includes(t.name));
+      const userTeams = allTeams
+        .filter((t) => userData.teams.includes(t.name))
+        .sort((a, b) => {
+          const indexA = userData.teams.indexOf(a.name);
+          const indexB = userData.teams.indexOf(b.name);
+          return indexA - indexB;
+        });
 
       const data = userTeams.map((team) => {
         const teamAssignments = entry?.teams?.[team.name] || {};
@@ -212,7 +219,7 @@ const DashboardPage = () => {
         const positionGroups: {
           posName: string;
           emoji: string;
-          names: string[];
+          assignedUsers: { name: string; isMe: boolean }[];
         }[] = [];
         const teamPositionNames = team.positions.map((p) => p.name);
 
@@ -250,9 +257,10 @@ const DashboardPage = () => {
           positionGroups.push({
             posName,
             emoji: posInfo?.emoji || "❓",
-            names: sortedAssignedUsers.map(
-              (u) => u.name || u.email || "Unknown",
-            ),
+            assignedUsers: sortedAssignedUsers.map((u) => ({
+              name: u.name || u.email || "Unknown",
+              isMe: u.email === userData.email,
+            })),
           });
         });
 
@@ -274,7 +282,11 @@ const DashboardPage = () => {
     dateStr: string,
     teamName: string,
     teamEmoji: string,
-    positions: { posName: string; emoji: string; names: string[] }[],
+    positions: {
+      posName: string;
+      emoji: string;
+      assignedUsers: { name: string; isMe: boolean }[];
+    }[],
   ) => {
     // Treat string as UTC midnight to prevent display shifts
     const localDate = new Date(dateStr);
@@ -287,12 +299,17 @@ const DashboardPage = () => {
 
     let text = `${teamEmoji} ${teamName} - ${formattedDate}\n`;
     positions.forEach((p) => {
-      const namesText = p.names.length > 0 ? p.names.join(", ") : "-";
+      const namesText =
+        p.assignedUsers.length > 0
+          ? p.assignedUsers.map((u) => u.name).join(", ")
+          : "-";
       text += `${p.emoji}: ${namesText}\n`;
     });
 
     navigator.clipboard.writeText(text).then(() => {
-      // Success
+      const id = `${dateStr}-${teamName}`;
+      setCopiedId(id);
+      setTimeout(() => setCopiedId(null), 2000);
     });
   };
 
@@ -363,37 +380,52 @@ const DashboardPage = () => {
 
     return (
       <div className={styles.teamCardsContainer}>
-        {data.map((teamData) => (
-          <div key={teamData.teamName} className={styles.teamEventCard}>
-            <div className={styles.teamEventHeader}>
-              <h3>
-                <span className={styles.teamCardEmoji}>
-                  {teamData.teamEmoji}
-                </span>
-                <span className={styles.teamCardName}>{teamData.teamName}</span>
-              </h3>
-              {!isPeek && (
-                <div
-                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
-                >
-                  <ThemeToggleButton className={styles.dashboardThemeToggle} />
-                  <button
-                    className={styles.copyRosterBtn}
-                    onClick={() =>
-                      handleCopy(
-                        dateStr,
-                        teamData.teamName,
-                        teamData.teamEmoji,
-                        teamData.positions,
-                      )
-                    }
-                    title="Copy to clipboard"
+        {data.map((teamData) => {
+          const isRecentlyCopied =
+            copiedId === `${dateStr}-${teamData.teamName}`;
+          return (
+            <div key={teamData.teamName} className={styles.teamEventCard}>
+              <div className={styles.teamEventHeader}>
+                <h3>
+                  <span className={styles.teamCardEmoji}>
+                    {teamData.teamEmoji}
+                  </span>
+                  <span className={styles.teamCardName}>
+                    {teamData.teamName}
+                  </span>
+                </h3>
+                {!isPeek && (
+                  <div
+                    style={{ display: "flex", alignItems: "center", gap: "8px" }}
                   >
-                    <CopyIcon size={16} /> Copy
-                  </button>
-                </div>
-              )}
-            </div>
+                    <ThemeToggleButton
+                      className={styles.dashboardThemeToggle}
+                    />
+                    <button
+                      className={`${styles.copyRosterBtn} ${isRecentlyCopied ? styles.copyRosterBtnSuccess : ""}`}
+                      onClick={() =>
+                        handleCopy(
+                          dateStr,
+                          teamData.teamName,
+                          teamData.teamEmoji,
+                          teamData.positions,
+                        )
+                      }
+                      title="Copy to clipboard"
+                    >
+                      {isRecentlyCopied ? (
+                        <>
+                          <CheckCircle2 size={16} /> Copied
+                        </>
+                      ) : (
+                        <>
+                          <CopyIcon size={16} /> Copy
+                        </>
+                      )}
+                    </button>
+                  </div>
+                )}
+              </div>
 
             <div className={styles.teamEventDetails}>
               {teamData.positions.map((group) => (
@@ -402,17 +434,28 @@ const DashboardPage = () => {
                     {group.emoji}
                   </span>
                   <span
-                    className={`${styles.assignedNames} ${group.names.length === 0 ? styles.unassigned : ""}`}
+                    className={`${styles.assignedNames} ${group.assignedUsers.length === 0 ? styles.unassigned : ""}`}
                   >
-                    {group.names.length > 0
-                      ? group.names.join(", ")
-                      : "Unassigned"}
+                    {group.assignedUsers.length > 0 ? (
+                      group.assignedUsers.map((user, idx) => (
+                        <Fragment key={`${user.name}-${idx}`}>
+                          {user.name}
+                          {user.isMe && (
+                            <span className={styles.meTag}>Me</span>
+                          )}
+                          {idx < group.assignedUsers.length - 1 ? ", " : ""}
+                        </Fragment>
+                      ))
+                    ) : (
+                      "Unassigned"
+                    )}
                   </span>
                 </div>
               ))}
             </div>
           </div>
-        ))}
+        );
+      })}
       </div>
     );
   };

@@ -133,7 +133,10 @@ const SideNav = () => {
                       <div
                         className={`${styles.sidenavMenuSubheading} ${styles.sidenavMenuSubheadingClickable}`}
                         style={{ cursor: "pointer" }}
-                        onClick={() => handleToggleTeamExpansion(team.name)}
+                        onClick={() => {
+                          handleToggleTeamExpansion(team.name);
+                          handleNavItemClick(`/app/roster/${team.name}/All`);
+                        }}
                       >
                         <div>
                           {team.emoji} {isDesktopSidebarExpanded && team.name}

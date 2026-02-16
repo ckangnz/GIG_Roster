@@ -40,6 +40,7 @@ const RosterTable = () => {
   const navigate = useNavigate();
   const { teamName, positionName: activePosition } = useParams();
 
+  const { userData } = useAppSelector((state) => state.auth);
   const {
     users,
     allTeamUsers,
@@ -491,19 +492,27 @@ const RosterTable = () => {
     const children = allPositions.filter((p) => p.parentId === positionName);
     const positionGroup = [positionName, ...children.map((c) => c.name)];
 
-    const assignedUsers = Object.entries(entry.teams[teamName] || {})
+    const assignedEntries = Object.entries(entry.teams[teamName] || {})
       .filter(([, positions]) =>
         positions.some((p) => positionGroup.includes(p)),
-      )
-      .map(([id]) => {
-        const user = filteredAllTeamUsers.find((u) => u.email === id);
-        if (user) return user.name;
-        // If not a user, it's a custom label
-        return id;
-      });
+      );
 
     return (
-      <div className={styles.assignedUsersText}>{assignedUsers.join(", ")}</div>
+      <div className={styles.assignedUsersText}>
+        {assignedEntries.map(([id], idx) => {
+          const user = filteredAllTeamUsers.find((u) => u.email === id);
+          const isMe = id === userData?.email;
+          const displayName = user ? user.name : id;
+
+          return (
+            <Fragment key={id}>
+              <span className={isMe ? styles.isMe : ""}>{displayName}</span>
+              {isMe && <span className={styles.meTag}>Me</span>}
+              {idx < assignedEntries.length - 1 ? ", " : ""}
+            </Fragment>
+          );
+        })}
+      </div>
     );
   };
 
@@ -782,19 +791,22 @@ const RosterTable = () => {
                     </div>
                   </th>
                   {rosterAllViewMode === "user"
-                    ? allViewColumns.map((col) => (
-                        <th
-                          key={col.id}
-                          className={`${styles.rosterTableHeaderCell} sticky-header ${
-                            col.id &&
-                            assignedOnClosestDate.includes(col.id)
-                              ? styles.highlightedHeader
-                              : ""
-                          }`}
-                        >
-                          {col.name}
-                        </th>
-                      ))
+                    ? allViewColumns.map((col) => {
+                        const isMe = col.id === userData?.email;
+                        return (
+                          <th
+                            key={col.id}
+                            className={`${styles.rosterTableHeaderCell} sticky-header ${
+                              col.id && assignedOnClosestDate.includes(col.id)
+                                ? styles.highlightedHeader
+                                : ""
+                            } ${isMe ? styles.isMe : ""}`}
+                          >
+                            {col.name}
+                            {isMe && <span className={styles.meTag}>Me</span>}
+                          </th>
+                        );
+                      })
                     : (currentTeamData?.positions || [])
                         .filter((p) => !p.parentId)
                         .map((pos) => (

@@ -75,8 +75,8 @@ const MainLayout = () => {
         navigate(savedPath, { replace: true });
       } else if (userData?.teams?.[0] && allTeams.length > 0) {
         const team = allTeams.find((t) => t.name === userData.teams[0]);
-        if (team?.positions?.[0]) {
-          navigate(`/app/roster/${team.name}/${team.positions[0].name}`, {
+        if (team) {
+          navigate(`/app/roster/${team.name}/All`, {
             replace: true,
           });
         }
