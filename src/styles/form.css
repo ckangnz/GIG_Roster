@@ -1,3 +1,6 @@
+/* This file no longer contains global tag selectors to prevent leakage.
+   Use form.module.css instead. */
+
 .form-group {
   margin-bottom: 30px;
   text-align: left;
@@ -13,67 +16,8 @@
   font-weight: 700;
 }
 
-.form-input {
-  background: var(--background-input);
-  border: 1px solid var(--border-color-input);
-  color: var(--color-text-primary);
-  padding: 8px 12px;
-  box-sizing: border-box;
-  display: block;
-  border-radius: 6px;
-  width: 100%;
-  outline: none;
-  font-size: 0.9rem;
-}
-
 .form-input-width-auto {
   width: auto;
-}
-
-.form-input:focus {
-  border-color: var(--border-color-primary);
-}
-
-input[type="color"] {
-  border: none;
-  width: 24px;
-  height: 24px;
-  background: none;
-  cursor: pointer;
-}
-
-.form-select {
-  background: var(--background-input);
-  border: 1px solid var(--border-color-input);
-  color: var(--color-text-primary);
-  padding: 8px 12px;
-  box-sizing: border-box;
-  display: block;
-  border-radius: 6px;
-  width: 100%;
-  outline: none;
-  font-size: 0.9rem;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-  background-image: url('data:image/svg+xml;utf8,<svg fill="var(--color-text-primary)" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
-  background-repeat: no-repeat;
-  background-position: right 8px center;
-  background-size: 20px;
-}
-
-.form-select:focus {
-  border-color: var(--border-color-primary);
-}
-
-.form-input[readonly] {
-  background: transparent;
-  border: none;
-  color: var(--color-text-faded);
-  font-size: 0.85rem;
-  width: 100%;
-  outline: none;
-  cursor: default;
 }
 
 .form-field-hint {

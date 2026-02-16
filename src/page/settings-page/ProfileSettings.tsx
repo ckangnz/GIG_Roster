@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 
+import Button from "../../components/common/Button";
 import Pill, { PillGroup } from "../../components/common/Pill";
 import SaveFooter from "../../components/common/SaveFooter";
 import { auth } from "../../firebase";
@@ -235,9 +236,9 @@ const ProfileSettings = ({ className }: { className?: string }) => {
       </div>
 
       <div className={styles.actionContainer}>
-        <button onClick={() => auth.signOut()} className={styles.logoutBtn}>
+        <Button variant="delete" onClick={() => auth.signOut()}>
           Logout
-        </button>
+        </Button>
       </div>
 
       {hasChanges && (

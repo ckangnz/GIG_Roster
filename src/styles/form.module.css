@@ -1,0 +1,107 @@
+.formGroup {
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.formGroup label {
+  display: block;
+  margin-bottom: 12px;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--color-text-dim);
+  font-weight: 700;
+}
+
+.formInput {
+  background: var(--background-input);
+  border: 1px solid var(--border-color-input);
+  color: var(--color-text-primary);
+  padding: 0 12px;
+  height: var(--field-height);
+  box-sizing: border-box;
+  display: block;
+  border-radius: 8px;
+  width: 100%;
+  outline: none;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.formInputWidthAuto {
+  width: auto;
+}
+
+.formInput:focus {
+  border-color: var(--border-color-primary);
+  background: var(--background-card);
+  box-shadow: 0 0 0 2px var(--background-primary-subtle);
+}
+
+.formInput[readonly] {
+  background: transparent;
+  border: none;
+  color: var(--color-text-faded);
+  font-size: 0.85rem;
+  width: 100%;
+  outline: none;
+  cursor: default;
+}
+
+.formSelect {
+  background: var(--background-input);
+  border: 1px solid var(--border-color-input);
+  color: var(--color-text-primary);
+  padding: 0 32px 0 12px;
+  height: var(--field-height);
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  border-radius: 8px;
+  width: 100%;
+  outline: none;
+  font-size: 0.9rem;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url('data:image/svg+xml;utf8,<svg fill="rgba(255,255,255,0.5)" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 20px;
+  transition: all 0.2s ease;
+}
+
+[data-theme="light"] .formSelect {
+  background-image: url('data:image/svg+xml;utf8,<svg fill="rgba(0,0,0,0.5)" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
+}
+
+.formSelect:focus {
+  border-color: var(--border-color-primary);
+  background-color: var(--background-card);
+  box-shadow: 0 0 0 2px var(--background-primary-subtle);
+}
+
+.colorInput {
+  border: 1px solid var(--border-color-input);
+  width: var(--field-height);
+  height: var(--field-height);
+  background: none;
+  cursor: pointer;
+  padding: 0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.colorInput::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+.colorInput::-webkit-color-swatch {
+  border: none;
+}
+
+.fieldHint {
+  font-size: 0.75rem;
+  color: var(--color-text-faded);
+  line-height: 1.4;
+  margin-top: 8px;
+}

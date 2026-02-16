@@ -20,8 +20,11 @@
   border-radius: 8px;
   width: fit-content;
   flex-shrink: 0;
-  padding: 8px 16px;
+  padding: 0 16px;
+  height: var(--field-height);
   transition: all 0.2s ease;
+  box-sizing: border-box;
+  border: 1px solid transparent;
 }
 
 @media (hover: hover) {

@@ -1,0 +1,73 @@
+.button {
+  border: 1px solid transparent;
+  height: var(--field-height);
+  padding: 0 1.2em;
+  font-size: 0.95rem;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  background-color: var(--background-button-secondary);
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  box-sizing: border-box;
+  color: var(--color-text-primary);
+  text-decoration: none;
+}
+
+.button:disabled {
+  background: var(--border-color-input);
+  cursor: not-allowed;
+  opacity: 0.2;
+}
+
+.primary {
+  background: var(--background-button-primary);
+  color: white;
+}
+
+.secondary {
+  background: var(--background-button-secondary);
+  color: var(--color-text-primary);
+}
+
+.delete {
+  color: var(--color-delete);
+  background: var(--color-delete-dark);
+  border: 1px solid var(--border-color-delete);
+}
+
+.icon {
+  width: auto;
+  padding: 0 12px;
+  font-weight: bold;
+}
+
+.small {
+  font-size: 0.85em;
+  padding: 0 8px;
+}
+
+@media (hover: hover) {
+  .button:hover:not(:disabled) {
+    background: var(--background-button-primary-hover);
+    transform: translateY(-2px);
+    color: white;
+  }
+  
+  .secondary:hover:not(:disabled) {
+    background: var(--background-button-secondary-hover);
+    color: var(--color-text-primary);
+  }
+  
+  .delete:hover:not(:disabled) {
+    color: white;
+    background: var(--background-button-delete-hover);
+  }
+}
+
+.button:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
+}

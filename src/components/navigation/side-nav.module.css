@@ -81,6 +81,7 @@
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   transition: all 0.2s ease;
+  height: auto; /* Allow content to define height */
 }
 
 @media (hover: hover) {

@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 
 import { CornerDownRight } from "lucide-react";
 
+import Button from "../../components/common/Button";
 import Pill from "../../components/common/Pill";
 import SaveFooter from "../../components/common/SaveFooter";
 import SettingsTable, {
@@ -303,20 +304,24 @@ const PositionManagement = () => {
                     justifyContent: "center",
                   }}
                 >
-                  <button
-                    className="icon-button icon-button--small icon-button--secondary"
+                  <Button
+                    variant="secondary"
+                    size="small"
+                    isIcon
                     onClick={() => move(i, "up")}
                     disabled={i === 0}
                   >
                     ▲
-                  </button>
-                  <button
-                    className="icon-button icon-button--small icon-button--secondary"
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="small"
+                    isIcon
                     onClick={() => move(i, "down")}
                     disabled={i === positions.length - 1}
                   >
                     ▼
-                  </button>
+                  </Button>
                 </div>
               )}
             </SettingsTableAnyCell>
@@ -345,22 +350,24 @@ const PositionManagement = () => {
             </SettingsTableAnyCell>
             <SettingsTableAnyCell textAlign="center">
               {!p.parentId && (
-                <button
-                  className="icon-button icon-button--add-child"
+                <Button
+                  variant="secondary"
+                  size="small"
                   onClick={() => addChildPosition(p.name)}
                   title="Add Child Position"
                 >
                   +
-                </button>
+                </Button>
               )}
             </SettingsTableAnyCell>
             <SettingsTableAnyCell textAlign="center">
-              <button
-                className="icon-button icon-button--delete"
+              <Button
+                variant="delete"
+                size="small"
                 onClick={() => deletePosition(i)}
               >
                 ×
-              </button>
+              </Button>
             </SettingsTableAnyCell>
           </tr>
         ))}
@@ -401,13 +408,12 @@ const PositionManagement = () => {
             </Pill>
           </SettingsTableAnyCell>
           <SettingsTableAnyCell textAlign="center">
-            <button
+            <Button
               onClick={addPosition}
-              className="icon-button icon-button--add"
               disabled={!newPos.name.trim() || !newPos.emoji.trim()}
             >
               Add
-            </button>
+            </Button>
           </SettingsTableAnyCell>
         </tr>
       </SettingsTable>

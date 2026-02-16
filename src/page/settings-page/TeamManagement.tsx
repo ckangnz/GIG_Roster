@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 
 import TeamEditModal from "./TeamEditModal";
 import TeamManagementRow from "./TeamManagementRow";
+import Button from "../../components/common/Button";
 import SaveFooter from "../../components/common/SaveFooter";
 import SettingsTable, {
   SettingsTableAnyCell,
@@ -233,13 +234,12 @@ const TeamManagement = () => {
             />
           </SettingsTableAnyCell>
           <SettingsTableAnyCell>
-            <button
+            <Button
               onClick={addTeam}
-              className="icon-button icon-button--add"
               disabled={!newTeam.name.trim() || !newTeam.emoji.trim()}
             >
               +
-            </button>
+            </Button>
           </SettingsTableAnyCell>
         </tr>
       </SettingsTable>

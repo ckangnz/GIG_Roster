@@ -10,6 +10,7 @@ import SummaryCell from "../../components/common/SummaryCell";
 import { useAppDispatch } from "../../hooks/redux";
 import { AppUser, Gender, Team } from "../../model/model";
 import { updateUserField } from "../../store/slices/userManagementSlice";
+import formStyles from "../../styles/form.module.css";
 
 interface UserManagementRowProps {
   user: AppUser & { id: string };
@@ -67,7 +68,7 @@ const UserManagementRow = ({
         <SettingsTableAnyCell>
           <select
             name={`gender-${user.id}`}
-            className="form-select"
+            className={formStyles.formSelect}
             value={user.gender}
             onChange={(e) => handleUpdate("gender", e.target.value as Gender)}
           >

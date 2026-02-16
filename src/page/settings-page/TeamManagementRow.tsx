@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import TeamEditModal from "./TeamEditModal";
+import Button from "../../components/common/Button";
 import {
   SettingsTableAnyCell,
   SettingsTableInputCell,
@@ -59,20 +60,24 @@ const TeamManagementRow = ({
           <div
             style={{ display: "flex", gap: "4px", justifyContent: "center" }}
           >
-            <button
-              className="icon-button icon-button--small icon-button--secondary"
+            <Button
+              variant="secondary"
+              size="small"
+              isIcon
               onClick={() => onMove(teamIndex, "up")}
               disabled={isFirst}
             >
               ▲
-            </button>
-            <button
-              className="icon-button icon-button--small icon-button--secondary"
+            </Button>
+            <Button
+              variant="secondary"
+              size="small"
+              isIcon
               onClick={() => onMove(teamIndex, "down")}
               disabled={isLast}
             >
               ▼
-            </button>
+            </Button>
           </div>
         </SettingsTableAnyCell>
         <SettingsTableInputCell
@@ -96,12 +101,14 @@ const TeamManagementRow = ({
           />
         </SettingsTableAnyCell>
         <SettingsTableAnyCell>
-          <button
-            className="icon-button icon-button--delete"
+          <Button
+            variant="delete"
+            size="small"
+            isIcon
             onClick={() => onDelete(teamIndex)}
           >
             ×
-          </button>
+          </Button>
         </SettingsTableAnyCell>
       </tr>
 

@@ -1,81 +1,49 @@
-button {
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  cursor: pointer;
-  background-color: var(--background-button-secondary);
-  transition: all 0.2s ease;
-}
+/* This file no longer contains global button tag selectors to prevent leakage.
+   Use the Button component and button.module.css instead. */
 
-button:disabled {
-  background: var(--border-color-input);
-  cursor: not-allowed;
-  opacity: 0.2;
-}
-
-button.icon-button {
+.icon-button {
   display: flex;
   align-items: center;
   justify-content: center;
   width: auto;
-  height: 32px;
-  border-radius: 6px;
+  height: var(--field-height);
+  padding: 0 12px;
+  border-radius: 8px;
   font-weight: bold;
   border: none;
   color: white;
   background: var(--background-button-primary);
+  box-sizing: border-box;
+  cursor: pointer;
 }
 
-button.icon-button.icon-button--small {
-  font-size: 0.8em;
-  height: 28px;
+.icon-button-small {
+  font-size: 0.85em;
+  height: var(--field-height);
+  padding: 0 8px;
 }
 
-button.icon-button--secondary {
+.icon-button-secondary {
   background: var(--background-button-secondary);
   color: var(--color-text-primary);
 }
 
-button.icon-button--delete {
+.icon-button-delete {
   color: var(--color-delete);
   background: var(--color-delete-dark);
   border: 1px solid var(--border-color-delete);
 }
 
-button.save-button {
-  width: 100%;
-  padding: 16px;
-  border-radius: 12px;
-  background: var(--background-button-primary);
-  color: white;
-  font-weight: 700;
-}
-button.save-button.success {
-  background: var(--color-success-dark);
-}
-button.save-button.success:disabled {
-  opacity: 1;
-}
-
 @media (hover: hover) {
-  button:hover {
-    background: var(--background-button-primary-hover);
-    transform: translateY(-2px);
-  }
-  button.icon-button:hover {
+  .icon-button:hover {
     background: var(--background-button-primary-hover);
     transform: scale(1.05);
   }
-  button.icon-button--secondary:hover {
+  .icon-button-secondary:hover {
     background: var(--background-button-secondary-hover);
   }
-  button.icon-button--delete:hover {
+  .icon-button-delete:hover {
     color: white;
     background: var(--background-button-delete-hover);
-  }
-  button.save-button:hover:not(:disabled) {
-    background: var(--background-button-primary-hover);
   }
 }

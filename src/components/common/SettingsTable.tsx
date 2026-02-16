@@ -1,5 +1,7 @@
 import { CornerDownRight } from "lucide-react";
 
+import formStyles from "../../styles/form.module.css";
+
 import styles from "./settings-table.module.css";
 
 interface SettingsTableHeaderProps {
@@ -76,7 +78,7 @@ export const SettingsTableInputCell = ({
     {isChild && <CornerDownRight />}
     <input
       name={name}
-      className="form-input"
+      className={formStyles.formInput}
       type={type}
       placeholder={placeholder}
       value={value}
@@ -101,12 +103,13 @@ export const SettingsTableColourInputCell = ({
     <input
       name={name}
       type="color"
+      className={formStyles.colorInput}
       value={value ? value : "#FFFFFF"}
       onChange={onChange}
     />
     <input
       name={name}
-      className="form-input"
+      className={formStyles.formInput}
       value={value}
       placeholder={placeholder}
       onChange={onChange}
