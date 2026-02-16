@@ -1,9 +1,8 @@
+import TeamPositionEditor from "./TeamPositionEditor";
 import Modal from "../../components/common/Modal";
-import Pill, { PillGroup } from "../../components/common/Pill";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { AppUser, Team } from "../../model/model";
 import { toggleUserTeam, toggleUserTeamPosition } from "../../store/slices/userManagementSlice";
-import styles from "../../styles/settings-common.module.css";
 
 interface UserEditModalProps {
   isOpen: boolean;
@@ -26,68 +25,14 @@ const UserEditModal = ({ isOpen, onClose, user, availableTeams }: UserEditModalP
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={`Edit Assignments: ${user.name}`}>
-      <div className={styles.formGroup}>
-        <label className={styles.sectionLabel}>Teams</label>
-        <PillGroup>
-          {availableTeams.map((team) => {
-            const isSelected = user.teams?.includes(team.name);
-            return (
-              <Pill
-                key={team.name}
-                onClick={() => handleToggleTeam(team.name)}
-                isActive={isSelected}
-              >
-                <span>{team.emoji}</span> {team.name}
-              </Pill>
-            );
-          })}
-        </PillGroup>
-      </div>
-
-      {user.teams && user.teams.length > 0 && (
-        <div className={styles.settingsSection}>
-          <label className={styles.sectionLabel}>Positions per Team</label>
-          {user.teams.map((teamName) => {
-            const team = availableTeams.find((t) => t.name === teamName);
-            if (!team) return null;
-
-            const assignablePositions =
-              team.positions?.filter((pos) => {
-                const gp = globalPositions.find((p) => p.name === pos.name);
-                return !pos.parentId && !gp?.isCustom;
-              }) || [];
-
-            return (
-              <div key={teamName} className={styles.subSectionGroup}>
-                <div className={styles.subSectionHeader}>
-                  {team.emoji} {team.name}
-                </div>
-                {assignablePositions.length > 0 ? (
-                  <PillGroup>
-                    {assignablePositions.map((pos) => {
-                      const isSelected = user.teamPositions?.[teamName]?.includes(pos.name);
-                      return (
-                        <Pill
-                          key={pos.name}
-                          onClick={() => handleTogglePosition(teamName, pos.name)}
-                          isActive={isSelected}
-                          colour={pos.colour}
-                        >
-                          <span>{pos.emoji}</span> {pos.name}
-                        </Pill>
-                      );
-                    })}
-                  </PillGroup>
-                ) : (
-                  <p style={{ fontSize: '0.8rem', color: 'var(--color-text-dim)', margin: '8px 0' }}>
-                    No assignable positions for this team.
-                  </p>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      )}
+      <TeamPositionEditor
+        selectedTeams={user.teams || []}
+        teamPositions={user.teamPositions || {}}
+        onToggleTeam={handleToggleTeam}
+        onTogglePosition={handleTogglePosition}
+        availableTeams={availableTeams}
+        globalPositions={globalPositions}
+      />
     </Modal>
   );
 };

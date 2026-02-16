@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 
+import TeamPositionEditor from "./TeamPositionEditor";
 import Button from "../../components/common/Button";
 import Pill, { PillGroup } from "../../components/common/Pill";
 import SaveFooter from "../../components/common/SaveFooter";
@@ -162,70 +163,14 @@ const ProfileSettings = ({ className }: { className?: string }) => {
         </PillGroup>
       </div>
 
-      <div className={formStyles.formGroup}>
-        <label>My Teams</label>
-        <PillGroup>
-          {availableTeams.map((team) => {
-            const isSelected = selectedTeams.includes(team.name);
-            return (
-              <Pill
-                key={team.name}
-                onClick={() => toggleTeam(team.name)}
-                isActive={isSelected}
-              >
-                <span>{team.emoji}</span> {team.name}
-              </Pill>
-            );
-          })}
-        </PillGroup>
-      </div>
-
-      {selectedTeams.length > 0 && (
-        <div className={styles.teamPositionsSection}>
-          <label className={styles.sectionLabel}>Positions per Team</label>
-          {selectedTeams.map((teamName) => {
-            const team = availableTeams.find((t) => t.name === teamName);
-            if (!team) return null;
-
-            const assignablePositions =
-              team.positions?.filter((pos) => {
-                const gp = globalPositions.find((p) => p.name === pos.name);
-                return !pos.parentId && !gp?.isCustom;
-              }) || [];
-
-            return (
-              <div key={teamName} className={styles.teamPositionGroup}>
-                <div className={styles.teamPositionHeader}>
-                  {team.emoji} {team.name}
-                </div>
-                {assignablePositions.length > 0 ? (
-                  <PillGroup>
-                    {assignablePositions.map((pos) => {
-                      const isSelected = teamPositions[teamName]?.includes(
-                        pos.name,
-                      );
-                      return (
-                        <Pill
-                          key={pos.name}
-                          onClick={() => toggleTeamPosition(teamName, pos.name)}
-                          isActive={isSelected}
-                          colour={pos.colour}
-                        >
-                          <span>{pos.emoji}</span> {pos.name}
-                        </Pill>
-                      );
-                    })}
-                  </PillGroup>
-                ) : (
-                  <p className={formStyles.fieldHint}>
-                    No assignable positions for this team.
-                  </p>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      )}
+      <TeamPositionEditor
+        selectedTeams={selectedTeams}
+        teamPositions={teamPositions}
+        onToggleTeam={toggleTeam}
+        onTogglePosition={toggleTeamPosition}
+        availableTeams={availableTeams}
+        globalPositions={globalPositions}
+      />
 
       <div className={formStyles.formGroup}>
         <label>Availability Status</label>
