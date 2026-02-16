@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 import { db } from '../../firebase';
@@ -53,28 +53,77 @@ export const updatePositions = createAsyncThunk(
 );
 
 const positionsSlice = createSlice({
+
   name: 'positions',
+
   initialState,
-  reducers: {},
-  extraReducers: (builder) => {
-    builder
-      .addCase(fetchPositions.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(fetchPositions.fulfilled, (state, action) => {
-        state.positions = action.payload;
-        state.loading = false;
-        state.fetched = true;
-      })
-      .addCase(fetchPositions.rejected, (state, action) => {
-        state.error = action.payload as string;
-        state.loading = false;
-      })
-      .addCase(updatePositions.fulfilled, (state, action) => {
-        state.positions = action.payload;
-      });
+
+  reducers: {
+
+    updatePositionCustomLabels: (
+
+      state,
+
+      action: PayloadAction<{ positionName: string; labels: string[] }>,
+
+    ) => {
+
+      const { positionName, labels } = action.payload;
+
+      const pos = state.positions.find((p) => p.name === positionName);
+
+      if (pos) {
+
+        pos.customLabels = labels;
+
+      }
+
+    },
+
   },
+
+  extraReducers: (builder) => {
+
+    builder
+
+      .addCase(fetchPositions.pending, (state) => {
+
+        state.loading = true;
+
+        state.error = null;
+
+      })
+
+      .addCase(fetchPositions.fulfilled, (state, action) => {
+
+        state.positions = action.payload;
+
+        state.loading = false;
+
+        state.fetched = true;
+
+      })
+
+      .addCase(fetchPositions.rejected, (state, action) => {
+
+        state.error = action.payload as string;
+
+        state.loading = false;
+
+      })
+
+      .addCase(updatePositions.fulfilled, (state, action) => {
+
+        state.positions = action.payload;
+
+      });
+
+  },
+
 });
+
+
+
+export const { updatePositionCustomLabels } = positionsSlice.actions;
 
 export const positionsReducer = positionsSlice.reducer;

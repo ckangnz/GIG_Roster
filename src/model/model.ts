@@ -34,6 +34,8 @@ export interface Position {
   colour: string;
   parentId?: string;
   sortByGender?: boolean;
+  isCustom?: boolean;
+  customLabels?: string[];
 }
 
 export interface Absence {

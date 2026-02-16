@@ -158,13 +158,14 @@ const TeamManagement = () => {
         emoji: t.emoji || "",
         maxConflict: t.maxConflict || 1,
         preferredDays: t.preferredDays || [],
-        positions: (t.positions || []).map(p => ({
+        positions: (t.positions || []).map((p) => ({
           name: p.name || "",
           emoji: p.emoji || "",
           colour: p.colour || "",
           sortByGender: !!p.sortByGender,
-          ...(p.parentId ? { parentId: p.parentId } : {})
-        }))
+          isCustom: !!p.isCustom,
+          ...(p.parentId ? { parentId: p.parentId } : {}),
+        })),
       }));
       await dispatch(updateTeams(teamsToSave)).unwrap();
       setStatus("success");

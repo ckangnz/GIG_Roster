@@ -7,7 +7,7 @@ import {
   SettingsTableInputCell,
 } from "../../components/common/SettingsTable";
 import SummaryCell from "../../components/common/SummaryCell";
-import { useAppDispatch } from "../../hooks/redux";
+import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { AppUser, Gender, Team } from "../../model/model";
 import { updateUserField } from "../../store/slices/userManagementSlice";
 import formStyles from "../../styles/form.module.css";
@@ -24,6 +24,7 @@ const UserManagementRow = ({
   adminEmail,
 }: UserManagementRowProps) => {
   const dispatch = useAppDispatch();
+  const { positions: globalPositions } = useAppSelector((state) => state.positions);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleUpdate = (
@@ -45,8 +46,14 @@ const UserManagementRow = ({
 
   const getPositionCount = () => {
     if (!user.teamPositions) return 0;
-    return Object.values(user.teamPositions).reduce(
-      (acc, posList) => acc + posList.length,
+    return Object.entries(user.teamPositions).reduce(
+      (acc, [, posList]) => {
+        const nonCustomPosList = posList.filter(posName => {
+          const gp = globalPositions.find(p => p.name === posName);
+          return !gp?.isCustom;
+        });
+        return acc + nonCustomPosList.length;
+      },
       0,
     );
   };

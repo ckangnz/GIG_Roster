@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useMemo, useState, Fragment } from "react";
 
+import { Plus } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { getTodayKey } from "../../model/model";
+import { updatePositionCustomLabels } from "../../store/slices/positionsSlice";
 import {
   fetchRosterEntries,
   saveRosterChanges,
@@ -22,7 +24,8 @@ import {
 import { toggleUserVisibility } from "../../store/slices/uiSlice";
 import SaveFooter from "../common/SaveFooter";
 import Spinner from "../common/Spinner";
-import "./roster-table.css";
+
+import styles from "./roster-table.module.css";
 
 const RosterTable = () => {
   const dispatch = useAppDispatch();
@@ -331,6 +334,29 @@ const RosterTable = () => {
     dispatch(saveRosterChanges(dirtyEntries));
   }, [dispatch, dirtyEntries]);
 
+  const handleAddCustomLabel = () => {
+    if (!currentPosition || !activePosition) return;
+    const currentLabels = currentPosition.customLabels || [];
+    dispatch(
+      updatePositionCustomLabels({
+        positionName: activePosition,
+        labels: [...currentLabels, ""],
+      }),
+    );
+  };
+
+  const handleUpdateCustomLabel = (index: number, value: string) => {
+    if (!currentPosition || !activePosition) return;
+    const currentLabels = [...(currentPosition.customLabels || [])];
+    currentLabels[index] = value;
+    dispatch(
+      updatePositionCustomLabels({
+        positionName: activePosition,
+        labels: currentLabels,
+      }),
+    );
+  };
+
   const handleCancel = useCallback(() => {
     dispatch(resetRosterEdits());
     setFocusedCell(null);
@@ -365,14 +391,14 @@ const RosterTable = () => {
     }
 
     return (
-      <div className="assigned-positions">
+      <div className={styles.assignedPositions}>
         {currentTeamAssignments.map((posName) => {
           const pos = allPositions.find((p) => p.name === posName);
           return (
             <span
               key={posName}
               title={`${teamName}: ${posName}`}
-              className="pos-emoji"
+              className={styles.posEmoji}
             >
               {pos?.emoji || "❓"}
             </span>
@@ -385,7 +411,7 @@ const RosterTable = () => {
               <span
                 key={`${ota.team}-${posName}`}
                 title={`${ota.team}: ${posName}`}
-                className="pos-emoji other-team-emoji"
+                className={`${styles.posEmoji} ${styles.otherTeamEmoji}`}
               >
                 {pos?.emoji || "❓"}
               </span>
@@ -543,24 +569,28 @@ const RosterTable = () => {
 
   const error = viewError || rosterError;
   if (error) {
-    return <div className="roster-table-error">Error: {error}</div>;
+    return <div className={styles.rosterTableError}>Error: {error}</div>;
   }
 
   const isAbsenceView = activePosition === "Absence";
 
-  if (!isAbsenceView && sortedUsers.length === 0) {
+  if (
+    !isAbsenceView &&
+    !currentPosition?.isCustom &&
+    sortedUsers.length === 0
+  ) {
     return (
-      <div className="roster-table-loading">
+      <div className={styles.rosterTableLoading}>
         {!isAbsenceView && hiddenUserList.length > 0 && (
-          <div className="hidden-members-bar">
-            <span className="hidden-members-label">Hidden Members:</span>
-            <div className="hidden-members-list">
+          <div className={styles.hiddenMembersBar}>
+            <span className={styles.hiddenMembersLabel}>Hidden Members:</span>
+            <div className={styles.hiddenMembersList}>
               {hiddenUserList.map((email) => {
                 const user = users.find((u) => u.email === email);
                 return (
                   <button
                     key={email}
-                    className="unhide-pill"
+                    className={styles.unhidePill}
                     onClick={() => handleToggleVisibility(email)}
                     title="Click to unhide"
                   >
@@ -577,17 +607,17 @@ const RosterTable = () => {
   }
 
   return (
-    <div className="roster-table-wrapper">
+    <div className={styles.rosterTableWrapper}>
       {!isAbsenceView && hiddenUserList.length > 0 && (
-        <div className="hidden-members-bar">
-          <span className="hidden-members-label">Hidden Members:</span>
-          <div className="hidden-members-list">
+        <div className={styles.hiddenMembersBar}>
+          <span className={styles.hiddenMembersLabel}>Hidden Members:</span>
+          <div className={styles.hiddenMembersList}>
             {hiddenUserList.map((email) => {
               const user = users.find((u) => u.email === email);
               return (
                 <button
                   key={email}
-                  className="unhide-pill"
+                  className={styles.unhidePill}
                   onClick={() => handleToggleVisibility(email)}
                   title="Click to unhide"
                 >
@@ -600,17 +630,19 @@ const RosterTable = () => {
       )}
 
       {!isAbsenceView ? (
-        <div className="roster-section">
-          <div className="roster-table-container">
-            <table className="roster-table">
+        <div className={styles.rosterSection}>
+          <div className={styles.rosterTableContainer}>
+            <table className={styles.rosterTable}>
               <thead>
                 <tr>
-                  <th className="roster-table-header-cell sticky-col sticky-header">
-                    <div className="date-header-content">
+                  <th
+                    className={`${styles.rosterTableHeaderCell} ${styles.stickyCol} sticky-header`}
+                  >
+                    <div className={styles.dateHeaderContent}>
                       Date
-                      <div className="date-header-actions">
+                      <div className={styles.dateHeaderActions}>
                         <button
-                          className="load-prev-btn"
+                          className={styles.loadPrevBtn}
                           onClick={handleLoadPrevious}
                           title="Load 5 previous dates"
                         >
@@ -618,7 +650,7 @@ const RosterTable = () => {
                         </button>
                         {hasPastDates && (
                           <button
-                            className="load-prev-btn reset-dates-btn"
+                            className={`${styles.loadPrevBtn} ${styles.resetDatesBtn}`}
                             onClick={handleResetDates}
                             title="Hide previous dates"
                           >
@@ -628,43 +660,79 @@ const RosterTable = () => {
                       </div>
                     </div>
                   </th>
-                  {sortedUsers.map((user, colIndex) => (
-                    <Fragment key={user.email}>
-                      {genderDividerIndex === colIndex && (
-                        <th className="gender-divider-cell sticky-header" />
-                      )}
-                      <th
-                        className={`roster-table-header-cell sticky-header clickable-header ${
-                          user.email &&
-                          assignedOnClosestDate.includes(user.email)
-                            ? "highlighted-header"
-                            : ""
-                        }`}
-                        onClick={() =>
-                          user.email && handleToggleVisibility(user.email)
-                        }
-                        title="Click to hide member"
-                      >
-                        {user.name}
+                  {currentPosition?.isCustom
+                    ? (currentPosition.customLabels || []).map(
+                        (label, index) => (
+                          <th
+                            key={`custom-${index}`}
+                            className={`${styles.rosterTableHeaderCell} sticky-header`}
+                          >
+                            <input
+                              type="text"
+                              className={styles.headerInput}
+                              value={label}
+                              placeholder="New Heading..."
+                              onChange={(e) =>
+                                handleUpdateCustomLabel(index, e.target.value)
+                              }
+                            />
+                          </th>
+                        ),
+                      )
+                    : sortedUsers.map((user, colIndex) => (
+                        <Fragment key={user.email}>
+                          {genderDividerIndex === colIndex && (
+                            <th
+                              className={`${styles.genderDividerCell} sticky-header`}
+                            />
+                          )}
+                          <th
+                            className={`${styles.rosterTableHeaderCell} sticky-header ${styles.clickableHeader} ${
+                              user.email &&
+                              assignedOnClosestDate.includes(user.email)
+                                ? styles.highlightedHeader
+                                : ""
+                            }`}
+                            onClick={() =>
+                              user.email && handleToggleVisibility(user.email)
+                            }
+                            title="Click to hide member"
+                          >
+                            {user.name}
 
-                        {currentPosition?.sortByGender && (
-                          <span className="gender-label">
-                            (
-                            {user.gender === "Male"
-                              ? "M"
-                              : user.gender === "Female"
-                                ? "F"
-                                : "?"}
-                            )
-                          </span>
-                        )}
-                      </th>
-                    </Fragment>
-                  ))}
-                  <th className="gender-divider-cell sticky-header" />
-                  <th className="roster-table-header-cell sticky-header sticky-right peek-header">
+                            {currentPosition?.sortByGender && (
+                              <span className={styles.genderLabel}>
+                                (
+                                {user.gender === "Male"
+                                  ? "M"
+                                  : user.gender === "Female"
+                                    ? "F"
+                                    : "?"}
+                                )
+                              </span>
+                            )}
+                          </th>
+                        </Fragment>
+                      ))}
+                  {currentPosition?.isCustom && (
+                    <th
+                      className={`${styles.rosterTableHeaderCell} sticky-header`}
+                    >
+                      <button
+                        className={styles.addColumnBtn}
+                        onClick={handleAddCustomLabel}
+                        title="Add Column"
+                      >
+                        <Plus size={16} />
+                      </button>
+                    </th>
+                  )}
+                  <th className={`${styles.genderDividerCell} sticky-header`} />
+                  <th
+                    className={`${styles.rosterTableHeaderCell} sticky-header ${styles.stickyRight} ${styles.peekHeader}`}
+                  >
                     <select
-                      className="peek-selector"
+                      className={styles.peekSelector}
                       value={peekPositionName || ""}
                       onChange={(e) =>
                         setPeekPositionName(e.target.value || null)
@@ -689,95 +757,146 @@ const RosterTable = () => {
                   const rowClass = getRowClass(dateString);
                   const isToday = rowClass === "today-date";
                   const hasData = checkHasAssignments(dateString);
+
+                  const trClasses = [
+                    rowClass === "past-date" ? styles.pastDate : "",
+                    rowClass === "today-date" ? styles.todayDate : "",
+                    rowClass === "future-date" ? styles.futureDate : "",
+                    !hasData ? styles.noData : "",
+                    eventName ? styles.specialEventRow : "",
+                    dateString === closestNextDate
+                      ? styles.closestNextDateRow
+                      : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" ");
+
                   return (
-                    <tr
-                      key={dateString}
-                      className={`${rowClass} ${!hasData ? "no-data" : ""} ${
-                        eventName ? "special-event-row" : ""
-                      } ${dateString === closestNextDate ? "closest-next-date-row" : ""}`}
-                    >
+                    <tr key={dateString} className={trClasses}>
                       <td
-                        className={`date-cell sticky-col ${hasData ? "clickable" : ""}`}
+                        className={`${styles.dateCell} ${styles.stickyCol} ${hasData ? styles.clickable : ""}`}
                         onClick={() => handleDateClick(dateString)}
                         title={eventName}
                       >
-                        <div className="date-cell-content">
-                          {eventName && <span className="special-event-dot" />}
+                        <div className={styles.dateCellContent}>
+                          {eventName && <span className={styles.specialEventDot} />}
                           {isToday && (
-                            <span className="roster-today-dot" title="Today" />
+                            <span className={styles.rosterTodayDot} title="Today" />
                           )}
                           {new Date(
                             dateString.replace(/-/g, "/"),
                           ).toLocaleDateString()}
                         </div>
                       </td>
-                      {sortedUsers.map((user, colIndex) => {
-                        const isFocused =
-                          focusedCell?.row === rowIndex &&
-                          focusedCell?.col === colIndex &&
-                          focusedCell?.table === "roster";
-                        const disabled = user.email
-                          ? isCellDisabled(dateString, user.email)
-                          : false;
-                        const absent = user.email
-                          ? isUserAbsent(dateString, user.email)
-                          : false;
-                        const isAssignedOnClosestDate =
-                          dateString === closestNextDate &&
-                          user.email &&
-                          assignedOnClosestDate.includes(user.email);
+                      {currentPosition?.isCustom
+                        ? (currentPosition.customLabels || []).map(
+                            (label, colIndex) => {
+                              const isFocused =
+                                focusedCell?.row === rowIndex &&
+                                focusedCell?.col === colIndex &&
+                                focusedCell?.table === "roster";
+                              return (
+                                <td
+                                  key={`custom-cell-${colIndex}`}
+                                  className={`${styles.rosterCell} ${styles.clickable} ${isFocused ? styles.focused : ""}`}
+                                  onClick={() => {
+                                    if (label) {
+                                      handleCellClick(
+                                        dateString,
+                                        label,
+                                        rowIndex,
+                                        colIndex,
+                                      );
+                                    }
+                                  }}
+                                  tabIndex={0}
+                                  onFocus={() =>
+                                    setFocusedCell({
+                                      row: rowIndex,
+                                      col: colIndex,
+                                      table: "roster",
+                                    })
+                                  }
+                                >
+                                  {label && getCellContent(dateString, label)}
+                                </td>
+                              );
+                            },
+                          )
+                        : sortedUsers.map((user, colIndex) => {
+                            const isFocused =
+                              focusedCell?.row === rowIndex &&
+                              focusedCell?.col === colIndex &&
+                              focusedCell?.table === "roster";
+                            const disabled = user.email
+                              ? isCellDisabled(dateString, user.email)
+                              : false;
+                            const absent = user.email
+                              ? isUserAbsent(dateString, user.email)
+                              : false;
+                            const isAssignedOnClosestDate =
+                              dateString === closestNextDate &&
+                              user.email &&
+                              assignedOnClosestDate.includes(user.email);
 
-                        return (
-                          <Fragment key={user.email}>
-                            {genderDividerIndex === colIndex && (
-                              <td className="gender-divider-cell" />
-                            )}
-                            <td
-                              className={`roster-cell ${!disabled ? "clickable" : "disabled"} ${
-                                isFocused ? "focused" : ""
-                              } ${absent ? "absent-strike" : ""} ${
-                                isAssignedOnClosestDate
-                                  ? "highlighted-cell"
-                                  : ""
-                              }`}
-                              onClick={() => {
-                                if (user.email && !disabled) {
-                                  handleCellClick(
-                                    dateString,
-                                    user.email,
-                                    rowIndex,
-                                    colIndex,
-                                  );
-                                }
-                              }}
-                              tabIndex={0}
-                              onFocus={() =>
-                                setFocusedCell({
-                                  row: rowIndex,
-                                  col: colIndex,
-                                  table: "roster",
-                                })
-                              }
-                            >
-                              {user.email &&
-                                (absent ? (
-                                  <span
-                                    title={getAbsenceReason(
-                                      dateString,
-                                      user.email,
-                                    )}
-                                  >
-                                    ❌
-                                  </span>
-                                ) : (
-                                  getCellContent(dateString, user.email)
-                                ))}
-                            </td>
-                          </Fragment>
-                        );
-                      })}
-                      <td className="gender-divider-cell" />
-                      <td className="roster-cell peek-cell sticky-right">
+                            return (
+                              <Fragment key={user.email}>
+                                {genderDividerIndex === colIndex && (
+                                  <td className={styles.genderDividerCell} />
+                                )}
+                                <td
+                                  className={`${styles.rosterCell} ${!disabled ? styles.clickable : styles.disabled} ${
+                                    isFocused ? styles.focused : ""
+                                  } ${absent ? styles.absentStrike : ""} ${
+                                    isAssignedOnClosestDate
+                                      ? styles.highlightedCell
+                                      : ""
+                                  }`}
+                                  onClick={() => {
+                                    if (user.email && !disabled) {
+                                      handleCellClick(
+                                        dateString,
+                                        user.email,
+                                        rowIndex,
+                                        colIndex,
+                                      );
+                                    }
+                                  }}
+                                  tabIndex={0}
+                                  onFocus={() =>
+                                    setFocusedCell({
+                                      row: rowIndex,
+                                      col: colIndex,
+                                      table: "roster",
+                                    })
+                                  }
+                                >
+                                  {user.email &&
+                                    (absent ? (
+                                      <span
+                                        title={getAbsenceReason(
+                                          dateString,
+                                          user.email,
+                                        )}
+                                      >
+                                        ❌
+                                      </span>
+                                    ) : (
+                                      getCellContent(dateString, user.email)
+                                    ))}
+                                </td>
+                              </Fragment>
+                            );
+                          })}
+                      {currentPosition?.isCustom && (
+                        <td
+                          className={`${styles.rosterCell} ${styles.disabled}`}
+                        />
+                      )}
+                      <td className={styles.genderDividerCell} />
+                      <td
+                        className={`${styles.rosterCell} ${styles.peekCell} ${styles.stickyRight}`}
+                      >
                         {getPeekAssignedUsers(dateString).join(", ") || ""}
                       </td>
                     </tr>
@@ -786,24 +905,29 @@ const RosterTable = () => {
               </tbody>
             </table>
           </div>
-          <div className="load-more-footer">
-            <button className="load-next-year-btn" onClick={handleLoadNextYear}>
+          <div className={styles.loadMoreFooter}>
+            <button
+              className={styles.loadNextYearBtn}
+              onClick={handleLoadNextYear}
+            >
               Load Next Year ↓
             </button>
           </div>
         </div>
       ) : (
-        <div className="roster-section absence-section">
-          <div className="roster-table-container">
-            <table className="roster-table absence-table">
+        <div className={`${styles.rosterSection} ${styles.absenceSection}`}>
+          <div className={styles.rosterTableContainer}>
+            <table className={`${styles.rosterTable} ${styles.absenceTable}`}>
               <thead>
                 <tr>
-                  <th className="roster-table-header-cell sticky-col sticky-header">
-                    <div className="date-header-content">
+                  <th
+                    className={`${styles.rosterTableHeaderCell} ${styles.stickyCol} sticky-header`}
+                  >
+                    <div className={styles.dateHeaderContent}>
                       Date
-                      <div className="date-header-actions">
+                      <div className={styles.dateHeaderActions}>
                         <button
-                          className="load-prev-btn"
+                          className={styles.loadPrevBtn}
                           onClick={handleLoadPrevious}
                           title="Load 5 previous dates"
                         >
@@ -811,7 +935,7 @@ const RosterTable = () => {
                         </button>
                         {hasPastDates && (
                           <button
-                            className="load-prev-btn reset-dates-btn"
+                            className={`${styles.loadPrevBtn} ${styles.resetDatesBtn}`}
                             onClick={handleResetDates}
                             title="Hide previous dates"
                           >
@@ -824,9 +948,9 @@ const RosterTable = () => {
                   {allTeamUsers.map((user) => (
                     <th
                       key={user.email}
-                      className={`roster-table-header-cell sticky-header ${
+                      className={`${styles.rosterTableHeaderCell} sticky-header ${
                         user.email && assignedOnClosestDate.includes(user.email)
-                          ? "highlighted-header"
+                          ? styles.highlightedHeader
                           : ""
                       }`}
                     >
@@ -834,10 +958,12 @@ const RosterTable = () => {
                     </th>
                   ))}
 
-                  <th className="gender-divider-cell sticky-header" />
-                  <th className="roster-table-header-cell sticky-header sticky-right peek-header">
+                  <th className={`${styles.genderDividerCell} sticky-header`} />
+                  <th
+                    className={`${styles.rosterTableHeaderCell} sticky-header ${styles.stickyRight} ${styles.peekHeader}`}
+                  >
                     <select
-                      className="peek-selector"
+                      className={styles.peekSelector}
                       value={peekPositionName || ""}
                       onChange={(e) =>
                         setPeekPositionName(e.target.value || null)
@@ -862,25 +988,34 @@ const RosterTable = () => {
                   const rowClass = getRowClass(dateString);
                   const isToday = rowClass === "today-date";
                   const hasData = checkHasAssignments(dateString);
+
+                  const trClasses = [
+                    rowClass === "past-date" ? styles.pastDate : "",
+                    rowClass === "today-date" ? styles.todayDate : "",
+                    rowClass === "future-date" ? styles.futureDate : "",
+                    !hasData ? styles.noData : "",
+                    eventName ? styles.specialEventRow : "",
+                    dateString === closestNextDate
+                      ? styles.closestNextDateRow
+                      : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" ");
+
                   return (
-                    <tr
-                      key={dateString}
-                      className={`${rowClass} ${!hasData ? "no-data" : ""} ${
-                        eventName ? "special-event-row" : ""
-                      } ${dateString === closestNextDate ? "closest-next-date-row" : ""}`}
-                    >
+                    <tr key={dateString} className={trClasses}>
                       <td
-                        className={`date-cell sticky-col ${hasData ? "clickable" : ""}`}
+                        className={`${styles.dateCell} ${styles.stickyCol} ${hasData ? styles.clickable : ""}`}
                         onClick={() => handleDateClick(dateString)}
                         title={eventName}
                       >
-                        <div className="date-cell-content">
-                          {eventName && <span className="special-event-dot" />}
+                        <div className={styles.dateCellContent}>
+                          {eventName && <span className={styles.specialEventDot} />}
                           {new Date(
                             dateString.replace(/-/g, "/"),
                           ).toLocaleDateString()}
                           {isToday && (
-                            <span className="roster-today-dot" title="Today" />
+                            <span className={styles.rosterTodayDot} title="Today" />
                           )}
                         </div>
                       </td>
@@ -903,10 +1038,12 @@ const RosterTable = () => {
                         return (
                           <td
                             key={user.email}
-                            className={`roster-cell clickable absence-roster-cell ${
-                              isFocused ? "focused" : ""
-                            } ${absent ? "absent-cell" : ""} ${
-                              isAssignedOnClosestDate ? "highlighted-cell" : ""
+                            className={`${styles.rosterCell} ${styles.clickable} ${styles.absenceRosterCell} ${
+                              isFocused ? styles.focused : ""
+                            } ${absent ? styles.absentCell : ""} ${
+                              isAssignedOnClosestDate
+                                ? styles.highlightedCell
+                                : ""
                             }`}
                             onClick={() => {
                               if (user.email) {
@@ -929,10 +1066,10 @@ const RosterTable = () => {
                             title={reason}
                           >
                             {absent ? (
-                              <div className="absence-input-container">
+                              <div className={styles.absenceInputContainer}>
                                 <input
                                   type="text"
-                                  className="absence-reason-input"
+                                  className={styles.absenceReasonInput}
                                   value={reason}
                                   placeholder="Reason..."
                                   maxLength={20}
@@ -949,7 +1086,7 @@ const RosterTable = () => {
                                   }}
                                 />
                                 <button
-                                  className="remove-absence-btn"
+                                  className={styles.removeAbsenceBtn}
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     if (user.email) {
@@ -972,8 +1109,10 @@ const RosterTable = () => {
                           </td>
                         );
                       })}
-                      <td className="gender-divider-cell" />
-                      <td className="roster-cell peek-cell sticky-right">
+                      <td className={styles.genderDividerCell} />
+                      <td
+                        className={`${styles.rosterCell} ${styles.peekCell} ${styles.stickyRight}`}
+                      >
                         {getPeekAssignedUsers(dateString).join(", ") || ""}
                       </td>
                     </tr>
@@ -982,8 +1121,11 @@ const RosterTable = () => {
               </tbody>
             </table>
           </div>
-          <div className="load-more-footer">
-            <button className="load-next-year-btn" onClick={handleLoadNextYear}>
+          <div className={styles.loadMoreFooter}>
+            <button
+              className={styles.loadNextYearBtn}
+              onClick={handleLoadNextYear}
+            >
               Load Next Year ↓
             </button>
           </div>

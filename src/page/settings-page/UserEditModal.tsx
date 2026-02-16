@@ -1,6 +1,6 @@
 import Modal from "../../components/common/Modal";
 import Pill, { PillGroup } from "../../components/common/Pill";
-import { useAppDispatch } from "../../hooks/redux";
+import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { AppUser, Team } from "../../model/model";
 import { toggleUserTeam, toggleUserTeamPosition } from "../../store/slices/userManagementSlice";
 import styles from "../../styles/settings-common.module.css";
@@ -14,6 +14,7 @@ interface UserEditModalProps {
 
 const UserEditModal = ({ isOpen, onClose, user, availableTeams }: UserEditModalProps) => {
   const dispatch = useAppDispatch();
+  const { positions: globalPositions } = useAppSelector((state) => state.positions);
 
   const handleToggleTeam = (teamName: string) => {
     dispatch(toggleUserTeam({ userId: user.id, teamName }));
@@ -50,15 +51,20 @@ const UserEditModal = ({ isOpen, onClose, user, availableTeams }: UserEditModalP
             const team = availableTeams.find((t) => t.name === teamName);
             if (!team) return null;
 
+            const assignablePositions =
+              team.positions?.filter((pos) => {
+                const gp = globalPositions.find((p) => p.name === pos.name);
+                return !pos.parentId && !gp?.isCustom;
+              }) || [];
+
             return (
               <div key={teamName} className={styles.subSectionGroup}>
                 <div className={styles.subSectionHeader}>
                   {team.emoji} {team.name}
                 </div>
-                <PillGroup>
-                  {team.positions
-                    ?.filter((pos) => !pos.parentId)
-                    ?.map((pos) => {
+                {assignablePositions.length > 0 ? (
+                  <PillGroup>
+                    {assignablePositions.map((pos) => {
                       const isSelected = user.teamPositions?.[teamName]?.includes(pos.name);
                       return (
                         <Pill
@@ -71,7 +77,12 @@ const UserEditModal = ({ isOpen, onClose, user, availableTeams }: UserEditModalP
                         </Pill>
                       );
                     })}
-                </PillGroup>
+                  </PillGroup>
+                ) : (
+                  <p style={{ fontSize: '0.8rem', color: 'var(--color-text-dim)', margin: '8px 0' }}>
+                    No assignable positions for this team.
+                  </p>
+                )}
               </div>
             );
           })}

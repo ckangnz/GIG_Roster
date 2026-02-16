@@ -51,6 +51,7 @@ const PositionManagement = () => {
         colour: p.colour || "",
         parentId: p.parentId || undefined,
         sortByGender: !!p.sortByGender,
+        isCustom: !!p.isCustom,
       }));
     return (
       JSON.stringify(normalize(positions)) !==
@@ -239,6 +240,8 @@ const PositionManagement = () => {
           emoji: p.emoji || "",
           colour: p.colour || "",
           sortByGender: !!p.sortByGender,
+          isCustom: !!p.isCustom,
+          customLabels: p.customLabels || [],
         };
         if (p.parentId) cleanPos.parentId = p.parentId;
         return cleanPos;
@@ -296,6 +299,7 @@ const PositionManagement = () => {
           { text: "Emoji", width: 30 },
           { text: "Colour", minWidth: 100 },
           { text: "Sort by Gender", width: 100, textAlign: "center" },
+          { text: "Custom Headings", width: 100, textAlign: "center" },
           { text: "Add Child", width: 80, textAlign: "center" },
           { text: "Delete", width: 60, textAlign: "center" },
         ]}
@@ -359,8 +363,22 @@ const PositionManagement = () => {
                 }
                 isActive={p.sortByGender}
                 onClick={() => handleUpdate(i, "sortByGender", !p.sortByGender)}
+                isDisabled={p.isCustom}
               >
                 {p.sortByGender ? "YES" : "NO"}
+              </Pill>
+            </SettingsTableAnyCell>
+            <SettingsTableAnyCell textAlign="center">
+              <Pill
+                colour={
+                  p.isCustom
+                    ? "var(--color-success-dark)"
+                    : "var(--color-text-dim)"
+                }
+                isActive={p.isCustom}
+                onClick={() => handleUpdate(i, "isCustom", !p.isCustom)}
+              >
+                {p.isCustom ? "YES" : "NO"}
               </Pill>
             </SettingsTableAnyCell>
             <SettingsTableAnyCell textAlign="center">
@@ -420,8 +438,24 @@ const PositionManagement = () => {
               onClick={() =>
                 setNewPos({ ...newPos, sortByGender: !newPos.sortByGender })
               }
+              isDisabled={newPos.isCustom}
             >
               {newPos.sortByGender ? "YES" : "NO"}
+            </Pill>
+          </SettingsTableAnyCell>
+          <SettingsTableAnyCell textAlign="center">
+            <Pill
+              colour={
+                newPos.isCustom
+                  ? "var(--color-success-dark)"
+                  : "var(--color-text-dim)"
+              }
+              isActive={newPos.isCustom}
+              onClick={() =>
+                setNewPos({ ...newPos, isCustom: !newPos.isCustom })
+              }
+            >
+              {newPos.isCustom ? "YES" : "NO"}
             </Pill>
           </SettingsTableAnyCell>
           <SettingsTableAnyCell textAlign="center">

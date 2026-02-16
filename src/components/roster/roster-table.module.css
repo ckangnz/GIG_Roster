@@ -1,6 +1,6 @@
-.roster-table-container {
+.rosterTableContainer {
   width: 100%;
-  overflow: auto; /* Enable both x and y scrolling for sticky to work */
+  overflow: auto;
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -8,13 +8,13 @@
   border-radius: 8px;
 }
 
-.roster-table {
+.rosterTable {
   width: 100%;
-  border-collapse: separate; /* Required for sticky borders to look right */
+  border-collapse: separate;
   border-spacing: 0;
 }
 
-.roster-table th {
+.rosterTable th {
   padding: 8px 4px;
   text-align: center;
   background-color: var(--background-table-header);
@@ -26,13 +26,13 @@
   font-size: 0.8rem;
 }
 
-.roster-table td {
+.rosterTable td {
   padding: 6px 4px;
   border-bottom: 1px solid var(--border-color-secondary);
   border-right: 1px solid var(--border-color-secondary);
 }
 
-.sticky-col {
+.stickyCol {
   position: sticky;
   left: 0;
   z-index: 30;
@@ -41,47 +41,47 @@
   border-right: 2px solid var(--border-color-secondary) !important;
 }
 
-.roster-table th.sticky-col {
-  z-index: 40; /* Corner cell needs highest z-index */
+.rosterTable th.stickyCol {
+  z-index: 40;
   text-align: left;
 }
 
-.roster-table tr:last-child td {
+.rosterTable tr:last-child td {
   border-bottom: none;
 }
 
-.roster-table th:last-child,
-.roster-table td:last-child {
+.rosterTable th:last-child,
+.rosterTable td:last-child {
   border-right: none;
 }
 
-.roster-table-header-cell {
+.rosterTableHeaderCell {
   font-weight: bold;
   color: var(--color-text-primary);
 }
 
-.roster-table-loading,
-.roster-table-error {
+.rosterTableLoading,
+.rosterTableError {
   padding: 2rem;
   text-align: center;
   color: var(--color-text-dim);
   font-weight: 500;
 }
 
-.roster-table-wrapper {
+.rosterTableWrapper {
   display: flex;
   flex-direction: column;
   flex: 1;
   position: relative;
 }
 
-.load-more-footer {
+.loadMoreFooter {
   display: flex;
   justify-content: center;
   padding: 2rem 0;
 }
 
-.load-next-year-btn {
+.loadNextYearBtn {
   background: transparent;
   border: 1px solid var(--border-color-input);
   color: var(--color-text-dim);
@@ -93,7 +93,7 @@
   transition: all 0.2s;
 }
 
-.load-next-year-btn:hover {
+.loadNextYearBtn:hover {
   background: var(--background-button-secondary);
   border-color: var(--color-link);
   color: var(--color-link);
@@ -114,20 +114,20 @@
   cursor: not-allowed;
 }
 
-.date-cell {
+.dateCell {
   white-space: nowrap;
   background: var(--background-table-header) !important;
   font-size: 0.75rem;
   color: var(--color-text-dim);
-  width: 1%; /* Shrink to fit */
+  width: 1%;
 }
 
-.roster-cell {
+.rosterCell {
   vertical-align: middle;
   min-width: 80px;
 }
 
-.gender-divider-cell {
+.genderDividerCell {
   width: 8px;
   min-width: 8px !important;
   max-width: 8px;
@@ -136,41 +136,41 @@
   border: none !important;
 }
 
-th.gender-divider-cell {
-  z-index: 25; /* Between regular th and sticky col */
+th.genderDividerCell {
+  z-index: 25;
   background-color: var(--border-color-secondary) !important;
 }
 
-.assigned-positions {
+.assignedPositions {
   display: flex;
   justify-content: center;
   gap: 4px;
   flex-wrap: wrap;
 }
 
-.pos-emoji {
+.posEmoji {
   font-size: 1.1rem;
 }
 
-.other-team-emoji {
+.otherTeamEmoji {
   opacity: 0.4;
   font-size: 0.85rem;
   filter: grayscale(0.6);
 }
 
-.date-header-content {
+.dateHeaderContent {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 4px;
 }
 
-.date-header-actions {
+.dateHeaderActions {
   display: flex;
   gap: 4px;
 }
 
-.load-prev-btn {
+.loadPrevBtn {
   background: var(--background-button-secondary);
   border: 1px solid var(--border-color-input);
   color: var(--color-link);
@@ -186,38 +186,28 @@ th.gender-divider-cell {
   font-size: 0.8rem;
 }
 
-.load-prev-btn:hover {
+.loadPrevBtn:hover {
   background: var(--color-link);
   color: white;
   border-color: var(--color-link);
 }
 
-.reset-dates-btn {
+.resetDatesBtn {
   color: var(--color-text-dim);
 }
 
-.reset-dates-btn:hover {
+.resetDatesBtn:hover {
   background: var(--color-error);
   border-color: var(--color-error);
   color: white;
 }
 
-.peek-toggle-btn {
-  color: var(--color-text-dim);
-}
-
-.peek-toggle-btn.active {
-  background: var(--color-link);
-  color: white;
-  border-color: var(--color-link);
-}
-
-.peek-header {
+.peekHeader {
   padding: 4px !important;
   min-width: 140px;
 }
 
-.peek-selector {
+.peekSelector {
   width: 100%;
   background: var(--background-input);
   border: 1px solid var(--border-color-input);
@@ -229,12 +219,12 @@ th.gender-divider-cell {
   cursor: pointer;
 }
 
-.peek-selector:focus {
+.peekSelector:focus {
   outline: 1px solid var(--color-link);
   border-color: var(--color-link);
 }
 
-.peek-cell {
+.peekCell {
   background-color: var(--background-card) !important;
   font-size: 0.75rem;
   color: var(--color-text-primary);
@@ -244,29 +234,28 @@ th.gender-divider-cell {
   line-height: 1.3;
 }
 
-.sticky-right {
-  /* Base (Mobile): Natural flow, not sticky */
+.stickyRight {
   position: static;
   background-color: var(--background-card);
   border-left: 1px solid var(--border-color-secondary) !important;
 }
 
-.roster-table th.sticky-right {
+.rosterTable th.stickyRight {
   z-index: 40;
   background-color: var(--background-table-header);
 }
 
-.clickable-header {
+.clickableHeader {
   cursor: pointer;
   transition: background-color 0.2s;
 }
 
-.clickable-header:hover {
+.clickableHeader:hover {
   background-color: var(--background-primary-subtle);
   color: var(--color-link);
 }
 
-.hidden-members-bar {
+.hiddenMembersBar {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -278,7 +267,7 @@ th.gender-divider-cell {
   flex-wrap: wrap;
 }
 
-.hidden-members-label {
+.hiddenMembersLabel {
   font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -286,13 +275,13 @@ th.gender-divider-cell {
   letter-spacing: 0.5px;
 }
 
-.hidden-members-list {
+.hiddenMembersList {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
 }
 
-.unhide-pill {
+.unhidePill {
   background: var(--background-button-secondary);
   border: 1px solid var(--border-color-input);
   color: var(--color-text-secondary);
@@ -306,18 +295,18 @@ th.gender-divider-cell {
   transition: all 0.2s;
 }
 
-.unhide-pill:hover {
+.unhidePill:hover {
   border-color: var(--color-link);
   color: var(--color-link);
   background: var(--background-primary-subtle);
 }
 
-.unhide-pill span {
+.unhidePill span {
   font-weight: bold;
   font-size: 1rem;
 }
 
-.section-title {
+.sectionTitle {
   font-size: 1.1rem;
   font-weight: 700;
   color: var(--color-text-primary);
@@ -326,48 +315,47 @@ th.gender-divider-cell {
   border-left: 4px solid var(--color-link);
 }
 
-.absent-strike {
+.absentStrike {
   opacity: 1;
   background-color: var(--color-delete-dark) !important;
 }
 
-/* Date States */
-.past-date {
+.pastDate {
   opacity: 0.6;
 }
 
-.no-data {
+.noData {
   opacity: 0.4;
 }
 
-.no-data td.date-cell {
+.noData td.dateCell {
   cursor: default !important;
 }
 
-.past-date td:not(.sticky-col) {
+.pastDate td:not(.stickyCol) {
   background-color: var(--background-body);
 }
 
-.closest-next-date-row,
-.today-date {
+.closestNextDateRow,
+.todayDate {
   background-color: var(--background-primary-subtle);
 }
 
-.closest-next-date-row .sticky-col,
-.today-date .sticky-col {
+.closestNextDateRow .stickyCol,
+.todayDate .stickyCol {
   background-color: var(--background-primary-subtle);
   color: var(--color-link);
   font-weight: bold;
 }
 
-.closest-next-date-row td:not(.peek-cell),
-.today-date td:not(.peek-cell) {
+.closestNextDateRow td:not(.peekCell),
+.todayDate td:not(.peekCell) {
   color: var(--color-link) !important;
   border-bottom: 1px solid var(--color-link);
   border-top: 1px solid var(--color-link);
 }
 
-.date-cell-content {
+.dateCellContent {
   display: flex;
   flex-direction: row;
   justify-content: flex-end;
@@ -375,7 +363,7 @@ th.gender-divider-cell {
   gap: 8px;
 }
 
-.today-badge {
+.todayBadge {
   font-size: 0.6rem;
   background-color: var(--color-link);
   color: white;
@@ -385,55 +373,55 @@ th.gender-divider-cell {
   font-weight: 800;
 }
 
-.closest-next-date-row {
+.closestNextDateRow {
   position: relative;
   background-color: var(--background-primary-subtle);
   z-index: 5;
 }
 
-.highlighted-header {
+.highlightedHeader {
   background-color: var(--background-primary-subtle) !important;
   color: var(--color-link) !important;
 }
 
-.highlighted-cell {
+.highlightedCell {
   background-color: var(--background-primary-subtle) !important;
 }
 
-.special-event-dot {
+.specialEventDot {
   width: 8px;
   height: 8px;
   background-color: var(--color-warning-light);
   border-radius: 50%;
   display: inline-block;
-  margin-right: 8px; /* Changed from margin-left to margin-right for left positioning */
+  margin-right: 8px;
   flex-shrink: 0;
   box-shadow: 0 0 4px #ff9800;
 }
 
-.roster-today-dot {
+.rosterTodayDot {
   width: 8px;
   height: 8px;
   background-color: var(--color-link);
   border-radius: 50%;
   display: inline-block;
-  margin-right: 8px; /* Changed from margin-left to margin-right for left positioning */
+  margin-right: 8px;
   flex-shrink: 0;
   box-shadow: 0 0 4px #ff9800;
 }
 
-.absent-cell {
+.absentCell {
   background-color: rgba(255, 70, 70, 0.05) !important;
 }
 
-.absence-input-container {
+.absenceInputContainer {
   display: flex;
   align-items: center;
   gap: 2px;
   width: 100%;
 }
 
-.absence-reason-input {
+.absenceReasonInput {
   flex: 1;
   background: var(--background-input);
   border: 1px solid var(--border-color-input);
@@ -449,14 +437,14 @@ th.gender-divider-cell {
   transition: border-color 0.2s;
 }
 
-.absence-reason-input:focus {
+.absenceReasonInput:focus {
   outline: 1px solid var(--color-link);
   border-color: var(--color-link);
   background: var(--background-card);
   text-overflow: clip;
 }
 
-.remove-absence-btn {
+.removeAbsenceBtn {
   background: transparent;
   border: none;
   color: var(--color-text-dim);
@@ -472,178 +460,210 @@ th.gender-divider-cell {
   padding: 0;
 }
 
-.remove-absence-btn:hover {
+.removeAbsenceBtn:hover {
   color: var(--color-error);
 }
 
-.absence-roster-cell {
+.absenceRosterCell {
   padding: 4px !important;
 }
 
-.gender-label {
+.genderLabel {
   font-size: 0.7rem;
   opacity: 0.6;
   margin-left: 4px;
   font-weight: normal;
 }
 
-.roster-cell.focused {
+.rosterCell.focused {
   outline: 2px solid var(--color-link);
   outline-offset: -2px;
   background-color: var(--background-primary-subtle);
 }
 
-.roster-cell:focus {
-  outline: none; /* We use the .focused class for custom styling */
+.rosterCell:focus {
+  outline: none;
 }
 
-.active .sticky-col.clickable:hover {
-  color: var(--color-link-hover);
-  text-decoration: underline;
-}
-
-.date-cell.clickable {
+.dateCell.clickable {
   cursor: pointer;
   transition: all 0.2s;
   color: var(--color-text-primary);
   font-weight: 600;
 }
 
-.date-cell.clickable:hover {
+.dateCell.clickable:hover {
   background-color: var(--background-primary-subtle);
   text-decoration: underline;
 }
 
-.no-data {
-  opacity: 0.5;
+.headerInput {
+  background: transparent;
+  border: none;
+  border-bottom: 1px dashed var(--color-link);
+  color: var(--color-text-primary);
+  text-align: center;
+  font-size: 0.85rem;
+  font-weight: bold;
+  padding: 4px;
+  width: 100%;
+  max-width: 120px;
+  outline: none;
+  transition: all 0.2s;
 }
 
-.no-data .date-cell.clickable {
-  cursor: default !important;
+.headerInput:focus {
+  border-bottom-style: solid;
+  background: var(--background-primary-subtle);
+}
+
+.headerInput::placeholder {
   color: var(--color-text-dim);
-  text-decoration: none !important;
+  opacity: 0.5;
+  font-weight: normal;
+}
+
+.addColumnBtn {
+  background: var(--background-button-secondary);
+  border: 1px solid var(--border-color-input);
+  color: var(--color-link);
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin: 0 auto;
+}
+
+.addColumnBtn:hover {
+  background: var(--color-link);
+  color: white;
+  transform: scale(1.1);
 }
 
 /* Tablet and Desktop Styles */
 @media (min-width: 768px) {
-  .roster-table th {
+  .rosterTable th {
     padding: 12px 8px;
     font-size: 0.9rem;
   }
 
-  .roster-table td {
+  .rosterTable td {
     padding: 8px;
   }
 
-  .roster-table-wrapper {
+  .rosterTableWrapper {
     padding-bottom: 80px;
   }
 
-  .load-next-year-btn {
+  .loadNextYearBtn {
     padding: 10px 24px;
     font-size: 0.9rem;
   }
 
-  .date-cell {
+  .dateCell {
     font-size: 0.85rem;
   }
 
-  .roster-cell {
+  .rosterCell {
     min-width: 100px;
   }
 
-  .gender-divider-cell {
+  .genderDividerCell {
     width: 12px;
     min-width: 12px !important;
     max-width: 12px;
   }
 
-  .pos-emoji {
+  .posEmoji {
     font-size: 1.2rem;
   }
 
-  .other-team-emoji {
+  .otherTeamEmoji {
     font-size: 0.9rem;
   }
 
-  .date-header-content {
+  .dateHeaderContent {
     gap: 8px;
   }
 
-  .load-prev-btn {
+  .loadPrevBtn {
     width: 24px;
     height: 24px;
     font-size: 1rem;
   }
 
-  .peek-header {
+  .peekHeader {
     padding: 8px !important;
     min-width: 180px;
   }
 
-  .peek-selector {
+  .peekSelector {
     padding: 6px;
     font-size: 0.8rem;
   }
 
-  .peek-cell {
+  .peekCell {
     font-size: 0.85rem;
     line-height: 1.4;
   }
 
-  .hidden-members-bar {
+  .hiddenMembersBar {
     padding: 12px;
     margin-bottom: 16px;
   }
 
-  .hidden-members-label {
+  .hiddenMembersLabel {
     font-size: 0.75rem;
   }
 
-  .hidden-members-list {
+  .hiddenMembersList {
     gap: 8px;
   }
 
-  .unhide-pill {
+  .unhidePill {
     padding: 4px 12px;
     font-size: 0.8rem;
     gap: 6px;
   }
 
-  .unhide-pill span {
+  .unhidePill span {
     font-size: 1rem;
   }
 
-  .section-title {
+  .sectionTitle {
     font-size: 1.1rem;
     margin-bottom: 1rem;
   }
 
-  .today-badge {
+  .todayBadge {
     font-size: 0.6rem;
     padding: 2px 6px;
   }
 
-  .special-event-dot {
+  .specialEventDot {
     width: 8px;
     height: 8px;
   }
 
-  .absence-reason-input {
+  .absenceReasonInput {
     font-size: 0.8rem;
   }
 
-  .remove-absence-btn {
+  .removeAbsenceBtn {
     font-size: 1.1rem;
     width: 20px;
     height: 20px;
   }
 
-  .gender-label {
+  .genderLabel {
     font-size: 0.7rem;
   }
 
-  .sticky-right {
+  .stickyRight {
     position: sticky;
     right: 0;
     z-index: 30;

@@ -18,9 +18,8 @@ const ProfileSettings = ({ className }: { className?: string }) => {
   const { teams: availableTeams, fetched: teamsFetched } = useAppSelector(
     (state) => state.teams,
   );
-  const { fetched: positionsFetched } = useAppSelector(
-    (state) => state.positions,
-  );
+  const { positions: globalPositions, fetched: positionsFetched } =
+    useAppSelector((state) => state.positions);
 
   const [name, setName] = useState(userData?.name || "");
   const [gender, setGender] = useState(userData?.gender || "");
@@ -188,15 +187,20 @@ const ProfileSettings = ({ className }: { className?: string }) => {
             const team = availableTeams.find((t) => t.name === teamName);
             if (!team) return null;
 
+            const assignablePositions =
+              team.positions?.filter((pos) => {
+                const gp = globalPositions.find((p) => p.name === pos.name);
+                return !pos.parentId && !gp?.isCustom;
+              }) || [];
+
             return (
               <div key={teamName} className={styles.teamPositionGroup}>
                 <div className={styles.teamPositionHeader}>
                   {team.emoji} {team.name}
                 </div>
-                <PillGroup>
-                  {team.positions
-                    ?.filter((pos) => !pos.parentId)
-                    ?.map((pos) => {
+                {assignablePositions.length > 0 ? (
+                  <PillGroup>
+                    {assignablePositions.map((pos) => {
                       const isSelected = teamPositions[teamName]?.includes(
                         pos.name,
                       );
@@ -211,7 +215,12 @@ const ProfileSettings = ({ className }: { className?: string }) => {
                         </Pill>
                       );
                     })}
-                </PillGroup>
+                  </PillGroup>
+                ) : (
+                  <p className={formStyles.fieldHint}>
+                    No assignable positions for this team.
+                  </p>
+                )}
               </div>
             );
           })}
