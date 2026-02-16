@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo } from "react";
 
-import { CornerDownRight, Plus, Trash2 } from "lucide-react";
+import { Plus } from "lucide-react";
 
+import PositionManagementRow from "./PositionManagementRow";
 import Button from "../../components/common/Button";
 import Pill from "../../components/common/Pill";
 import SaveFooter from "../../components/common/SaveFooter";
@@ -12,17 +13,13 @@ import SettingsTable, {
 } from "../../components/common/SettingsTable";
 import Spinner from "../../components/common/Spinner";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
-import { Position as GlobalPosition } from "../../model/model";
+import { Position } from "../../model/model";
 import {
   fetchPositions,
   updatePositions,
 } from "../../store/slices/positionsSlice";
 
 import styles from "./settings-page.module.css";
-
-interface Position extends GlobalPosition {
-  parentId?: string;
-}
 
 const defaultPosition: Position = {
   name: "",
@@ -313,106 +310,17 @@ const PositionManagement = () => {
         ]}
       >
         {positions.map((p, i) => (
-          <tr key={`${p.emoji}-${i}`}>
-            <SettingsTableInputCell
-              name={`name-${i}`}
-              value={p.name}
-              onChange={(e) => handleUpdate(i, "name", e.target.value)}
-              isSticky
-            />
-            <SettingsTableAnyCell textAlign="center">
-              {p.parentId ? (
-                <CornerDownRight />
-              ) : (
-                <div
-                  style={{
-                    display: "flex",
-                    gap: "4px",
-                    justifyContent: "center",
-                  }}
-                >
-                  <Button
-                    variant="secondary"
-                    size="small"
-                    isIcon
-                    onClick={() => move(i, "up")}
-                    disabled={i === 0}
-                  >
-                    ▲
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    size="small"
-                    isIcon
-                    onClick={() => move(i, "down")}
-                    disabled={i === positions.length - 1}
-                  >
-                    ▼
-                  </Button>
-                </div>
-              )}
-            </SettingsTableAnyCell>
-            <SettingsTableInputCell
-              name={`emoji-${i}`}
-              value={p.emoji}
-              onChange={(e) => handleUpdate(i, "emoji", e.target.value)}
-            />
-            <SettingsTableColourInputCell
-              name={`colour-${i}`}
-              value={p.colour}
-              onChange={(e) => handleUpdate(i, "colour", e.target.value)}
-            />
-            <SettingsTableAnyCell textAlign="center">
-              <Pill
-                colour={
-                  p.sortByGender
-                    ? "var(--color-success-dark)"
-                    : "var(--color-text-dim)"
-                }
-                isActive={p.sortByGender}
-                onClick={() => handleUpdate(i, "sortByGender", !p.sortByGender)}
-                isDisabled={p.isCustom}
-              >
-                {p.sortByGender ? "YES" : "NO"}
-              </Pill>
-            </SettingsTableAnyCell>
-            <SettingsTableAnyCell textAlign="center">
-              <Pill
-                colour={
-                  p.isCustom
-                    ? "var(--color-success-dark)"
-                    : "var(--color-text-dim)"
-                }
-                isActive={p.isCustom}
-                onClick={() => handleUpdate(i, "isCustom", !p.isCustom)}
-              >
-                {p.isCustom ? "YES" : "NO"}
-              </Pill>
-            </SettingsTableAnyCell>
-            <SettingsTableAnyCell textAlign="center">
-              {!p.parentId && (
-                <Button
-                  variant="secondary"
-                  size="small"
-                  onClick={() => addChildPosition(p.name)}
-                  title="Add Child Position"
-                >
-                  <Plus size={14} style={{ marginRight: "4px" }} />
-                  Add
-                </Button>
-              )}
-            </SettingsTableAnyCell>
-            <SettingsTableAnyCell textAlign="center">
-              <Button
-                variant="delete"
-                size="small"
-                onClick={() => deletePosition(i)}
-              >
-                <Trash2 size={14} style={{ marginRight: "4px" }} />
-                Delete
-              </Button>
-            </SettingsTableAnyCell>
-          </tr>
+          <PositionManagementRow
+            key={`${p.emoji}-${i}`}
+            position={p}
+            index={i}
+            onUpdate={handleUpdate}
+            onMove={move}
+            onDelete={deletePosition}
+            onAddChild={addChildPosition}
+            isFirst={i === 0}
+            isLast={i === positions.length - 1}
+          />
         ))}
         <tr className="pos-row-new">
           <SettingsTableInputCell
