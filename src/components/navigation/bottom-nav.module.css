@@ -1,64 +1,68 @@
-.bottom-nav-container {
+.bottomNavContainer {
   display: flex;
   justify-content: center;
   background: var(--background-body);
   padding-bottom: constant(safe-area-inset-bottom);
   padding-bottom: env(safe-area-inset-bottom);
   z-index: 10;
-  height: 130px;
+  width: 100%;
 }
 
-.bottom-nav {
+.bottomNav {
   display: flex;
   width: 100%;
   max-width: 600px;
   justify-content: space-around;
+  padding: 8px 0;
 }
 
-.bottom-nav-btn {
+.bottomNavBtn {
   color: var(--color-text-dim);
   background: none;
+  border: none;
   display: flex;
   flex-direction: column;
   align-items: center;
   flex: 1;
   gap: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 @media (hover: hover) {
-  .bottom-nav-btn:hover {
-    transform: translateY(0);
+  .bottomNavBtn:hover {
+    transform: translateY(-2px);
+    color: var(--color-text-primary);
   }
 }
 
-.bottom-nav-btn.bottom-nav-btn-active {
+.bottomNavBtnActive {
   color: var(--color-link);
   background: var(--background-primary-subtle);
 }
 
-.bottom-nav-btn span {
+.bottomNavBtn span {
   font-size: 0.75rem;
   font-weight: 500;
 }
 
+/* Tablet and Desktop - Floating on the bottom right */
 @media (min-width: 768px) {
-  .bottom-nav-container {
-    height: auto;
-    padding: 10px 0;
-    background: transparent;
-    border-top: none;
-    position: fixed;
-    bottom: 0px;
-    right: 16px;
+  .bottomNavContainer {
+    position: absolute;
+    bottom: 24px;
+    right: 24px;
     left: auto;
-    display: flex;
-    justify-content: flex-end;
     width: auto;
+    background: transparent;
+    padding-bottom: 0;
     pointer-events: none;
     z-index: 100;
   }
 
-  .bottom-nav {
+  .bottomNav {
     pointer-events: auto;
     width: auto;
     background: var(--background-card);
@@ -71,7 +75,7 @@
     flex-direction: row;
   }
 
-  .bottom-nav-btn {
+  .bottomNavBtn {
     padding: 8px 16px;
     border-radius: 100px;
     flex-direction: column;
@@ -80,16 +84,16 @@
     align-items: center;
     justify-content: center;
     gap: 4px;
-    color: var(--color-text-dim);
   }
 
   @media (hover: hover) {
-    .bottom-nav-btn:hover {
+    .bottomNavBtn:hover {
       background: var(--background-primary-subtle);
+      transform: translateY(-2px);
     }
   }
 
-  .bottom-nav-btn.bottom-nav-btn-active {
+  .bottomNavBtnActive {
     background: var(--background-primary-subtle);
     color: var(--color-text-primary);
     border-radius: 100px;

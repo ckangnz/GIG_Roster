@@ -1,17 +1,18 @@
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from "react-router-dom";
 
-import { BOTTOM_NAV_ITEMS, AppTab } from '../../constants/navigation';
-import { useAppSelector } from '../../hooks/redux';
-import './bottom-nav.css';
+import { BOTTOM_NAV_ITEMS, AppTab } from "../../constants/navigation";
+import { useAppSelector } from "../../hooks/redux";
+
+import styles from "./bottom-nav.module.css";
 
 const BottomNav = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { lastVisitedPaths } = useAppSelector((state) => state.ui);
 
-  const activeTab = location.pathname.includes('/settings')
+  const activeTab = location.pathname.includes("/settings")
     ? AppTab.SETTINGS
-    : location.pathname.includes('/dashboard')
+    : location.pathname.includes("/dashboard")
       ? AppTab.DASHBOARD
       : AppTab.ROSTER;
 
@@ -19,7 +20,7 @@ const BottomNav = () => {
     if (activeTab === tabId) {
       // If re-clicking the same tab, and it's Dashboard, reset to today
       if (tabId === AppTab.DASHBOARD) {
-        navigate('/app/dashboard');
+        navigate("/app/dashboard");
       }
       return;
     }
@@ -33,12 +34,14 @@ const BottomNav = () => {
   };
 
   return (
-    <nav className="bottom-nav-container">
-      <div className="bottom-nav">
+    <nav className={styles.bottomNavContainer}>
+      <div className={styles.bottomNav}>
         {BOTTOM_NAV_ITEMS.map((item) => (
           <button
             key={item.id}
-            className={`bottom-nav-btn ${activeTab === item.id ? 'bottom-nav-btn-active' : ''}`}
+            className={`${styles.bottomNavBtn} ${
+              activeTab === item.id ? styles.bottomNavBtnActive : ""
+            }`}
             onClick={() => handleTabChange(item.id)}
           >
             <span>{item.icon}</span>

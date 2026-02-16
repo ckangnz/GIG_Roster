@@ -1,0 +1,44 @@
+.layoutWrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100svh;
+  height: 100dvh;
+  width: 100vw;
+  background-color: var(--background-app-shell);
+  color: var(--color-text-primary);
+  overflow: hidden;
+}
+
+.innerWrapper {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  position: relative;
+}
+
+.mainContent {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Tablet and Desktop */
+@media (min-width: 768px) {
+  .layoutWrapper {
+    flex-direction: row;
+  }
+
+  .innerWrapper {
+    flex: 1;
+    min-width: 0;
+  }
+}

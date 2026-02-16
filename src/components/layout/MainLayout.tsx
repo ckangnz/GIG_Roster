@@ -12,7 +12,8 @@ import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { setLastVisitedPath } from "../../store/slices/uiSlice";
 import BottomNav from "../navigation/BottomNav";
 import SideNav from "../navigation/SideNav";
-import "./main-layout.css";
+
+import styles from "./main-layout.module.css";
 
 const MainLayout = () => {
   const dispatch = useAppDispatch();
@@ -22,13 +23,12 @@ const MainLayout = () => {
 
   const { userData } = useAppSelector((state) => state.auth);
   const { teams: allTeams } = useAppSelector((state) => state.teams);
-  const { isMobileSidebarOpen, isDesktopSidebarExpanded, lastVisitedPaths } = useAppSelector(
-    (state) => state.ui,
-  );
+  const { isMobileSidebarOpen, isDesktopSidebarExpanded, lastVisitedPaths } =
+    useAppSelector((state) => state.ui);
 
-  const activeTab = location.pathname.includes('/settings')
+  const activeTab = location.pathname.includes("/settings")
     ? AppTab.SETTINGS
-    : location.pathname.includes('/dashboard')
+    : location.pathname.includes("/dashboard")
       ? AppTab.DASHBOARD
       : AppTab.ROSTER;
   const { teamName: activeTeamName, positionName, section } = params;
@@ -60,7 +60,8 @@ const MainLayout = () => {
   ]);
 
   useEffect(() => {
-    const isBaseApp = location.pathname === "/app" || location.pathname === "/app/";
+    const isBaseApp =
+      location.pathname === "/app" || location.pathname === "/app/";
     const isBaseRoster = activeTab === AppTab.ROSTER && !activeTeamName;
     const isBaseSettings = activeTab === AppTab.SETTINGS && !activeSideItem;
 
@@ -113,31 +114,22 @@ const MainLayout = () => {
     return activeSideItem ? `${tabLabel} • ${activeSideItem}` : tabLabel;
   };
 
-  const appShellClasses = [
-    "app-shell",
-    isMobileSidebarOpen ? "menu-open" : "",
-    !isDesktopSidebarExpanded ? "sidebar-collapsed" : "sidebar-expanded",
-    !hasSideNav ? "no-sidebar" : "",
-  ]
-    .filter(Boolean)
-    .join(" ");
-
   return (
-    <>
-      <MobileHeader title={getHeaderTitle()} hasSideNav={hasSideNav} />
+    <div
+      className={`${styles.layoutWrapper} ${isMobileSidebarOpen ? styles.menuOpen : ""} ${!isDesktopSidebarExpanded ? styles.sidebarCollapsed : styles.sidebarExpanded}`}
+    >
+      {hasSideNav && <SideNav />}
 
-      <div className={appShellClasses}>
-        {hasSideNav && <SideNav />}
+      <div className={styles.innerWrapper}>
+        <MobileHeader title={getHeaderTitle()} hasSideNav={hasSideNav} />
 
-        <main className="main-content">
-          <div className="content-container">
-            <Outlet />
-          </div>
+        <main className={styles.mainContent}>
+          <Outlet />
         </main>
 
         <BottomNav />
       </div>
-    </>
+    </div>
   );
 };
 

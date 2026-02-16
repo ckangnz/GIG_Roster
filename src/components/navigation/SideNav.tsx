@@ -17,7 +17,8 @@ import {
   toggleTeamExpansion,
 } from "../../store/slices/uiSlice";
 import ThemeToggleButton from "../common/ThemeToggleButton";
-import "./side-nav.css";
+
+import styles from "./side-nav.module.css";
 
 const SideNav = () => {
   const navigate = useNavigate();
@@ -26,9 +27,8 @@ const SideNav = () => {
   const dispatch = useAppDispatch();
 
   const { userData } = useAppSelector((state) => state.auth);
-  const { isDesktopSidebarExpanded, expandedTeams } = useAppSelector(
-    (state) => state.ui,
-  );
+  const { isDesktopSidebarExpanded, isMobileSidebarOpen, expandedTeams } =
+    useAppSelector((state) => state.ui);
   const {
     teams: allTeams,
     fetched: teamsFetched,
@@ -81,13 +81,21 @@ const SideNav = () => {
     return activeSideItem ? `${tabLabel} • ${activeSideItem}` : tabLabel;
   };
 
+  const sideNavClasses = [
+    styles.sideNav,
+    isMobileSidebarOpen ? styles.menuOpen : "",
+    !isDesktopSidebarExpanded ? styles.sidebarCollapsed : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
   return (
-    <aside className="side-nav">
-      <div className="sidebar-content">
-        <div className="tablet-sidebar-header">
+    <aside className={sideNavClasses}>
+      <div className={styles.sidebarContent}>
+        <div className={styles.tabletSidebarHeader}>
           {isDesktopSidebarExpanded && <h3>{getHeaderTitle()}</h3>}
           <button
-            className="sidebar-toggle-button"
+            className={styles.sidebarToggleButton}
             onClick={() =>
               dispatch(setDesktopSidebarExpanded(!isDesktopSidebarExpanded))
             }
@@ -103,9 +111,11 @@ const SideNav = () => {
           </button>
         </div>
 
-        <nav className="side-menu-list">
+        <nav className={styles.sideMenuList}>
           {activeTab === AppTab.ROSTER && teamsLoading && (
-            <div className="side-nav-item loading">Loading teams...</div>
+            <div className={`${styles.sideNavItem} ${styles.loading}`}>
+              Loading teams...
+            </div>
           )}
 
           {activeTab === AppTab.ROSTER
@@ -121,71 +131,83 @@ const SideNav = () => {
                   <div key={team.name}>
                     {!hasOneTeam && (
                       <div
-                        className="sidenav-menu-subheading sidenav-menu-subheading-clickable"
+                        className={`${styles.sidenavMenuSubheading} ${styles.sidenavMenuSubheadingClickable}`}
                         style={{ cursor: "pointer" }}
                         onClick={() => handleToggleTeamExpansion(team.name)}
                       >
                         <div>
                           {team.emoji} {isDesktopSidebarExpanded && team.name}
                         </div>
-                        <span className="expand-icon">
+                        <span className={styles.expandIcon}>
                           {isTeamExpanded ? "▼" : "▶"}
                         </span>
                       </div>
                     )}
                     {isTeamExpanded && (
-                      <div className="side-nav-sub-items">
+                      <div className={styles.sideNavSubItems}>
                         {team.positions
                           ?.filter((pos) => !pos.parentId)
                           ?.map((pos) => {
                             const isActive =
-                              activeSideItem === pos.name && activeTeamName === team.name;
+                              activeSideItem === pos.name &&
+                              activeTeamName === team.name;
                             return (
                               <button
                                 key={pos.name}
-                                className={`side-nav-item side-nav-item-sub ${
-                                  isActive ? 'side-nav-item-active' : ''
+                                className={`${styles.sideNavItem} ${styles.sideNavItemSub} ${
+                                  isActive ? styles.sideNavItemActive : ""
                                 }`}
                                 onClick={() => {
-                                  handleNavItemClick(`/app/roster/${team.name}/${pos.name}`);
+                                  handleNavItemClick(
+                                    `/app/roster/${team.name}/${pos.name}`,
+                                  );
                                   dispatch(setMobileSidebarOpen(false));
                                 }}
                                 style={{
                                   borderLeft: isActive
                                     ? `4px solid ${pos.colour}`
-                                    : '4px solid transparent',
-                                  backgroundColor: isActive ? `${pos.colour}15` : 'transparent',
-                                  color: isActive ? pos.colour : '',
+                                    : "4px solid transparent",
+                                  backgroundColor: isActive
+                                    ? `${pos.colour}15`
+                                    : "transparent",
+                                  color: isActive ? pos.colour : "",
                                 }}
                               >
-                                <span className="side-emoji">{pos.emoji}</span>{' '}
+                                <span className={styles.sideEmoji}>
+                                  {pos.emoji}
+                                </span>{" "}
                                 {isDesktopSidebarExpanded && pos.name}
                               </button>
                             );
                           })}
                         <button
-                          className={`side-nav-item side-nav-item-sub ${
-                            activeSideItem === 'Absence' && activeTeamName === team.name
-                              ? 'side-nav-item-active'
-                              : ''
+                          className={`${styles.sideNavItem} ${styles.sideNavItemSub} ${
+                            activeSideItem === "Absence" &&
+                            activeTeamName === team.name
+                              ? styles.sideNavItemActive
+                              : ""
                           }`}
                           onClick={() => {
-                            handleNavItemClick(`/app/roster/${team.name}/Absence`);
+                            handleNavItemClick(
+                              `/app/roster/${team.name}/Absence`,
+                            );
                             dispatch(setMobileSidebarOpen(false));
                           }}
                           style={{
                             borderLeft:
-                              activeSideItem === 'Absence' && activeTeamName === team.name
-                                ? '4px solid var(--color-error)'
-                                : '4px solid transparent',
+                              activeSideItem === "Absence" &&
+                              activeTeamName === team.name
+                                ? "4px solid var(--color-error)"
+                                : "4px solid transparent",
                             backgroundColor:
-                              activeSideItem === 'Absence' && activeTeamName === team.name
-                                ? 'var(--background-toggle-off-transparent)'
-                                : 'transparent',
+                              activeSideItem === "Absence" &&
+                              activeTeamName === team.name
+                                ? "var(--background-toggle-off-transparent)"
+                                : "transparent",
                           }}
                         >
-                          <span className="side-emoji">🏥</span>{' '}
-                          {isDesktopSidebarExpanded && 'Absence'}
+                          <span className={styles.sideEmoji}>🏥</span>{" "}
+                          {isDesktopSidebarExpanded && "Absence"}
                         </button>
                       </div>
                     )}
@@ -196,15 +218,15 @@ const SideNav = () => {
                 (item) => (
                   <button
                     key={item.id}
-                    className={`side-nav-item ${
-                      activeSideItem === item.id ? "side-nav-item-active" : ""
+                    className={`${styles.sideNavItem} ${
+                      activeSideItem === item.id ? styles.sideNavItemActive : ""
                     }`}
                     onClick={() => {
                       handleNavItemClick(`/app/settings/${item.id}`);
                       dispatch(setMobileSidebarOpen(false));
                     }}
                   >
-                    <span className="side-emoji">{item.icon}</span>{" "}
+                    <span className={styles.sideEmoji}>{item.icon}</span>{" "}
                     {isDesktopSidebarExpanded && item.label}
                   </button>
                 ),
@@ -213,28 +235,28 @@ const SideNav = () => {
       </div>
 
       {userData?.isAdmin && activeTab === AppTab.SETTINGS && (
-        <div className="admin-only-section-wrapper">
-          <div className="sidenav-menu-subheading">
+        <div className={styles.adminOnlySectionWrapper}>
+          <div className={styles.sidenavMenuSubheading}>
             {isDesktopSidebarExpanded && <h4>Admin Only</h4>}
           </div>
           {SETTINGS_NAV_ITEMS.filter((item) => item.adminOnly).map((item) => (
             <button
               key={item.id}
-              className={`side-nav-item ${
-                activeSideItem === item.id ? "side-nav-item-active" : ""
+              className={`${styles.sideNavItem} ${
+                activeSideItem === item.id ? styles.sideNavItemActive : ""
               }`}
               onClick={() => {
                 handleNavItemClick(`/app/settings/${item.id}`);
                 dispatch(setMobileSidebarOpen(false));
               }}
             >
-              <span className="side-emoji">{item.icon}</span>{" "}
+              <span className={styles.sideEmoji}>{item.icon}</span>{" "}
               {isDesktopSidebarExpanded && item.label}
             </button>
           ))}
         </div>
       )}
-      <div className="sidebar-footer">
+      <div className={styles.sidebarFooter}>
         <ThemeToggleButton showText={isDesktopSidebarExpanded} />
       </div>
     </aside>
