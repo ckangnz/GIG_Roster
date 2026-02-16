@@ -188,7 +188,9 @@ const TeamManagement = () => {
       setTimeout(() => setStatus("idle"), 2000);
     } catch (e) {
       console.error("Save Error:", e);
-      alert("Error saving: " + (e instanceof Error ? e.message : "Unknown error"));
+      alert(
+        "Error saving: " + (e instanceof Error ? e.message : "Unknown error"),
+      );
       setStatus("idle");
     }
   };
@@ -217,11 +219,17 @@ const TeamManagement = () => {
     <div className={styles.managementWrapper}>
       <SettingsTable
         headers={[
-          { text: "Name", minWidth: 100, isSticky: true },
-          { text: "Order", minWidth: 50, textAlign: "center" },
-          { text: "Emoji", width: 30 },
+          {
+            text: "Name",
+            minWidth: 100,
+            width: 120,
+            textAlign: "center",
+            isSticky: true,
+          },
+          { text: "Order", width: 30, textAlign: "center" },
+          { text: "Emoji", width: 30, textAlign: "center" },
           { text: "Conflicts", width: 60, textAlign: "center" },
-          { text: "Config", minWidth: 150 },
+          { text: "Config", minWidth: 180, textAlign: "center" },
           { text: "", width: 50 },
         ]}
       >

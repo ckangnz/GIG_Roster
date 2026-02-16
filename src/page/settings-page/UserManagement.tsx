@@ -67,10 +67,16 @@ const UserManagement = () => {
     <div className={styles.managementWrapper}>
       <SettingsTable
         headers={[
-          { text: "Name", minWidth: 70, isSticky: true },
-          { text: "Email", minWidth: 170 },
-          { text: "Gender", minWidth: 90 },
-          { text: "Assignments", minWidth: 150 },
+          {
+            text: "Name",
+            minWidth: 70,
+            width: 100,
+            textAlign: "center",
+            isSticky: true,
+          },
+          { text: "Email", minWidth: 170, textAlign: "center" },
+          { text: "Gender", minWidth: 90, textAlign: "center" },
+          { text: "Assignments", minWidth: 150, textAlign: "center" },
           { text: "Active", minWidth: 95, textAlign: "center" },
           { text: "Approved", minWidth: 95, textAlign: "center" },
           { text: "Admin", minWidth: 95, textAlign: "center" },

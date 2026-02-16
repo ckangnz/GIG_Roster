@@ -251,7 +251,9 @@ const PositionManagement = () => {
       setTimeout(() => setStatus("idle"), 2000);
     } catch (e) {
       console.error("Save Error:", e);
-      alert("Error saving: " + (e instanceof Error ? e.message : "Unknown error"));
+      alert(
+        "Error saving: " + (e instanceof Error ? e.message : "Unknown error"),
+      );
       setStatus("idle");
     }
   };
@@ -294,10 +296,16 @@ const PositionManagement = () => {
     <div className={styles.managementWrapper}>
       <SettingsTable
         headers={[
-          { text: "Name", minWidth: 80, textAlign: "center", isSticky: true },
-          { text: "Order", minWidth: 50 },
-          { text: "Emoji", width: 30 },
-          { text: "Colour", minWidth: 100 },
+          {
+            text: "Name",
+            minWidth: 80,
+            width: 200,
+            textAlign: "center",
+            isSticky: true,
+          },
+          { text: "Order", width: 30, textAlign: "center" },
+          { text: "Emoji", width: 30, textAlign: "center" },
+          { text: "Colour", minWidth: 100, textAlign: "center" },
           { text: "Sort by Gender", width: 100, textAlign: "center" },
           { text: "Custom Headings", width: 100, textAlign: "center" },
           { text: "Add Child", width: 80, textAlign: "center" },
