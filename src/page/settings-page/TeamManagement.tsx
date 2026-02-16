@@ -1,12 +1,14 @@
 import { useState, useEffect, useMemo } from "react";
 
-import Pill, { PillGroup } from "../../components/common/Pill";
+import TeamEditModal from "./TeamEditModal";
+import TeamManagementRow from "./TeamManagementRow";
 import SaveFooter from "../../components/common/SaveFooter";
 import SettingsTable, {
   SettingsTableAnyCell,
   SettingsTableInputCell,
 } from "../../components/common/SettingsTable";
 import Spinner from "../../components/common/Spinner";
+import SummaryCell from "../../components/common/SummaryCell";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { Position, Team, Weekday } from "../../model/model";
 import { fetchPositions } from "../../store/slices/positionsSlice";
@@ -21,16 +23,6 @@ const defaultTeam: Team = {
   preferredDays: [],
   maxConflict: 1,
 };
-
-const WEEK_DAYS: Weekday[] = [
-  "Sunday",
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
-];
 
 const TeamManagement = () => {
   const dispatch = useAppDispatch();
@@ -48,6 +40,7 @@ const TeamManagement = () => {
   const [teams, setTeams] = useState<Team[]>(reduxTeams);
   const [newTeam, setNewTeam] = useState<Team>(defaultTeam);
   const [status, setStatus] = useState("idle");
+  const [isNewTeamModalOpen, setIsNewTeamModalOpen] = useState(false);
 
   const hasChanges = useMemo(() => {
     return JSON.stringify(teams) !== JSON.stringify(reduxTeams);
@@ -114,6 +107,22 @@ const TeamManagement = () => {
     setTeams(updatedTeams);
   };
 
+  const toggleNewTeamPosition = (pos: Position) => {
+    const currentPositions = newTeam.positions || [];
+    const newPositions = currentPositions.some((p) => p.name === pos.name)
+      ? currentPositions.filter((p) => p.name !== pos.name)
+      : [...currentPositions, pos];
+    setNewTeam({ ...newTeam, positions: newPositions });
+  };
+
+  const toggleNewTeamDay = (day: Weekday) => {
+    const currentDays = newTeam.preferredDays || [];
+    const newDays = currentDays.includes(day)
+      ? currentDays.filter((d) => d !== day)
+      : [...currentDays, day];
+    setNewTeam({ ...newTeam, preferredDays: newDays });
+  };
+
   const addTeam = () => {
     if (!newTeam.name.trim() || !newTeam.emoji.trim()) {
       return alert("Please provide both an emoji and a name for the team.");
@@ -151,128 +160,59 @@ const TeamManagement = () => {
     return <Spinner />;
   }
 
+  const getNewTeamPositionsSummary = () => {
+    if (!newTeam.positions || newTeam.positions.length === 0)
+      return "No positions";
+    return newTeam.positions.map((p) => p.emoji).join(" ");
+  };
+
+  const getNewTeamDaysSummary = () => {
+    if (!newTeam.preferredDays || newTeam.preferredDays.length === 0)
+      return "No days";
+    return newTeam.preferredDays.map((d) => d.substring(0, 3)).join(", ");
+  };
+
   return (
     <div className={styles.managementWrapper}>
       <SettingsTable
         headers={[
+          { text: "Name", minWidth: 100, isSticky: true },
           { text: "Order", minWidth: 50, textAlign: "center" },
           { text: "Emoji", width: 30 },
-          { text: "Name", minWidth: 100 },
           { text: "Conflicts", width: 60, textAlign: "center" },
-          { text: "Allowed Positions", minWidth: 200 },
-          { text: "Preferred Days", minWidth: 250 },
+          { text: "Config", minWidth: 150 },
           { text: "", width: 50 },
         ]}
       >
         {teams.map((team, teamIndex) => (
-          <tr key={`${team.emoji}-${teamIndex}`}>
-            <SettingsTableAnyCell>
-              {" "}
-              <div
-                style={{
-                  display: "flex",
-                  gap: "4px",
-                  justifyContent: "center",
-                }}
-              >
-                <button
-                  className="icon-button icon-button--small icon-button--secondary"
-                  onClick={() => move(teamIndex, "up")}
-                  disabled={teamIndex === 0}
-                >
-                  ▲
-                </button>
-                <button
-                  className="icon-button icon-button--small icon-button--secondary"
-                  onClick={() => move(teamIndex, "down")}
-                  disabled={teamIndex === teams.length - 1}
-                >
-                  ▼
-                </button>
-              </div>
-            </SettingsTableAnyCell>
-            <SettingsTableInputCell
-              name={`team-emoji-${teamIndex}`}
-              value={team.emoji}
-              onChange={(e) => handleUpdate(teamIndex, "emoji", e.target.value)}
-            />
-            <SettingsTableInputCell
-              name={`team-name-${teamIndex}`}
-              value={team.name}
-              onChange={(e) => handleUpdate(teamIndex, "name", e.target.value)}
-            />
-            <SettingsTableInputCell
-              name={`team-maxConflict-${teamIndex}`}
-              value={team.maxConflict?.toString() || "1"}
-              type="number"
-              onChange={(e) =>
-                handleUpdate(
-                  teamIndex,
-                  "maxConflict",
-                  parseInt(e.target.value) || 1,
-                )
-              }
-            />
-            <SettingsTableAnyCell>
-              <PillGroup nowrap>
-                {availablePositions
-                  ?.filter((pos) => !pos.parentId)
-                  ?.map((pos) => {
-                    const isActive = team.positions?.some(
-                      (p) => p.name === pos.name,
-                    );
-                    return (
-                      <Pill
-                        key={pos.name}
-                        colour={pos.colour}
-                        isActive={isActive}
-                        onClick={() => togglePosition(teamIndex, pos)}
-                      >
-                        {pos.emoji}
-                      </Pill>
-                    );
-                  })}
-              </PillGroup>
-            </SettingsTableAnyCell>
-            <SettingsTableAnyCell>
-              <PillGroup nowrap>
-                {WEEK_DAYS.map((day) => {
-                  const isActive = team.preferredDays?.includes(day);
-                  return (
-                    <Pill
-                      key={day}
-                      isActive={isActive}
-                      onClick={() => toggleDay(teamIndex, day)}
-                    >
-                      {day.substring(0, 3)}
-                    </Pill>
-                  );
-                })}
-              </PillGroup>
-            </SettingsTableAnyCell>
-            <SettingsTableAnyCell>
-              <button
-                className="icon-button icon-button--delete"
-                onClick={() => deleteTeam(teamIndex)}
-              >
-                ×
-              </button>
-            </SettingsTableAnyCell>
-          </tr>
+          <TeamManagementRow
+            key={`${team.emoji}-${teamIndex}`}
+            team={team}
+            teamIndex={teamIndex}
+            availablePositions={availablePositions}
+            onUpdate={handleUpdate}
+            onMove={move}
+            onDelete={deleteTeam}
+            onTogglePosition={togglePosition}
+            onToggleDay={toggleDay}
+            isFirst={teamIndex === 0}
+            isLast={teamIndex === teams.length - 1}
+          />
         ))}
         <tr className="team-row-new">
-          <td className="">{""}</td>
-          <SettingsTableInputCell
-            name={`new-team-emoji`}
-            value={newTeam.emoji}
-            placeholder="✨"
-            onChange={(e) => setNewTeam({ ...newTeam, emoji: e.target.value })}
-          />
           <SettingsTableInputCell
             name={`new-team-name`}
             value={newTeam.name}
             placeholder="Team Name"
             onChange={(e) => setNewTeam({ ...newTeam, name: e.target.value })}
+            isSticky
+          />
+          <SettingsTableAnyCell>{""}</SettingsTableAnyCell>
+          <SettingsTableInputCell
+            name={`new-team-emoji`}
+            value={newTeam.emoji}
+            placeholder="✨"
+            onChange={(e) => setNewTeam({ ...newTeam, emoji: e.target.value })}
           />
           <SettingsTableInputCell
             name={`new-team-maxConflict`}
@@ -286,61 +226,11 @@ const TeamManagement = () => {
             }
           />
           <SettingsTableAnyCell>
-            <PillGroup nowrap>
-              {availablePositions
-                ?.filter((pos) => !pos.parentId)
-                ?.map((pos) => {
-                  const isActive = newTeam.positions?.some(
-                    (p) => p.name === pos.name,
-                  );
-                  return (
-                    <Pill
-                      key={`new-${pos.name}`}
-                      colour={pos.colour}
-                      isActive={isActive}
-                      onClick={() =>
-                        setNewTeam((prev) => {
-                          const currentPositions = prev.positions || [];
-                          const newPositions = currentPositions.some(
-                            (p) => p.name === pos.name,
-                          )
-                            ? currentPositions.filter(
-                                (p) => p.name !== pos.name,
-                              )
-                            : [...currentPositions, pos];
-                          return { ...prev, positions: newPositions };
-                        })
-                      }
-                    >
-                      {pos.emoji}
-                    </Pill>
-                  );
-                })}
-            </PillGroup>
-          </SettingsTableAnyCell>
-          <SettingsTableAnyCell>
-            <PillGroup nowrap>
-              {WEEK_DAYS.map((day) => {
-                const isActive = newTeam.preferredDays?.includes(day);
-                return (
-                  <Pill
-                    key={`new-team-${day}`}
-                    isActive={isActive}
-                    onClick={() =>
-                      setNewTeam((prev) => {
-                        const currentDays = prev.preferredDays || [];
-                        const newDays = currentDays.includes(day)
-                          ? currentDays.filter((d) => d !== day)
-                          : [...currentDays, day];
-                        return { ...prev, preferredDays: newDays };
-                      })
-                    }
-                  >
-                    {day.substring(0, 3)}
-                  </Pill>
-                );
-              })}
-            </PillGroup>
+            <SummaryCell
+              primaryText={getNewTeamPositionsSummary()}
+              secondaryText={getNewTeamDaysSummary()}
+              onClick={() => setIsNewTeamModalOpen(true)}
+            />
           </SettingsTableAnyCell>
           <SettingsTableAnyCell>
             <button
@@ -353,6 +243,15 @@ const TeamManagement = () => {
           </SettingsTableAnyCell>
         </tr>
       </SettingsTable>
+
+      <TeamEditModal
+        isOpen={isNewTeamModalOpen}
+        onClose={() => setIsNewTeamModalOpen(false)}
+        team={newTeam}
+        availablePositions={availablePositions}
+        onTogglePosition={toggleNewTeamPosition}
+        onToggleDay={toggleNewTeamDay}
+      />
 
       {hasChanges && (
         <SaveFooter

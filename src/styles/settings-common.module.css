@@ -1,0 +1,63 @@
+.settingsSection {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-color-input);
+}
+
+.sectionLabel {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--color-text-dim);
+  letter-spacing: 1px;
+  margin-bottom: 16px;
+}
+
+.subSectionGroup {
+  margin-bottom: 24px;
+}
+
+.subSectionHeader {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.formGroup {
+  margin-bottom: 20px;
+}
+
+.summaryButton {
+  background: var(--background-button-secondary);
+  border: 1px solid var(--border-color-input);
+  color: var(--color-text-primary);
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  justify-content: flex-start;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.summaryButton:hover {
+  background: var(--background-primary-subtle);
+  border-color: var(--color-link);
+}
+
+.summaryPrimary {
+  font-size: 1.1rem;
+  margin-right: 8px;
+}
+
+.summarySecondary {
+  font-size: 0.75rem;
+  opacity: 0.7;
+}

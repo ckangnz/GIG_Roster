@@ -1,0 +1,120 @@
+import { useState } from "react";
+
+import TeamEditModal from "./TeamEditModal";
+import {
+  SettingsTableAnyCell,
+  SettingsTableInputCell,
+} from "../../components/common/SettingsTable";
+import SummaryCell from "../../components/common/SummaryCell";
+import { Position, Team, Weekday } from "../../model/model";
+
+interface TeamManagementRowProps {
+  team: Team;
+  teamIndex: number;
+  availablePositions: Position[];
+  onUpdate: (index: number, field: keyof Team, value: Team[keyof Team]) => void;
+  onMove: (index: number, direction: "up" | "down") => void;
+  onDelete: (index: number) => void;
+  onTogglePosition: (teamIndex: number, pos: Position) => void;
+  onToggleDay: (teamIndex: number, day: Weekday) => void;
+  isFirst: boolean;
+  isLast: boolean;
+}
+
+const TeamManagementRow = ({
+  team,
+  teamIndex,
+  availablePositions,
+  onUpdate,
+  onMove,
+  onDelete,
+  onTogglePosition,
+  onToggleDay,
+  isFirst,
+  isLast,
+}: TeamManagementRowProps) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const getPositionsSummary = () => {
+    if (!team.positions || team.positions.length === 0) return "No positions";
+    return team.positions.map((p) => p.emoji).join(" ");
+  };
+
+  const getDaysSummary = () => {
+    if (!team.preferredDays || team.preferredDays.length === 0)
+      return "No days";
+    return team.preferredDays.map((d) => d.substring(0, 3)).join(", ");
+  };
+
+  return (
+    <>
+      <tr>
+        <SettingsTableInputCell
+          name={`team-name-${teamIndex}`}
+          value={team.name}
+          onChange={(e) => onUpdate(teamIndex, "name", e.target.value)}
+          isSticky
+        />
+        <SettingsTableAnyCell>
+          <div
+            style={{ display: "flex", gap: "4px", justifyContent: "center" }}
+          >
+            <button
+              className="icon-button icon-button--small icon-button--secondary"
+              onClick={() => onMove(teamIndex, "up")}
+              disabled={isFirst}
+            >
+              ▲
+            </button>
+            <button
+              className="icon-button icon-button--small icon-button--secondary"
+              onClick={() => onMove(teamIndex, "down")}
+              disabled={isLast}
+            >
+              ▼
+            </button>
+          </div>
+        </SettingsTableAnyCell>
+        <SettingsTableInputCell
+          name={`team-emoji-${teamIndex}`}
+          value={team.emoji}
+          onChange={(e) => onUpdate(teamIndex, "emoji", e.target.value)}
+        />
+        <SettingsTableInputCell
+          name={`team-maxConflict-${teamIndex}`}
+          value={team.maxConflict?.toString() || "1"}
+          type="number"
+          onChange={(e) =>
+            onUpdate(teamIndex, "maxConflict", parseInt(e.target.value) || 1)
+          }
+        />
+        <SettingsTableAnyCell>
+          <SummaryCell
+            primaryText={getPositionsSummary()}
+            secondaryText={getDaysSummary()}
+            onClick={() => setIsModalOpen(true)}
+          />
+        </SettingsTableAnyCell>
+        <SettingsTableAnyCell>
+          <button
+            className="icon-button icon-button--delete"
+            onClick={() => onDelete(teamIndex)}
+          >
+            ×
+          </button>
+        </SettingsTableAnyCell>
+      </tr>
+
+      <TeamEditModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        team={team}
+        availablePositions={availablePositions}
+        onTogglePosition={(pos) => onTogglePosition(teamIndex, pos)}
+        onToggleDay={(day) => onToggleDay(teamIndex, day)}
+      />
+    </>
+  );
+};
+
+export default TeamManagementRow;

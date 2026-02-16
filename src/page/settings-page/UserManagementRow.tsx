@@ -6,6 +6,7 @@ import {
   SettingsTableAnyCell,
   SettingsTableInputCell,
 } from "../../components/common/SettingsTable";
+import SummaryCell from "../../components/common/SummaryCell";
 import { useAppDispatch } from "../../hooks/redux";
 import { AppUser, Gender, Team } from "../../model/model";
 import { updateUserField } from "../../store/slices/userManagementSlice";
@@ -76,22 +77,11 @@ const UserManagementRow = ({
           </select>
         </SettingsTableAnyCell>
         <SettingsTableAnyCell>
-          <button
-            className="icon-button icon-button--secondary"
-            style={{
-              width: "100%",
-              justifyContent: "flex-start",
-              padding: "8px 12px",
-            }}
+          <SummaryCell
+            primaryText={getTeamSummary()}
+            secondaryText={`(${getPositionCount()} pos)`}
             onClick={() => setIsModalOpen(true)}
-          >
-            <span style={{ fontSize: "1.1rem", marginRight: "8px" }}>
-              {getTeamSummary()}
-            </span>
-            <span style={{ fontSize: "0.75rem", opacity: 0.7 }}>
-              ({getPositionCount()} pos)
-            </span>
-          </button>
+          />
         </SettingsTableAnyCell>
         <SettingsTableAnyCell>
           <Pill

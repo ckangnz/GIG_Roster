@@ -275,9 +275,9 @@ const PositionManagement = () => {
     <div className={styles.managementWrapper}>
       <SettingsTable
         headers={[
-          { text: "Order", minWidth: 50, textAlign: "center" },
+          { text: "Name", minWidth: 80, textAlign: "center", isSticky: true },
+          { text: "Order", minWidth: 50 },
           { text: "Emoji", width: 30 },
-          { text: "Name", minWidth: 80 },
           { text: "Colour", minWidth: 100 },
           { text: "Sort by Gender", width: 100, textAlign: "center" },
           { text: "Add Child", width: 80, textAlign: "center" },
@@ -286,6 +286,12 @@ const PositionManagement = () => {
       >
         {positions.map((p, i) => (
           <tr key={`${p.emoji}-${i}`}>
+            <SettingsTableInputCell
+              name={`name-${i}`}
+              value={p.name}
+              onChange={(e) => handleUpdate(i, "name", e.target.value)}
+              isSticky
+            />
             <SettingsTableAnyCell textAlign="center">
               {p.parentId ? (
                 <CornerDownRight />
@@ -318,11 +324,6 @@ const PositionManagement = () => {
               name={`emoji-${i}`}
               value={p.emoji}
               onChange={(e) => handleUpdate(i, "emoji", e.target.value)}
-            />
-            <SettingsTableInputCell
-              name={`name-${i}`}
-              value={p.name}
-              onChange={(e) => handleUpdate(i, "name", e.target.value)}
             />
             <SettingsTableColourInputCell
               name={`colour-${i}`}
@@ -364,18 +365,19 @@ const PositionManagement = () => {
           </tr>
         ))}
         <tr className="pos-row-new">
+          <SettingsTableInputCell
+            name={`new-name`}
+            value={newPos.name}
+            placeholder="Position Name"
+            onChange={(e) => setNewPos({ ...newPos, name: e.target.value })}
+            isSticky
+          />
           <td className="">{""}</td>
           <SettingsTableInputCell
             name={`new-emoji`}
             value={newPos.emoji}
             placeholder="😎"
             onChange={(e) => setNewPos({ ...newPos, emoji: e.target.value })}
-          />
-          <SettingsTableInputCell
-            name={`new-name`}
-            value={newPos.name}
-            placeholder="Position Name"
-            onChange={(e) => setNewPos({ ...newPos, name: e.target.value })}
           />
           <SettingsTableColourInputCell
             name={`new-colour`}

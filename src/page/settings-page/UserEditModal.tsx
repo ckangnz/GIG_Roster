@@ -3,8 +3,7 @@ import Pill, { PillGroup } from "../../components/common/Pill";
 import { useAppDispatch } from "../../hooks/redux";
 import { AppUser, Team } from "../../model/model";
 import { toggleUserTeam, toggleUserTeamPosition } from "../../store/slices/userManagementSlice";
-
-import styles from "./profile-settings.module.css";
+import styles from "../../styles/settings-common.module.css";
 
 interface UserEditModalProps {
   isOpen: boolean;
@@ -45,15 +44,15 @@ const UserEditModal = ({ isOpen, onClose, user, availableTeams }: UserEditModalP
       </div>
 
       {user.teams && user.teams.length > 0 && (
-        <div className={styles.teamPositionsSection}>
+        <div className={styles.settingsSection}>
           <label className={styles.sectionLabel}>Positions per Team</label>
           {user.teams.map((teamName) => {
             const team = availableTeams.find((t) => t.name === teamName);
             if (!team) return null;
 
             return (
-              <div key={teamName} style={{ marginBottom: '24px' }}>
-                <div className={styles.teamPositionHeader}>
+              <div key={teamName} className={styles.subSectionGroup}>
+                <div className={styles.subSectionHeader}>
                   {team.emoji} {team.name}
                 </div>
                 <PillGroup>
