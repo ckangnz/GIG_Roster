@@ -217,35 +217,37 @@ const SideNav = () => {
                               </button>
                             );
                           })}
-                        <button
-                          className={`${styles.sideNavItem} ${styles.sideNavItemSub} ${
-                            activeSideItem === "Absence" &&
-                            activeTeamName === team.name
-                              ? styles.sideNavItemActive
-                              : ""
-                          }`}
-                          onClick={() => {
-                            handleNavItemClick(
-                              `/app/roster/${team.name}/Absence`,
-                            );
-                            dispatch(setMobileSidebarOpen(false));
-                          }}
-                          style={{
-                            borderLeft:
+                        {team.allowAbsence !== false && (
+                          <button
+                            className={`${styles.sideNavItem} ${styles.sideNavItemSub} ${
                               activeSideItem === "Absence" &&
                               activeTeamName === team.name
-                                ? "4px solid var(--color-error)"
-                                : "4px solid transparent",
-                            backgroundColor:
-                              activeSideItem === "Absence" &&
-                              activeTeamName === team.name
-                                ? "var(--background-toggle-off-transparent)"
-                                : "transparent",
-                          }}
-                        >
-                          <span className={styles.sideEmoji}>🏥</span>{" "}
-                          {isDesktopSidebarExpanded && "Absence"}
-                        </button>
+                                ? styles.sideNavItemActive
+                                : ""
+                            }`}
+                            onClick={() => {
+                              handleNavItemClick(
+                                `/app/roster/${team.name}/Absence`,
+                              );
+                              dispatch(setMobileSidebarOpen(false));
+                            }}
+                            style={{
+                              borderLeft:
+                                activeSideItem === "Absence" &&
+                                activeTeamName === team.name
+                                  ? "4px solid var(--color-error)"
+                                  : "4px solid transparent",
+                              backgroundColor:
+                                activeSideItem === "Absence" &&
+                                activeTeamName === team.name
+                                  ? "var(--background-toggle-off-transparent)"
+                                  : "transparent",
+                            }}
+                          >
+                            <span className={styles.sideEmoji}>🏥</span>{" "}
+                            {isDesktopSidebarExpanded && "Absence"}
+                          </button>
+                        )}
                       </div>
                     )}
                   </div>

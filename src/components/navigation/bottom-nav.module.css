@@ -85,6 +85,7 @@
     align-items: center;
     justify-content: center;
     gap: 4px;
+    min-width: 100px;
   }
 
   @media (hover: hover) {

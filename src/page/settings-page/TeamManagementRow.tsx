@@ -20,6 +20,7 @@ interface TeamManagementRowProps {
   onDelete: (index: number) => void;
   onTogglePosition: (teamIndex: number, pos: Position) => void;
   onToggleDay: (teamIndex: number, day: Weekday) => void;
+  onToggleAllowAbsence: (teamIndex: number, allow: boolean) => void;
   isFirst: boolean;
   isLast: boolean;
 }
@@ -33,6 +34,7 @@ const TeamManagementRow = ({
   onDelete,
   onTogglePosition,
   onToggleDay,
+  onToggleAllowAbsence,
   isFirst,
   isLast,
 }: TeamManagementRowProps) => {
@@ -121,6 +123,7 @@ const TeamManagementRow = ({
         availablePositions={availablePositions}
         onTogglePosition={(pos) => onTogglePosition(teamIndex, pos)}
         onToggleDay={(day) => onToggleDay(teamIndex, day)}
+        onToggleAllowAbsence={(allow) => onToggleAllowAbsence(teamIndex, allow)}
       />
     </>
   );

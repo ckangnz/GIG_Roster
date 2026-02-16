@@ -67,7 +67,7 @@
 @media (min-width: 768px) {
   .rosterSaveFooter {
     left: 280px;
-    bottom: 84px;
+    bottom: 100px;
     right: 20px;
     border-radius: 12px;
     border: 1px solid var(--border-color-secondary);

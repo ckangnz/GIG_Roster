@@ -26,6 +26,7 @@ export interface Team {
   positions: Position[];
   preferredDays: Weekday[];
   maxConflict: number;
+  allowAbsence?: boolean;
 }
 
 export interface Position {

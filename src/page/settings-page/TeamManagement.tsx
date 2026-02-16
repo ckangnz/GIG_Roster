@@ -25,6 +25,7 @@ const defaultTeam: Team = {
   positions: [],
   preferredDays: [],
   maxConflict: 1,
+  allowAbsence: true,
 };
 
 const TeamManagement = () => {
@@ -53,6 +54,7 @@ const TeamManagement = () => {
         positions: (t.positions || []).map((p) => p.name).sort(),
         preferredDays: [...(t.preferredDays || [])].sort(),
         maxConflict: t.maxConflict || 1,
+        allowAbsence: t.allowAbsence !== false,
       }));
     return (
       JSON.stringify(normalize(teams)) !== JSON.stringify(normalize(reduxTeams))
@@ -120,6 +122,14 @@ const TeamManagement = () => {
     setTeams(updatedTeams);
   };
 
+  const toggleAllowAbsence = (teamIndex: number, allow: boolean) => {
+    const updatedTeams = teams.map((team, index) => {
+      if (index !== teamIndex) return team;
+      return { ...team, allowAbsence: allow };
+    });
+    setTeams(updatedTeams);
+  };
+
   const toggleNewTeamPosition = (pos: Position) => {
     const currentPositions = newTeam.positions || [];
     const newPositions = currentPositions.some((p) => p.name === pos.name)
@@ -134,6 +144,10 @@ const TeamManagement = () => {
       ? currentDays.filter((d) => d !== day)
       : [...currentDays, day];
     setNewTeam({ ...newTeam, preferredDays: newDays });
+  };
+
+  const toggleNewTeamAllowAbsence = (allow: boolean) => {
+    setNewTeam({ ...newTeam, allowAbsence: allow });
   };
 
   const addTeam = () => {
@@ -157,6 +171,7 @@ const TeamManagement = () => {
         name: t.name || "",
         emoji: t.emoji || "",
         maxConflict: t.maxConflict || 1,
+        allowAbsence: t.allowAbsence !== false, // Default to true
         preferredDays: t.preferredDays || [],
         positions: (t.positions || []).map((p) => ({
           name: p.name || "",
@@ -221,6 +236,7 @@ const TeamManagement = () => {
             onDelete={deleteTeam}
             onTogglePosition={togglePosition}
             onToggleDay={toggleDay}
+            onToggleAllowAbsence={toggleAllowAbsence}
             isFirst={teamIndex === 0}
             isLast={teamIndex === teams.length - 1}
           />
@@ -277,6 +293,7 @@ const TeamManagement = () => {
         availablePositions={availablePositions}
         onTogglePosition={toggleNewTeamPosition}
         onToggleDay={toggleNewTeamDay}
+        onToggleAllowAbsence={toggleNewTeamAllowAbsence}
       />
 
       {hasChanges && (

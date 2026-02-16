@@ -10,6 +10,7 @@ interface TeamEditModalProps {
   availablePositions: Position[];
   onTogglePosition: (pos: Position) => void;
   onToggleDay: (day: Weekday) => void;
+  onToggleAllowAbsence: (allow: boolean) => void;
 }
 
 const WEEK_DAYS: Weekday[] = [
@@ -28,7 +29,8 @@ const TeamEditModal = ({
   team, 
   availablePositions, 
   onTogglePosition, 
-  onToggleDay 
+  onToggleDay,
+  onToggleAllowAbsence
 }: TeamEditModalProps) => {
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={`Edit Team: ${team.name}`}>
@@ -53,7 +55,7 @@ const TeamEditModal = ({
         </PillGroup>
       </div>
 
-      <div className={styles.settingsSection}>
+      <div className={styles.formGroup}>
         <label className={styles.sectionLabel}>Preferred Days</label>
         <PillGroup>
           {WEEK_DAYS.map((day) => {
@@ -68,6 +70,19 @@ const TeamEditModal = ({
               </Pill>
             );
           })}
+        </PillGroup>
+      </div>
+
+      <div className={styles.formGroup}>
+        <label className={styles.sectionLabel}>Feature Settings</label>
+        <PillGroup>
+          <Pill
+            isActive={team.allowAbsence !== false}
+            onClick={() => onToggleAllowAbsence(team.allowAbsence === false)}
+            colour={team.allowAbsence !== false ? "var(--color-success-dark)" : "var(--color-text-dim)"}
+          >
+            Allow Absence: {team.allowAbsence !== false ? "YES" : "NO"}
+          </Pill>
         </PillGroup>
       </div>
     </Modal>

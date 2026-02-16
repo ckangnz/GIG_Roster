@@ -546,6 +546,42 @@ th.genderDividerCell {
   opacity: 0.8;
 }
 
+.headerActions {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.headerActionBtn {
+  background: var(--background-button-secondary);
+  border: 1px solid var(--border-color-input);
+  color: var(--color-text-dim);
+  border-radius: 4px;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.headerActionBtn:hover {
+  background: var(--background-button-hover);
+  color: var(--color-link);
+}
+
+.headerActionBtn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.removeHeaderBtn:hover {
+  color: var(--color-error);
+  border-color: var(--color-error);
+}
+
 .assignedUsersText {
   font-size: 0.8rem;
   color: var(--color-text-primary);

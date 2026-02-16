@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, Fragment } from "react";
 
-import { Plus, Users, LayoutGrid } from "lucide-react";
+import { Plus, Users, LayoutGrid, ArrowLeft, ArrowRight, X } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
@@ -414,6 +414,37 @@ const RosterTable = () => {
     );
   };
 
+  const handleMoveCustomLabel = (index: number, direction: "left" | "right") => {
+    if (!currentPosition || !activePosition) return;
+    const currentLabels = [...(currentPosition.customLabels || [])];
+    const targetIndex = direction === "left" ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= currentLabels.length) return;
+
+    const temp = currentLabels[index];
+    currentLabels[index] = currentLabels[targetIndex];
+    currentLabels[targetIndex] = temp;
+
+    dispatch(
+      updatePositionCustomLabels({
+        positionName: activePosition,
+        labels: currentLabels,
+      }),
+    );
+  };
+
+  const handleRemoveCustomLabel = (index: number) => {
+    if (!currentPosition || !activePosition) return;
+    if (!window.confirm("Remove this column?")) return;
+    const currentLabels = [...(currentPosition.customLabels || [])];
+    currentLabels.splice(index, 1);
+    dispatch(
+      updatePositionCustomLabels({
+        positionName: activePosition,
+        labels: currentLabels,
+      }),
+    );
+  };
+
   const handleCancel = useCallback(() => {
     if (hasRosterChanges) {
       dispatch(resetRosterEdits());
@@ -488,14 +519,8 @@ const RosterTable = () => {
     const entry = dirtyEntries[dateKey] || entries[dateKey];
     if (!entry || !teamName) return "";
 
-    // Find children of this position to group them
-    const children = allPositions.filter((p) => p.parentId === positionName);
-    const positionGroup = [positionName, ...children.map((c) => c.name)];
-
     const assignedEntries = Object.entries(entry.teams[teamName] || {})
-      .filter(([, positions]) =>
-        positions.some((p) => positionGroup.includes(p)),
-      );
+      .filter(([, positions]) => positions.includes(positionName));
 
     return (
       <div className={styles.assignedUsersText}>
@@ -808,7 +833,6 @@ const RosterTable = () => {
                         );
                       })
                     : (currentTeamData?.positions || [])
-                        .filter((p) => !p.parentId)
                         .map((pos) => (
                           <th
                             key={pos.name}
@@ -937,7 +961,6 @@ const RosterTable = () => {
                             );
                           })
                         : (currentTeamData?.positions || [])
-                            .filter((p) => !p.parentId)
                             .map((pos, colIndex) => {
                               const isFocused =
                                 focusedCell?.row === rowIndex &&
@@ -1083,10 +1106,47 @@ const RosterTable = () => {
                               className={styles.headerInput}
                               value={label}
                               placeholder="New Heading..."
+                              readOnly={!userData?.isAdmin}
                               onChange={(e) =>
                                 handleUpdateCustomLabel(index, e.target.value)
                               }
                             />
+                            {userData?.isAdmin && (
+                              <div className={styles.headerActions}>
+                                <button
+                                  className={styles.headerActionBtn}
+                                  onClick={() =>
+                                    handleMoveCustomLabel(index, "left")
+                                  }
+                                  disabled={index === 0}
+                                  title="Move Left"
+                                >
+                                  <ArrowLeft size={12} />
+                                </button>
+                                <button
+                                  className={`${styles.headerActionBtn} ${styles.removeHeaderBtn}`}
+                                  onClick={() => handleRemoveCustomLabel(index)}
+                                  title="Remove Column"
+                                >
+                                  <X size={12} />
+                                </button>
+                                <button
+                                  className={styles.headerActionBtn}
+                                  onClick={() =>
+                                    handleMoveCustomLabel(index, "right")
+                                  }
+                                  disabled={
+                                    index ===
+                                    (currentPosition.customLabels?.length ||
+                                      0) -
+                                      1
+                                  }
+                                  title="Move Right"
+                                >
+                                  <ArrowRight size={12} />
+                                </button>
+                              </div>
+                            )}
                           </th>
                         ),
                       )
@@ -1125,7 +1185,7 @@ const RosterTable = () => {
                           </th>
                         </Fragment>
                       ))}
-                  {currentPosition?.isCustom && (
+                  {currentPosition?.isCustom && userData?.isAdmin && (
                     <th
                       className={`${styles.rosterTableHeaderCell} sticky-header`}
                     >
