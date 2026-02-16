@@ -1,3 +1,4 @@
+import Button from "../../components/common/Button";
 import Pill, { PillGroup } from "../../components/common/Pill";
 import { Position, Team } from "../../model/model";
 import commonStyles from "../../styles/settings-common.module.css";
@@ -7,6 +8,7 @@ interface TeamPositionEditorProps {
   teamPositions: Record<string, string[]>;
   onToggleTeam: (teamName: string) => void;
   onTogglePosition: (teamName: string, posName: string) => void;
+  onMoveTeam?: (teamName: string, direction: "up" | "down") => void;
   availableTeams: Team[];
   globalPositions: Position[];
 }
@@ -16,6 +18,7 @@ const TeamPositionEditor = ({
   teamPositions,
   onToggleTeam,
   onTogglePosition,
+  onMoveTeam,
   availableTeams,
   globalPositions,
 }: TeamPositionEditorProps) => {
@@ -42,7 +45,7 @@ const TeamPositionEditor = ({
       {selectedTeams.length > 0 && (
         <div className={commonStyles.settingsSection}>
           <label className={commonStyles.sectionLabel}>Positions per Team</label>
-          {selectedTeams.map((teamName) => {
+          {selectedTeams.map((teamName, index) => {
             const team = availableTeams.find((t) => t.name === teamName);
             if (!team) return null;
 
@@ -54,8 +57,37 @@ const TeamPositionEditor = ({
 
             return (
               <div key={teamName} className={commonStyles.subSectionGroup}>
-                <div className={commonStyles.subSectionHeader}>
-                  {team.emoji} {team.name}
+                <div
+                  className={commonStyles.subSectionHeader}
+                  style={{ justifyContent: "space-between" }}
+                >
+                  <div
+                    style={{ display: "flex", alignItems: "center", gap: "8px" }}
+                  >
+                    {team.emoji} {team.name}
+                  </div>
+                  {onMoveTeam && (
+                    <div style={{ display: "flex", gap: "4px" }}>
+                      <Button
+                        variant="secondary"
+                        size="small"
+                        isIcon
+                        onClick={() => onMoveTeam(teamName, "up")}
+                        disabled={index === 0}
+                      >
+                        ▲
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        size="small"
+                        isIcon
+                        onClick={() => onMoveTeam(teamName, "down")}
+                        disabled={index === selectedTeams.length - 1}
+                      >
+                        ▼
+                      </Button>
+                    </div>
+                  )}
                 </div>
                 {assignablePositions.length > 0 ? (
                   <PillGroup>

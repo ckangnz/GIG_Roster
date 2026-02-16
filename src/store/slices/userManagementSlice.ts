@@ -134,6 +134,32 @@ const userManagementSlice = createSlice({
         user.teamPositions[teamName] = newPos;
       }
     },
+    moveUserTeam(
+      state,
+      action: PayloadAction<{
+        userId: string;
+        teamName: string;
+        direction: "up" | "down";
+      }>,
+    ) {
+      const { userId, teamName, direction } = action.payload;
+      const user = state.allUsers.find((u) => u.id === userId);
+      if (user && user.teams) {
+        const currentIndex = user.teams.indexOf(teamName);
+        if (currentIndex === -1) return;
+
+        const targetIndex =
+          direction === "up" ? currentIndex - 1 : currentIndex + 1;
+        if (targetIndex < 0 || targetIndex >= user.teams.length) return;
+
+        const updatedTeams = [...user.teams];
+        [updatedTeams[currentIndex], updatedTeams[targetIndex]] = [
+          updatedTeams[targetIndex],
+          updatedTeams[currentIndex],
+        ];
+        user.teams = updatedTeams;
+      }
+    },
     resetUserChanges(state) {
       state.allUsers = JSON.parse(JSON.stringify(state.originalUsers));
     },
@@ -175,6 +201,7 @@ export const {
   updateUserField,
   toggleUserTeam,
   toggleUserTeamPosition,
+  moveUserTeam,
   resetUserChanges,
 } = userManagementSlice.actions;
 export const userManagementReducer = userManagementSlice.reducer;

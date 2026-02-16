@@ -123,6 +123,22 @@ const ProfileSettings = ({ className }: { className?: string }) => {
     });
   };
 
+  const moveTeam = (teamName: string, direction: "up" | "down") => {
+    const currentIndex = selectedTeams.indexOf(teamName);
+    if (currentIndex === -1) return;
+
+    const targetIndex =
+      direction === "up" ? currentIndex - 1 : currentIndex + 1;
+    if (targetIndex < 0 || targetIndex >= selectedTeams.length) return;
+
+    const newTeams = [...selectedTeams];
+    [newTeams[currentIndex], newTeams[targetIndex]] = [
+      newTeams[targetIndex],
+      newTeams[currentIndex],
+    ];
+    setSelectedTeams(newTeams);
+  };
+
   if (!userData) {
     return <div>Loading profile...</div>;
   }
@@ -168,6 +184,7 @@ const ProfileSettings = ({ className }: { className?: string }) => {
         teamPositions={teamPositions}
         onToggleTeam={toggleTeam}
         onTogglePosition={toggleTeamPosition}
+        onMoveTeam={moveTeam}
         availableTeams={availableTeams}
         globalPositions={globalPositions}
       />
