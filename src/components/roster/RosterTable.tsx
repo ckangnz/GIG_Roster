@@ -1,15 +1,14 @@
 import { useCallback, useEffect, useMemo, useState, Fragment } from "react";
 
 import {
-  Plus,
-  Users,
-  LayoutGrid,
   ArrowLeft,
   ArrowRight,
+  Plus,
   X,
 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 
+import TopControls from "./TopControls";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { getTodayKey, AppUser, Position } from "../../model/model";
 import {
@@ -35,9 +34,7 @@ import {
 } from "../../store/slices/rosterViewSlice";
 import {
   toggleUserVisibility,
-  setRosterAllViewMode,
 } from "../../store/slices/uiSlice";
-import Button from "../common/Button";
 import SaveFooter from "../common/SaveFooter";
 import Spinner from "../common/Spinner";
 
@@ -770,62 +767,6 @@ const RosterTable = () => {
     return "future-date";
   }, []);
 
-  const renderTopControls = () => {
-    const hasHidden = !isAbsenceView && hiddenUserList.length > 0;
-    const hasToggle = isAllView;
-
-    if (!hasHidden && !hasToggle) return null;
-
-    return (
-      <div className={styles.topControls}>
-        {isAllView && (
-          <div className={styles.viewToggleBar}>
-            <Button
-              variant={rosterAllViewMode === "user" ? "primary" : "secondary"}
-              size="small"
-              onClick={() => dispatch(setRosterAllViewMode("user"))}
-              className={styles.toggleButtonGap}
-            >
-              <Users size={18} /> <span>User View</span>
-            </Button>
-            <Button
-              variant={
-                rosterAllViewMode === "position" ? "primary" : "secondary"
-              }
-              size="small"
-              onClick={() => dispatch(setRosterAllViewMode("position"))}
-              className={styles.toggleButtonGap}
-            >
-              <LayoutGrid size={18} /> <span>Position View</span>
-            </Button>
-          </div>
-        )}
-
-        {hasHidden && (
-          <div className={styles.hiddenMembersBar}>
-            <span className={styles.hiddenMembersLabel}>Hidden Members:</span>
-            <div className={styles.hiddenMembersList}>
-              {hiddenUserList.map((email) => {
-                const user = users.find((u) => u.email === email);
-                return (
-                  <Button
-                    key={email}
-                    variant="secondary"
-                    size="small"
-                    onClick={() => handleToggleVisibility(email)}
-                    className={styles.unhideButton}
-                  >
-                    {user?.name || email} <Plus size={14} />
-                  </Button>
-                );
-              })}
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  };
-
   if (loadingUsers || loadingTeam || loadingAllTeamUsers) {
     return <Spinner />;
   }
@@ -838,7 +779,14 @@ const RosterTable = () => {
   if (isAllView) {
     return (
       <div className={styles.rosterTableWrapper}>
-        {renderTopControls()}
+        <TopControls
+          isAllView={isAllView}
+          isAbsenceView={isAbsenceView}
+          rosterAllViewMode={rosterAllViewMode}
+          hiddenUserList={hiddenUserList}
+          allUsers={users}
+          onToggleVisibility={handleToggleVisibility}
+        />
 
         <div className={styles.rosterSection}>
           <div className={styles.rosterTableContainer}>
@@ -1070,7 +1018,14 @@ const RosterTable = () => {
   ) {
     return (
       <div className={styles.rosterTableWrapper}>
-        {renderTopControls()}
+        <TopControls
+          isAllView={isAllView}
+          isAbsenceView={isAbsenceView}
+          rosterAllViewMode={rosterAllViewMode}
+          hiddenUserList={hiddenUserList}
+          allUsers={users}
+          onToggleVisibility={handleToggleVisibility}
+        />
         <div className={styles.rosterTableLoading}>
           No users found for this position.
         </div>
@@ -1080,7 +1035,14 @@ const RosterTable = () => {
 
   return (
     <div className={styles.rosterTableWrapper}>
-      {renderTopControls()}
+      <TopControls
+        isAllView={isAllView}
+        isAbsenceView={isAbsenceView}
+        rosterAllViewMode={rosterAllViewMode}
+        hiddenUserList={hiddenUserList}
+        allUsers={users}
+        onToggleVisibility={handleToggleVisibility}
+      />
 
       {!isAbsenceView ? (
         <div className={styles.rosterSection}>
