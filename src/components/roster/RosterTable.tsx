@@ -1,13 +1,11 @@
 import { useCallback, useEffect, useMemo, useState, Fragment } from "react";
 
 import {
-  ArrowLeft,
-  ArrowRight,
-  Plus,
   X,
 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 
+import RosterHeader from "./RosterHeader";
 import TopControls from "./TopControls";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { getTodayKey, AppUser, Position } from "../../model/model";
@@ -791,68 +789,31 @@ const RosterTable = () => {
         <div className={styles.rosterSection}>
           <div className={styles.rosterTableContainer}>
             <table className={styles.rosterTable}>
-              <thead>
-                <tr>
-                  <th
-                    className={`${styles.rosterTableHeaderCell} ${styles.stickyCol} sticky-header`}
-                  >
-                    <div className={styles.dateHeaderContent}>
-                      Date
-                      <div className={styles.dateHeaderActions}>
-                        <button
-                          className={styles.loadPrevBtn}
-                          onClick={handleLoadPrevious}
-                          title="Load 5 previous dates"
-                        >
-                          ↑
-                        </button>
-                        {hasPastDates && (
-                          <button
-                            className={`${styles.loadPrevBtn} ${styles.resetDatesBtn}`}
-                            onClick={handleResetDates}
-                            title="Hide previous dates"
-                          >
-                            ↓
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  </th>
-                  {rosterAllViewMode === "user"
-                    ? allViewColumns.map((col) => {
-                        const isMe = col.id === userData?.email;
-                        return (
-                          <th
-                            key={col.id}
-                            className={`${styles.rosterTableHeaderCell} sticky-header ${
-                              col.id && assignedOnClosestDate.includes(col.id)
-                                ? styles.highlightedHeader
-                                : ""
-                            } ${isMe ? styles.isMe : ""}`}
-                          >
-                            {col.name}
-                            {isMe && <span className={styles.meTag}>Me</span>}
-                          </th>
-                        );
-                      })
-                    : (currentTeamData?.positions || []).map((pos) => (
-                        <th
-                          key={pos.name}
-                          className={`${styles.rosterTableHeaderCell} ${styles.clickableHeader} sticky-header`}
-                          onClick={() =>
-                            navigate(`/app/roster/${teamName}/${pos.name}`)
-                          }
-                        >
-                          <div className={styles.allViewPositionHeader}>
-                            <span>{pos.emoji}</span>
-                            <span className={styles.allViewPositionName}>
-                              {pos.name}
-                            </span>
-                          </div>
-                        </th>
-                      ))}
-                </tr>
-              </thead>
+              <RosterHeader
+                viewType="all"
+                rosterAllViewMode={rosterAllViewMode}
+                allViewColumns={allViewColumns}
+                userData={userData}
+                assignedOnClosestDate={assignedOnClosestDate}
+                currentTeamData={currentTeamData}
+                teamName={teamName}
+                navigate={navigate}
+                hasPastDates={hasPastDates}
+                onLoadPrevious={handleLoadPrevious}
+                onResetDates={handleResetDates}
+                peekPositionName={peekPositionName}
+                setPeekPositionName={setPeekPositionName}
+                peekOptions={peekOptions}
+                // Dummy values for required props not used in "all" view
+                sortedUsers={[]}
+                genderDividerIndex={-1}
+                onToggleVisibility={() => {}}
+                handleUpdateCustomLabel={() => {}}
+                handleMoveCustomLabel={() => {}}
+                handleRemoveCustomLabel={() => {}}
+                handleAddCustomLabel={() => {}}
+                allTeamUsers={[]}
+              />
               <tbody>
                 {rosterDates.map((dateString, rowIndex) => {
                   const dateKey = dateString.split("T")[0];
@@ -1048,158 +1009,30 @@ const RosterTable = () => {
         <div className={styles.rosterSection}>
           <div className={styles.rosterTableContainer}>
             <table className={styles.rosterTable}>
-              <thead>
-                <tr>
-                  <th
-                    className={`${styles.rosterTableHeaderCell} ${styles.stickyCol} sticky-header`}
-                  >
-                    <div className={styles.dateHeaderContent}>
-                      Date
-                      <div className={styles.dateHeaderActions}>
-                        <button
-                          className={styles.loadPrevBtn}
-                          onClick={handleLoadPrevious}
-                          title="Load 5 previous dates"
-                        >
-                          ↑
-                        </button>
-                        {hasPastDates && (
-                          <button
-                            className={`${styles.loadPrevBtn} ${styles.resetDatesBtn}`}
-                            onClick={handleResetDates}
-                            title="Hide previous dates"
-                          >
-                            ↓
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  </th>
-                  {currentPosition?.isCustom
-                    ? (currentPosition.customLabels || []).map(
-                        (label, index) => (
-                          <th
-                            key={`custom-${index}`}
-                            className={`${styles.rosterTableHeaderCell} sticky-header`}
-                          >
-                            <input
-                              type="text"
-                              className={styles.headerInput}
-                              value={label}
-                              placeholder="New Heading..."
-                              readOnly={!userData?.isAdmin}
-                              onChange={(e) =>
-                                handleUpdateCustomLabel(index, e.target.value)
-                              }
-                            />
-                            {userData?.isAdmin && (
-                              <div className={styles.headerActions}>
-                                <button
-                                  className={styles.headerActionBtn}
-                                  onClick={() =>
-                                    handleMoveCustomLabel(index, "left")
-                                  }
-                                  disabled={index === 0}
-                                  title="Move Left"
-                                >
-                                  <ArrowLeft size={12} />
-                                </button>
-                                <button
-                                  className={`${styles.headerActionBtn} ${styles.removeHeaderBtn}`}
-                                  onClick={() => handleRemoveCustomLabel(index)}
-                                  title="Remove Column"
-                                >
-                                  <X size={12} />
-                                </button>
-                                <button
-                                  className={styles.headerActionBtn}
-                                  onClick={() =>
-                                    handleMoveCustomLabel(index, "right")
-                                  }
-                                  disabled={
-                                    index ===
-                                    (currentPosition.customLabels?.length ||
-                                      0) -
-                                      1
-                                  }
-                                  title="Move Right"
-                                >
-                                  <ArrowRight size={12} />
-                                </button>
-                              </div>
-                            )}
-                          </th>
-                        ),
-                      )
-                    : sortedUsers.map((user, colIndex) => (
-                        <Fragment key={user.email}>
-                          {genderDividerIndex === colIndex && (
-                            <th
-                              className={`${styles.genderDividerCell} sticky-header`}
-                            />
-                          )}
-                          <th
-                            className={`${styles.rosterTableHeaderCell} sticky-header ${styles.clickableHeader} ${
-                              user.email &&
-                              assignedOnClosestDate.includes(user.email)
-                                ? styles.highlightedHeader
-                                : ""
-                            }`}
-                            onClick={() =>
-                              user.email && handleToggleVisibility(user.email)
-                            }
-                            title="Click to hide member"
-                          >
-                            {user.name}
-
-                            {currentPosition?.sortByGender && (
-                              <span className={styles.genderLabel}>
-                                (
-                                {user.gender === "Male"
-                                  ? "M"
-                                  : user.gender === "Female"
-                                    ? "F"
-                                    : "?"}
-                                )
-                              </span>
-                            )}
-                          </th>
-                        </Fragment>
-                      ))}
-                  {currentPosition?.isCustom && userData?.isAdmin && (
-                    <th
-                      className={`${styles.rosterTableHeaderCell} sticky-header`}
-                    >
-                      <button
-                        className={styles.addColumnBtn}
-                        onClick={handleAddCustomLabel}
-                        title="Add Column"
-                      >
-                        <Plus size={16} />
-                      </button>
-                    </th>
-                  )}
-                  <th className={`${styles.genderDividerCell} sticky-header`} />
-                  <th
-                    className={`${styles.rosterTableHeaderCell} sticky-header ${styles.stickyRight} ${styles.peekHeader}`}
-                  >
-                    <select
-                      className={styles.peekSelector}
-                      value={peekPositionName || ""}
-                      onChange={(e) =>
-                        setPeekPositionName(e.target.value || null)
-                      }
-                    >
-                      <option value="">Peek Position...</option>
-                      {peekOptions.map((opt) => (
-                        <option key={opt.name} value={opt.name}>
-                          {opt.emoji} {opt.name}
-                        </option>
-                      ))}
-                    </select>
-                  </th>
-                </tr>
-              </thead>
+              <RosterHeader
+                viewType="roster"
+                userData={userData}
+                assignedOnClosestDate={assignedOnClosestDate}
+                currentTeamData={currentTeamData}
+                teamName={teamName}
+                navigate={navigate}
+                hasPastDates={hasPastDates}
+                onLoadPrevious={handleLoadPrevious}
+                onResetDates={handleResetDates}
+                currentPosition={currentPosition}
+                handleUpdateCustomLabel={handleUpdateCustomLabel}
+                handleMoveCustomLabel={handleMoveCustomLabel}
+                handleRemoveCustomLabel={handleRemoveCustomLabel}
+                handleAddCustomLabel={handleAddCustomLabel}
+                sortedUsers={sortedUsers}
+                genderDividerIndex={genderDividerIndex}
+                onToggleVisibility={handleToggleVisibility}
+                peekPositionName={peekPositionName}
+                setPeekPositionName={setPeekPositionName}
+                peekOptions={peekOptions}
+                allViewColumns={[]}
+                allTeamUsers={[]}
+              />
               <tbody>
                 {rosterDates.map((dateString, rowIndex) => {
                   const dateKey = dateString.split("T")[0];
@@ -1375,67 +1208,30 @@ const RosterTable = () => {
         <div className={`${styles.rosterSection} ${styles.absenceSection}`}>
           <div className={styles.rosterTableContainer}>
             <table className={`${styles.rosterTable} ${styles.absenceTable}`}>
-              <thead>
-                <tr>
-                  <th
-                    className={`${styles.rosterTableHeaderCell} ${styles.stickyCol} sticky-header`}
-                  >
-                    <div className={styles.dateHeaderContent}>
-                      Date
-                      <div className={styles.dateHeaderActions}>
-                        <button
-                          className={styles.loadPrevBtn}
-                          onClick={handleLoadPrevious}
-                          title="Load 5 previous dates"
-                        >
-                          ↑
-                        </button>
-                        {hasPastDates && (
-                          <button
-                            className={`${styles.loadPrevBtn} ${styles.resetDatesBtn}`}
-                            onClick={handleResetDates}
-                            title="Hide previous dates"
-                          >
-                            ↓
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  </th>
-                  {allTeamUsers.map((user) => (
-                    <th
-                      key={user.email}
-                      className={`${styles.rosterTableHeaderCell} sticky-header ${
-                        user.email && assignedOnClosestDate.includes(user.email)
-                          ? styles.highlightedHeader
-                          : ""
-                      }`}
-                    >
-                      {user.name}
-                    </th>
-                  ))}
-
-                  <th className={`${styles.genderDividerCell} sticky-header`} />
-                  <th
-                    className={`${styles.rosterTableHeaderCell} sticky-header ${styles.stickyRight} ${styles.peekHeader}`}
-                  >
-                    <select
-                      className={styles.peekSelector}
-                      value={peekPositionName || ""}
-                      onChange={(e) =>
-                        setPeekPositionName(e.target.value || null)
-                      }
-                    >
-                      <option value="">Peek Position...</option>
-                      {peekOptions.map((opt) => (
-                        <option key={opt.name} value={opt.name}>
-                          {opt.emoji} {opt.name}
-                        </option>
-                      ))}
-                    </select>
-                  </th>
-                </tr>
-              </thead>
+              <RosterHeader
+                viewType="absence"
+                allTeamUsers={allTeamUsers}
+                userData={userData}
+                assignedOnClosestDate={assignedOnClosestDate}
+                currentTeamData={currentTeamData}
+                teamName={teamName}
+                navigate={navigate}
+                hasPastDates={hasPastDates}
+                onLoadPrevious={handleLoadPrevious}
+                onResetDates={handleResetDates}
+                peekPositionName={peekPositionName}
+                setPeekPositionName={setPeekPositionName}
+                peekOptions={peekOptions}
+                // Dummy values for required props not used in "absence" view
+                allViewColumns={[]}
+                sortedUsers={[]}
+                genderDividerIndex={-1}
+                onToggleVisibility={() => {}}
+                handleUpdateCustomLabel={() => {}}
+                handleMoveCustomLabel={() => {}}
+                handleRemoveCustomLabel={() => {}}
+                handleAddCustomLabel={() => {}}
+              />
               <tbody>
                 {rosterDates.map((dateString, rowIndex) => {
                   const dateKey = dateString.split("T")[0];
