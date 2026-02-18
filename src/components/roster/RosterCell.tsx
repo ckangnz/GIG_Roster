@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { ReactNode, memo } from "react";
 
 import { X } from "lucide-react";
 
@@ -24,7 +24,7 @@ interface RosterCellProps {
   disabled?: boolean;
 }
 
-const RosterCell = ({
+const RosterCell = memo(({
   type,
   isFocused,
   onFocus,
@@ -137,6 +137,6 @@ const RosterCell = ({
   }
 
   return null;
-};
+});
 
 export default RosterCell;

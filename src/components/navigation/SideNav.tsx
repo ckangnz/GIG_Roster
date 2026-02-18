@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef } from "react";
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 
+import OnlineUsers from "./OnlineUsers";
 import {
   BOTTOM_NAV_ITEMS,
   AppTab,
@@ -18,7 +19,6 @@ import {
   expandTeam,
 } from "../../store/slices/uiSlice";
 import ThemeToggleButton from "../common/ThemeToggleButton";
-import OnlineUsers from "../roster/OnlineUsers";
 
 import styles from "./side-nav.module.css";
 

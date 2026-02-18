@@ -4,7 +4,7 @@ import { useParams } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { setMobileSidebarOpen } from "../../store/slices/uiSlice";
 import ThemeToggleButton from "../common/ThemeToggleButton";
-import OnlineUsers from "../roster/OnlineUsers";
+import OnlineUsers from "../navigation/OnlineUsers";
 
 import styles from "./mobile-header.module.css";
 

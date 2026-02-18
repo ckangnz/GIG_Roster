@@ -1,4 +1,4 @@
-import { Fragment } from "react";
+import { Fragment, memo } from "react";
 
 import { ArrowLeft, ArrowRight, Plus, X } from "lucide-react";
 
@@ -35,7 +35,7 @@ interface RosterHeaderProps {
   allTeamUsers: AppUser[];
 }
 
-const RosterHeader = ({
+const RosterHeader = memo(({
   viewType,
   rosterAllViewMode,
   allViewColumns,
@@ -234,6 +234,7 @@ const RosterHeader = ({
       </tr>
     </thead>
   );
-};
+});
+
 
 export default RosterHeader;

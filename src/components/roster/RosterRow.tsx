@@ -1,4 +1,4 @@
-import { Fragment, ReactNode } from "react";
+import { Fragment, ReactNode, memo } from "react";
 
 import RosterCell from "./RosterCell";
 import { AppUser, Position } from "../../model/model";
@@ -45,7 +45,7 @@ interface RosterRowProps {
   handleAbsenceReasonChange: (dateString: string, userEmail: string, reason: string) => void;
 }
 
-const RosterRow = ({
+const RosterRow = memo(({
   viewType,
   dateString,
   rowIndex,
@@ -240,6 +240,6 @@ const RosterRow = ({
       {renderPeekCell()}
     </tr>
   );
-};
+});
 
 export default RosterRow;
