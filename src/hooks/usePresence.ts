@@ -59,8 +59,6 @@ export const usePresence = (teamName: string | undefined, currentUser: AppUser |
     if (!teamName) return;
 
     // 4. Listen to online users for this team
-    // Only users seen in the last 2 minutes
-    const oneMinuteAgo = new Date(Date.now() - 60000);
     const q = query(
       collection(db, "presence"),
       where("team", "==", teamName)
@@ -68,20 +66,28 @@ export const usePresence = (teamName: string | undefined, currentUser: AppUser |
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const users: PresenceUser[] = [];
+      const now = Date.now();
+      const twoMinutesAgo = now - 120000; // Be a bit more generous with 2 minutes
+
       snapshot.forEach((doc) => {
         const data = doc.data();
-        // Client side filtering for active users (last 60 seconds)
-        // Firestore serverTimestamp might take a second to resolve
-        if (data.lastSeen) {
-          const lastSeenDate = data.lastSeen.toDate();
-          if (lastSeenDate > oneMinuteAgo) {
-            users.push({
-              uid: data.uid,
-              name: data.name,
-              email: data.email,
-              lastSeen: data.lastSeen,
-            });
-          }
+        
+        // Handle pending server timestamps
+        let lastSeenDate: Date;
+        if (!data.lastSeen) {
+          // If timestamp is pending, assume it's "now"
+          lastSeenDate = new Date();
+        } else {
+          lastSeenDate = data.lastSeen.toDate();
+        }
+
+        if (lastSeenDate.getTime() > twoMinutesAgo) {
+          users.push({
+            uid: data.uid,
+            name: data.name,
+            email: data.email,
+            lastSeen: data.lastSeen,
+          });
         }
       });
       

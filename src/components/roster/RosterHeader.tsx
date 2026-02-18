@@ -4,7 +4,7 @@ import { ArrowLeft, ArrowRight, Plus, X } from "lucide-react";
 
 import { AppUser, Position } from "../../model/model";
 
-import styles from "./roster-table.module.css";
+import styles from "./roster-header.module.css";
 
 interface RosterHeaderProps {
   viewType: "all" | "roster" | "absence";

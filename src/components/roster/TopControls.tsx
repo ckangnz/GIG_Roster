@@ -1,16 +1,13 @@
 import { Users, LayoutGrid, Plus } from "lucide-react";
 
-import OnlineUsers from "./OnlineUsers";
 import { useAppDispatch } from "../../hooks/redux";
 import { AppUser } from "../../model/model";
 import { setRosterAllViewMode } from "../../store/slices/uiSlice";
 import Button from "../common/Button";
 
-import styles from "./roster-table.module.css";
+import styles from "./top-controls.module.css";
 
 interface TopControlsProps {
-  teamName: string | undefined;
-  currentUser: AppUser | null;
   isAllView: boolean;
   isAbsenceView: boolean;
   rosterAllViewMode: "user" | "position";
@@ -20,8 +17,6 @@ interface TopControlsProps {
 }
 
 const TopControls = ({
-  teamName,
-  currentUser,
   isAllView,
   isAbsenceView,
   rosterAllViewMode,
@@ -32,8 +27,7 @@ const TopControls = ({
   const dispatch = useAppDispatch();
   const hasHidden = !isAbsenceView && hiddenUserList.length > 0;
 
-  // Always show topControls if we have a teamName to show online users
-  if (!teamName) return null;
+  if (!hasHidden && !isAllView) return null;
 
   return (
     <div className={styles.topControls}>
@@ -82,10 +76,6 @@ const TopControls = ({
             </div>
           </div>
         )}
-      </div>
-
-      <div className={styles.topControlsRight}>
-        <OnlineUsers teamName={teamName} currentUser={currentUser} />
       </div>
     </div>
   );

@@ -776,8 +776,6 @@ const RosterTable = () => {
     return (
       <div className={styles.rosterTableWrapper}>
         <TopControls
-          teamName={teamName}
-          currentUser={userData}
           isAllView={isAllView}
           isAbsenceView={isAbsenceView}
           rosterAllViewMode={rosterAllViewMode}
@@ -876,8 +874,6 @@ const RosterTable = () => {
     return (
       <div className={styles.rosterTableWrapper}>
         <TopControls
-          teamName={teamName}
-          currentUser={userData}
           isAllView={isAllView}
           isAbsenceView={isAbsenceView}
           rosterAllViewMode={rosterAllViewMode}
@@ -895,8 +891,6 @@ const RosterTable = () => {
   return (
     <div className={styles.rosterTableWrapper}>
       <TopControls
-        teamName={teamName}
-        currentUser={userData}
         isAllView={isAllView}
         isAbsenceView={isAbsenceView}
         rosterAllViewMode={rosterAllViewMode}

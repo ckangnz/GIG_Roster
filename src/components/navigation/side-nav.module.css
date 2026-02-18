@@ -35,10 +35,29 @@
   display: none;
 }
 
-.sideMenuList {
+.userSection {
   display: flex;
   flex-direction: column;
 }
+
+.themeToggleWrapper {
+  padding: 0 24px 18px;
+}
+
+.navDivider {
+  height: 1px;
+  background-color: var(--border-color-secondary);
+  margin: 8px 24px;
+}
+
+.sideNavThemeToggle {
+  width: 100%;
+  justify-content: flex-start;
+  padding: 0;
+  background: transparent;
+}
+
+.sideMenuList {
 
 .sidenavMenuSubheading {
   display: flex;
@@ -176,6 +195,21 @@
 
   .sidebarCollapsed .sideMenuList {
     align-items: center;
+  }
+
+  .sidebarCollapsed .themeToggleWrapper {
+    padding: 0;
+    display: flex;
+    justify-content: center;
+  }
+
+  .sidebarCollapsed .navDivider {
+    margin: 8px 12px;
+  }
+
+  .sidebarCollapsed .sideNavThemeToggle {
+    width: auto;
+    justify-content: center;
   }
 
   .sidebarCollapsed .sideNavItem {

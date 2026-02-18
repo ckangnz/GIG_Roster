@@ -2,7 +2,7 @@ import { ReactNode } from "react";
 
 import { X } from "lucide-react";
 
-import styles from "./roster-table.module.css";
+import styles from "./roster-cell.module.css";
 
 interface RosterCellProps {
   type: "all-user" | "all-position" | "roster-custom" | "roster-user" | "absence";

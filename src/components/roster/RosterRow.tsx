@@ -3,7 +3,7 @@ import { Fragment, ReactNode } from "react";
 import RosterCell from "./RosterCell";
 import { AppUser, Position } from "../../model/model";
 
-import styles from "./roster-table.module.css";
+import styles from "./roster-row.module.css";
 
 
 interface RosterRowProps {

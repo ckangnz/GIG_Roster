@@ -1,0 +1,166 @@
+.stickyCol {
+  position: sticky;
+  left: 0;
+  z-index: 30;
+  width: min-content;
+  white-space: nowrap;
+  border-right: 2px solid var(--border-color-secondary) !important;
+}
+
+.dateCell {
+  white-space: nowrap;
+  background: var(--background-table-header) !important;
+  font-size: 0.75rem;
+  color: var(--color-text-dim);
+  width: 1%;
+}
+
+.dateCell.clickable {
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--color-text-primary);
+  font-weight: 600;
+}
+
+.dateCell.clickable:hover {
+  background-color: var(--background-primary-subtle);
+  text-decoration: underline;
+}
+
+.dateCellContent {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+}
+
+.specialEventDot {
+  width: 8px;
+  height: 8px;
+  background-color: var(--color-warning-light);
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 8px;
+  flex-shrink: 0;
+  box-shadow: 0 0 4px #ff9800;
+}
+
+.rosterTodayDot {
+  width: 8px;
+  height: 8px;
+  background-color: var(--color-link);
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 8px;
+  flex-shrink: 0;
+  box-shadow: 0 0 4px #ff9800;
+}
+
+.pastDate {
+  opacity: 0.6;
+}
+
+.noData {
+  opacity: 0.4;
+}
+
+.noData .dateCell {
+  cursor: default !important;
+}
+
+.pastDate td:not(.stickyCol) {
+  background-color: var(--background-body);
+}
+
+.closestNextDateRow,
+.todayDate {
+  background-color: var(--background-primary-subtle);
+}
+
+.closestNextDateRow .stickyCol,
+.todayDate .stickyCol {
+  background-color: var(--background-primary-subtle);
+  color: var(--color-link);
+  font-weight: bold;
+}
+
+.closestNextDateRow td:not(.peekCell),
+.todayDate td:not(.peekCell) {
+  color: var(--color-link) !important;
+  border-bottom: 1px solid var(--color-link);
+  border-top: 1px solid var(--color-link);
+}
+
+.closestNextDateRow {
+  position: relative;
+  background-color: var(--background-primary-subtle);
+  z-index: 5;
+}
+
+.genderDividerCell {
+  width: 8px;
+  min-width: 8px !important;
+  max-width: 8px;
+  background-color: var(--border-color-secondary);
+  padding: 0 !important;
+  border: none !important;
+}
+
+.rosterCell {
+  vertical-align: middle;
+  min-width: 80px;
+}
+
+.peekCell {
+  background-color: var(--background-card) !important;
+  font-size: 0.75rem;
+  color: var(--color-text-primary);
+  font-weight: 500;
+  white-space: normal;
+  text-align: center !important;
+  line-height: 1.3;
+}
+
+.stickyRight {
+  position: static;
+  background-color: var(--background-card);
+  border-left: 1px solid var(--border-color-secondary) !important;
+}
+
+@media (min-width: 768px) {
+  .dateCell {
+    font-size: 0.85rem;
+  }
+
+  .dateCellContent {
+    gap: 8px;
+  }
+
+  .specialEventDot {
+    width: 8px;
+    height: 8px;
+  }
+
+  .genderDividerCell {
+    width: 12px;
+    min-width: 12px !important;
+    max-width: 12px;
+  }
+
+  .rosterCell {
+    min-width: 100px;
+  }
+
+  .peekCell {
+    font-size: 0.85rem;
+    line-height: 1.4;
+  }
+
+  .stickyRight {
+    position: sticky;
+    right: 0;
+    z-index: 30;
+    border-left: 2px solid var(--border-color-secondary) !important;
+  }
+}

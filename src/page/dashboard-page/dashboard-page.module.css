@@ -172,7 +172,7 @@
 }
 
 .dashboardThemeToggle {
-  display: none;
+  display: flex;
 }
 
 .teamEventHeader {
@@ -322,10 +322,6 @@
 
   .teamEventCard {
     padding: 1.2rem;
-  }
-
-  .dashboardThemeToggle {
-    display: flex;
   }
 
   .posEmojiLabel {
