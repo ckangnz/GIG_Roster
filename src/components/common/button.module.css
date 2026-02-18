@@ -52,8 +52,11 @@
 
 @media (hover: hover) {
   .button:hover:not(:disabled) {
-    background: var(--background-button-primary-hover);
     transform: translateY(-2px);
+  }
+
+  .primary:hover:not(:disabled) {
+    background: var(--background-button-primary-hover);
     color: white;
   }
   

@@ -8,14 +8,6 @@
   box-sizing: border-box;
 }
 
-@media (min-width: 768px) {
-  .profileCard {
-    border: none;
-    border-radius: 0;
-    /* Removed height: 100vh to fix guest page height issue */
-  }
-}
-
 .profileReadonly {
   text-align: left;
   margin-bottom: 24px;

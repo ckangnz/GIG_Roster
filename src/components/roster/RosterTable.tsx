@@ -1,6 +1,13 @@
 import { useCallback, useEffect, useMemo, useState, Fragment } from "react";
 
-import { Plus, Users, LayoutGrid, ArrowLeft, ArrowRight, X } from "lucide-react";
+import {
+  Plus,
+  Users,
+  LayoutGrid,
+  ArrowLeft,
+  ArrowRight,
+  X,
+} from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
@@ -30,6 +37,7 @@ import {
   toggleUserVisibility,
   setRosterAllViewMode,
 } from "../../store/slices/uiSlice";
+import Button from "../common/Button";
 import SaveFooter from "../common/SaveFooter";
 import Spinner from "../common/Spinner";
 
@@ -414,7 +422,10 @@ const RosterTable = () => {
     );
   };
 
-  const handleMoveCustomLabel = (index: number, direction: "left" | "right") => {
+  const handleMoveCustomLabel = (
+    index: number,
+    direction: "left" | "right",
+  ) => {
     if (!currentPosition || !activePosition) return;
     const currentLabels = [...(currentPosition.customLabels || [])];
     const targetIndex = direction === "left" ? index - 1 : index + 1;
@@ -519,8 +530,9 @@ const RosterTable = () => {
     const entry = dirtyEntries[dateKey] || entries[dateKey];
     if (!entry || !teamName) return "";
 
-    const assignedEntries = Object.entries(entry.teams[teamName] || {})
-      .filter(([, positions]) => positions.includes(positionName));
+    const assignedEntries = Object.entries(entry.teams[teamName] || {}).filter(
+      ([, positions]) => positions.includes(positionName),
+    );
 
     return (
       <div className={styles.assignedUsersText}>
@@ -758,6 +770,62 @@ const RosterTable = () => {
     return "future-date";
   }, []);
 
+  const renderTopControls = () => {
+    const hasHidden = !isAbsenceView && hiddenUserList.length > 0;
+    const hasToggle = isAllView;
+
+    if (!hasHidden && !hasToggle) return null;
+
+    return (
+      <div className={styles.topControls}>
+        {isAllView && (
+          <div className={styles.viewToggleBar}>
+            <Button
+              variant={rosterAllViewMode === "user" ? "primary" : "secondary"}
+              size="small"
+              onClick={() => dispatch(setRosterAllViewMode("user"))}
+              className={styles.toggleButtonGap}
+            >
+              <Users size={18} /> <span>User View</span>
+            </Button>
+            <Button
+              variant={
+                rosterAllViewMode === "position" ? "primary" : "secondary"
+              }
+              size="small"
+              onClick={() => dispatch(setRosterAllViewMode("position"))}
+              className={styles.toggleButtonGap}
+            >
+              <LayoutGrid size={18} /> <span>Position View</span>
+            </Button>
+          </div>
+        )}
+
+        {hasHidden && (
+          <div className={styles.hiddenMembersBar}>
+            <span className={styles.hiddenMembersLabel}>Hidden Members:</span>
+            <div className={styles.hiddenMembersList}>
+              {hiddenUserList.map((email) => {
+                const user = users.find((u) => u.email === email);
+                return (
+                  <Button
+                    key={email}
+                    variant="secondary"
+                    size="small"
+                    onClick={() => handleToggleVisibility(email)}
+                    className={styles.unhideButton}
+                  >
+                    {user?.name || email} <Plus size={14} />
+                  </Button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   if (loadingUsers || loadingTeam || loadingAllTeamUsers) {
     return <Spinner />;
   }
@@ -770,20 +838,7 @@ const RosterTable = () => {
   if (isAllView) {
     return (
       <div className={styles.rosterTableWrapper}>
-        <div className={styles.viewToggleBar}>
-          <button
-            className={`${styles.toggleBtn} ${rosterAllViewMode === "user" ? styles.activeToggle : ""}`}
-            onClick={() => dispatch(setRosterAllViewMode("user"))}
-          >
-            <Users size={18} /> <span>User View</span>
-          </button>
-          <button
-            className={`${styles.toggleBtn} ${rosterAllViewMode === "position" ? styles.activeToggle : ""}`}
-            onClick={() => dispatch(setRosterAllViewMode("position"))}
-          >
-            <LayoutGrid size={18} /> <span>Position View</span>
-          </button>
-        </div>
+        {renderTopControls()}
 
         <div className={styles.rosterSection}>
           <div className={styles.rosterTableContainer}>
@@ -832,23 +887,22 @@ const RosterTable = () => {
                           </th>
                         );
                       })
-                    : (currentTeamData?.positions || [])
-                        .map((pos) => (
-                          <th
-                            key={pos.name}
-                            className={`${styles.rosterTableHeaderCell} ${styles.clickableHeader} sticky-header`}
-                            onClick={() =>
-                              navigate(`/app/roster/${teamName}/${pos.name}`)
-                            }
-                          >
-                            <div className={styles.allViewPositionHeader}>
-                              <span>{pos.emoji}</span>
-                              <span className={styles.allViewPositionName}>
-                                {pos.name}
-                              </span>
-                            </div>
-                          </th>
-                        ))}
+                    : (currentTeamData?.positions || []).map((pos) => (
+                        <th
+                          key={pos.name}
+                          className={`${styles.rosterTableHeaderCell} ${styles.clickableHeader} sticky-header`}
+                          onClick={() =>
+                            navigate(`/app/roster/${teamName}/${pos.name}`)
+                          }
+                        >
+                          <div className={styles.allViewPositionHeader}>
+                            <span>{pos.emoji}</span>
+                            <span className={styles.allViewPositionName}>
+                              {pos.name}
+                            </span>
+                          </div>
+                        </th>
+                      ))}
                 </tr>
               </thead>
               <tbody>
@@ -960,8 +1014,8 @@ const RosterTable = () => {
                               </td>
                             );
                           })
-                        : (currentTeamData?.positions || [])
-                            .map((pos, colIndex) => {
+                        : (currentTeamData?.positions || []).map(
+                            (pos, colIndex) => {
                               const isFocused =
                                 focusedCell?.row === rowIndex &&
                                 focusedCell?.col === colIndex &&
@@ -988,7 +1042,8 @@ const RosterTable = () => {
                                   )}
                                 </td>
                               );
-                            })}
+                            },
+                          )}
                     </tr>
                   );
                 })}
@@ -1014,54 +1069,18 @@ const RosterTable = () => {
     sortedUsers.length === 0
   ) {
     return (
-      <div className={styles.rosterTableLoading}>
-        {!isAbsenceView && hiddenUserList.length > 0 && (
-          <div className={styles.hiddenMembersBar}>
-            <span className={styles.hiddenMembersLabel}>Hidden Members:</span>
-            <div className={styles.hiddenMembersList}>
-              {hiddenUserList.map((email) => {
-                const user = users.find((u) => u.email === email);
-                return (
-                  <button
-                    key={email}
-                    className={styles.unhidePill}
-                    onClick={() => handleToggleVisibility(email)}
-                    title="Click to unhide"
-                  >
-                    {user?.name || email} <span>+</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
-        No users found for this position.
+      <div className={styles.rosterTableWrapper}>
+        {renderTopControls()}
+        <div className={styles.rosterTableLoading}>
+          No users found for this position.
+        </div>
       </div>
     );
   }
 
   return (
     <div className={styles.rosterTableWrapper}>
-      {!isAbsenceView && hiddenUserList.length > 0 && (
-        <div className={styles.hiddenMembersBar}>
-          <span className={styles.hiddenMembersLabel}>Hidden Members:</span>
-          <div className={styles.hiddenMembersList}>
-            {hiddenUserList.map((email) => {
-              const user = users.find((u) => u.email === email);
-              return (
-                <button
-                  key={email}
-                  className={styles.unhidePill}
-                  onClick={() => handleToggleVisibility(email)}
-                  title="Click to unhide"
-                >
-                  {user?.name || email} <span>+</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
+      {renderTopControls()}
 
       {!isAbsenceView ? (
         <div className={styles.rosterSection}>
@@ -1581,7 +1600,7 @@ const RosterTable = () => {
                                   }}
                                   title="Mark as present"
                                 >
-                                  ×
+                                  <X size={14} />
                                 </button>
                               </div>
                             ) : (

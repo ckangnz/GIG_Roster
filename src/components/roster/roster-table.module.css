@@ -146,16 +146,21 @@ th.genderDividerCell {
   justify-content: center;
   gap: 4px;
   flex-wrap: wrap;
+  align-items: center;
 }
 
 .posEmoji {
-  font-size: 1.1rem;
+  font-size: 1rem;
+  line-height: 1;
+  display: inline-flex;
 }
 
 .otherTeamEmoji {
   opacity: 0.4;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   filter: grayscale(0.6);
+  line-height: 1;
+  display: inline-flex;
 }
 
 .dateHeaderContent {
@@ -255,16 +260,294 @@ th.genderDividerCell {
   color: var(--color-link);
 }
 
+.topControls {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 16px;
+  background: var(--background-card);
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color-secondary);
+  flex-wrap: wrap;
+}
+
+.viewToggleBar {
+  display: flex;
+  gap: 12px;
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+  border: none;
+  width: fit-content;
+  margin-bottom: 0;
+}
+
 .hiddenMembersBar {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px;
-  background: var(--background-card);
-  border: 1px solid var(--border-color-secondary);
-  border-radius: 8px;
-  margin-bottom: 16px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  margin-bottom: 0;
   flex-wrap: wrap;
+  flex: 1;
+}
+
+.toggleButtonGap {
+  gap: 8px;
+}
+
+.unhideButton {
+  border-radius: 100px;
+  gap: 6px;
+  padding: 0 12px;
+}
+
+.allViewPositionHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.allViewPositionName {
+  font-size: 0.7rem;
+  font-weight: normal;
+  opacity: 0.8;
+}
+
+.headerActions {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.headerActionBtn {
+  background: var(--background-button-secondary);
+  border: 1px solid var(--border-color-input);
+  color: var(--color-text-dim);
+  border-radius: 4px;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.headerActionBtn:hover {
+  background: var(--background-button-hover);
+  color: var(--color-link);
+}
+
+.headerActionBtn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.removeHeaderBtn:hover {
+  color: var(--color-error);
+  border-color: var(--color-error);
+}
+
+.assignedUsersText {
+  font-size: 0.8rem;
+  color: var(--color-text-primary);
+  line-height: 1.4;
+}
+
+.meTag {
+  display: inline-flex;
+  align-items: center;
+  background-color: #e0dbff;
+  color: #5c4eb1;
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 1px 6px;
+  border-radius: 4px;
+  margin-left: 6px;
+  vertical-align: middle;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: 1px solid #c8bfff;
+}
+
+[data-theme="dark"] .meTag {
+  background-color: #3d3473;
+  color: #d1c9ff;
+  border-color: #4f4494;
+}
+
+.isMe {
+  color: #5c4eb1 !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="dark"] .isMe {
+  color: #d1c9ff !important;
+}
+
+.headerInput {
+  background: transparent;
+  border: none;
+  border-bottom: 1px dashed var(--color-link);
+  color: var(--color-text-primary);
+  text-align: center;
+  font-size: 0.85rem;
+  font-weight: bold;
+  padding: 4px;
+  width: 100%;
+  max-width: 120px;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.headerInput:focus {
+  border-bottom-style: solid;
+  background: var(--background-primary-subtle);
+}
+
+.headerInput::placeholder {
+  color: var(--color-text-dim);
+  opacity: 0.5;
+  font-weight: normal;
+}
+
+.addColumnBtn {
+  background: var(--background-button-secondary);
+  border: 1px solid var(--border-color-input);
+  color: var(--color-link);
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin: 0 auto;
+}
+
+.addColumnBtn:hover {
+  background: var(--color-link);
+  color: white;
+  transform: scale(1.1);
+}
+
+/* Tablet and Desktop Styles */
+@media (min-width: 768px) {
+  .rosterTable th {
+    padding: 12px 8px;
+    font-size: 0.9rem;
+  }
+
+  .rosterTable td {
+    padding: 8px;
+  }
+
+  .rosterTableWrapper {
+    padding-bottom: 80px;
+  }
+
+  .loadNextYearBtn {
+    padding: 10px 24px;
+    font-size: 0.9rem;
+  }
+
+  .dateCell {
+    font-size: 0.85rem;
+  }
+
+  .rosterCell {
+    min-width: 100px;
+  }
+
+  .genderDividerCell {
+    width: 12px;
+    min-width: 12px !important;
+    max-width: 12px;
+  }
+
+  .posEmoji {
+    font-size: 1rem;
+  }
+
+  .otherTeamEmoji {
+    font-size: 0.8rem;
+  }
+
+  .dateHeaderContent {
+    gap: 8px;
+  }
+
+  .loadPrevBtn {
+    width: 24px;
+    height: 24px;
+    font-size: 1rem;
+  }
+
+  .peekHeader {
+    padding: 8px !important;
+    min-width: 180px;
+  }
+
+  .peekSelector {
+    padding: 6px;
+    font-size: 0.8rem;
+  }
+
+  .peekCell {
+    font-size: 0.85rem;
+    line-height: 1.4;
+  }
+
+  .hiddenMembersLabel {
+    font-size: 0.75rem;
+  }
+
+  .hiddenMembersList {
+    gap: 8px;
+  }
+
+  .sectionTitle {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+  }
+
+  .todayBadge {
+    font-size: 0.6rem;
+    padding: 2px 6px;
+  }
+
+  .specialEventDot {
+    width: 8px;
+    height: 8px;
+  }
+
+  .absenceReasonInput {
+    font-size: 0.8rem;
+  }
+
+  .removeAbsenceBtn {
+    font-size: 1.1rem;
+    width: 20px;
+    height: 20px;
+  }
+
+  .genderLabel {
+    font-size: 0.7rem;
+  }
+
+  .stickyRight {
+    position: sticky;
+    right: 0;
+    z-index: 30;
+    border-left: 2px solid var(--border-color-secondary) !important;
+  }
 }
 
 .hiddenMembersLabel {
@@ -279,31 +562,6 @@ th.genderDividerCell {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
-}
-
-.unhidePill {
-  background: var(--background-button-secondary);
-  border: 1px solid var(--border-color-input);
-  color: var(--color-text-secondary);
-  padding: 4px 12px;
-  border-radius: 100px;
-  font-size: 0.8rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  transition: all 0.2s;
-}
-
-.unhidePill:hover {
-  border-color: var(--color-link);
-  color: var(--color-link);
-  background: var(--background-primary-subtle);
-}
-
-.unhidePill span {
-  font-weight: bold;
-  font-size: 1rem;
 }
 
 .sectionTitle {
@@ -417,51 +675,53 @@ th.genderDividerCell {
 .absenceInputContainer {
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
   width: 100%;
+  padding: 2px;
+  background: var(--background-input);
+  border-radius: 6px;
+  border: 1px solid var(--border-color-input);
+  transition: all 0.2s;
+  box-sizing: border-box;
+}
+
+.absenceInputContainer:focus-within {
+  border-color: var(--color-link);
+  background: var(--background-card);
+  box-shadow: 0 0 0 1px var(--color-link);
 }
 
 .absenceReasonInput {
   flex: 1;
-  background: var(--background-input);
-  border: 1px solid var(--border-color-input);
-  border-radius: 4px;
+  background: transparent;
+  border: none;
   color: var(--color-text-primary);
   text-align: left;
-  font-size: 0.8rem;
-  padding: 4px 6px;
+  font-size: 0.75rem;
+  padding: 2px 4px;
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  transition: border-color 0.2s;
-}
-
-.absenceReasonInput:focus {
-  outline: 1px solid var(--color-link);
-  border-color: var(--color-link);
-  background: var(--background-card);
-  text-overflow: clip;
+  outline: none;
 }
 
 .removeAbsenceBtn {
-  background: transparent;
+  background: var(--background-button-secondary);
   border: none;
   color: var(--color-text-dim);
-  font-size: 1.1rem;
-  cursor: pointer;
+  border-radius: 4px;
   width: 20px;
   height: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: color 0.2s;
+  cursor: pointer;
+  transition: all 0.2s;
   flex-shrink: 0;
   padding: 0;
 }
 
 .removeAbsenceBtn:hover {
-  color: var(--color-error);
+  background: var(--color-error);
+  color: white;
 }
 
 .absenceRosterCell {
@@ -495,300 +755,4 @@ th.genderDividerCell {
 .dateCell.clickable:hover {
   background-color: var(--background-primary-subtle);
   text-decoration: underline;
-}
-
-.viewToggleBar {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 16px;
-  background: var(--background-card);
-  padding: 6px;
-  border-radius: 8px;
-  border: 1px solid var(--border-color-secondary);
-  width: fit-content;
-}
-
-.toggleBtn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 16px;
-  border-radius: 6px;
-  border: 1px solid transparent;
-  background: transparent;
-  color: var(--color-text-secondary);
-  font-size: 0.85rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.toggleBtn:hover {
-  background: var(--background-button-secondary);
-  color: var(--color-link);
-}
-
-.activeToggle {
-  background: var(--color-link) !important;
-  color: white !important;
-}
-
-.allViewPositionHeader {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-}
-
-.allViewPositionName {
-  font-size: 0.7rem;
-  font-weight: normal;
-  opacity: 0.8;
-}
-
-.headerActions {
-  display: flex;
-  justify-content: center;
-  gap: 4px;
-  margin-top: 4px;
-}
-
-.headerActionBtn {
-  background: var(--background-button-secondary);
-  border: 1px solid var(--border-color-input);
-  color: var(--color-text-dim);
-  border-radius: 4px;
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.headerActionBtn:hover {
-  background: var(--background-button-hover);
-  color: var(--color-link);
-}
-
-.headerActionBtn:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
-}
-
-.removeHeaderBtn:hover {
-  color: var(--color-error);
-  border-color: var(--color-error);
-}
-
-.assignedUsersText {
-  font-size: 0.8rem;
-  color: var(--color-text-primary);
-  line-height: 1.4;
-}
-
-.meTag {
-  display: inline-flex;
-  align-items: center;
-  background-color: #e0dbff;
-  color: #5c4eb1;
-  font-size: 0.65rem;
-  font-weight: 800;
-  padding: 1px 6px;
-  border-radius: 4px;
-  margin-left: 6px;
-  vertical-align: middle;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  border: 1px solid #c8bfff;
-}
-
-[data-theme='dark'] .meTag {
-  background-color: #3d3473;
-  color: #d1c9ff;
-  border-color: #4f4494;
-}
-
-.isMe {
-  color: #5c4eb1 !important;
-  font-weight: 700 !important;
-}
-
-[data-theme='dark'] .isMe {
-  color: #d1c9ff !important;
-}
-
-.headerInput {
-  background: transparent;
-  border: none;
-  border-bottom: 1px dashed var(--color-link);
-  color: var(--color-text-primary);
-  text-align: center;
-  font-size: 0.85rem;
-  font-weight: bold;
-  padding: 4px;
-  width: 100%;
-  max-width: 120px;
-  outline: none;
-  transition: all 0.2s;
-}
-
-.headerInput:focus {
-  border-bottom-style: solid;
-  background: var(--background-primary-subtle);
-}
-
-.headerInput::placeholder {
-  color: var(--color-text-dim);
-  opacity: 0.5;
-  font-weight: normal;
-}
-
-.addColumnBtn {
-  background: var(--background-button-secondary);
-  border: 1px solid var(--border-color-input);
-  color: var(--color-link);
-  border-radius: 50%;
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s;
-  margin: 0 auto;
-}
-
-.addColumnBtn:hover {
-  background: var(--color-link);
-  color: white;
-  transform: scale(1.1);
-}
-
-/* Tablet and Desktop Styles */
-@media (min-width: 768px) {
-  .rosterTable th {
-    padding: 12px 8px;
-    font-size: 0.9rem;
-  }
-
-  .rosterTable td {
-    padding: 8px;
-  }
-
-  .rosterTableWrapper {
-    padding-bottom: 80px;
-  }
-
-  .loadNextYearBtn {
-    padding: 10px 24px;
-    font-size: 0.9rem;
-  }
-
-  .dateCell {
-    font-size: 0.85rem;
-  }
-
-  .rosterCell {
-    min-width: 100px;
-  }
-
-  .genderDividerCell {
-    width: 12px;
-    min-width: 12px !important;
-    max-width: 12px;
-  }
-
-  .posEmoji {
-    font-size: 1.2rem;
-  }
-
-  .otherTeamEmoji {
-    font-size: 0.9rem;
-  }
-
-  .dateHeaderContent {
-    gap: 8px;
-  }
-
-  .loadPrevBtn {
-    width: 24px;
-    height: 24px;
-    font-size: 1rem;
-  }
-
-  .peekHeader {
-    padding: 8px !important;
-    min-width: 180px;
-  }
-
-  .peekSelector {
-    padding: 6px;
-    font-size: 0.8rem;
-  }
-
-  .peekCell {
-    font-size: 0.85rem;
-    line-height: 1.4;
-  }
-
-  .hiddenMembersBar {
-    padding: 12px;
-    margin-bottom: 16px;
-  }
-
-  .hiddenMembersLabel {
-    font-size: 0.75rem;
-  }
-
-  .hiddenMembersList {
-    gap: 8px;
-  }
-
-  .unhidePill {
-    padding: 4px 12px;
-    font-size: 0.8rem;
-    gap: 6px;
-  }
-
-  .unhidePill span {
-    font-size: 1rem;
-  }
-
-  .sectionTitle {
-    font-size: 1.1rem;
-    margin-bottom: 1rem;
-  }
-
-  .todayBadge {
-    font-size: 0.6rem;
-    padding: 2px 6px;
-  }
-
-  .specialEventDot {
-    width: 8px;
-    height: 8px;
-  }
-
-  .absenceReasonInput {
-    font-size: 0.8rem;
-  }
-
-  .removeAbsenceBtn {
-    font-size: 1.1rem;
-    width: 20px;
-    height: 20px;
-  }
-
-  .genderLabel {
-    font-size: 0.7rem;
-  }
-
-  .stickyRight {
-    position: sticky;
-    right: 0;
-    z-index: 30;
-    border-left: 2px solid var(--border-color-secondary) !important;
-  }
 }

@@ -25,6 +25,7 @@
   --background-primary-subtle: rgba(100, 108, 255, 0.15);
   --background-button-primary-hover: #7c83ff;
   --background-button-secondary: #2a2a2a;
+  --background-button-secondary-hover: #444;
   --background-button-delete-hover: #ff5555;
   --background-input: #262626;
   --background-table-header: #222;
@@ -71,6 +72,7 @@
   --background-primary-subtle: rgba(79, 70, 229, 0.1);
   --background-button-primary-hover: #4338ca;
   --background-button-secondary: #f9f9f9;
+  --background-button-secondary-hover: #e5e7eb;
   --background-button-delete-hover: #f44336;
   --background-input: #ffffff;
   --background-table-header: #e0e0e0;
