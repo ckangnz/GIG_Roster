@@ -41,8 +41,8 @@ const MobileHeader = ({ title, hasSideNav = true }: MobileHeaderProps) => {
         )}
       </div>
       <div className={styles.mobileHeaderActions}>
-        <OnlineUsers teamName={teamName} currentUser={userData} />
         <ThemeToggleButton className={styles.mobileThemeToggle} />
+        <OnlineUsers teamName={teamName} currentUser={userData} />
       </div>
     </header>
   );

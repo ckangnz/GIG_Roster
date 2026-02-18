@@ -306,15 +306,15 @@ const SideNav = () => {
         </div>
       )}
       <div className={styles.sidebarFooter}>
+        <ThemeToggleButton
+          className={styles.sidebarThemeToggle}
+          iconClassName={styles.sidebarThemeIcon}
+        />
         <OnlineUsers
           teamName={activeTeamName}
           currentUser={userData}
           variant="sidebar"
           showText={isDesktopSidebarExpanded}
-        />
-        <ThemeToggleButton
-          className={styles.sidebarThemeToggle}
-          iconClassName={styles.sidebarThemeIcon}
         />
       </div>
     </aside>

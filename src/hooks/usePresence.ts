@@ -22,60 +22,68 @@ export interface PresenceUser {
   lastSeen: Timestamp;
 }
 
-export const usePresence = (teamName: string | undefined, currentUser: AppUser | null) => {
-  const [onlineUsers, setOnlineUsers] = useState<PresenceUser[]>([]);
-
+/**
+ * Hook to track current user's presence globally.
+ * Should be called once at a high level (e.g., MainLayout).
+ */
+export const useTrackPresence = (currentUser: AppUser | null) => {
   useEffect(() => {
-    if (!teamName || !currentUser || !currentUser.email) return;
+    if (!currentUser || !currentUser.email) return;
 
     const userRef = doc(db, "presence", currentUser.email);
     
-    // 1. Mark current user as online
     const markOnline = async () => {
       await setDoc(userRef, {
-        uid: currentUser.email, // using email as ID for simplicity in this project
+        uid: currentUser.email,
         name: currentUser.name || "Anonymous",
         email: currentUser.email,
-        team: teamName,
+        // We still store teams to help with filtering if needed, 
+        // but the record exists regardless of current page.
+        teams: currentUser.teams || [],
         lastSeen: serverTimestamp(),
       });
     };
 
     markOnline();
 
-    // 2. Heartbeat to keep status alive
     const heartbeat = setInterval(() => {
       markOnline();
-    }, 30000); // every 30 seconds
+    }, 30000);
 
-    // 3. Cleanup on unmount
     return () => {
       clearInterval(heartbeat);
       deleteDoc(userRef);
     };
-  }, [teamName, currentUser]);
+  }, [currentUser]);
+};
+
+/**
+ * Hook to listen to online users for a specific team.
+ */
+export const useOnlineUsers = (teamName: string | undefined, currentUserEmail: string | null | undefined) => {
+  const [onlineUsers, setOnlineUsers] = useState<PresenceUser[]>([]);
 
   useEffect(() => {
-    if (!teamName) return;
+    // If no teamName, we can either show NO ONE or show everyone online.
+    // The user said "OnlineIndicator is loaded only on roster page. It should be loaded on page load"
+    // This might mean they want to see WHO is online globally when not on a team page?
+    // Let's support showing global online users if teamName is undefined.
+    
+    const now = Date.now();
+    const twoMinutesAgo = now - 120000;
 
-    // 4. Listen to online users for this team
-    const q = query(
-      collection(db, "presence"),
-      where("team", "==", teamName)
-    );
+    const q = teamName 
+      ? query(collection(db, "presence"), where("teams", "array-contains", teamName))
+      : query(collection(db, "presence"));
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const users: PresenceUser[] = [];
-      const now = Date.now();
-      const twoMinutesAgo = now - 120000; // Be a bit more generous with 2 minutes
 
       snapshot.forEach((doc) => {
         const data = doc.data();
-        
-        // Handle pending server timestamps
         let lastSeenDate: Date;
+        
         if (!data.lastSeen) {
-          // If timestamp is pending, assume it's "now"
           lastSeenDate = new Date();
         } else {
           lastSeenDate = data.lastSeen.toDate();
@@ -91,16 +99,15 @@ export const usePresence = (teamName: string | undefined, currentUser: AppUser |
         }
       });
       
-      // Sort users: current user first, then by name
       setOnlineUsers(users.sort((a, b) => {
-        if (a.email === currentUser?.email) return -1;
-        if (b.email === currentUser?.email) return 1;
+        if (a.email === currentUserEmail) return -1;
+        if (b.email === currentUserEmail) return 1;
         return a.name.localeCompare(b.name);
       }));
     });
 
     return () => unsubscribe();
-  }, [teamName, currentUser?.email]);
+  }, [teamName, currentUserEmail]);
 
   return onlineUsers;
 };

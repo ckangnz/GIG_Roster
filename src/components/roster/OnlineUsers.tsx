@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 
-import { usePresence } from "../../hooks/usePresence";
+import { useOnlineUsers } from "../../hooks/usePresence";
 import { AppUser } from "../../model/model";
 
 import styles from "./online-users.module.css";
@@ -18,7 +18,7 @@ const OnlineUsers = ({
   variant = "top-bar",
   showText = false,
 }: OnlineUsersProps) => {
-  const onlineUsers = usePresence(teamName, currentUser);
+  const onlineUsers = useOnlineUsers(teamName, currentUser?.email);
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
