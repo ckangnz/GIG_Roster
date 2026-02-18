@@ -9,7 +9,6 @@ interface SettingsTableHeaderProps {
   textAlign?: "left" | "center" | "right";
   width?: number;
   minWidth?: number;
-  isSticky?: boolean;
 }
 
 export const SettingsTableHeader = ({
@@ -17,11 +16,10 @@ export const SettingsTableHeader = ({
   textAlign = "left",
   width,
   minWidth,
-  isSticky = false,
 }: SettingsTableHeaderProps) => {
   return (
     <th
-      className={isSticky ? styles.stickyCol : undefined}
+      className={styles.stickyCol}
       style={{
         textAlign: textAlign,
         width: width ? `${width}px` : "auto",

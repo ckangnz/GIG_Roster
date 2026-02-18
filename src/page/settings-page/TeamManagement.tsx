@@ -225,7 +225,6 @@ const TeamManagement = () => {
             minWidth: 100,
             width: 120,
             textAlign: "center",
-            isSticky: true,
           },
           { text: "Order", width: 30, textAlign: "center" },
           { text: "Emoji", width: 30, textAlign: "center" },

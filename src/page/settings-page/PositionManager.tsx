@@ -44,8 +44,11 @@ const PositionManagement = () => {
         sortByGender: !!p.sortByGender,
         isCustom: !!p.isCustom,
       }));
-    return JSON.stringify(normalize(reduxPositions));
-  }, [reduxPositions]);
+    return (
+      JSON.stringify(normalize(positions)) !==
+      JSON.stringify(normalize(reduxPositions))
+    );
+  }, [positions, reduxPositions]);
 
   useEffect(() => {
     setPositions(reduxPositions);
@@ -283,7 +286,6 @@ const PositionManagement = () => {
             minWidth: 80,
             width: 200,
             textAlign: "center",
-            isSticky: true,
           },
           { text: "Order", width: 30, textAlign: "center" },
           { text: "Emoji", width: 30, textAlign: "center" },
