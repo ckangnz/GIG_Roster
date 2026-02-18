@@ -221,6 +221,12 @@
     padding: 14px 0;
   }
 
+  .sidebarCollapsed .sidebarFooter {
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px 0;
+  }
+
   .sidebarFooter {
     display: flex;
     align-items: center;
