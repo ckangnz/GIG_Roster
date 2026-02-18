@@ -1,10 +1,10 @@
 import { Fragment, ReactNode } from "react";
 
-import { X } from "lucide-react";
-
+import RosterCell from "./RosterCell";
 import { AppUser, Position } from "../../model/model";
 
 import styles from "./roster-table.module.css";
+
 
 interface RosterRowProps {
   viewType: "all" | "roster" | "absence";
@@ -115,52 +115,39 @@ const RosterRow = ({
       <tr className={trClasses}>
         {renderDateCell()}
         {rosterAllViewMode === "user"
-          ? allViewColumns.map((col, colIndex) => {
-              const isFocused =
-                focusedCell?.row === rowIndex && focusedCell?.col === colIndex && focusedCell?.table === "all";
-              const absent = col.id ? isUserAbsent(dateString, col.id) : false;
-              const isAssignedOnClosestDate =
-                dateString === closestNextDate && col.id && assignedOnClosestDate.includes(col.id);
-
-              return (
-                <td
-                  key={col.id}
-                  className={`${styles.rosterCell} ${styles.clickable} ${isFocused ? styles.focused : ""} ${
-                    absent ? styles.absentStrike : ""
-                  } ${isAssignedOnClosestDate ? styles.highlightedCell : ""}`}
-                  tabIndex={0}
-                  onClick={() => {
-                    const assignments = getAssignmentsForIdentifier(dateString, col.id);
-                    if (assignments.length > 0) {
-                      navigate(`/app/roster/${teamName}/${assignments[0]}`);
-                    }
-                  }}
-                  onFocus={() => setFocusedCell({ row: rowIndex, col: colIndex, table: "all" })}
-                >
-                  {col.id &&
-                    (absent ? (
-                      <span title={getAbsenceReason(dateString, col.id)}>❌</span>
-                    ) : (
-                      getAllViewUserCellContent(dateString, col.id)
-                    ))}
-                </td>
-              );
-            })
-          : (currentTeamData?.positions || []).map((pos, colIndex) => {
-              const isFocused =
-                focusedCell?.row === rowIndex && focusedCell?.col === colIndex && focusedCell?.table === "all";
-
-              return (
-                <td
-                  key={pos.name}
-                  className={`${styles.rosterCell} ${isFocused ? styles.focused : ""}`}
-                  tabIndex={0}
-                  onFocus={() => setFocusedCell({ row: rowIndex, col: colIndex, table: "all" })}
-                >
-                  {getAllViewPositionCellContent(dateString, pos.name)}
-                </td>
-              );
-            })}
+          ? allViewColumns.map((col, colIndex) => (
+              <RosterCell
+                key={col.id}
+                type="all-user"
+                dateString={dateString}
+                rowIndex={rowIndex}
+                colIndex={colIndex}
+                isFocused={focusedCell?.row === rowIndex && focusedCell?.col === colIndex && focusedCell?.table === "all"}
+                onFocus={() => setFocusedCell({ row: rowIndex, col: colIndex, table: "all" })}
+                absent={col.id ? isUserAbsent(dateString, col.id) : false}
+                absenceReason={col.id ? getAbsenceReason(dateString, col.id) : ""}
+                isAssignedOnClosestDate={dateString === closestNextDate && col.id !== undefined && assignedOnClosestDate.includes(col.id)}
+                content={col.id ? getAllViewUserCellContent(dateString, col.id) : null}
+                onClick={() => {
+                  const assignments = getAssignmentsForIdentifier(dateString, col.id);
+                  if (assignments.length > 0) {
+                    navigate(`/app/roster/${teamName}/${assignments[0]}`);
+                  }
+                }}
+              />
+            ))
+          : (currentTeamData?.positions || []).map((pos, colIndex) => (
+              <RosterCell
+                key={pos.name}
+                type="all-position"
+                dateString={dateString}
+                rowIndex={rowIndex}
+                colIndex={colIndex}
+                isFocused={focusedCell?.row === rowIndex && focusedCell?.col === colIndex && focusedCell?.table === "all"}
+                onFocus={() => setFocusedCell({ row: rowIndex, col: colIndex, table: "all" })}
+                content={getAllViewPositionCellContent(dateString, pos.name)}
+              />
+            ))}
       </tr>
     );
   }
@@ -169,64 +156,30 @@ const RosterRow = ({
     return (
       <tr className={trClasses}>
         {renderDateCell()}
-        {allTeamUsers.map((user, colIndex) => {
-          const isFocused =
-            focusedCell?.row === rowIndex && focusedCell?.col === colIndex && focusedCell?.table === "absence";
-          const absent = user.email ? isUserAbsent(dateString, user.email) : false;
-          const reason = user.email ? getAbsenceReason(dateString, user.email) : "";
-          const isAssignedOnClosestDate =
-            dateString === closestNextDate && user.email && assignedOnClosestDate.includes(user.email);
-
-          return (
-            <td
-              key={user.email}
-              className={`${styles.rosterCell} ${styles.clickable} ${styles.absenceRosterCell} ${
-                isFocused ? styles.focused : ""
-              } ${absent ? styles.absentCell : ""} ${isAssignedOnClosestDate ? styles.highlightedCell : ""}`}
-              onClick={() => {
-                if (user.email) {
-                  handleAbsenceClick(dateString, user.email, rowIndex, colIndex);
-                }
-              }}
-              tabIndex={0}
-              onFocus={() => setFocusedCell({ row: rowIndex, col: colIndex, table: "absence" })}
-              title={reason}
-            >
-              {absent ? (
-                <div className={styles.absenceInputContainer}>
-                  <input
-                    type="text"
-                    className={styles.absenceReasonInput}
-                    value={reason}
-                    placeholder="Reason..."
-                    maxLength={20}
-                    autoFocus={isFocused}
-                    onClick={(e) => e.stopPropagation()}
-                    onChange={(e) => {
-                      if (user.email) {
-                        handleAbsenceReasonChange(dateString, user.email, e.target.value);
-                      }
-                    }}
-                  />
-                  <button
-                    className={styles.removeAbsenceBtn}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (user.email) {
-                        handleAbsenceClick(dateString, user.email, rowIndex, colIndex);
-                      }
-                    }}
-                    title="Mark as present"
-                  >
-                    <X size={14} />
-                  </button>
-                </div>
-              ) : (
-                ""
-              )}
-            </td>
-          );
-        })}
+        {allTeamUsers.map((user, colIndex) => (
+          <RosterCell
+            key={user.email}
+            type="absence"
+            dateString={dateString}
+            rowIndex={rowIndex}
+            colIndex={colIndex}
+            isFocused={focusedCell?.row === rowIndex && focusedCell?.col === colIndex && focusedCell?.table === "absence"}
+            onFocus={() => setFocusedCell({ row: rowIndex, col: colIndex, table: "absence" })}
+            absent={user.email ? isUserAbsent(dateString, user.email) : false}
+            absenceReason={user.email ? getAbsenceReason(dateString, user.email) : ""}
+            isAssignedOnClosestDate={!!(dateString === closestNextDate && user.email && assignedOnClosestDate.includes(user.email))}
+            onClick={() => {
+              if (user.email) {
+                handleAbsenceClick(dateString, user.email, rowIndex, colIndex);
+              }
+            }}
+            handleAbsenceReasonChange={(reason) => {
+              if (user.email) {
+                handleAbsenceReasonChange(dateString, user.email, reason);
+              }
+            }}
+          />
+        ))}
         <td className={styles.genderDividerCell} />
         {renderPeekCell()}
       </tr>
@@ -238,58 +191,50 @@ const RosterRow = ({
     <tr className={trClasses}>
       {renderDateCell()}
       {currentPosition?.isCustom
-        ? (currentPosition.customLabels || []).map((label, colIndex) => {
-            const isFocused =
-              focusedCell?.row === rowIndex && focusedCell?.col === colIndex && focusedCell?.table === "roster";
-            return (
-              <td
-                key={`custom-cell-${colIndex}`}
-                className={`${styles.rosterCell} ${styles.clickable} ${isFocused ? styles.focused : ""}`}
+        ? (currentPosition.customLabels || []).map((label, colIndex) => (
+            <RosterCell
+              key={`custom-cell-${colIndex}`}
+              type="roster-custom"
+              dateString={dateString}
+              rowIndex={rowIndex}
+              colIndex={colIndex}
+              isFocused={focusedCell?.row === rowIndex && focusedCell?.col === colIndex && focusedCell?.table === "roster"}
+              onFocus={() => setFocusedCell({ row: rowIndex, col: colIndex, table: "roster" })}
+              content={label && getCellContent(dateString, label)}
+              onClick={() => {
+                if (label) {
+                  handleCellClick(dateString, label, rowIndex, colIndex);
+                }
+              }}
+            />
+          ))
+        : sortedUsers.map((user, colIndex) => (
+            <Fragment key={user.email}>
+              {genderDividerIndex === colIndex && <td className={styles.genderDividerCell} />}
+              <RosterCell
+                type="roster-user"
+                dateString={dateString}
+                rowIndex={rowIndex}
+                colIndex={colIndex}
+                isFocused={
+                  focusedCell?.row === rowIndex && focusedCell?.col === colIndex && focusedCell?.table === "roster"
+                }
+                onFocus={() => setFocusedCell({ row: rowIndex, col: colIndex, table: "roster" })}
+                disabled={user.email ? isCellDisabled(dateString, user.email) : false}
+                absent={user.email ? isUserAbsent(dateString, user.email) : false}
+                absenceReason={user.email ? getAbsenceReason(dateString, user.email) : ""}
+                isAssignedOnClosestDate={
+                  !!(dateString === closestNextDate && user.email && assignedOnClosestDate.includes(user.email))
+                }
+                content={user.email ? getCellContent(dateString, user.email) : null}
                 onClick={() => {
-                  if (label) {
-                    handleCellClick(dateString, label, rowIndex, colIndex);
+                  if (user.email && !isCellDisabled(dateString, user.email)) {
+                    handleCellClick(dateString, user.email, rowIndex, colIndex);
                   }
                 }}
-                tabIndex={0}
-                onFocus={() => setFocusedCell({ row: rowIndex, col: colIndex, table: "roster" })}
-              >
-                {label && getCellContent(dateString, label)}
-              </td>
-            );
-          })
-        : sortedUsers.map((user, colIndex) => {
-            const isFocused =
-              focusedCell?.row === rowIndex && focusedCell?.col === colIndex && focusedCell?.table === "roster";
-            const disabled = user.email ? isCellDisabled(dateString, user.email) : false;
-            const absent = user.email ? isUserAbsent(dateString, user.email) : false;
-            const isAssignedOnClosestDate =
-              dateString === closestNextDate && user.email && assignedOnClosestDate.includes(user.email);
-
-            return (
-              <Fragment key={user.email}>
-                {genderDividerIndex === colIndex && <td className={styles.genderDividerCell} />}
-                <td
-                  className={`${styles.rosterCell} ${!disabled ? styles.clickable : styles.disabled} ${
-                    isFocused ? styles.focused : ""
-                  } ${absent ? styles.absentStrike : ""} ${isAssignedOnClosestDate ? styles.highlightedCell : ""}`}
-                  onClick={() => {
-                    if (user.email && !disabled) {
-                      handleCellClick(dateString, user.email, rowIndex, colIndex);
-                    }
-                  }}
-                  tabIndex={0}
-                  onFocus={() => setFocusedCell({ row: rowIndex, col: colIndex, table: "roster" })}
-                >
-                  {user.email &&
-                    (absent ? (
-                      <span title={getAbsenceReason(dateString, user.email)}>❌</span>
-                    ) : (
-                      getCellContent(dateString, user.email)
-                    ))}
-                </td>
-              </Fragment>
-            );
-          })}
+              />
+            </Fragment>
+          ))}
       {currentPosition?.isCustom && <td className={`${styles.rosterCell} ${styles.disabled}`} />}
       <td className={styles.genderDividerCell} />
       {renderPeekCell()}
