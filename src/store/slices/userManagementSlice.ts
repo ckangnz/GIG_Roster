@@ -163,6 +163,13 @@ const userManagementSlice = createSlice({
     resetUserChanges(state) {
       state.allUsers = JSON.parse(JSON.stringify(state.originalUsers));
     },
+    setAllUsers(state, action: PayloadAction<AppUserWithId[]>) {
+      state.allUsers = action.payload;
+      // Only update originalUsers if we are NOT currently saving/editing
+      // but actually, for read-only sync, we want to update the "committed" state
+      state.originalUsers = JSON.parse(JSON.stringify(action.payload));
+      state.loading = false;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -203,5 +210,6 @@ export const {
   toggleUserTeamPosition,
   moveUserTeam,
   resetUserChanges,
+  setAllUsers,
 } = userManagementSlice.actions;
 export const userManagementReducer = userManagementSlice.reducer;

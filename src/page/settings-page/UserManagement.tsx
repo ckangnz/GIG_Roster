@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 
 import UserManagementRow from "./UserManagementRow";
 import SaveFooter from "../../components/common/SaveFooter";
@@ -7,7 +7,6 @@ import Spinner from "../../components/common/Spinner";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { AppUser } from "../../model/model";
 import {
-  fetchAllUsers,
   saveAllUserChanges,
   resetUserChanges,
 } from "../../store/slices/userManagementSlice";
@@ -42,10 +41,6 @@ const UserManagement = () => {
       JSON.stringify(normalize(originalUsers))
     );
   }, [allUsers, originalUsers]);
-
-  useEffect(() => {
-    dispatch(fetchAllUsers());
-  }, [dispatch]);
 
   const handleSaveChanges = () => {
     dispatch(saveAllUserChanges(allUsers));

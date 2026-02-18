@@ -1,8 +1,8 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 
-import { db } from '../../firebase';
-import { Team } from '../../model/model';
+import { db } from "../../firebase";
+import { Team } from "../../model/model";
 
 interface TeamsState {
   teams: Team[];
@@ -18,45 +18,57 @@ const initialState: TeamsState = {
   fetched: false,
 };
 
-export const fetchTeams = createAsyncThunk('teams/fetchTeams', async (_, { rejectWithValue }) => {
-  try {
-    const docRef = doc(db, 'metadata', 'teams');
-    const snap = await getDoc(docRef);
-    if (snap.exists()) {
-      const data = snap.data();
-      const teamsList = Array.isArray(data.list)
-        ? data.list.map((teamData: Team) => ({
-            ...teamData,
-            maxConflict: teamData.maxConflict || 1,
-          }))
-        : [];
-      return teamsList;
+export const fetchTeams = createAsyncThunk(
+  "teams/fetchTeams",
+  async (_, { rejectWithValue }) => {
+    try {
+      const docRef = doc(db, "metadata", "teams");
+      const snap = await getDoc(docRef);
+      if (snap.exists()) {
+        const data = snap.data();
+        const teamsList = Array.isArray(data.list)
+          ? data.list.map((teamData: Team) => ({
+              ...teamData,
+              maxConflict: teamData.maxConflict || 1,
+            }))
+          : [];
+        return teamsList;
+      }
+      return [];
+    } catch (error) {
+      return rejectWithValue(
+        error instanceof Error ? error.message : "Failed to fetch teams",
+      );
     }
-    return [];
-  } catch (error) {
-    return rejectWithValue(error instanceof Error ? error.message : 'Failed to fetch teams');
-  }
-});
+  },
+);
 
 export const updateTeams = createAsyncThunk(
-  'teams/updateTeams',
+  "teams/updateTeams",
   async (teams: Team[], { rejectWithValue }) => {
     try {
-      const docRef = doc(db, 'metadata', 'teams');
+      const docRef = doc(db, "metadata", "teams");
       await setDoc(docRef, { list: teams });
       return teams;
     } catch (error) {
-      return rejectWithValue(error instanceof Error ? error.message : 'Failed to update teams');
+      return rejectWithValue(
+        error instanceof Error ? error.message : "Failed to update teams",
+      );
     }
   },
 );
 
 const teamsSlice = createSlice({
-  name: 'teams',
+  name: "teams",
   initialState,
   reducers: {
     clearError: (state) => {
       state.error = null;
+    },
+    setTeams: (state, action: PayloadAction<Team[]>) => {
+      state.teams = action.payload;
+      state.fetched = true;
+      state.loading = false;
     },
   },
   extraReducers: (builder) => {
@@ -86,5 +98,5 @@ const teamsSlice = createSlice({
   },
 });
 
-export const { clearError } = teamsSlice.actions;
+export const { clearError, setTeams } = teamsSlice.actions;
 export const teamsReducer = teamsSlice.reducer;

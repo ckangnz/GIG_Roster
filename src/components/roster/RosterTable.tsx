@@ -27,9 +27,7 @@ import {
   resetToUpcomingDates,
   loadNextYearDates,
 } from "../../store/slices/rosterViewSlice";
-import {
-  toggleUserVisibility,
-} from "../../store/slices/uiSlice";
+import { toggleUserVisibility } from "../../store/slices/uiSlice";
 import SaveFooter from "../common/SaveFooter";
 import Spinner from "../common/Spinner";
 
@@ -760,7 +758,12 @@ const RosterTable = () => {
     return "future-date";
   }, []);
 
-  if (loadingUsers || loadingTeam || loadingAllTeamUsers || (loadingRoster && !initialLoad)) {
+  if (
+    loadingUsers ||
+    loadingTeam ||
+    loadingAllTeamUsers ||
+    (loadingRoster && !initialLoad)
+  ) {
     return <Spinner />;
   }
 
@@ -819,7 +822,12 @@ const RosterTable = () => {
                     rowClass={getRowClass(dateString)}
                     isToday={getRowClass(dateString) === "today-date"}
                     hasData={checkHasAssignments(dateString)}
-                    eventName={(dirtyEntries[dateString.split("T")[0]] || entries[dateString.split("T")[0]])?.eventName}
+                    eventName={
+                      (
+                        dirtyEntries[dateString.split("T")[0]] ||
+                        entries[dateString.split("T")[0]]
+                      )?.eventName
+                    }
                     closestNextDate={closestNextDate}
                     onDateClick={handleDateClick}
                     focusedCell={focusedCell}
@@ -829,7 +837,9 @@ const RosterTable = () => {
                     assignedOnClosestDate={assignedOnClosestDate}
                     currentTeamData={currentTeamData}
                     getAllViewUserCellContent={getAllViewUserCellContent}
-                    getAllViewPositionCellContent={getAllViewPositionCellContent}
+                    getAllViewPositionCellContent={
+                      getAllViewPositionCellContent
+                    }
                     getAssignmentsForIdentifier={getAssignmentsForIdentifier}
                     navigate={navigate}
                     teamName={teamName}
@@ -934,7 +944,12 @@ const RosterTable = () => {
                     rowClass={getRowClass(dateString)}
                     isToday={getRowClass(dateString) === "today-date"}
                     hasData={checkHasAssignments(dateString)}
-                    eventName={(dirtyEntries[dateString.split("T")[0]] || entries[dateString.split("T")[0]])?.eventName}
+                    eventName={
+                      (
+                        dirtyEntries[dateString.split("T")[0]] ||
+                        entries[dateString.split("T")[0]]
+                      )?.eventName
+                    }
                     closestNextDate={closestNextDate}
                     onDateClick={handleDateClick}
                     focusedCell={focusedCell}
@@ -975,7 +990,7 @@ const RosterTable = () => {
           </div>
         </div>
       ) : (
-        <div className={`${styles.rosterSection} ${styles.absenceSection}`}>
+        <div className={styles.rosterSection}>
           <div className={styles.rosterTableContainer}>
             <table className={`${styles.rosterTable} ${styles.absenceTable}`}>
               <RosterHeader
@@ -1012,7 +1027,12 @@ const RosterTable = () => {
                     rowClass={getRowClass(dateString)}
                     isToday={getRowClass(dateString) === "today-date"}
                     hasData={checkHasAssignments(dateString)}
-                    eventName={(dirtyEntries[dateString.split("T")[0]] || entries[dateString.split("T")[0]])?.eventName}
+                    eventName={
+                      (
+                        dirtyEntries[dateString.split("T")[0]] ||
+                        entries[dateString.split("T")[0]]
+                      )?.eventName
+                    }
                     closestNextDate={closestNextDate}
                     onDateClick={handleDateClick}
                     focusedCell={focusedCell}

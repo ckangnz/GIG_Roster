@@ -14,8 +14,7 @@ import Spinner from "../../components/common/Spinner";
 import SummaryCell from "../../components/common/SummaryCell";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { Position, Team, Weekday } from "../../model/model";
-import { fetchPositions } from "../../store/slices/positionsSlice";
-import { fetchTeams, updateTeams } from "../../store/slices/teamsSlice";
+import { updateTeams } from "../../store/slices/teamsSlice";
 
 import styles from "./settings-page.module.css";
 
@@ -30,16 +29,11 @@ const defaultTeam: Team = {
 
 const TeamManagement = () => {
   const dispatch = useAppDispatch();
-  const {
-    teams: reduxTeams,
-    fetched: teamsFetched,
-    loading: teamsLoading,
-  } = useAppSelector((state) => state.teams);
-  const {
-    positions: availablePositions,
-    fetched: positionsFetched,
-    loading: positionsLoading,
-  } = useAppSelector((state) => state.positions);
+  const { teams: reduxTeams, loading: teamsLoading } = useAppSelector(
+    (state) => state.teams,
+  );
+  const { positions: availablePositions, loading: positionsLoading } =
+    useAppSelector((state) => state.positions);
 
   const [teams, setTeams] = useState<Team[]>(reduxTeams);
   const [newTeam, setNewTeam] = useState<Team>(defaultTeam);
@@ -60,15 +54,6 @@ const TeamManagement = () => {
       JSON.stringify(normalize(teams)) !== JSON.stringify(normalize(reduxTeams))
     );
   }, [teams, reduxTeams]);
-
-  useEffect(() => {
-    if (!teamsFetched) {
-      dispatch(fetchTeams());
-    }
-    if (!positionsFetched) {
-      dispatch(fetchPositions());
-    }
-  }, [dispatch, teamsFetched, positionsFetched]);
 
   useEffect(() => {
     setTeams(reduxTeams);

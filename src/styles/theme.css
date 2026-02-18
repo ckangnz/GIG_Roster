@@ -1,5 +1,5 @@
 :root {
-  --color-text-primary: rgba(255, 255, 255, 0.87);
+  --color-text-primary: #dedede; /* Solid equivalent of rgba(255, 255, 255, 0.87) */
   --color-text-secondary: #efefef;
   --color-text-muted: #aaa;
   --color-text-dim: #888;
@@ -22,27 +22,27 @@
   --background-app-shell: #121212;
   --background-card: #1a1a1a;
   --background-button-primary: #646cff;
-  --background-primary-subtle: rgba(100, 108, 255, 0.15);
+  --background-primary-subtle: #25263f; /* Solid version of rgba(100, 108, 255, 0.15) over #1a1a1a */
   --background-button-primary-hover: #7c83ff;
   --background-button-secondary: #2a2a2a;
   --background-button-secondary-hover: #444;
   --background-button-delete-hover: #ff5555;
   --background-input: #262626;
   --background-table-header: #222;
-  --background-mobile-header: rgba(26, 26, 26, 0.8);
+  --background-mobile-header: #1a1a1a;
   --background-order-controls: #2a2a2a;
-  --background-new-row: rgba(100, 108, 255, 0.05);
+  --background-new-row: #1e1e26;
   --background-pill-active: #1e1e2e;
-  --background-toggle-on-transparent: rgba(46, 125, 50, 0.15);
-  --background-toggle-off-transparent: rgba(183, 28, 28, 0.15);
+  --background-toggle-on-transparent: #213424;
+  --background-toggle-off-transparent: #3f1d1d;
 
   --border-color-primary: #646cff;
   --border-color-secondary: #333;
   --border-color-input: #444;
   --border-color-table: #222;
   --border-color-delete: #552222;
-  --border-color-success: rgba(46, 213, 115, 0.3);
-  --border-color-warning: rgba(255, 71, 87, 0.3);
+  --border-color-success: #2d4533;
+  --border-color-warning: #5e2d31;
 
   /* Standard heights */
   --field-height: 38px;
@@ -69,29 +69,29 @@
   --background-app-shell: #f0f2f5;
   --background-card: #ffffff;
   --background-button-primary: #4f46e5;
-  --background-primary-subtle: rgba(79, 70, 229, 0.1);
+  --background-primary-subtle: #eeedfc;
   --background-button-primary-hover: #4338ca;
   --background-button-secondary: #f9f9f9;
   --background-button-secondary-hover: #e5e7eb;
   --background-button-delete-hover: #f44336;
   --background-input: #ffffff;
   --background-table-header: #e0e0e0;
-  --background-mobile-header: rgba(255, 255, 255, 0.8);
+  --background-mobile-header: #ffffff;
   --background-order-controls: #e0e0e0;
-  --background-new-row: rgba(100, 108, 255, 0.05);
+  --background-new-row: #f7f7fe;
   --background-pill-active: #c5d0ff;
   --background-pill-emoji-active: #cfd8dc;
   --background-pill-emoji-hover: #eceff1;
-  --background-toggle-on-transparent: rgba(76, 175, 80, 0.15);
-  --background-toggle-off-transparent: rgba(255, 152, 0, 0.15);
-  --background-badge-yes-transparent: rgba(76, 175, 80, 0.15);
-  --background-badge-no-transparent: rgba(255, 71, 87, 0.15);
+  --background-toggle-on-transparent: #ebf7ec;
+  --background-toggle-off-transparent: #fff4e6;
+  --background-badge-yes-transparent: #ebf7ec;
+  --background-badge-no-transparent: #fdeded;
 
   --border-color-primary: #4f46e5;
   --border-color-secondary: #ccc;
   --border-color-input: #ddd;
   --border-color-table: #eee;
   --border-color-delete: #ef9a9a;
-  --border-color-success: rgba(76, 175, 80, 0.3);
-  --border-color-warning: rgba(255, 152, 0, 0.3);
+  --border-color-success: #d6ead9;
+  --border-color-warning: #fcecd6;
 }

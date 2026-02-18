@@ -61,7 +61,7 @@ const RosterHeader = memo(({
   allTeamUsers,
 }: RosterHeaderProps) => {
   const renderDateHeader = () => (
-    <th className={`${styles.rosterTableHeaderCell} ${styles.stickyCol} sticky-header`}>
+    <th className={`${styles.rosterTableHeaderCell} ${styles.stickyCol}`}>
       <div className={styles.dateHeaderContent}>
         Date
         <div className={styles.dateHeaderActions}>
@@ -83,7 +83,7 @@ const RosterHeader = memo(({
   );
 
   const renderPeekHeader = () => (
-    <th className={`${styles.rosterTableHeaderCell} sticky-header ${styles.stickyRight} ${styles.peekHeader}`}>
+    <th className={`${styles.rosterTableHeaderCell} ${styles.stickyRight} ${styles.peekHeader}`}>
       <select
         className={styles.peekSelector}
         value={peekPositionName || ""}
@@ -110,7 +110,7 @@ const RosterHeader = memo(({
                 return (
                   <th
                     key={col.id}
-                    className={`${styles.rosterTableHeaderCell} sticky-header ${
+                    className={`${styles.rosterTableHeaderCell} ${
                       col.id && assignedOnClosestDate.includes(col.id) ? styles.highlightedHeader : ""
                     } ${isMe ? styles.isMe : ""}`}
                   >
@@ -122,7 +122,7 @@ const RosterHeader = memo(({
             : (currentTeamData?.positions || []).map((pos) => (
                 <th
                   key={pos.name}
-                  className={`${styles.rosterTableHeaderCell} ${styles.clickableHeader} sticky-header`}
+                  className={`${styles.rosterTableHeaderCell} ${styles.clickableHeader}`}
                   onClick={() => navigate(`/app/roster/${teamName}/${pos.name}`)}
                 >
                   <div className={styles.allViewPositionHeader}>
@@ -144,14 +144,14 @@ const RosterHeader = memo(({
           {allTeamUsers.map((user) => (
             <th
               key={user.email}
-              className={`${styles.rosterTableHeaderCell} sticky-header ${
+              className={`${styles.rosterTableHeaderCell} ${
                 user.email && assignedOnClosestDate.includes(user.email) ? styles.highlightedHeader : ""
               }`}
             >
               {user.name}
             </th>
           ))}
-          <th className={`${styles.genderDividerCell} sticky-header`} />
+          <th className={`${styles.genderDividerCell}`} />
           {renderPeekHeader()}
         </tr>
       </thead>
@@ -165,7 +165,7 @@ const RosterHeader = memo(({
         {renderDateHeader()}
         {currentPosition?.isCustom
           ? (currentPosition.customLabels || []).map((label, index) => (
-              <th key={`custom-${index}`} className={`${styles.rosterTableHeaderCell} sticky-header`}>
+              <th key={`custom-${index}`} className={`${styles.rosterTableHeaderCell}`}>
                 <input
                   type="text"
                   className={styles.headerInput}
@@ -205,9 +205,9 @@ const RosterHeader = memo(({
             ))
           : sortedUsers.map((user, colIndex) => (
               <Fragment key={user.email}>
-                {genderDividerIndex === colIndex && <th className={`${styles.genderDividerCell} sticky-header`} />}
+                {genderDividerIndex === colIndex && <th className={`${styles.genderDividerCell}`} />}
                 <th
-                  className={`${styles.rosterTableHeaderCell} sticky-header ${styles.clickableHeader} ${
+                  className={`${styles.rosterTableHeaderCell} ${styles.clickableHeader} ${
                     user.email && assignedOnClosestDate.includes(user.email) ? styles.highlightedHeader : ""
                   }`}
                   onClick={() => user.email && onToggleVisibility(user.email)}
@@ -223,13 +223,13 @@ const RosterHeader = memo(({
               </Fragment>
             ))}
         {currentPosition?.isCustom && userData?.isAdmin && (
-          <th className={`${styles.rosterTableHeaderCell} sticky-header`}>
+          <th className={`${styles.rosterTableHeaderCell}`}>
             <button className={styles.addColumnBtn} onClick={handleAddCustomLabel} title="Add Column">
               <Plus size={16} />
             </button>
           </th>
         )}
-        <th className={`${styles.genderDividerCell} sticky-header`} />
+        <th className={`${styles.genderDividerCell}`} />
         {renderPeekHeader()}
       </tr>
     </thead>

@@ -5,6 +5,7 @@
   width: min-content;
   white-space: nowrap;
   border-right: 2px solid var(--border-color-secondary) !important;
+  background-color: var(--background-table-header);
 }
 
 .dateCell {

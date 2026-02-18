@@ -9,8 +9,7 @@ import {
   SettingsSection,
 } from "../../constants/navigation";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
-import { useTrackPresence } from "../../hooks/usePresence";
-import { useRosterListener } from "../../hooks/useRosterListener";
+import { useAppListeners } from "../../hooks/useAppListeners";
 import { setLastVisitedPath } from "../../store/slices/uiSlice";
 import BottomNav from "../navigation/BottomNav";
 import SideNav from "../navigation/SideNav";
@@ -25,11 +24,8 @@ const MainLayout = () => {
 
   const { userData } = useAppSelector((state) => state.auth);
   
-  // Global presence tracking
-  useTrackPresence(userData);
-  
-  // Global roster data listener
-  useRosterListener();
+  // Initialize all real-time app listeners (Presence, Roster, Profile, Metadata)
+  useAppListeners();
 
   const { teams: allTeams } = useAppSelector((state) => state.teams);
   const { isMobileSidebarOpen, isDesktopSidebarExpanded, lastVisitedPaths } =

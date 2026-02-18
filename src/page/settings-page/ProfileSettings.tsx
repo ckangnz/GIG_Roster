@@ -7,8 +7,6 @@ import SaveFooter from "../../components/common/SaveFooter";
 import { auth } from "../../firebase";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { updateUserProfile } from "../../store/slices/authSlice";
-import { fetchPositions } from "../../store/slices/positionsSlice";
-import { fetchTeams } from "../../store/slices/teamsSlice";
 import formStyles from "../../styles/form.module.css";
 
 import styles from "./profile-settings.module.css";
@@ -16,41 +14,52 @@ import styles from "./profile-settings.module.css";
 const ProfileSettings = ({ className }: { className?: string }) => {
   const dispatch = useAppDispatch();
   const { userData, firebaseUser } = useAppSelector((state) => state.auth);
-  const { teams: availableTeams, fetched: teamsFetched } = useAppSelector(
-    (state) => state.teams,
+  const { teams: availableTeams } = useAppSelector((state) => state.teams);
+  const { positions: globalPositions } = useAppSelector(
+    (state) => state.positions,
   );
-  const { positions: globalPositions, fetched: positionsFetched } =
-    useAppSelector((state) => state.positions);
 
-  const [name, setName] = useState(userData?.name || "");
-  const [gender, setGender] = useState(userData?.gender || "");
-  const [isActive, setIsActive] = useState(userData?.isActive ?? true);
-  const [selectedTeams, setSelectedTeams] = useState<string[]>(
-    userData?.teams || [],
-  );
-  const [teamPositions, setTeamPositions] = useState<Record<string, string[]>>(
-    userData?.teamPositions || {},
-  );
+  const [formState, setFormState] = useState({
+    name: "",
+    gender: "",
+    isActive: true,
+    teams: [] as string[],
+    teamPositions: {} as Record<string, string[]>,
+  });
+
   const [status, setStatus] = useState("idle");
 
+  // Initial and real-time sync from Redux
   useEffect(() => {
-    if (!teamsFetched) {
-      dispatch(fetchTeams());
-    }
-    if (!positionsFetched) {
-      dispatch(fetchPositions());
-    }
-  }, [dispatch, teamsFetched, positionsFetched]);
+    if (!userData || status === "saving") return;
+
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setFormState((prev) => {
+      const isDirty =
+        prev.name !== (userData.name || "") ||
+        prev.gender !== (userData.gender || "") ||
+        prev.isActive !== (userData.isActive ?? true) ||
+        JSON.stringify(prev.teams) !== JSON.stringify(userData.teams || []) ||
+        JSON.stringify(prev.teamPositions) !==
+          JSON.stringify(userData.teamPositions || {});
+
+      // Only sync if we haven't drifted from the server
+      // OR if this is the first load
+      if (!isDirty || status === "idle") {
+        return {
+          name: userData.name || "",
+          gender: userData.gender || "",
+          isActive: userData.isActive ?? true,
+          teams: userData.teams || [],
+          teamPositions: userData.teamPositions || {},
+        };
+      }
+      return prev;
+    });
+  }, [userData, status]);
 
   const hasChanges = useMemo(() => {
     if (!userData) return false;
-    const currentData = {
-      name,
-      gender,
-      isActive,
-      teams: selectedTeams,
-      teamPositions,
-    };
     const originalData = {
       name: userData.name || "",
       gender: userData.gender || "",
@@ -58,22 +67,15 @@ const ProfileSettings = ({ className }: { className?: string }) => {
       teams: userData.teams || [],
       teamPositions: userData.teamPositions || {},
     };
-    return JSON.stringify(currentData) !== JSON.stringify(originalData);
-  }, [name, gender, isActive, selectedTeams, teamPositions, userData]);
+    return JSON.stringify(formState) !== JSON.stringify(originalData);
+  }, [formState, userData]);
 
   const handleSave = async () => {
     if (!firebaseUser) return;
     setStatus("saving");
     try {
-      const updateData = {
-        name,
-        gender,
-        isActive,
-        teams: selectedTeams,
-        teamPositions,
-      };
       await dispatch(
-        updateUserProfile({ uid: firebaseUser.uid, data: updateData }),
+        updateUserProfile({ uid: firebaseUser.uid, data: formState }),
       ).unwrap();
       setStatus("success");
       setTimeout(() => setStatus("idle"), 2000);
@@ -85,58 +87,62 @@ const ProfileSettings = ({ className }: { className?: string }) => {
 
   const handleCancel = () => {
     if (!userData) return;
-    setName(userData.name || "");
-    setGender(userData.gender || "");
-    setIsActive(userData.isActive ?? true);
-    setSelectedTeams(userData.teams || []);
-    setTeamPositions(userData.teamPositions || {});
+    setFormState({
+      name: userData.name || "",
+      gender: userData.gender || "",
+      isActive: userData.isActive ?? true,
+      teams: userData.teams || [],
+      teamPositions: userData.teamPositions || {},
+    });
   };
 
   const toggleTeam = (teamName: string) => {
-    setSelectedTeams((prev) => {
-      const isRemoving = prev.includes(teamName);
+    setFormState((prev) => {
+      const isRemoving = prev.teams.includes(teamName);
       const newTeams = isRemoving
-        ? prev.filter((name) => name !== teamName)
-        : [...prev, teamName];
+        ? prev.teams.filter((name) => name !== teamName)
+        : [...prev.teams, teamName];
 
-      setTeamPositions((prevTP) => {
-        const nextTP = { ...prevTP };
-        if (isRemoving) {
-          delete nextTP[teamName];
-        } else if (!nextTP[teamName]) {
-          nextTP[teamName] = [];
-        }
-        return nextTP;
-      });
+      const newTP = { ...prev.teamPositions };
+      if (isRemoving) {
+        delete newTP[teamName];
+      } else if (!newTP[teamName]) {
+        newTP[teamName] = [];
+      }
 
-      return newTeams;
+      return { ...prev, teams: newTeams, teamPositions: newTP };
     });
   };
 
   const toggleTeamPosition = (teamName: string, posName: string) => {
-    setTeamPositions((prev) => {
-      const current = prev[teamName] || [];
+    setFormState((prev) => {
+      const current = prev.teamPositions[teamName] || [];
       const updated = current.includes(posName)
         ? current.filter((p) => p !== posName)
         : [...current, posName];
-      return { ...prev, [teamName]: updated };
+      return {
+        ...prev,
+        teamPositions: { ...prev.teamPositions, [teamName]: updated },
+      };
     });
   };
 
   const moveTeam = (teamName: string, direction: "up" | "down") => {
-    const currentIndex = selectedTeams.indexOf(teamName);
-    if (currentIndex === -1) return;
+    setFormState((prev) => {
+      const currentIndex = prev.teams.indexOf(teamName);
+      if (currentIndex === -1) return prev;
 
-    const targetIndex =
-      direction === "up" ? currentIndex - 1 : currentIndex + 1;
-    if (targetIndex < 0 || targetIndex >= selectedTeams.length) return;
+      const targetIndex =
+        direction === "up" ? currentIndex - 1 : currentIndex + 1;
+      if (targetIndex < 0 || targetIndex >= prev.teams.length) return prev;
 
-    const newTeams = [...selectedTeams];
-    [newTeams[currentIndex], newTeams[targetIndex]] = [
-      newTeams[targetIndex],
-      newTeams[currentIndex],
-    ];
-    setSelectedTeams(newTeams);
+      const newTeams = [...prev.teams];
+      [newTeams[currentIndex], newTeams[targetIndex]] = [
+        newTeams[targetIndex],
+        newTeams[currentIndex],
+      ];
+      return { ...prev, teams: newTeams };
+    });
   };
 
   if (!userData) {
@@ -155,8 +161,10 @@ const ProfileSettings = ({ className }: { className?: string }) => {
         <label>Name</label>
         <input
           type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
+          value={formState.name}
+          onChange={(e) =>
+            setFormState((prev) => ({ ...prev, name: e.target.value }))
+          }
           className={formStyles.formInput}
         />
       </div>
@@ -170,8 +178,10 @@ const ProfileSettings = ({ className }: { className?: string }) => {
             <Pill
               key={g.value}
               colour={g.colour}
-              onClick={() => setGender(g.value)}
-              isActive={gender === g.value}
+              onClick={() =>
+                setFormState((prev) => ({ ...prev, gender: g.value }))
+              }
+              isActive={formState.gender === g.value}
             >
               {g.value}
             </Pill>
@@ -180,8 +190,8 @@ const ProfileSettings = ({ className }: { className?: string }) => {
       </div>
 
       <TeamPositionEditor
-        selectedTeams={selectedTeams}
-        teamPositions={teamPositions}
+        selectedTeams={formState.teams}
+        teamPositions={formState.teamPositions}
         onToggleTeam={toggleTeam}
         onTogglePosition={toggleTeamPosition}
         onMoveTeam={moveTeam}
@@ -193,12 +203,16 @@ const ProfileSettings = ({ className }: { className?: string }) => {
         <label>Availability Status</label>
         <Pill
           colour={
-            isActive ? "var(--color-success-dark)" : "var(--color-warning-dark)"
+            formState.isActive
+              ? "var(--color-success-dark)"
+              : "var(--color-warning-dark)"
           }
-          onClick={() => setIsActive(!isActive)}
+          onClick={() =>
+            setFormState((prev) => ({ ...prev, isActive: !prev.isActive }))
+          }
           isActive
         >
-          {isActive ? "ACTIVE & AVAILABLE" : "INACTIVE / AWAY"}
+          {formState.isActive ? "ACTIVE & AVAILABLE" : "INACTIVE / AWAY"}
         </Pill>
         <p className={formStyles.fieldHint}>
           Turn off if you want to be hidden from the roster.

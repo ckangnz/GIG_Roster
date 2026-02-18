@@ -90,6 +90,12 @@ const positionsSlice = createSlice({
 
         },
 
+        setPositions: (state, action: PayloadAction<Position[]>) => {
+          state.positions = action.payload;
+          state.fetched = true;
+          state.loading = false;
+        },
+
       },
 
   extraReducers: (builder) => {
@@ -136,7 +142,7 @@ const positionsSlice = createSlice({
 
       
 
-      export const { updatePositionCustomLabels, resetPositionsDirty } =
+      export const { updatePositionCustomLabels, resetPositionsDirty, setPositions } =
 
         positionsSlice.actions;
 

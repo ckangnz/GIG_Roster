@@ -14,10 +14,7 @@ import SettingsTable, {
 import Spinner from "../../components/common/Spinner";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { Position } from "../../model/model";
-import {
-  fetchPositions,
-  updatePositions,
-} from "../../store/slices/positionsSlice";
+import { updatePositions } from "../../store/slices/positionsSlice";
 
 import styles from "./settings-page.module.css";
 
@@ -31,11 +28,8 @@ const defaultPosition: Position = {
 
 const PositionManagement = () => {
   const dispatch = useAppDispatch();
-  const {
-    positions: reduxPositions,
-    fetched: positionsFetched,
-    loading: positionsLoading,
-  } = useAppSelector((state) => state.positions);
+  const { positions: reduxPositions, loading: positionsLoading } =
+    useAppSelector((state) => state.positions);
   const [positions, setPositions] = useState<Position[]>(reduxPositions);
   const [newPos, setNewPos] = useState<Position>(defaultPosition);
   const [status, setStatus] = useState("idle");
@@ -50,17 +44,8 @@ const PositionManagement = () => {
         sortByGender: !!p.sortByGender,
         isCustom: !!p.isCustom,
       }));
-    return (
-      JSON.stringify(normalize(positions)) !==
-      JSON.stringify(normalize(reduxPositions))
-    );
-  }, [positions, reduxPositions]);
-
-  useEffect(() => {
-    if (!positionsFetched) {
-      dispatch(fetchPositions());
-    }
-  }, [dispatch, positionsFetched]);
+    return JSON.stringify(normalize(reduxPositions));
+  }, [reduxPositions]);
 
   useEffect(() => {
     setPositions(reduxPositions);
