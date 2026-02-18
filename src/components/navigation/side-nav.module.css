@@ -58,6 +58,9 @@
 }
 
 .sideMenuList {
+  display: flex;
+  flex-direction: column;
+}
 
 .sidenavMenuSubheading {
   display: flex;
