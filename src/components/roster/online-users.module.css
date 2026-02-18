@@ -1,9 +1,27 @@
 .onlineUsersContainer {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   position: relative;
   cursor: pointer;
+  padding: 4px;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.onlineUsersContainer:hover {
+  background: var(--background-button-secondary);
+}
+
+.sidebarVariant {
+  width: 100%;
+}
+
+.onlineLabel {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--color-text-dim);
+  flex: 1;
 }
 
 .avatarStack {
@@ -42,15 +60,23 @@
 
 .userDropdown {
   position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
   background: var(--background-card);
   border: 1px solid var(--border-color-secondary);
   border-radius: 8px;
   padding: 8px 0;
-  min-width: 180px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  min-width: 200px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
   z-index: 1000;
+}
+
+.dropdownDown {
+  top: calc(100% + 8px);
+  right: 0;
+}
+
+.dropdownUp {
+  bottom: calc(100% + 8px);
+  left: 0;
 }
 
 .dropdownTitle {
@@ -61,6 +87,11 @@
   padding: 4px 12px 8px;
   border-bottom: 1px solid var(--border-color-secondary);
   margin-bottom: 4px;
+}
+
+.userListScroll {
+  max-height: 300px;
+  overflow-y: auto;
 }
 
 .userItem {
@@ -75,6 +106,13 @@
 
 .userItem:hover {
   background: var(--background-button-secondary);
+}
+
+.userNameText {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
 }
 
 .userAvatarSmall {

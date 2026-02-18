@@ -127,8 +127,8 @@ const SideNav = () => {
         </div>
 
         <nav className={styles.sideMenuList}>
-          {/* Permanent User Section */}
-          {profileItem && (
+          {/* Permanent User Section - Only in Settings Tab */}
+          {activeTab === AppTab.SETTINGS && profileItem && (
             <div className={styles.userSection}>
               <button
                 className={`${styles.sideNavItem} ${
@@ -144,16 +144,14 @@ const SideNav = () => {
                 <span className={styles.sideEmoji}>{profileItem.icon}</span>{" "}
                 {isDesktopSidebarExpanded && profileItem.label}
               </button>
-              <div className={styles.themeToggleWrapper}>
-                <ThemeToggleButton
-                  showText={isDesktopSidebarExpanded}
-                  className={styles.sideNavThemeToggle}
-                />
-              </div>
+              <ThemeToggleButton
+                showText={isDesktopSidebarExpanded}
+                className={styles.sideNavItem}
+                iconClassName={styles.sideEmoji}
+              />
+              <div className={styles.navDivider} />
             </div>
           )}
-
-          <div className={styles.navDivider} />
 
           {activeTab === AppTab.ROSTER && teamsLoading && (
             <div className={`${styles.sideNavItem} ${styles.loading}`}>
@@ -339,7 +337,12 @@ const SideNav = () => {
         </div>
       )}
       <div className={styles.sidebarFooter}>
-        <OnlineUsers teamName={activeTeamName} currentUser={userData} />
+        <OnlineUsers
+          teamName={activeTeamName}
+          currentUser={userData}
+          variant="sidebar"
+          showText={isDesktopSidebarExpanded}
+        />
       </div>
     </aside>
   );

@@ -8,9 +8,16 @@ import styles from "./online-users.module.css";
 interface OnlineUsersProps {
   teamName: string | undefined;
   currentUser: AppUser | null;
+  variant?: "top-bar" | "sidebar";
+  showText?: boolean;
 }
 
-const OnlineUsers = ({ teamName, currentUser }: OnlineUsersProps) => {
+const OnlineUsers = ({
+  teamName,
+  currentUser,
+  variant = "top-bar",
+  showText = false,
+}: OnlineUsersProps) => {
   const onlineUsers = usePresence(teamName, currentUser);
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -18,7 +25,10 @@ const OnlineUsers = ({ teamName, currentUser }: OnlineUsersProps) => {
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setShowDropdown(false);
       }
     };
@@ -39,10 +49,33 @@ const OnlineUsers = ({ teamName, currentUser }: OnlineUsersProps) => {
       .substring(0, 2);
   };
 
+  const containerClasses = [
+    styles.onlineUsersContainer,
+    variant === "sidebar" ? styles.sidebarVariant : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  const dropdownClasses = [
+    styles.userDropdown,
+    variant === "sidebar" ? styles.dropdownUp : styles.dropdownDown,
+  ]
+    .filter(Boolean)
+    .join(" ");
+
   return (
-    <div className={styles.onlineUsersContainer} ref={dropdownRef} onClick={() => setShowDropdown(!showDropdown)}>
+    <div
+      className={containerClasses}
+      ref={dropdownRef}
+      onClick={() => setShowDropdown(!showDropdown)}
+    >
+      {showText && <span className={styles.onlineLabel}>Online Now</span>}
       <div className={styles.avatarStack}>
-        {remainingCount > 0 && <div className={`${styles.avatarCircle} ${styles.moreCircle}`}>+{remainingCount}</div>}
+        {remainingCount > 0 && (
+          <div className={`${styles.avatarCircle} ${styles.moreCircle}`}>
+            +{remainingCount}
+          </div>
+        )}
         {[...displayUsers].reverse().map((user) => (
           <div key={user.uid} className={styles.avatarCircle} title={user.name}>
             {getInitials(user.name)}
@@ -51,17 +84,23 @@ const OnlineUsers = ({ teamName, currentUser }: OnlineUsersProps) => {
       </div>
 
       {showDropdown && (
-        <div className={styles.userDropdown}>
-          <div className={styles.dropdownTitle}>Online Now ({onlineUsers.length})</div>
-          {onlineUsers.map((user) => (
-            <div key={user.uid} className={styles.userItem}>
-              <div className={styles.userAvatarSmall}>{getInitials(user.name)}</div>
-              <span>
-                {user.name} {user.email === currentUser?.email && "(You)"}
-              </span>
-              <div className={styles.pulse} />
-            </div>
-          ))}
+        <div className={dropdownClasses}>
+          <div className={styles.dropdownTitle}>
+            Online Now ({onlineUsers.length})
+          </div>
+          <div className={styles.userListScroll}>
+            {onlineUsers.map((user) => (
+              <div key={user.uid} className={styles.userItem}>
+                <div className={styles.userAvatarSmall}>
+                  {getInitials(user.name)}
+                </div>
+                <span className={styles.userNameText}>
+                  {user.name} {user.email === currentUser?.email && "(You)"}
+                </span>
+                <div className={styles.pulse} />
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>

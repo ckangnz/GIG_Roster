@@ -6,7 +6,6 @@
   width: 100vw;
   background: var(--background-card);
   z-index: 1000;
-  overflow-y: auto;
   display: flex;
   flex-direction: column;
   overscroll-behavior: contain;
@@ -29,6 +28,7 @@
   flex-direction: column;
   width: 100%;
   flex: 1;
+  overflow-y: auto;
 }
 
 .tabletSidebarHeader {

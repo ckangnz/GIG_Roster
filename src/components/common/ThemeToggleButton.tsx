@@ -7,9 +7,11 @@ import styles from "./theme-toggle-button.module.css";
 const ThemeToggleButton = ({
   showText,
   className,
+  iconClassName,
 }: {
   showText?: boolean;
   className?: string;
+  iconClassName?: string;
 }) => {
   const { theme, toggleTheme } = useTheme();
   return (
@@ -18,7 +20,9 @@ const ThemeToggleButton = ({
       onClick={toggleTheme}
       aria-label="Toggle theme"
     >
-      {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
+      <span className={iconClassName || ""}>
+        {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
+      </span>
       {showText && <span>Toggle theme</span>}
     </button>
   );
