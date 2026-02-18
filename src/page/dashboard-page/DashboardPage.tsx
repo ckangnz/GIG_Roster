@@ -287,6 +287,7 @@ const DashboardPage = () => {
       emoji: string;
       assignedUsers: { name: string; isMe: boolean }[];
     }[],
+    eventName?: string,
   ) => {
     // Treat string as UTC midnight to prevent display shifts
     const localDate = new Date(dateStr);
@@ -297,7 +298,12 @@ const DashboardPage = () => {
       timeZone: "UTC",
     });
 
-    let text = `${teamEmoji} ${teamName} - ${formattedDate}\n`;
+    let text = "";
+    if (eventName) {
+      text += `✨ ${eventName} ✨\n`;
+    }
+    text += `${teamEmoji} ${teamName} · ${formattedDate}\n`;
+
     positions.forEach((p) => {
       const namesText =
         p.assignedUsers.length > 0
@@ -378,6 +384,9 @@ const DashboardPage = () => {
     const data = getDashboardDataForDate(dateStr);
     if (!data) return null;
 
+    const entry = dirtyEntries[dateStr] || entries[dateStr];
+    const eventName = entry?.eventName;
+
     return (
       <div className={styles.teamCardsContainer}>
         {data.map((teamData) => {
@@ -409,6 +418,7 @@ const DashboardPage = () => {
                           teamData.teamName,
                           teamData.teamEmoji,
                           teamData.positions,
+                          eventName,
                         )
                       }
                       title="Copy to clipboard"
