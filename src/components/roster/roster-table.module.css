@@ -6,6 +6,7 @@
   flex: 1;
   border: 1px solid var(--border-color-secondary);
   border-radius: 8px;
+  height: calc(100% - 100px);
 }
 
 .rosterTable {
@@ -20,7 +21,6 @@
   background-color: var(--background-table-header);
   position: sticky;
   top: 0;
-  z-index: 20;
   border-bottom: 2px solid var(--border-color-secondary);
   border-right: 1px solid var(--border-color-secondary);
   font-size: 0.8rem;
@@ -54,6 +54,11 @@
   flex-direction: column;
   flex: 1;
   position: relative;
+  height: 100%;
+}
+
+.rosterSection {
+  height: 100%;
 }
 
 .loadMoreFooter {
@@ -98,8 +103,8 @@
     padding: 8px;
   }
 
-  .rosterTableWrapper {
-    padding-bottom: 80px;
+  .rosterTableContainer {
+    height: calc(100% - 170px);
   }
 
   .loadNextYearBtn {
