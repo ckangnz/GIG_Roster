@@ -52,6 +52,7 @@ const OnlineUsers = ({
   const containerClasses = [
     styles.onlineUsersContainer,
     variant === "sidebar" ? styles.sidebarVariant : "",
+    showText ? styles.sidebarExpanded : "",
   ]
     .filter(Boolean)
     .join(" ");
@@ -69,7 +70,7 @@ const OnlineUsers = ({
       ref={dropdownRef}
       onClick={() => setShowDropdown(!showDropdown)}
     >
-      {showText && <span className={styles.onlineLabel}>Online Now</span>}
+      {showText && <span className={styles.onlineLabel}>Online</span>}
       <div className={styles.avatarStack}>
         {remainingCount > 0 && (
           <div className={`${styles.avatarCircle} ${styles.moreCircle}`}>

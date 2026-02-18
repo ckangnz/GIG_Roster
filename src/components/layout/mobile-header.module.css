@@ -57,6 +57,17 @@
   transform: rotate(180deg);
 }
 
+.mobileHeaderActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mobileThemeToggle {
+  padding: 4px;
+  border-radius: 8px;
+}
+
 @media (min-width: 768px) {
   .mobileHeader {
     display: none;

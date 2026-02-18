@@ -7,7 +7,6 @@ import {
   BOTTOM_NAV_ITEMS,
   AppTab,
   SETTINGS_NAV_ITEMS,
-  SettingsSection,
 } from "../../constants/navigation";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { fetchPositions } from "../../store/slices/positionsSlice";
@@ -100,10 +99,6 @@ const SideNav = () => {
     .filter(Boolean)
     .join(" ");
 
-  const profileItem = SETTINGS_NAV_ITEMS.find(
-    (item) => item.id === SettingsSection.PROFILE,
-  );
-
   return (
     <aside className={sideNavClasses}>
       <div className={styles.sidebarContent}>
@@ -127,32 +122,6 @@ const SideNav = () => {
         </div>
 
         <nav className={styles.sideMenuList}>
-          {/* Permanent User Section - Only in Settings Tab */}
-          {activeTab === AppTab.SETTINGS && profileItem && (
-            <div className={styles.userSection}>
-              <button
-                className={`${styles.sideNavItem} ${
-                  activeSideItem === profileItem.id
-                    ? styles.sideNavItemActive
-                    : ""
-                }`}
-                onClick={() => {
-                  handleNavItemClick(`/app/settings/${profileItem.id}`);
-                  dispatch(setMobileSidebarOpen(false));
-                }}
-              >
-                <span className={styles.sideEmoji}>{profileItem.icon}</span>{" "}
-                {isDesktopSidebarExpanded && profileItem.label}
-              </button>
-              <ThemeToggleButton
-                showText={isDesktopSidebarExpanded}
-                className={styles.sideNavItem}
-                iconClassName={styles.sideEmoji}
-              />
-              <div className={styles.navDivider} />
-            </div>
-          )}
-
           {activeTab === AppTab.ROSTER && teamsLoading && (
             <div className={`${styles.sideNavItem} ${styles.loading}`}>
               Loading teams...
@@ -294,23 +263,23 @@ const SideNav = () => {
                   </div>
                 );
               })
-            : SETTINGS_NAV_ITEMS.filter(
-                (item) => !item.adminOnly && item.id !== SettingsSection.PROFILE,
-              ).map((item) => (
-                <button
-                  key={item.id}
-                  className={`${styles.sideNavItem} ${
-                    activeSideItem === item.id ? styles.sideNavItemActive : ""
-                  }`}
-                  onClick={() => {
-                    handleNavItemClick(`/app/settings/${item.id}`);
-                    dispatch(setMobileSidebarOpen(false));
-                  }}
-                >
-                  <span className={styles.sideEmoji}>{item.icon}</span>{" "}
-                  {isDesktopSidebarExpanded && item.label}
-                </button>
-              ))}
+            : SETTINGS_NAV_ITEMS.filter((item) => !item.adminOnly).map(
+                (item) => (
+                  <button
+                    key={item.id}
+                    className={`${styles.sideNavItem} ${
+                      activeSideItem === item.id ? styles.sideNavItemActive : ""
+                    }`}
+                    onClick={() => {
+                      handleNavItemClick(`/app/settings/${item.id}`);
+                      dispatch(setMobileSidebarOpen(false));
+                    }}
+                  >
+                    <span className={styles.sideEmoji}>{item.icon}</span>{" "}
+                    {isDesktopSidebarExpanded && item.label}
+                  </button>
+                ),
+              )}
         </nav>
       </div>
 
@@ -342,6 +311,10 @@ const SideNav = () => {
           currentUser={userData}
           variant="sidebar"
           showText={isDesktopSidebarExpanded}
+        />
+        <ThemeToggleButton
+          className={styles.sidebarThemeToggle}
+          iconClassName={styles.sidebarThemeIcon}
         />
       </div>
     </aside>

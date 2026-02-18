@@ -1,10 +1,10 @@
 .onlineUsersContainer {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   position: relative;
   cursor: pointer;
-  padding: 4px;
+  padding: 4px 8px;
   border-radius: 8px;
   transition: background 0.2s;
 }
@@ -14,14 +14,24 @@
 }
 
 .sidebarVariant {
-  width: 100%;
+  width: auto;
+  padding: 4px;
+}
+
+.sidebarExpanded {
+  flex: 1;
 }
 
 .onlineLabel {
-  font-size: 0.95rem;
-  font-weight: 500;
+  display: none;
+  font-size: 0.85rem;
+  font-weight: 600;
   color: var(--color-text-dim);
-  flex: 1;
+  white-space: nowrap;
+}
+
+.sidebarExpanded .onlineLabel {
+  display: block;
 }
 
 .avatarStack {
@@ -75,7 +85,7 @@
 }
 
 .dropdownUp {
-  bottom: calc(100% + 8px);
+  bottom: calc(100% + 12px);
   left: 0;
 }
 

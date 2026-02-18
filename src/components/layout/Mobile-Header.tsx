@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { setMobileSidebarOpen } from "../../store/slices/uiSlice";
+import ThemeToggleButton from "../common/ThemeToggleButton";
 import OnlineUsers from "../roster/OnlineUsers";
 
 import styles from "./mobile-header.module.css";
@@ -39,7 +40,10 @@ const MobileHeader = ({ title, hasSideNav = true }: MobileHeaderProps) => {
           />
         )}
       </div>
-      <OnlineUsers teamName={teamName} currentUser={userData} />
+      <div className={styles.mobileHeaderActions}>
+        <OnlineUsers teamName={teamName} currentUser={userData} />
+        <ThemeToggleButton className={styles.mobileThemeToggle} />
+      </div>
     </header>
   );
 };

@@ -35,28 +35,6 @@
   display: none;
 }
 
-.userSection {
-  display: flex;
-  flex-direction: column;
-}
-
-.themeToggleWrapper {
-  padding: 0 24px 18px;
-}
-
-.navDivider {
-  height: 1px;
-  background-color: var(--border-color-secondary);
-  margin: 8px 24px;
-}
-
-.sideNavThemeToggle {
-  width: 100%;
-  justify-content: flex-start;
-  padding: 0;
-  background: transparent;
-}
-
 .sideMenuList {
   display: flex;
   flex-direction: column;
@@ -245,7 +223,25 @@
 
   .sidebarFooter {
     display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px;
     border-top: 1px solid var(--border-color-secondary);
-    padding: 16px;
+    padding: 8px;
+  }
+
+  .sidebarThemeToggle {
+    padding: 4px;
+    border-radius: 8px;
+  }
+
+  .sidebarThemeToggle:hover {
+    background: var(--background-button-secondary);
+  }
+
+  .sidebarThemeIcon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 }
