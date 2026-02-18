@@ -4,6 +4,7 @@ import { collection, onSnapshot, query, doc } from "firebase/firestore";
 
 import { useAppDispatch, useAppSelector } from "./redux";
 import { db } from "../firebase";
+import { useTrackPresence } from "./usePresence";
 import { RosterEntry, AppUser, Team } from "../model/model";
 import { setUserData } from "../store/slices/authSlice";
 import { setPositions } from "../store/slices/positionsSlice";
@@ -20,7 +21,10 @@ import { setAllUsers } from "../store/slices/userManagementSlice";
  */
 export const useAppListeners = () => {
   const dispatch = useAppDispatch();
-  const { firebaseUser } = useAppSelector((state) => state.auth);
+  const { firebaseUser, userData } = useAppSelector((state) => state.auth);
+
+  // Track presence globally
+  useTrackPresence(userData);
 
   useEffect(() => {
     // 1. Roster Listener
