@@ -11,7 +11,6 @@ import { db } from "../../firebase";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { Weekday, AppUser, getTodayKey } from "../../model/model";
 import {
-  fetchRosterEntries,
   saveRosterChanges,
   updateLocalEventName,
   resetRosterEdits,
@@ -31,6 +30,7 @@ const DashboardPage = () => {
     entries,
     dirtyEntries,
     loading: loadingRoster,
+    initialLoad,
     saving,
   } = useAppSelector((state) => state.roster);
   const { positions: allPositions } = useAppSelector(
@@ -48,10 +48,6 @@ const DashboardPage = () => {
 
   const hasDirtyChanges = Object.keys(dirtyEntries).length > 0;
 
-  useEffect(() => {
-    dispatch(fetchRosterEntries());
-  }, [dispatch]);
-
   // Use ResizeObserver to detect when the container has a width
   useEffect(() => {
     const container = scrollRef.current;
@@ -68,7 +64,7 @@ const DashboardPage = () => {
 
     observer.observe(container);
     return () => observer.disconnect();
-  }, [loadingRoster, loadingUsers]);
+  }, [loadingRoster, loadingUsers, initialLoad]);
 
   const rosterDates = useMemo(() => {
     const todayKey = getTodayKey();
@@ -353,7 +349,7 @@ const DashboardPage = () => {
     dispatch(resetRosterEdits());
   };
 
-  if (loadingRoster || loadingUsers) return <Spinner />;
+  if ((loadingRoster && !initialLoad) || loadingUsers) return <Spinner />;
 
   if (rosterDates.length === 0) {
     return (

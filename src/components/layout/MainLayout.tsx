@@ -10,6 +10,7 @@ import {
 } from "../../constants/navigation";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { useTrackPresence } from "../../hooks/usePresence";
+import { useRosterListener } from "../../hooks/useRosterListener";
 import { setLastVisitedPath } from "../../store/slices/uiSlice";
 import BottomNav from "../navigation/BottomNav";
 import SideNav from "../navigation/SideNav";
@@ -26,6 +27,9 @@ const MainLayout = () => {
   
   // Global presence tracking
   useTrackPresence(userData);
+  
+  // Global roster data listener
+  useRosterListener();
 
   const { teams: allTeams } = useAppSelector((state) => state.teams);
   const { isMobileSidebarOpen, isDesktopSidebarExpanded, lastVisitedPaths } =

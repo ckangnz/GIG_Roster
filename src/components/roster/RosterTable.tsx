@@ -14,7 +14,6 @@ import {
   fetchPositions,
 } from "../../store/slices/positionsSlice";
 import {
-  fetchRosterEntries,
   saveRosterChanges,
   updateLocalAssignment,
   resetRosterEdits,
@@ -56,6 +55,8 @@ const RosterTable = () => {
     entries,
     dirtyEntries,
     saving,
+    loading: loadingRoster,
+    initialLoad,
     error: rosterError,
   } = useAppSelector((state) => state.roster);
   const { positions: allPositions, isDirty: positionsDirty } = useAppSelector(
@@ -215,10 +216,6 @@ const RosterTable = () => {
     },
     [peekPositionName, teamName, dirtyEntries, entries, allTeamUsers],
   );
-
-  useEffect(() => {
-    dispatch(fetchRosterEntries());
-  }, [dispatch]);
 
   useEffect(() => {
     if (
@@ -763,7 +760,7 @@ const RosterTable = () => {
     return "future-date";
   }, []);
 
-  if (loadingUsers || loadingTeam || loadingAllTeamUsers) {
+  if (loadingUsers || loadingTeam || loadingAllTeamUsers || (loadingRoster && !initialLoad)) {
     return <Spinner />;
   }
 

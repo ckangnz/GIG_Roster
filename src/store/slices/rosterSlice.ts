@@ -14,6 +14,7 @@ interface RosterState {
   entries: Record<string, RosterEntry>; // date -> RosterEntry
   dirtyEntries: Record<string, RosterEntry>; // Staged changes
   loading: boolean;
+  initialLoad: boolean;
   saving: boolean;
   error: string | null;
 }
@@ -21,7 +22,8 @@ interface RosterState {
 const initialState: RosterState = {
   entries: {},
   dirtyEntries: {},
-  loading: false,
+  loading: true,
+  initialLoad: false,
   saving: false,
   error: null,
 };
@@ -194,6 +196,14 @@ const rosterSlice = createSlice({
       state.dirtyEntries = {};
       state.error = null;
     },
+    setRosterEntries(state, action: PayloadAction<Record<string, RosterEntry>>) {
+      state.entries = action.payload;
+      state.loading = false;
+      state.initialLoad = true;
+    },
+    setLoading(state, action: PayloadAction<boolean>) {
+      state.loading = action.payload;
+    },
     updateLocalAbsence(
       state,
       action: PayloadAction<{
@@ -262,6 +272,8 @@ export const {
   updateLocalAssignment,
   updateLocalEventName,
   resetRosterEdits,
+  setRosterEntries,
+  setLoading,
   updateLocalAbsence,
 } = rosterSlice.actions;
 export const rosterReducer = rosterSlice.reducer;
