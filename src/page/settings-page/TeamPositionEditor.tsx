@@ -49,11 +49,8 @@ const TeamPositionEditor = ({
             const team = availableTeams.find((t) => t.name === teamName);
             if (!team) return null;
 
-            const assignablePositions =
-              team.positions?.filter((pos) => {
-                const gp = globalPositions.find((p) => p.name === pos.name);
-                return !pos.parentId && !gp?.isCustom;
-              }) || [];
+            const allTopLevelPositions =
+              team.positions?.filter((pos) => !pos.parentId) || [];
 
             return (
               <div key={teamName} className={commonStyles.subSectionGroup}>
@@ -89,9 +86,13 @@ const TeamPositionEditor = ({
                     </div>
                   )}
                 </div>
-                {assignablePositions.length > 0 ? (
+                {allTopLevelPositions.length > 0 ? (
                   <PillGroup>
-                    {assignablePositions.map((pos) => {
+                    {allTopLevelPositions.map((pos) => {
+                      const gp = globalPositions.find(
+                        (p) => p.name === pos.name,
+                      );
+                      const isCustom = !!gp?.isCustom;
                       const isSelected =
                         teamPositions[teamName]?.includes(pos.name);
                       return (
@@ -99,6 +100,7 @@ const TeamPositionEditor = ({
                           key={pos.name}
                           onClick={() => onTogglePosition(teamName, pos.name)}
                           isActive={isSelected}
+                          isDisabled={isCustom}
                           colour={pos.colour}
                         >
                           <span>{pos.emoji}</span> {pos.name}
