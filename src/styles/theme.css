@@ -20,6 +20,7 @@
 
   --background-body: #242424;
   --background-app-shell: #121212;
+  --background-sidebar: #1a1a1a;
   --background-card: #1a1a1a;
   --background-button-primary: #646cff;
   --background-primary-subtle: #25263f; /* Solid version of rgba(100, 108, 255, 0.15) over #1a1a1a */
@@ -67,6 +68,7 @@
 
   --background-body: #ffffff;
   --background-app-shell: #f0f2f5;
+  --background-sidebar: #ffffff;
   --background-card: #ffffff;
   --background-button-primary: #4f46e5;
   --background-primary-subtle: #eeedfc;

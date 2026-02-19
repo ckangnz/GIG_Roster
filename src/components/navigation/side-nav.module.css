@@ -6,7 +6,7 @@
   height: 100vh;
   position: sticky;
   top: 0;
-  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s ease, visibility 0.3s;
   width: 64px;
   z-index: 100;
 }
@@ -162,18 +162,9 @@
 }
 
 @keyframes pulse {
-  0% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  50% {
-    transform: scale(1.2);
-    opacity: 0.7;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.2); opacity: 0.7; }
+  100% { transform: scale(1); opacity: 1; }
 }
 
 .expandIcon {
@@ -241,6 +232,27 @@
 
 @media (max-width: 767px) {
   .sideNav {
+    position: fixed;
+    top: 64px; /* Below Mobile Header */
+    left: 0;
+    width: 100%;
+    height: auto;
+    max-height: calc(100vh - 128px); /* Leave space for bottom nav */
+    transform: translateY(-110%);
+    visibility: hidden;
+    z-index: 1050;
+    border-right: none;
+    border-bottom: 1px solid var(--border-color-secondary);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .sideNav.menuOpen {
+    transform: translateY(0);
+    visibility: visible;
+  }
+
+  .tabletSidebarHeader,
+  .sidebarFooter {
     display: none;
   }
 }
