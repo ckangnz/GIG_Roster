@@ -104,6 +104,14 @@ const CustomRosterTable = () => {
     [logic, dispatch, teamName, activePosition],
   );
 
+  const handleKeyboardCustomCellClick = useCallback((row: number, col: number) => {
+    const dateString = rosterDates[row];
+    const label = currentPosition?.customLabels?.[col];
+    if (dateString && label) {
+      handleCellClick(dateString, label, row, col);
+    }
+  }, [rosterDates, currentPosition, handleCellClick]);
+
   const getCellContent = useCallback(
     (dateString: string, label: string) => {
       const entry = dirtyEntries[dateString] || entries[dateString];
@@ -135,6 +143,8 @@ const CustomRosterTable = () => {
       hiddenUserList={hiddenUserList}
       renderHeader={renderHeader}
       onLoadNextYear={logic.handleLoadNextYear}
+      colCount={currentPosition?.customLabels?.length || 0}
+      onCellClick={handleKeyboardCustomCellClick}
     >
       {rosterDates.map((dateString, rowIndex) => (
         <CustomRosterRow

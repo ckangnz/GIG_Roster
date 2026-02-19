@@ -77,6 +77,14 @@ const AbsenceRosterTable = () => {
     [dispatch, logic, dirtyEntries, entries],
   );
 
+  const handleKeyboardAbsenceClick = useCallback((row: number, col: number) => {
+    const dateString = rosterDates[row];
+    const user = allTeamUsers[col];
+    if (dateString && user?.email) {
+      handleAbsenceClick(dateString, user.email, row, col);
+    }
+  }, [rosterDates, allTeamUsers, handleAbsenceClick]);
+
   const handleAbsenceReasonChange = useCallback(
     (dateString: string, userEmail: string, reason: string) => {
       dispatch(
@@ -104,6 +112,8 @@ const AbsenceRosterTable = () => {
       hiddenUserList={hiddenUserList}
       renderHeader={renderHeader}
       onLoadNextYear={logic.handleLoadNextYear}
+      colCount={allTeamUsers.length}
+      onCellClick={handleKeyboardAbsenceClick}
     >
       {rosterDates.map((dateString, rowIndex) => (
         <AbsenceRosterRow

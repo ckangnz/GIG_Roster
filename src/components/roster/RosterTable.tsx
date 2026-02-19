@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { ReactNode, useEffect, RefObject } from "react";
 
 import TopControls from "./TopControls";
 import { AppUser } from "../../model/model";
@@ -32,6 +32,14 @@ interface RosterTableProps {
 
   // Footer
   onLoadNextYear: () => void;
+
+  // Accessibility & Navigation
+  containerRef: RefObject<HTMLDivElement | null>;
+  focusedCell: { row: number; col: number; table: "roster" | "absence" | "all" } | null;
+  setFocusedCell: (cell: { row: number; col: number; table: "roster" | "absence" | "all" } | null) => void;
+  rosterDates: string[];
+  colCount: number;
+  onCellClick?: (row: number, col: number) => void;
 }
 
 const RosterTable = ({
@@ -50,7 +58,73 @@ const RosterTable = ({
   renderHeader,
   children,
   onLoadNextYear,
+  containerRef,
+  focusedCell,
+  setFocusedCell,
+  rosterDates,
+  colCount,
+  onCellClick,
 }: RosterTableProps) => {
+
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      if (target.tagName === "INPUT" || target.tagName === "TEXTAREA") return;
+      
+      // Escape should always clear focus and cancel if dirty
+      if (e.key === "Escape") {
+        e.preventDefault();
+        handleCancel();
+        return;
+      }
+
+      if (!focusedCell) return;
+
+      const { row, col, table } = focusedCell;
+      const rowCount = rosterDates.length;
+
+      switch (e.key) {
+        case "ArrowUp":
+          e.preventDefault();
+          if (row > 0) setFocusedCell({ row: row - 1, col, table });
+          break;
+        case "ArrowDown":
+          e.preventDefault();
+          if (row < rowCount - 1) setFocusedCell({ row: row + 1, col, table });
+          break;
+        case "ArrowLeft":
+          e.preventDefault();
+          if (col > 0) setFocusedCell({ row, col: col - 1, table });
+          break;
+        case "ArrowRight":
+          e.preventDefault();
+          if (col < colCount - 1) setFocusedCell({ row, col: col + 1, table });
+          break;
+        case "Tab":
+          e.preventDefault();
+          if (e.shiftKey) {
+            if (row > 0) setFocusedCell({ row: row - 1, col, table });
+          } else {
+            if (row < rowCount - 1) setFocusedCell({ row: row + 1, col, table });
+          }
+          break;
+        case " ": 
+          e.preventDefault();
+          if (onCellClick) onCellClick(row, col);
+          break;
+        case "Enter":
+          if (hasDirtyChanges) {
+            e.preventDefault();
+            handleSave();
+          }
+          break;
+      }
+    };
+
+    window.addEventListener("keydown", handleGlobalKeyDown);
+    return () => window.removeEventListener("keydown", handleGlobalKeyDown);
+  }, [focusedCell, rosterDates.length, colCount, onCellClick, handleSave, handleCancel, hasDirtyChanges, setFocusedCell]);
+
   if (isLoading) {
     return <Spinner />;
   }
@@ -60,7 +134,7 @@ const RosterTable = ({
   }
 
   return (
-    <div className={styles.rosterTableWrapper}>
+    <div ref={containerRef} className={styles.rosterTableWrapper} tabIndex={-1}>
       <TopControls
         isAllView={isAllView}
         isAbsenceView={isAbsenceView}
@@ -70,13 +144,15 @@ const RosterTable = ({
         onToggleVisibility={handleToggleVisibility}
       />
 
-      <div className={styles.rosterTableContainer}>
-        <table
-          className={`${styles.rosterTable} ${isAbsenceView ? styles.absenceTable : ""}`}
-        >
-          {renderHeader()}
-          <tbody>{children}</tbody>
-        </table>
+      <div className={styles.rosterSection}>
+        <div className={styles.rosterTableContainer}>
+          <table
+            className={`${styles.rosterTable} ${isAbsenceView ? styles.absenceTable : ""}`}
+          >
+            {renderHeader()}
+            <tbody>{children}</tbody>
+          </table>
+        </div>
         <div className={styles.loadMoreFooter}>
           <button className={styles.loadNextYearBtn} onClick={onLoadNextYear}>
             Load Next Year ↓

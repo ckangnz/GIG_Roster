@@ -152,6 +152,14 @@ const GeneralRosterTable = () => {
     ],
   );
 
+  const handleKeyboardCellClick = useCallback((row: number, col: number) => {
+    const dateString = rosterDates[row];
+    const user = sortedUsers[col];
+    if (dateString && user?.email) {
+      handleCellClick(dateString, user.email, row, col);
+    }
+  }, [rosterDates, sortedUsers, handleCellClick]);
+
   const getCellContent = useCallback(
     (dateString: string, userEmail: string) => {
       const entry = dirtyEntries[dateString] || entries[dateString];
@@ -232,6 +240,8 @@ const GeneralRosterTable = () => {
       hiddenUserList={hiddenUserList}
       renderHeader={renderHeader}
       onLoadNextYear={logic.handleLoadNextYear}
+      colCount={sortedUsers.length}
+      onCellClick={handleKeyboardCellClick}
     >
       {rosterDates.map((dateString, rowIndex) => (
         <GeneralRosterRow

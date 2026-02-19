@@ -24,7 +24,7 @@ const AllRosterTable = () => {
     closestNextDate,
   } = logic;
 
-  // Re-implementing view-specific logic that was in the component
+  // Re-implementing view-specific logic
   const filteredAllTeamUsers = useMemo(() => {
     return allTeamUsers.filter((u) => {
       if (!u.isActive || !teamName) return false;
@@ -147,6 +147,18 @@ const AllRosterTable = () => {
     [dirtyEntries, entries, teamName, filteredAllTeamUsers, userData],
   );
 
+  const handleKeyboardAllCellClick = useCallback((row: number, col: number) => {
+    if (rosterAllViewMode !== "user") return;
+    const dateString = rosterDates[row];
+    const column = allViewColumns[col];
+    if (dateString && column?.isUser && column.id) {
+      const assignments = getAssignmentsForIdentifier(dateString, column.id);
+      if (assignments.length > 0) {
+        navigate(`/app/roster/${teamName}/${assignments[0]}`);
+      }
+    }
+  }, [rosterAllViewMode, rosterDates, allViewColumns, getAssignmentsForIdentifier, navigate, teamName]);
+
   const renderHeader = () => (
     <AllRosterHeader
       rosterAllViewMode={rosterAllViewMode}
@@ -167,6 +179,8 @@ const AllRosterTable = () => {
       hiddenUserList={hiddenUserList}
       renderHeader={renderHeader}
       onLoadNextYear={logic.handleLoadNextYear}
+      colCount={rosterAllViewMode === "user" ? allViewColumns.length : (currentTeamData?.positions.length || 0)}
+      onCellClick={handleKeyboardAllCellClick}
     >
       {rosterDates.map((dateString, rowIndex) => (
         <AllRosterRow
