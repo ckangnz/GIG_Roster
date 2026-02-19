@@ -46,8 +46,10 @@ const DashboardPage = () => {
   const [currentDateIndex, setCurrentDateIndex] = useState(0);
   const [containerWidth, setContainerWidth] = useState(0);
   const [isInitialized, setIsInitialized] = useState(false);
+  
   const scrollRef = useRef<HTMLDivElement>(null);
-  const hasInitialScrolled = useRef(false);
+  const isProgrammaticScroll = useRef(false);
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Use ResizeObserver to detect when the container has a width
   useEffect(() => {
@@ -65,7 +67,7 @@ const DashboardPage = () => {
 
     observer.observe(container);
     return () => observer.disconnect();
-  }, [loadingRoster, loadingUsers, initialLoad]);
+  }, []);
 
   const rosterDates = useMemo(() => {
     const todayKey = getTodayKey();
@@ -81,15 +83,13 @@ const DashboardPage = () => {
 
     const upcomingDates = Array.from(dateSet).sort();
 
-    // If targetDate is in the past, show ONLY that date (disables scrolling)
     if (targetDate && targetDate < todayKey) {
       return [targetDate];
     }
 
-    // Filter dates: keep if has assignments OR if it's the specific targetDate
     return upcomingDates.filter((dateStr) => {
       const dateKey = dateStr;
-      if (targetDate === dateKey) return true; // Never filter the date we specifically navigated to
+      if (targetDate === dateKey) return true;
 
       const entry = entries[dateKey];
       if (!entry) return false;
@@ -103,70 +103,38 @@ const DashboardPage = () => {
     });
   }, [userData, allTeams, entries, targetDate]);
 
-  // Handle deep-linking and tab-reclick resets
+  // Handle initialization and programmatic scrolling
   useEffect(() => {
-    if (
-      rosterDates.length === 0 ||
-      !scrollRef.current ||
-      loadingRoster ||
-      containerWidth === 0
-    )
-      return;
+    if (loadingRoster || rosterDates.length === 0 || containerWidth === 0 || isInitialized) return;
 
     const container = scrollRef.current;
+    if (!container) return;
 
-    const performScroll = (index: number, smooth: boolean) => {
-      const itemWidth = container.offsetWidth || containerWidth;
-      if (itemWidth === 0) return; // Wait for layout
-
-      // Temporarily disable snap to prevent "fighting" the programmatic scroll
-      container.style.scrollSnapType = "none";
-
-      container.scrollTo({
-        left: itemWidth * index,
-        behavior: smooth ? "smooth" : "auto",
-      });
-
-      // Re-enable snap after a short delay
+    const index = targetDate ? rosterDates.findIndex(d => d === targetDate) : 0;
+    const finalIndex = index >= 0 ? index : 0;
+    
+    isProgrammaticScroll.current = true;
+    container.style.scrollSnapType = "none";
+    container.scrollLeft = containerWidth * finalIndex;
+    
+    requestAnimationFrame(() => {
+      if (container) container.style.scrollSnapType = "x mandatory";
+      setCurrentDateIndex(finalIndex);
+      setIsInitialized(true);
+      
       setTimeout(() => {
-        if (container) {
-          container.style.scrollSnapType = "x mandatory";
-        }
-        setIsInitialized(true);
-      }, 50);
+        isProgrammaticScroll.current = false;
+      }, 100);
+    });
+  }, [loadingRoster, rosterDates, containerWidth, targetDate, isInitialized]);
 
-      setCurrentDateIndex(index);
-      hasInitialScrolled.current = true;
-    };
-
-    if (targetDate) {
-      const index = rosterDates.findIndex((d) => d === targetDate);
-      if (index >= 0) {
-        const currentScrollIndex = Math.round(
-          container.scrollLeft / (container.offsetWidth || containerWidth || 1),
-        );
-
-        if (!hasInitialScrolled.current || currentScrollIndex !== index) {
-          // Use RequestAnimationFrame for better timing with browser paint
-          requestAnimationFrame(() => {
-            performScroll(index, hasInitialScrolled.current);
-          });
-        } else {
-          setIsInitialized(true);
-        }
-      } else {
-        setIsInitialized(true);
-      }
-    } else {
-      // Re-click or fresh load with no date: scroll to start
-      if (container.scrollLeft !== 0) {
-        performScroll(0, true);
-      } else {
-        setIsInitialized(true);
-      }
-      hasInitialScrolled.current = true;
+  // Safety reveal
+  useEffect(() => {
+    if (!isInitialized && !loadingRoster && rosterDates.length > 0) {
+      const timer = setTimeout(() => setIsInitialized(true), 1000);
+      return () => clearTimeout(timer);
     }
-  }, [targetDate, rosterDates, loadingRoster, containerWidth]);
+  }, [isInitialized, loadingRoster, rosterDates]);
 
   const handleClearDate = () => {
     setSearchParams({}, { replace: true });
@@ -232,14 +200,12 @@ const DashboardPage = () => {
               if (user) {
                 assignedUsers.push(user);
               } else {
-                // Fallback for cases where user data might not be loaded yet
                 assignedUsers.push({ email, name: email } as AppUser);
               }
               totalAssignedInTeam++;
             }
           });
 
-          // Sort assigned users
           const sortedAssignedUsers = [...assignedUsers].sort((a, b) => {
             if (posInfo?.sortByGender) {
               if (a.gender !== b.gender) {
@@ -286,7 +252,6 @@ const DashboardPage = () => {
     }[],
     eventName?: string,
   ) => {
-    // Treat string as UTC midnight to prevent display shifts
     const localDate = new Date(dateStr);
     const formattedDate = localDate.toLocaleDateString("en-GB", {
       day: "numeric",
@@ -317,24 +282,24 @@ const DashboardPage = () => {
   };
 
   const handleScroll = () => {
-    if (!scrollRef.current) return;
+    if (!scrollRef.current || containerWidth === 0 || isProgrammaticScroll.current) return;
     const container = scrollRef.current;
-    const itemWidth = container.offsetWidth;
-    const index = Math.round(container.scrollLeft / itemWidth);
+    const index = Math.round(container.scrollLeft / containerWidth);
 
     if (index !== currentDateIndex && rosterDates[index]) {
       setCurrentDateIndex(index);
-      // Update URL search params to reflect current date for persistence
-      const dateKey = rosterDates[index];
-      if (targetDate !== dateKey) {
-        const todayKey = getTodayKey();
-        if (index === 0 && todayKey === dateKey) {
-          // Keep URL clean for the first (default) item if it matches today
-          setSearchParams({}, { replace: true });
-        } else {
-          setSearchParams({ date: dateKey }, { replace: true });
+      if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+      scrollTimeoutRef.current = setTimeout(() => {
+        const dateKey = rosterDates[index];
+        if (targetDate !== dateKey) {
+          const todayKey = getTodayKey();
+          if (index === 0 && todayKey === dateKey) {
+            setSearchParams({}, { replace: true });
+          } else {
+            setSearchParams({ date: dateKey }, { replace: true });
+          }
         }
-      }
+      }, 300);
     }
   };
 
@@ -344,9 +309,9 @@ const DashboardPage = () => {
     dispatch(syncEventNameRemote(payload));
   };
 
-  if ((loadingRoster && !initialLoad) || loadingUsers) return <Spinner />;
+  const showSpinner = (loadingRoster && !initialLoad) || loadingUsers || !isInitialized;
 
-  if (rosterDates.length === 0) {
+  if (rosterDates.length === 0 && !loadingRoster) {
     return (
       <div className={styles.dashboardEmpty}>
         <h2>No upcoming events found</h2>
@@ -361,7 +326,6 @@ const DashboardPage = () => {
   const pageTitle = isPast ? "Previous Event" : "Upcoming Events";
 
   const formatDate = (dateStr: string) => {
-    // Treat string as UTC midnight to prevent display shifts
     const dateObj = new Date(dateStr);
     return dateObj.toLocaleDateString("en-GB", {
       day: "numeric",
@@ -466,8 +430,12 @@ const DashboardPage = () => {
     );
   };
 
+  const currentEntry = entries[currentEventDate] || { eventName: "" };
+
   return (
-    <div className={styles.dashboardContainer}>
+    <div className={styles.dashboardContainer} style={{ opacity: isInitialized ? 1 : 0 }}>
+      {showSpinner && <Spinner />}
+      
       <div className={styles.dashboardHeader}>
         <h1>{pageTitle}</h1>
         <div className={styles.dashboardHeaderActions}>
@@ -479,55 +447,43 @@ const DashboardPage = () => {
         </div>
       </div>
 
-      <div
-        className={styles.carouselOuterWrapper}
-        style={{
-          opacity: isInitialized ? 1 : 0,
-          transition: "opacity 0.3s ease-in-out",
-        }}
-      >
+      <div className={styles.eventNameContainer}>
+        <input
+          type="text"
+          className={`${styles.dashboardEventNameInput} ${currentEntry.eventName ? styles.dashboardEventNameInputHasEvent : ""}`}
+          placeholder="Event name (e.g. Easter Sunday)"
+          value={currentEntry.eventName || ""}
+          onChange={(e) =>
+            handleEventNameChange(currentEventDate, e.target.value)
+          }
+        />
+      </div>
+      <div className={styles.eventCardDate}>
+        {formatDate(currentEventDate)}
+        {currentEventDate === todayKey && (
+          <span className={styles.dashboardTodayBadge}>TODAY</span>
+        )}
+      </div>
+
+      <div className={styles.carouselOuterWrapper}>
         <div
           className={styles.eventsCarouselTrack}
           ref={scrollRef}
           onScroll={handleScroll}
         >
-          {rosterDates.map((dateStr, index) => {
-            const dateKey = dateStr;
-            const entry = entries[dateKey];
-            const eventName = entry?.eventName || "";
-
-            return (
-              <div
-                key={dateStr}
-                className={`${styles.eventCardWrapper} ${index === currentDateIndex ? styles.active : styles.peek}`}
-              >
-                <div className={styles.eventNameContainer}>
-                  <input
-                    type="text"
-                    className={`${styles.dashboardEventNameInput} ${eventName ? styles.dashboardEventNameInputHasEvent : ""}`}
-                    placeholder="Event name (e.g. Easter Sunday)"
-                    value={eventName}
-                    onChange={(e) =>
-                      handleEventNameChange(dateStr, e.target.value)
-                    }
-                    disabled={index !== currentDateIndex}
-                  />
-                </div>
-                <div className={styles.eventCardDate}>
-                  {formatDate(dateStr)}
-                  {dateStr === todayKey && (
-                    <span className={styles.dashboardTodayBadge}>TODAY</span>
-                  )}
-                </div>
-                {renderTeamCards(dateStr, index !== currentDateIndex)}
-              </div>
-            );
-          })}
+          {rosterDates.map((dateStr, index) => (
+            <div
+              key={dateStr}
+              className={`${styles.eventCardWrapper} ${index === currentDateIndex ? styles.active : styles.peek}`}
+            >
+              {renderTeamCards(dateStr, index !== currentDateIndex)}
+            </div>
+          ))}
         </div>
-      </div>
-
-      <div className={styles.carouselPagination}>
-        {currentDateIndex + 1} / {rosterDates.length}
+        
+        <div className={styles.carouselPagination}>
+          {currentDateIndex + 1} / {rosterDates.length}
+        </div>
       </div>
     </div>
   );
