@@ -1,24 +1,22 @@
 import { useState, useRef, useEffect } from "react";
 
-import { useOnlineUsers } from "../../hooks/usePresence";
-import { AppUser } from "../../model/model";
+import { useAppSelector } from "../../hooks/redux";
+import { useOnlineUsers, currentSessionId } from "../../hooks/usePresence";
 
 import styles from "./online-users.module.css";
 
 interface OnlineUsersProps {
-  teamName: string | undefined;
-  currentUser: AppUser | null;
   variant?: "top-bar" | "sidebar";
   showText?: boolean;
 }
 
 const OnlineUsers = ({
-  teamName,
-  currentUser,
   variant = "top-bar",
   showText = false,
 }: OnlineUsersProps) => {
-  const onlineUsers = useOnlineUsers(teamName, currentUser?.email);
+  const onlineUsers = useOnlineUsers();
+  const { firebaseUser } = useAppSelector((state) => state.auth);
+  const currentSessionDocId = firebaseUser ? `${firebaseUser.uid}_${currentSessionId}` : null;
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -36,17 +34,20 @@ const OnlineUsers = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  if (onlineUsers.length === 0) return null;
+  if (!onlineUsers || onlineUsers.length === 0) return null;
 
   const displayUsers = onlineUsers.slice(0, 3);
   const remainingCount = onlineUsers.length - 3;
 
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
+  const getInitials = (name: string | undefined | null) => {
+    if (!name || typeof name !== 'string') return "?";
+    const parts = name.trim().split(" ");
+    if (parts.length === 0) return "?";
+    return parts
       .map((n) => n[0])
       .join("")
-      .substring(0, 2);
+      .substring(0, 2)
+      .toUpperCase();
   };
 
   const containerClasses = [
@@ -78,7 +79,12 @@ const OnlineUsers = ({
           </div>
         )}
         {[...displayUsers].reverse().map((user) => (
-          <div key={user.uid} className={styles.avatarCircle} title={user.name}>
+          <div 
+            key={user.uid} 
+            className={styles.avatarCircle} 
+            title={user.name || "Unknown User"}
+            style={{ backgroundColor: user.color, borderColor: 'white' }}
+          >
             {getInitials(user.name)}
           </div>
         ))}
@@ -92,11 +98,14 @@ const OnlineUsers = ({
           <div className={styles.userListScroll}>
             {onlineUsers.map((user) => (
               <div key={user.uid} className={styles.userItem}>
-                <div className={styles.userAvatarSmall}>
+                <div 
+                  className={styles.userAvatarSmall}
+                  style={{ backgroundColor: user.color }}
+                >
                   {getInitials(user.name)}
                 </div>
                 <span className={styles.userNameText}>
-                  {user.name} {user.email === currentUser?.email && "(You)"}
+                  {user.name || "Unknown User"} {user.uid === currentSessionDocId && "(You)"}
                 </span>
                 <div className={styles.pulse} />
               </div>

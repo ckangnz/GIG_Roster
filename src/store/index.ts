@@ -3,6 +3,7 @@ import { configureStore } from '@reduxjs/toolkit';
 import { authMiddleware } from './middleware/authMiddleware';
 import { authReducer } from './slices/authSlice';
 import { positionsReducer } from './slices/positionsSlice';
+import { presenceReducer } from './slices/presenceSlice';
 import { rosterReducer } from './slices/rosterSlice';
 import { rosterViewReducer } from './slices/rosterViewSlice';
 import { teamsReducer } from './slices/teamsSlice';
@@ -13,6 +14,7 @@ export const store = configureStore({
   reducer: {
     auth: authReducer,
     positions: positionsReducer,
+    presence: presenceReducer,
     roster: rosterReducer,
     rosterView: rosterViewReducer,
     teams: teamsReducer,

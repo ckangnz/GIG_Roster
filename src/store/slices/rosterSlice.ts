@@ -155,6 +155,12 @@ const rosterSlice = createSlice({
 
       // 2. Add next member if not None
       if (nextPositionName) {
+        // Check if user is absent on this date
+        if (newEntry.absence[userIdentifier]) {
+          state.error = `Cannot assign ${userIdentifier} because they are marked as absent on ${date}.`;
+          return;
+        }
+
         if (updatedAssignments.length < maxConflict) {
           updatedAssignments.push(nextPositionName);
         } else {
@@ -227,6 +233,13 @@ const rosterSlice = createSlice({
         newEntry.absence[userIdentifier] = {
           reason: reason ?? newEntry.absence[userIdentifier]?.reason ?? '',
         };
+
+        // Clear user's assignments across ALL teams for this date
+        Object.keys(newEntry.teams).forEach((teamName) => {
+          if (newEntry.teams[teamName][userIdentifier]) {
+            delete newEntry.teams[teamName][userIdentifier];
+          }
+        });
       } else {
         delete newEntry.absence[userIdentifier];
       }

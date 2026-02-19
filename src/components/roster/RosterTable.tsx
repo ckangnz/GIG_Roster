@@ -28,6 +28,7 @@ import {
   loadNextYearDates,
 } from "../../store/slices/rosterViewSlice";
 import { toggleUserVisibility } from "../../store/slices/uiSlice";
+import NameTag from "../common/NameTag";
 import SaveFooter from "../common/SaveFooter";
 import Spinner from "../common/Spinner";
 
@@ -531,8 +532,7 @@ const RosterTable = () => {
 
           return (
             <Fragment key={id}>
-              <span className={isMe ? styles.isMe : ""}>{displayName}</span>
-              {isMe && <span className={styles.meTag}>Me</span>}
+              <NameTag displayName={displayName} isMe={isMe} />
               {idx < assignedEntries.length - 1 ? ", " : ""}
             </Fragment>
           );

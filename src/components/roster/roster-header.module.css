@@ -93,15 +93,11 @@ th.stickyCol {
 }
 
 .stickyRight {
-  position: sticky;
-  right: 0;
-  z-index: 50;
   background-color: var(--background-card);
   border-left: 1px solid var(--border-color-secondary) !important;
 }
 
 th.stickyRight {
-  top: 0;
   z-index: 60;
   background-color: var(--background-table-header);
 }
@@ -163,37 +159,6 @@ th.stickyRight {
 .removeHeaderBtn:hover {
   color: var(--color-error);
   border-color: var(--color-error);
-}
-
-.meTag {
-  display: inline-flex;
-  align-items: center;
-  background-color: #e0dbff;
-  color: #5c4eb1;
-  font-size: 0.65rem;
-  font-weight: 800;
-  padding: 1px 6px;
-  border-radius: 4px;
-  margin-left: 6px;
-  vertical-align: middle;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  border: 1px solid #c8bfff;
-}
-
-[data-theme="dark"] .meTag {
-  background-color: #3d3473;
-  color: #d1c9ff;
-  border-color: #4f4494;
-}
-
-.isMe {
-  color: #5c4eb1 !important;
-  font-weight: 700 !important;
-}
-
-[data-theme="dark"] .isMe {
-  color: #d1c9ff !important;
 }
 
 .headerInput {

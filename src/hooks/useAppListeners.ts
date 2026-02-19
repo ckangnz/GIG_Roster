@@ -4,7 +4,7 @@ import { collection, onSnapshot, query, doc } from "firebase/firestore";
 
 import { useAppDispatch, useAppSelector } from "./redux";
 import { db } from "../firebase";
-import { useTrackPresence } from "./usePresence";
+import { useTrackPresence, usePresenceListener } from "./usePresence";
 import { RosterEntry, AppUser, Team } from "../model/model";
 import { setUserData } from "../store/slices/authSlice";
 import { setPositions } from "../store/slices/positionsSlice";
@@ -24,35 +24,40 @@ export const useAppListeners = () => {
   const { firebaseUser, userData } = useAppSelector((state) => state.auth);
 
   // Track presence globally
-  useTrackPresence(userData);
+  useTrackPresence(firebaseUser, userData);
+  usePresenceListener();
 
   useEffect(() => {
     // 1. Roster Listener
     dispatch(setRosterLoading(true));
-    const rosterQuery = query(collection(db, "roster"));
-    const unsubscribeRoster = onSnapshot(
-      rosterQuery,
-      (snapshot) => {
-        const entries: Record<string, RosterEntry> = {};
-        snapshot.docs.forEach((doc) => {
-          const data = doc.data();
-          const updatedAt = data.updatedAt;
-          const serializableData = {
-            ...data,
-            updatedAt:
-              updatedAt &&
-              typeof updatedAt === "object" &&
-              "toMillis" in updatedAt
-                ? (updatedAt as { toMillis: () => number }).toMillis()
-                : (updatedAt as number | undefined),
-          };
-          entries[doc.id] = { ...serializableData, id: doc.id } as RosterEntry;
-        });
-        dispatch(setRosterEntries(entries));
-      },
-      (err) => console.error("Roster sync error:", err),
-    );
-
+        const rosterQuery = query(collection(db, "roster"));
+        const unsubscribeRoster = onSnapshot(
+          rosterQuery,
+          {
+            next: (snapshot) => {
+              const entries: Record<string, RosterEntry> = {};
+              snapshot.docs.forEach((doc) => {
+                const data = doc.data();
+                const updatedAt = data.updatedAt;
+                const serializableData = {
+                  ...data,
+                  updatedAt:
+                    updatedAt &&
+                    typeof updatedAt === "object" &&
+                    "toMillis" in updatedAt
+                      ? (updatedAt as { toMillis: () => number }).toMillis()
+                      : (updatedAt as number | undefined),
+                };
+                entries[doc.id] = { ...serializableData, id: doc.id } as RosterEntry;
+              });
+              dispatch(setRosterEntries(entries));
+            },
+            error: (err) => {
+              console.error("Roster sync error:", err);
+              dispatch(setRosterLoading(false)); // Ensure loading state is cleared on error
+            }
+          }
+        );
     // 2. Metadata (Teams & Positions) Listener
     const unsubscribeTeams = onSnapshot(
       doc(db, "metadata", "teams"),

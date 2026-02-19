@@ -1,5 +1,4 @@
 import { ChevronUpIcon } from "lucide-react";
-import { useParams } from "react-router-dom";
 
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { setMobileSidebarOpen } from "../../store/slices/uiSlice";
@@ -15,9 +14,7 @@ interface MobileHeaderProps {
 
 const MobileHeader = ({ title, hasSideNav = true }: MobileHeaderProps) => {
   const dispatch = useAppDispatch();
-  const { teamName } = useParams();
   const { isMobileSidebarOpen } = useAppSelector((state) => state.ui);
-  const { userData } = useAppSelector((state) => state.auth);
 
   const handleToggle = () => {
     if (hasSideNav) {
@@ -42,7 +39,7 @@ const MobileHeader = ({ title, hasSideNav = true }: MobileHeaderProps) => {
       </div>
       <div className={styles.mobileHeaderActions}>
         <ThemeToggleButton className={styles.mobileThemeToggle} />
-        <OnlineUsers teamName={teamName} currentUser={userData} />
+        <OnlineUsers />
       </div>
     </header>
   );

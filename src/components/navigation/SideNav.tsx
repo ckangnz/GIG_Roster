@@ -311,8 +311,6 @@ const SideNav = () => {
           iconClassName={styles.sidebarThemeIcon}
         />
         <OnlineUsers
-          teamName={activeTeamName}
-          currentUser={userData}
           variant="sidebar"
           showText={isDesktopSidebarExpanded}
         />
