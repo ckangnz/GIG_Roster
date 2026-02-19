@@ -178,7 +178,6 @@ const SideNav = () => {
                       >
                         <div className={styles.teamHeadingContent}>
                           {team.emoji} {isDesktopSidebarExpanded && team.name}
-                          {renderLocationIndicators(team.name)}
                         </div>
                         <span className={styles.expandIcon}>
                           {isTeamExpanded ? "▼" : "▶"}
@@ -216,8 +215,10 @@ const SideNav = () => {
                                 : "",
                           }}
                         >
-                          <span className={styles.sideEmoji}>📋</span>{" "}
-                          <span className={styles.navItemLabel}>{isDesktopSidebarExpanded && "All"}</span>
+                          <span className={styles.sideEmoji}>📋</span>
+                          <span className={styles.navItemLabel}>
+                            {isDesktopSidebarExpanded && "All"}
+                          </span>
                           {renderLocationIndicators(team.name, "All")}
                         </button>
                         {team.positions
@@ -250,8 +251,10 @@ const SideNav = () => {
                               >
                                 <span className={styles.sideEmoji}>
                                   {pos.emoji}
-                                </span>{" "}
-                                <span className={styles.navItemLabel}>{isDesktopSidebarExpanded && pos.name}</span>
+                                </span>
+                                <span className={styles.navItemLabel}>
+                                  {isDesktopSidebarExpanded && pos.name}
+                                </span>
                                 {renderLocationIndicators(team.name, pos.name)}
                               </button>
                             );
@@ -283,8 +286,10 @@ const SideNav = () => {
                                   : "transparent",
                             }}
                           >
-                            <span className={styles.sideEmoji}>🏥</span>{" "}
-                            <span className={styles.navItemLabel}>{isDesktopSidebarExpanded && "Absence"}</span>
+                            <span className={styles.sideEmoji}>🏥</span>
+                            <span className={styles.navItemLabel}>
+                              {isDesktopSidebarExpanded && "Absence"}
+                            </span>
                             {renderLocationIndicators(team.name, "Absence")}
                           </button>
                         )}
@@ -305,8 +310,10 @@ const SideNav = () => {
                       dispatch(setMobileSidebarOpen(false));
                     }}
                   >
-                    <span className={styles.sideEmoji}>{item.icon}</span>{" "}
-                    <span className={styles.navItemLabel}>{isDesktopSidebarExpanded && item.label}</span>
+                    <span className={styles.sideEmoji}>{item.icon}</span>
+                    <span className={styles.navItemLabel}>
+                      {isDesktopSidebarExpanded && item.label}
+                    </span>
                   </button>
                 ),
               )}
@@ -329,8 +336,10 @@ const SideNav = () => {
                 dispatch(setMobileSidebarOpen(false));
               }}
             >
-              <span className={styles.sideEmoji}>{item.icon}</span>{" "}
-              <span className={styles.navItemLabel}>{isDesktopSidebarExpanded && item.label}</span>
+              <span className={styles.sideEmoji}>{item.icon}</span>
+              <span className={styles.navItemLabel}>
+                {isDesktopSidebarExpanded && item.label}
+              </span>
             </button>
           ))}
         </div>
