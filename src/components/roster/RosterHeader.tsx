@@ -1,277 +1,63 @@
-import { Fragment, memo } from "react";
+import { ReactNode, memo, useMemo } from "react";
 
-import { ArrowLeft, ArrowRight, Plus, X } from "lucide-react";
-
-import { AppUser, Position } from "../../model/model";
-import NameTag from "../common/NameTag";
+import { PeekHeader } from "./Peek/PeekHeader";
+import { useAppDispatch, useAppSelector } from "../../hooks/redux";
+import { getTodayKey } from "../../model/model";
+import {
+  loadPreviousDates,
+  resetToUpcomingDates,
+} from "../../store/slices/rosterViewSlice";
 
 import styles from "./roster-header.module.css";
 
 interface RosterHeaderProps {
-  viewType: "all" | "roster" | "absence";
-  rosterAllViewMode?: "user" | "position";
-  allViewColumns: { id: string; name: string; isUser: boolean }[];
-  userData: { email?: string | null; isAdmin?: boolean } | null;
-  assignedOnClosestDate: string[];
-  currentTeamData: { positions: Position[] } | null;
-  teamName?: string;
-  navigate: (path: string) => void;
-  hasPastDates: boolean;
-  onLoadPrevious: () => void;
-  onResetDates: () => void;
-  // Position specific
-  currentPosition?: Position;
-  handleUpdateCustomLabel: (index: number, value: string) => void;
-  handleMoveCustomLabel: (index: number, direction: "left" | "right") => void;
-  handleRemoveCustomLabel: (index: number) => void;
-  handleAddCustomLabel: () => void;
-  sortedUsers: AppUser[];
-  genderDividerIndex: number;
-  onToggleVisibility: (email: string) => void;
-  // Peek
-  peekPositionName: string | null;
-  setPeekPositionName: (name: string | null) => void;
-  peekOptions: Position[];
-  // Absence specific
-  allTeamUsers: AppUser[];
+  showPeek?: boolean;
+  children: ReactNode;
 }
 
-const RosterHeader = memo(
-  ({
-    viewType,
-    rosterAllViewMode,
-    allViewColumns,
-    userData,
-    assignedOnClosestDate,
-    currentTeamData,
-    teamName,
-    navigate,
-    hasPastDates,
-    onLoadPrevious,
-    onResetDates,
-    currentPosition,
-    handleUpdateCustomLabel,
-    handleMoveCustomLabel,
-    handleRemoveCustomLabel,
-    handleAddCustomLabel,
-    sortedUsers,
-    genderDividerIndex,
-    onToggleVisibility,
-    peekPositionName,
-    setPeekPositionName,
-    peekOptions,
-    allTeamUsers,
-  }: RosterHeaderProps) => {
-    const renderDateHeader = () => (
-      <th className={`${styles.rosterTableHeaderCell} ${styles.stickyCol}`}>
-        <div className={styles.dateHeaderContent}>
-          Date
-          <div className={styles.dateHeaderActions}>
-            <button
-              className={styles.loadPrevBtn}
-              onClick={onLoadPrevious}
-              title="Load 5 previous dates"
-            >
-              ↑
-            </button>
-            {hasPastDates && (
+const RosterHeader = memo(({ showPeek, children }: RosterHeaderProps) => {
+  const dispatch = useAppDispatch();
+  const { rosterDates } = useAppSelector((state) => state.rosterView);
+
+  const hasPastDates = useMemo(() => {
+    const todayKey = getTodayKey();
+    return rosterDates.length > 0 && rosterDates[0] < todayKey;
+  }, [rosterDates]);
+
+  const handleLoadPrevious = () => dispatch(loadPreviousDates());
+  const handleResetDates = () => dispatch(resetToUpcomingDates());
+
+  return (
+    <thead>
+      <tr>
+        <th className={`${styles.rosterTableHeaderCell} ${styles.stickyCol}`}>
+          <div className={styles.dateHeaderContent}>
+            Date
+            <div className={styles.dateHeaderActions}>
               <button
-                className={`${styles.loadPrevBtn} ${styles.resetDatesBtn}`}
-                onClick={onResetDates}
-                title="Hide previous dates"
+                className={styles.loadPrevBtn}
+                onClick={handleLoadPrevious}
+                title="Load previous dates"
               >
-                ↓
+                ↑
               </button>
-            )}
-          </div>
-        </div>
-      </th>
-    );
-
-    const renderPeekHeader = () => (
-      <th
-        className={`${styles.rosterTableHeaderCell} ${styles.stickyRight} ${styles.peekHeader}`}
-      >
-        <select
-          className={styles.peekSelector}
-          value={peekPositionName || ""}
-          onChange={(e) => setPeekPositionName(e.target.value || null)}
-        >
-          <option value="">Peek Position...</option>
-          {peekOptions.map((opt) => (
-            <option key={opt.name} value={opt.name}>
-              {opt.emoji} {opt.name}
-            </option>
-          ))}
-        </select>
-      </th>
-    );
-
-    if (viewType === "all") {
-      return (
-        <thead>
-          <tr>
-            {renderDateHeader()}
-            {rosterAllViewMode === "user"
-              ? allViewColumns.map((col) => {
-                  const isMe = col.id === userData?.email;
-                  return (
-                    <th
-                      key={col.id}
-                      className={`${styles.rosterTableHeaderCell} ${
-                        col.id && assignedOnClosestDate.includes(col.id)
-                          ? styles.highlightedHeader
-                          : ""
-                      } ${isMe ? styles.isMe : ""}`}
-                    >
-                      <NameTag displayName={col.name} isMe={isMe} />
-                    </th>
-                  );
-                })
-              : (currentTeamData?.positions || []).map((pos) => (
-                  <th
-                    key={pos.name}
-                    className={`${styles.rosterTableHeaderCell} ${styles.clickableHeader}`}
-                    onClick={() =>
-                      navigate(`/app/roster/${teamName}/${pos.name}`)
-                    }
-                  >
-                    <div className={styles.allViewPositionHeader}>
-                      <span>{pos.emoji}</span>
-                      <span className={styles.allViewPositionName}>
-                        {pos.name}
-                      </span>
-                    </div>
-                  </th>
-                ))}
-          </tr>
-        </thead>
-      );
-    }
-
-    if (viewType === "absence") {
-      return (
-        <thead>
-          <tr>
-            {renderDateHeader()}
-            {allTeamUsers.map((user) => (
-              <th
-                key={user.email}
-                className={`${styles.rosterTableHeaderCell} ${
-                  user.email && assignedOnClosestDate.includes(user.email)
-                    ? styles.highlightedHeader
-                    : ""
-                }`}
-              >
-                {user.name}
-              </th>
-            ))}
-            <th className={`${styles.genderDividerCell}`} />
-            {renderPeekHeader()}
-          </tr>
-        </thead>
-      );
-    }
-
-    // Default "roster" view
-    return (
-      <thead>
-        <tr>
-          {renderDateHeader()}
-          {currentPosition?.isCustom
-            ? (currentPosition.customLabels || []).map((label, index) => (
-                <th
-                  key={`custom-${index}`}
-                  className={`${styles.rosterTableHeaderCell}`}
+              {hasPastDates && (
+                <button
+                  className={`${styles.loadPrevBtn} ${styles.resetDatesBtn}`}
+                  onClick={handleResetDates}
+                  title="Reset dates"
                 >
-                  <input
-                    type="text"
-                    className={styles.headerInput}
-                    value={label}
-                    placeholder="New Heading..."
-                    readOnly={!userData?.isAdmin}
-                    onChange={(e) =>
-                      handleUpdateCustomLabel(index, e.target.value)
-                    }
-                  />
-                  {userData?.isAdmin && (
-                    <div className={styles.headerActions}>
-                      <button
-                        className={styles.headerActionBtn}
-                        onClick={() => handleMoveCustomLabel(index, "left")}
-                        disabled={index === 0}
-                        title="Move Left"
-                      >
-                        <ArrowLeft size={12} />
-                      </button>
-                      <button
-                        className={`${styles.headerActionBtn} ${styles.removeHeaderBtn}`}
-                        onClick={() => handleRemoveCustomLabel(index)}
-                        title="Remove Column"
-                      >
-                        <X size={12} />
-                      </button>
-                      <button
-                        className={styles.headerActionBtn}
-                        onClick={() => handleMoveCustomLabel(index, "right")}
-                        disabled={
-                          index ===
-                          (currentPosition.customLabels?.length || 0) - 1
-                        }
-                        title="Move Right"
-                      >
-                        <ArrowRight size={12} />
-                      </button>
-                    </div>
-                  )}
-                </th>
-              ))
-            : sortedUsers.map((user, colIndex) => (
-                <Fragment key={user.email}>
-                  {genderDividerIndex === colIndex && (
-                    <th className={`${styles.genderDividerCell}`} />
-                  )}
-                  <th
-                    className={`${styles.rosterTableHeaderCell} ${styles.clickableHeader} ${
-                      user.email && assignedOnClosestDate.includes(user.email)
-                        ? styles.highlightedHeader
-                        : ""
-                    }`}
-                    onClick={() => user.email && onToggleVisibility(user.email)}
-                    title="Click to hide member"
-                  >
-                    {user.name}
-                    {currentPosition?.sortByGender && (
-                      <span className={styles.genderLabel}>
-                        (
-                        {user.gender === "Male"
-                          ? "M"
-                          : user.gender === "Female"
-                            ? "F"
-                            : "?"}
-                        )
-                      </span>
-                    )}
-                  </th>
-                </Fragment>
-              ))}
-          {currentPosition?.isCustom && userData?.isAdmin && (
-            <th className={`${styles.rosterTableHeaderCell}`}>
-              <button
-                className={styles.addColumnBtn}
-                onClick={handleAddCustomLabel}
-                title="Add Column"
-              >
-                <Plus size={16} />
-              </button>
-            </th>
-          )}
-          <th className={`${styles.genderDividerCell}`} />
-          {renderPeekHeader()}
-        </tr>
-      </thead>
-    );
-  },
-);
+                  ↓
+                </button>
+              )}
+            </div>
+          </div>
+        </th>
+        {children}
+        {showPeek && <PeekHeader />}
+      </tr>
+    </thead>
+  );
+});
 
 export default RosterHeader;

@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 
 import { useAppSelector } from "../../hooks/redux";
 import { useOnlineUsers, currentSessionId } from "../../hooks/usePresence";
+import NameTag from "../common/NameTag";
 
 import styles from "./online-users.module.css";
 
@@ -105,7 +106,7 @@ const OnlineUsers = ({
                   {getInitials(user.name)}
                 </div>
                 <span className={styles.userNameText}>
-                  {user.name || "Unknown User"} {user.uid === currentSessionDocId && "(You)"}
+                  <NameTag displayName={user.name || "Unknown User"} isMe={user.uid === currentSessionDocId} />
                 </span>
                 <div className={styles.pulse} />
               </div>

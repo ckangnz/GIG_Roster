@@ -67,147 +67,6 @@ th.stickyCol {
   color: white;
 }
 
-.peekHeader {
-  padding: 4px !important;
-  min-width: 140px;
-  position: sticky;
-  top: 0;
-  z-index: 20;
-}
-
-.peekSelector {
-  width: 100%;
-  background: var(--background-input);
-  border: 1px solid var(--border-color-input);
-  color: var(--color-text-primary);
-  border-radius: 4px;
-  padding: 4px;
-  font-size: 0.75rem;
-  font-weight: normal;
-  cursor: pointer;
-}
-
-.peekSelector:focus {
-  outline: 1px solid var(--color-link);
-  border-color: var(--color-link);
-}
-
-.stickyRight {
-  background-color: var(--background-card);
-  border-left: 1px solid var(--border-color-secondary) !important;
-}
-
-th.stickyRight {
-  z-index: 60;
-  background-color: var(--background-table-header);
-}
-
-.clickableHeader {
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.clickableHeader:hover {
-  background-color: var(--background-primary-subtle);
-  color: var(--color-link);
-}
-
-.allViewPositionHeader {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-}
-
-.allViewPositionName {
-  font-size: 0.7rem;
-  font-weight: normal;
-  opacity: 0.8;
-}
-
-.headerActions {
-  display: flex;
-  justify-content: center;
-  gap: 4px;
-  margin-top: 4px;
-}
-
-.headerActionBtn {
-  background: var(--background-button-secondary);
-  border: 1px solid var(--border-color-input);
-  color: var(--color-text-dim);
-  border-radius: 4px;
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.headerActionBtn:hover {
-  background: var(--background-button-hover);
-  color: var(--color-link);
-}
-
-.headerActionBtn:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
-}
-
-.removeHeaderBtn:hover {
-  color: var(--color-error);
-  border-color: var(--color-error);
-}
-
-.headerInput {
-  background: transparent;
-  border: none;
-  border-bottom: 1px dashed var(--color-link);
-  color: var(--color-text-primary);
-  text-align: center;
-  font-size: 0.85rem;
-  font-weight: bold;
-  padding: 4px;
-  width: 100%;
-  max-width: 120px;
-  outline: none;
-  transition: all 0.2s;
-}
-
-.headerInput:focus {
-  border-bottom-style: solid;
-  background: var(--background-primary-subtle);
-}
-
-.headerInput::placeholder {
-  color: var(--color-text-dim);
-  opacity: 0.5;
-  font-weight: normal;
-}
-
-.addColumnBtn {
-  background: var(--background-button-secondary);
-  border: 1px solid var(--border-color-input);
-  color: var(--color-link);
-  border-radius: 50%;
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s;
-  margin: 0 auto;
-}
-
-.addColumnBtn:hover {
-  background: var(--color-link);
-  color: white;
-  transform: scale(1.1);
-}
-
 .highlightedHeader {
   background-color: var(--background-primary-subtle) !important;
   color: var(--color-link) !important;
@@ -226,15 +85,8 @@ th.stickyRight {
 }
 
 th.genderDividerCell {
-  z-index: 60;
+  z-index: 20;
   background-color: var(--border-color-secondary) !important;
-}
-
-.genderLabel {
-  font-size: 0.7rem;
-  opacity: 0.6;
-  margin-left: 4px;
-  font-weight: normal;
 }
 
 @media (min-width: 768px) {
@@ -248,26 +100,9 @@ th.genderDividerCell {
     font-size: 1rem;
   }
 
-  .peekHeader {
-    padding: 8px !important;
-    min-width: 180px;
-  }
-
-  .peekSelector {
-    padding: 6px;
-    font-size: 0.8rem;
-  }
-
   .genderDividerCell {
     width: 12px;
     min-width: 12px !important;
     max-width: 12px;
-  }
-
-  .stickyRight {
-    position: sticky;
-    right: 0;
-    z-index: 30;
-    border-left: 2px solid var(--border-color-secondary) !important;
   }
 }

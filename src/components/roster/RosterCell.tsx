@@ -2,6 +2,7 @@ import { ReactNode, memo } from "react";
 
 import { X } from "lucide-react";
 
+import absenceStyles from "./AbsenceRoster/absence-roster.module.css";
 import styles from "./roster-cell.module.css";
 
 interface RosterCellProps {
@@ -98,7 +99,12 @@ const RosterCell = memo(({
   if (type === "absence") {
     return (
       <td
-        className={[...commonClasses, styles.clickable, styles.absenceRosterCell, absent ? styles.absentCell : ""]
+        className={[
+          ...commonClasses, 
+          styles.clickable, 
+          absenceStyles.absenceRosterCell, 
+          absent ? absenceStyles.absentCell : ""
+        ]
           .filter(Boolean)
           .join(" ")}
         onClick={onClick}
@@ -107,10 +113,10 @@ const RosterCell = memo(({
         title={absenceReason}
       >
         {absent ? (
-          <div className={styles.absenceInputContainer}>
+          <div className={absenceStyles.absenceInputContainer}>
             <input
               type="text"
-              className={styles.absenceReasonInput}
+              className={absenceStyles.absenceReasonInput}
               value={absenceReason}
               placeholder="Reason..."
               maxLength={20}
@@ -119,7 +125,7 @@ const RosterCell = memo(({
               onChange={(e) => handleAbsenceReasonChange?.(e.target.value)}
             />
             <button
-              className={styles.removeAbsenceBtn}
+              className={absenceStyles.removeAbsenceBtn}
               onClick={(e) => {
                 e.stopPropagation();
                 onClick?.();

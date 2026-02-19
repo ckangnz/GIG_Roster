@@ -1,7 +1,26 @@
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
 .meTag {
   display: inline-flex;
   align-items: center;
   background-color: #e0dbff;
+  background: linear-gradient(
+    90deg,
+    #e0dbff 0%,
+    #e0dbff 35%,
+    #ffffff 50%,
+    #e0dbff 65%,
+    #e0dbff 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 3s infinite linear;
   color: #5c4eb1;
   font-size: 0.65rem;
   font-weight: 800;
@@ -16,6 +35,15 @@
 
 [data-theme="dark"] .meTag {
   background-color: #3d3473;
+  background: linear-gradient(
+    90deg,
+    #3d3473 0%,
+    #3d3473 35%,
+    #5c4eb1 50%,
+    #3d3473 65%,
+    #3d3473 100%
+  );
+  background-size: 200% 100%;
   color: #d1c9ff;
   border-color: #4f4494;
 }

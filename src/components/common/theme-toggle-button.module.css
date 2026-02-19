@@ -10,3 +10,7 @@
   gap: 16px;
   transition: all 0.2s ease;
 }
+
+.themeToggleButton span svg {
+  vertical-align: middle;
+}

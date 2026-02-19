@@ -1,18 +1,24 @@
-.rosterTableContainer {
-  width: 100%;
-  overflow: auto;
+.rosterTableWrapper {
   display: flex;
   flex-direction: column;
   flex: 1;
-  border: 1px solid var(--border-color-secondary);
-  border-radius: 8px;
-  height: calc(100% - 100px);
+  position: relative;
+}
+
+.rosterTableContainer {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  width: 100%;
+  overflow-x: auto;
 }
 
 .rosterTable {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
+  border: 1px solid var(--border-color-secondary);
+  border-radius: 8px;
 }
 
 .rosterTable th {
@@ -49,22 +55,13 @@
   font-weight: 500;
 }
 
-.rosterTableWrapper {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  position: relative;
-  height: 100%;
-}
-
-.rosterSection {
-  height: 100%;
-}
-
 .loadMoreFooter {
   display: flex;
   justify-content: center;
   padding: 2rem 0;
+  position: sticky;
+  left: 0;
+  width: 100%;
 }
 
 .loadNextYearBtn {
@@ -102,9 +99,8 @@
   .rosterTable td {
     padding: 8px;
   }
-
-  .rosterTableContainer {
-    height: calc(100% - 170px);
+  .loadMoreFooter {
+    padding: 2rem 0 6rem;
   }
 
   .loadNextYearBtn {

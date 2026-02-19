@@ -1,0 +1,22 @@
+.allViewPositionHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.allViewPositionName {
+  font-size: 0.7rem;
+  font-weight: normal;
+  opacity: 0.8;
+}
+
+.clickableHeader {
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.clickableHeader:hover {
+  background-color: var(--background-primary-subtle);
+  color: var(--color-link);
+}

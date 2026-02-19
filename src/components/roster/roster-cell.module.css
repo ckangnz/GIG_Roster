@@ -33,78 +33,8 @@
   background-color: var(--color-delete-dark) !important;
 }
 
-.absentCell {
-  background-color: rgba(255, 70, 70, 0.05) !important;
-}
-
-.absenceInputContainer {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  width: 100%;
-  padding: 2px;
-  background: var(--background-input);
-  border-radius: 6px;
-  border: 1px solid var(--border-color-input);
-  transition: all 0.2s;
-  box-sizing: border-box;
-}
-
-.absenceInputContainer:focus-within {
-  border-color: var(--color-link);
-  background: var(--background-card);
-  box-shadow: 0 0 0 1px var(--color-link);
-}
-
-.absenceReasonInput {
-  flex: 1;
-  background: transparent;
-  border: none;
-  color: var(--color-text-primary);
-  text-align: left;
-  font-size: 0.75rem;
-  padding: 2px 4px;
-  min-width: 0;
-  outline: none;
-}
-
-.removeAbsenceBtn {
-  background: var(--background-button-secondary);
-  border: none;
-  color: var(--color-text-dim);
-  border-radius: 4px;
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s;
-  flex-shrink: 0;
-  padding: 0;
-}
-
-.removeAbsenceBtn:hover {
-  background: var(--color-error);
-  color: white;
-}
-
-.absenceRosterCell {
-  padding: 4px !important;
-}
-
 @media (min-width: 768px) {
   .rosterCell {
     min-width: 100px;
-  }
-
-  .absenceReasonInput {
-    font-size: 0.8rem;
-  }
-
-  .removeAbsenceBtn {
-    font-size: 1.1rem;
-    width: 20px;
-    height: 20px;
   }
 }

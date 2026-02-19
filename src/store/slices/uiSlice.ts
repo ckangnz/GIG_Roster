@@ -17,6 +17,7 @@ interface UIState {
   lastVisitedPaths: Record<string, string>; // tabId -> fullPathWithSearch
   rosterAllViewMode: 'user' | 'position';
   alertConfig: AlertConfig | null;
+  peekPositionName: string | null;
 }
 
 const loadHiddenUsers = (): Record<string, Record<string, string[]>> => {
@@ -36,6 +37,7 @@ const initialState: UIState = {
   lastVisitedPaths: {},
   rosterAllViewMode: 'user',
   alertConfig: null,
+  peekPositionName: null,
 };
 
 const uiSlice = createSlice({
@@ -93,6 +95,9 @@ const uiSlice = createSlice({
     hideAlert: (state) => {
       state.alertConfig = null;
     },
+    setPeekPositionName: (state, action: PayloadAction<string | null>) => {
+      state.peekPositionName = action.payload;
+    },
   },
 });
 
@@ -106,5 +111,6 @@ export const {
   toggleUserVisibility,
   showAlert,
   hideAlert,
+  setPeekPositionName,
 } = uiSlice.actions;
 export const uiReducer = uiSlice.reducer;

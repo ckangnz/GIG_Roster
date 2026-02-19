@@ -1,0 +1,16 @@
+.genderLabel {
+  font-size: 0.7rem;
+  opacity: 0.6;
+  margin-left: 4px;
+  font-weight: normal;
+}
+
+.clickableHeader {
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.clickableHeader:hover {
+  background-color: var(--background-primary-subtle);
+  color: var(--color-link);
+}
