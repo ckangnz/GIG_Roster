@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useMemo } from "react";
 
 import { User } from "firebase/auth";
 import { 
@@ -12,20 +12,31 @@ import {
   where,
   serverTimestamp,
   DocumentData,
-  QuerySnapshot
+  QuerySnapshot,
+  updateDoc
 } from "firebase/firestore";
+import { useParams } from "react-router-dom";
 
 import { db, auth } from "../firebase";
 import { useAppDispatch, useAppSelector } from "./redux";
-import { AppUser } from "../model/model";
+import { AppUser, Position } from "../model/model";
 import { setOnlineUsers, setPresenceError } from "../store/slices/presenceSlice";
+
+export interface PresenceFocus {
+  date: string;
+  identifier: string; // email or custom label
+  teamName: string;
+  viewName?: string; // "All", "Absence", or PositionName
+}
 
 export interface PresenceUser {
   uid: string;
+  userUid: string;
   name: string;
   email: string;
   lastSeen: number; 
   color: string;
+  focus?: PresenceFocus | null;
 }
 
 const getSessionId = () => {
@@ -66,12 +77,46 @@ const getSessionColor = () => {
 export const currentSessionId = getSessionId();
 const sessionColor = getSessionColor();
 
-// SETTINGS FOR FREE TIER
-const HEARTBEAT_INTERVAL = 60000; // 1 minute (Very cheap)
-const PRESENCE_THRESHOLD = 90000; // 1.5 minutes
+const HEARTBEAT_INTERVAL = 60000;
+const PRESENCE_THRESHOLD = 90000;
 
 export const useTrackPresence = (firebaseUser: User | null, userData: AppUser | null) => {
   const hasCleanedUp = useRef(false);
+  const { teamName, positionName: activePosition } = useParams();
+  
+  const { focusedCell } = useAppSelector(state => state.ui);
+  const { rosterDates, users, allTeamUsers } = useAppSelector(state => state.rosterView);
+  const { positions: allPositions } = useAppSelector(state => state.positions);
+  
+  const currentFocus: PresenceFocus | null = useMemo(() => {
+    // If no specific cell is focused, we still want to broadcast the VIEW level focus for the sidebar
+    if (!teamName) return null;
+
+    let identifier = "";
+    let date = "";
+
+    if (focusedCell) {
+      date = rosterDates[focusedCell.row] || "";
+      if (focusedCell.table === "absence") {
+        identifier = allTeamUsers[focusedCell.col]?.email || "";
+      } else if (focusedCell.table === "roster") {
+        const currentPos = allPositions.find((p: Position) => p.name === activePosition);
+        if (currentPos?.isCustom) {
+          identifier = currentPos.customLabels?.[focusedCell.col] || "";
+        } else {
+          const sorted = users.filter(u => u.isActive); 
+          identifier = sorted[focusedCell.col]?.email || "";
+        }
+      }
+    }
+
+    return {
+      date,
+      identifier,
+      teamName,
+      viewName: activePosition // Tracks "All", "Absence", or PositionName
+    };
+  }, [focusedCell, rosterDates, users, allTeamUsers, teamName, allPositions, activePosition]);
 
   useEffect(() => {
     if (!firebaseUser?.uid || !userData?.email) return;
@@ -97,7 +142,7 @@ export const useTrackPresence = (firebaseUser: User | null, userData: AppUser | 
       selfCleanup();
     }
 
-    const markOnline = async () => {
+    const markOnline = async (focusData: PresenceFocus | null = currentFocus) => {
       if (!auth.currentUser || document.visibilityState !== 'visible') return;
       try {
         await setDoc(userRef, {
@@ -107,6 +152,7 @@ export const useTrackPresence = (firebaseUser: User | null, userData: AppUser | 
           email: userData.email,
           color: sessionColor,
           lastSeen: serverTimestamp(),
+          focus: focusData,
         }, { merge: true });
       } catch (err: unknown) {
         const error = err as { code?: string; message?: string };
@@ -120,15 +166,10 @@ export const useTrackPresence = (firebaseUser: User | null, userData: AppUser | 
       deleteDoc(userRef).catch(() => {});
     };
 
-    // 1. Initial mark
     markOnline();
     
-    // 2. Periodic heartbeat
-    const heartbeat = setInterval(markOnline, HEARTBEAT_INTERVAL);
+    const heartbeat = setInterval(() => markOnline(currentFocus), HEARTBEAT_INTERVAL);
 
-    // 3. Visibility Optimization: 
-    // Go "Offline" if tab is hidden, come back "Online" when clicked.
-    // This saves a huge amount of writes for users who leave tabs open.
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
         markOnline();
@@ -146,7 +187,21 @@ export const useTrackPresence = (firebaseUser: User | null, userData: AppUser | 
       window.removeEventListener("beforeunload", markOffline);
       markOffline();
     };
-  }, [firebaseUser?.uid, firebaseUser?.displayName, userData?.email, userData?.name]);
+  }, [firebaseUser?.uid, firebaseUser?.displayName, userData?.email, userData?.name, currentFocus]);
+
+  useEffect(() => {
+    const docId = `${firebaseUser?.uid}_${currentSessionId}`;
+    if (!firebaseUser?.uid || document.visibilityState !== 'visible') return;
+    
+    const timeoutId = setTimeout(() => {
+      updateDoc(doc(db, "presence", docId), {
+        focus: currentFocus,
+        lastSeen: serverTimestamp()
+      }).catch(() => {});
+    }, 200);
+
+    return () => clearTimeout(timeoutId);
+  }, [currentFocus, firebaseUser?.uid]);
 };
 
 export const usePresenceListener = () => {
@@ -173,10 +228,12 @@ export const usePresenceListener = () => {
         if (lastSeenMillis > threshold) {
           users.push({
             uid: data.uid,
+            userUid: String(data.userUid || ""),
             name: String(data.name),
             email: String(data.email || ""),
             color: String(data.color || "#5c4eb1"),
             lastSeen: lastSeenMillis,
+            focus: data.focus || null,
           });
         }
       });

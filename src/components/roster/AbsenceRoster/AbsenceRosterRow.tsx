@@ -61,7 +61,6 @@ export const AbsenceRosterRow = memo(
             type="absence"
             dateString={dateString}
             rowIndex={rowIndex}
-            colIndex={colIndex}
             isFocused={
               focusedCell?.row === rowIndex &&
               focusedCell?.col === colIndex &&
@@ -70,6 +69,7 @@ export const AbsenceRosterRow = memo(
             onFocus={() =>
               setFocusedCell({ row: rowIndex, col: colIndex, table: "absence" })
             }
+            identifier={user.email || ""}
             absent={user.email ? isUserAbsent(dateString, user.email) : false}
             absenceReason={
               user.email ? getAbsenceReason(dateString, user.email) : ""

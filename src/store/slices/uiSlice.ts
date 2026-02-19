@@ -9,6 +9,14 @@ interface AlertConfig {
   cancelText?: string;
 }
 
+export type FocusedCellTable = 'roster' | 'absence' | 'all';
+
+export interface FocusedCell {
+  row: number;
+  col: number;
+  table: FocusedCellTable;
+}
+
 interface UIState {
   isMobileSidebarOpen: boolean;
   isDesktopSidebarExpanded: boolean;
@@ -18,6 +26,7 @@ interface UIState {
   rosterAllViewMode: 'user' | 'position';
   alertConfig: AlertConfig | null;
   peekPositionName: string | null;
+  focusedCell: FocusedCell | null;
 }
 
 const loadHiddenUsers = (): Record<string, Record<string, string[]>> => {
@@ -38,6 +47,7 @@ const initialState: UIState = {
   rosterAllViewMode: 'user',
   alertConfig: null,
   peekPositionName: null,
+  focusedCell: null,
 };
 
 const uiSlice = createSlice({
@@ -98,6 +108,9 @@ const uiSlice = createSlice({
     setPeekPositionName: (state, action: PayloadAction<string | null>) => {
       state.peekPositionName = action.payload;
     },
+    setFocusedCell: (state, action: PayloadAction<FocusedCell | null>) => {
+      state.focusedCell = action.payload;
+    },
   },
 });
 
@@ -112,5 +125,6 @@ export const {
   showAlert,
   hideAlert,
   setPeekPositionName,
+  setFocusedCell,
 } = uiSlice.actions;
 export const uiReducer = uiSlice.reducer;

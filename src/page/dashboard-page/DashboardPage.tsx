@@ -1,4 +1,11 @@
-import { useMemo, useEffect, useState, useCallback, useRef, Fragment } from "react";
+import {
+  useMemo,
+  useEffect,
+  useState,
+  useCallback,
+  useRef,
+  Fragment,
+} from "react";
 
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { CopyIcon, CheckCircle2 } from "lucide-react";
@@ -389,7 +396,11 @@ const DashboardPage = () => {
                 </h3>
                 {!isPeek && (
                   <div
-                    style={{ display: "flex", alignItems: "center", gap: "8px" }}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                    }}
                   >
                     <ThemeToggleButton
                       className={styles.dashboardThemeToggle}
@@ -421,35 +432,36 @@ const DashboardPage = () => {
                 )}
               </div>
 
-            <div className={styles.teamEventDetails}>
-              {teamData.positions.map((group) => (
-                <div key={group.posName} className={styles.posAssignmentRow}>
-                  <span className={styles.posEmojiLabel} title={group.posName}>
-                    {group.emoji}
-                  </span>
-                  <span
-                    className={`${styles.assignedNames} ${group.assignedUsers.length === 0 ? styles.unassigned : ""}`}
-                  >
-                    {group.assignedUsers.length > 0 ? (
-                      group.assignedUsers.map((user, idx) => (
-                        <Fragment key={`${user.name}-${idx}`}>
-                          {user.name}
-                          {user.isMe && (
-                            <span className={styles.meTag}>Me</span>
-                          )}
-                          {idx < group.assignedUsers.length - 1 ? ", " : ""}
-                        </Fragment>
-                      ))
-                    ) : (
-                      "Unassigned"
-                    )}
-                  </span>
-                </div>
-              ))}
+              <div className={styles.teamEventDetails}>
+                {teamData.positions.map((group) => (
+                  <div key={group.posName} className={styles.posAssignmentRow}>
+                    <span
+                      className={styles.posEmojiLabel}
+                      title={group.posName}
+                    >
+                      {group.emoji}
+                    </span>
+                    <span
+                      className={`${styles.assignedNames} ${group.assignedUsers.length === 0 ? styles.unassigned : ""}`}
+                    >
+                      {group.assignedUsers.length > 0
+                        ? group.assignedUsers.map((user, idx) => (
+                            <Fragment key={`${user.name}-${idx}`}>
+                              {user.name}
+                              {user.isMe && (
+                                <span className={styles.meTag}>Me</span>
+                              )}
+                              {idx < group.assignedUsers.length - 1 ? ", " : ""}
+                            </Fragment>
+                          ))
+                        : "Unassigned"}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
       </div>
     );
   };

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -25,7 +25,7 @@ import {
   resetToUpcomingDates,
   loadNextYearDates,
 } from "../store/slices/rosterViewSlice";
-import { toggleUserVisibility, showAlert } from "../store/slices/uiSlice";
+import { toggleUserVisibility, showAlert, setFocusedCell, FocusedCell } from "../store/slices/uiSlice";
 
 export const useRosterBaseLogic = () => {
   const dispatch = useAppDispatch();
@@ -59,15 +59,9 @@ export const useRosterBaseLogic = () => {
   const teamsState = useAppSelector((state) => state.teams);
   const allTeams = useMemo(() => teamsState?.teams || [], [teamsState?.teams]);
   
-  const { hiddenUsers, rosterAllViewMode, peekPositionName } = useAppSelector(
+  const { hiddenUsers, rosterAllViewMode, peekPositionName, focusedCell } = useAppSelector(
     (state) => state.ui,
   );
-
-  const [focusedCell, setFocusedCell] = useState<{
-    row: number;
-    col: number;
-    table: "roster" | "absence" | "all";
-  } | null>(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -95,12 +89,12 @@ export const useRosterBaseLogic = () => {
   useEffect(() => {
     const handleOutsideClick = (e: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setFocusedCell(null);
+        dispatch(setFocusedCell(null));
       }
     };
     document.addEventListener("mousedown", handleOutsideClick);
     return () => document.removeEventListener("mousedown", handleOutsideClick);
-  }, []);
+  }, [dispatch]);
 
   const handleToggleVisibility = useCallback((userEmail: string) => {
     if (!teamName || !activePosition) return;
@@ -144,7 +138,7 @@ export const useRosterBaseLogic = () => {
       dispatch(resetPositionsDirty());
       dispatch(fetchPositions());
     }
-    setFocusedCell(null);
+    dispatch(setFocusedCell(null));
   }, [dispatch, positionsDirty]);
 
   const isUserAbsent = useCallback(
@@ -211,10 +205,10 @@ export const useRosterBaseLogic = () => {
   const handleCellClick = useCallback((dateString: string, userEmail: string, row: number, col: number) => {
     if (activePosition === "Absence" || activePosition === "All" || !teamName || !activePosition) return;
     if (isCellDisabled(dateString, userEmail)) {
-      setFocusedCell({ row, col, table: "roster" });
+      dispatch(setFocusedCell({ row, col, table: "roster" }));
       return;
     }
-    setFocusedCell({ row, col, table: "roster" });
+    dispatch(setFocusedCell({ row, col, table: "roster" }));
 
     // Cycle calculation logic
     const entry = entries[dateString];
@@ -251,7 +245,7 @@ export const useRosterBaseLogic = () => {
   }, [activePosition, teamName, isCellDisabled, entries, allPositions, dispatch]);
 
   const handleAbsenceClick = useCallback((dateString: string, userEmail: string, row: number, col: number) => {
-    setFocusedCell({ row, col, table: "absence" });
+    dispatch(setFocusedCell({ row, col, table: "absence" }));
     const isCurrentlyAbsent = isUserAbsent(dateString, userEmail);
     const targetAbsence = !isCurrentlyAbsent;
 
@@ -325,6 +319,10 @@ export const useRosterBaseLogic = () => {
   const isLoading = loadingUsers || loadingTeam || loadingAllTeamUsers || (loadingRoster && !initialLoad);
   const error = viewError || rosterError;
 
+  const internalSetFocusedCell = useCallback((cell: FocusedCell | null) => {
+    dispatch(setFocusedCell(cell));
+  }, [dispatch]);
+
   return {
     dispatch,
     navigate,
@@ -343,7 +341,7 @@ export const useRosterBaseLogic = () => {
     hiddenUserList,
     rosterAllViewMode,
     focusedCell,
-    setFocusedCell,
+    setFocusedCell: internalSetFocusedCell,
     hasDirtyChanges,
     handleToggleVisibility,
     handleLoadPrevious,

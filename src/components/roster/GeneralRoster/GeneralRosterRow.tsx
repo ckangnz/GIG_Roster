@@ -64,6 +64,7 @@ export const GeneralRosterRow = memo(
             )}
             <RosterCell
               type="roster-user"
+              dateString={dateString}
               rowIndex={rowIndex}
               isFocused={
                 focusedCell?.row === rowIndex &&
@@ -73,6 +74,7 @@ export const GeneralRosterRow = memo(
               onFocus={() =>
                 setFocusedCell({ row: rowIndex, col: colIndex, table: "roster" })
               }
+              identifier={user.email || ""}
               disabled={
                 user.email ? isCellDisabled(dateString, user.email) : false
               }

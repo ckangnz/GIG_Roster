@@ -11,9 +11,9 @@ This plan outlines the transition from a "Stage and Save" model to an "Instant S
 - [x] Implement **Firestore Dot Notation** for updates.
 - [x] Refactor `rosterSlice.ts` to remove `dirtyEntries` buffer.
 - [x] Create AsyncThunks for direct writes:
-  - `updateAssignmentRemote`: Updates specific user assignments.
-  - `updateAbsenceRemote`: Updates specific absence records.
-  - `updateEventNameRemote`: Updates the day's title.
+  - `syncAssignmentRemote`: Updates specific user assignments.
+  - `syncAbsenceRemote`: Updates specific absence records.
+  - `syncEventNameRemote`: Updates the day's title.
 
 ### 2. Optimistic UI Updates
 - [x] Implement local state updates in Redux before Firestore confirms the write.
@@ -22,29 +22,29 @@ This plan outlines the transition from a "Stage and Save" model to an "Instant S
 
 ---
 
-## 🔵 Phase 2: Flying Cursors (Visual Presence)
+## ✅ Phase 2: Flying Cursors (Visual Presence) - DONE
 **Goal:** Visualize which cells are being focused on by other users using the existing `sessionColor` system.
 
 ### 1. Focus Tracking Logic
-- [ ] Update `presenceSlice.ts` and `presence` collection schema to include a `focus` object:
+- [x] Update `uiSlice.ts` to include global `focusedCell` state.
+- [x] Update `presence` collection schema to include a `focus` object:
   ```json
   {
     "focus": {
-      "type": "roster",
       "date": "2026-02-19",
-      "userEmail": "john@doe.com",
-      "colId": "Vocal"
+      "identifier": "john@doe.com",
+      "teamName": "Worship"
     }
   }
   ```
-- [ ] Modify `usePresence` hook to accept and broadcast the current focus state.
-- [ ] Add `onFocus` listeners to `RosterCell.tsx` to update Redux/Firestore (debounced).
+- [x] Modify `useTrackPresence` hook to broadcast the current focus state (debounced).
+- [x] Refactor `useRosterBaseLogic.ts` to use Redux-based focus tracking.
 
 ### 2. Remote Cursor Rendering
-- [ ] Create a `RemoteCursor.tsx` indicator or border effect.
-- [ ] Update `RosterCell.tsx` to subscribe to the `presence` state.
-- [ ] Render a colored border (using `user.color`) around cells that match another user's focus.
-- [ ] Add a floating name tag above the focused cell on hover.
+- [x] Create `remoteCursorBorder` and `remoteCursorBadge` styles.
+- [x] Update `RosterCell.tsx` to subscribe to the `presence` state.
+- [x] Render a colored border (using `user.color`) around cells that match another user's focus.
+- [x] Add a floating name tag badge above the focused cell.
 
 ---
 
@@ -68,4 +68,5 @@ This plan outlines the transition from a "Stage and Save" model to an "Instant S
 *   [x] Automated Absence conflict resolution.
 *   [x] Modular Roster Architecture.
 *   [x] **Phase 1: Real-Time Logic (Roster)**.
-*   [ ] **Next Up:** Phase 2 - Visual Cursors.
+*   [x] **Phase 2: Flying Cursors (Visual Presence)**.
+*   [ ] **Next Up:** Phase 3 - Real-Time Settings.

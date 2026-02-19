@@ -69,7 +69,6 @@ export const AllRosterRow = memo(
                 type="all-user"
                 dateString={dateString}
                 rowIndex={rowIndex}
-                colIndex={colIndex}
                 isFocused={
                   focusedCell?.row === rowIndex &&
                   focusedCell?.col === colIndex &&
@@ -78,6 +77,7 @@ export const AllRosterRow = memo(
                 onFocus={() =>
                   setFocusedCell({ row: rowIndex, col: colIndex, table: "all" })
                 }
+                identifier={col.id || ""}
                 absent={col.id ? isUserAbsent(dateString, col.id) : false}
                 absenceReason={
                   col.id ? getAbsenceReason(dateString, col.id) : ""
@@ -102,7 +102,6 @@ export const AllRosterRow = memo(
                 type="all-position"
                 dateString={dateString}
                 rowIndex={rowIndex}
-                colIndex={colIndex}
                 isFocused={
                   focusedCell?.row === rowIndex &&
                   focusedCell?.col === colIndex &&
@@ -111,6 +110,7 @@ export const AllRosterRow = memo(
                 onFocus={() =>
                   setFocusedCell({ row: rowIndex, col: colIndex, table: "all" })
                 }
+                identifier={pos.name}
                 content={getAllViewPositionCellContent(dateString, pos.name)}
               />
             ))}

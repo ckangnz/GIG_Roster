@@ -1,6 +1,10 @@
-import { ReactNode, memo, useEffect, useRef } from "react";
+import { ReactNode, memo, useEffect, useRef, useMemo } from "react";
 
 import { X } from "lucide-react";
+import { useParams } from "react-router-dom";
+
+import { useAppSelector } from "../../hooks/redux";
+import { currentSessionId } from "../../hooks/usePresence";
 
 import absenceStyles from "./AbsenceRoster/absence-roster.module.css";
 import styles from "./roster-cell.module.css";
@@ -10,6 +14,8 @@ interface RosterCellProps {
   rowIndex: number;
   isFocused: boolean;
   onFocus: () => void;
+  identifier: string; // email or custom label
+  dateString: string;
   // All View
   id?: string;
   absent?: boolean;
@@ -21,9 +27,6 @@ interface RosterCellProps {
   handleAbsenceReasonChange?: (reason: string) => void;
   // Roster View
   disabled?: boolean;
-  // Metadata for focus/presence
-  dateString?: string;
-  colIndex?: number;
 }
 
 const RosterCell = memo(({
@@ -31,6 +34,8 @@ const RosterCell = memo(({
   rowIndex,
   isFocused,
   onFocus,
+  identifier,
+  dateString,
   absent,
   absenceReason,
   isAssignedOnClosestDate,
@@ -40,6 +45,9 @@ const RosterCell = memo(({
   disabled,
 }: RosterCellProps) => {
   const cellRef = useRef<HTMLTableCellElement>(null);
+  const { teamName } = useParams();
+  const { onlineUsers } = useAppSelector(state => state.presence);
+  const { firebaseUser } = useAppSelector(state => state.auth);
 
   useEffect(() => {
     if (isFocused && cellRef.current) {
@@ -48,11 +56,43 @@ const RosterCell = memo(({
     }
   }, [isFocused]);
 
+  // Find other users focusing on this cell
+  const remoteCursors = useMemo(() => {
+    return onlineUsers.filter(u => {
+      // Allow showing cursor if it's a different session, even if it's the same user (multi-tab/browser)
+      const isOtherSession = u.uid !== `${firebaseUser?.uid}_${currentSessionId}`;
+      
+      return isOtherSession && 
+        u.focus?.date === dateString &&
+        u.focus?.identifier === identifier &&
+        u.focus?.teamName === teamName;
+    });
+  }, [onlineUsers, dateString, identifier, teamName, firebaseUser?.uid]);
+
   const commonClasses = [
     styles.rosterCell,
     isFocused ? styles.focused : "",
     isAssignedOnClosestDate ? styles.highlightedCell : "",
   ];
+
+  const renderRemoteCursors = () => {
+    if (remoteCursors.length === 0) return null;
+    
+    return remoteCursors.map((u, idx) => (
+      <div 
+        key={u.uid} 
+        className={styles.remoteCursorBorder} 
+        style={{ 
+          borderColor: u.color,
+          transform: `translate(${idx * 2}px, ${idx * 2}px)` 
+        }}
+      >
+        <div className={styles.remoteCursorBadge} style={{ backgroundColor: u.color }}>
+          {u.name}
+        </div>
+      </div>
+    ));
+  };
 
   if (type === "all-user") {
     return (
@@ -63,6 +103,7 @@ const RosterCell = memo(({
         onClick={onClick}
         onFocus={onFocus}
       >
+        {renderRemoteCursors()}
         {absent && isFocused && (
           <div className={`${styles.reasonPopover} ${rowIndex === 0 ? styles.popoverBottom : ""}`}>
             {absenceReason || <span className={styles.noReason}>No reason provided</span>}
@@ -76,6 +117,7 @@ const RosterCell = memo(({
   if (type === "all-position") {
     return (
       <td ref={cellRef} className={commonClasses.filter(Boolean).join(" ")} tabIndex={0} onFocus={onFocus}>
+        {renderRemoteCursors()}
         {content}
       </td>
     );
@@ -90,6 +132,7 @@ const RosterCell = memo(({
         tabIndex={0}
         onFocus={onFocus}
       >
+        {renderRemoteCursors()}
         {content}
       </td>
     );
@@ -110,6 +153,7 @@ const RosterCell = memo(({
         tabIndex={0}
         onFocus={onFocus}
       >
+        {renderRemoteCursors()}
         {absent && isFocused && (
           <div className={`${styles.reasonPopover} ${rowIndex === 0 ? styles.popoverBottom : ""}`}>
             {absenceReason || <span className={styles.noReason}>No reason provided</span>}
@@ -137,6 +181,7 @@ const RosterCell = memo(({
         onFocus={onFocus}
         title={absenceReason}
       >
+        {renderRemoteCursors()}
         {absent ? (
           <div className={absenceStyles.absenceInputContainer}>
             <input

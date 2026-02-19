@@ -39,6 +39,7 @@ const SideNav = () => {
   const { fetched: positionsFetched } = useAppSelector(
     (state) => state.positions,
   );
+  const { onlineUsers } = useAppSelector((state) => state.presence);
 
   const activeTab = location.pathname.includes("/settings")
     ? AppTab.SETTINGS
@@ -50,7 +51,11 @@ const SideNav = () => {
   const prevTeamRef = useRef<string | undefined>(undefined);
 
   useEffect(() => {
-    if (activeTeamName && activeTab === AppTab.ROSTER && activeTeamName !== prevTeamRef.current) {
+    if (
+      activeTeamName &&
+      activeTab === AppTab.ROSTER &&
+      activeTeamName !== prevTeamRef.current
+    ) {
       dispatch(expandTeam(activeTeamName));
     }
     prevTeamRef.current = activeTeamName;
@@ -89,6 +94,29 @@ const SideNav = () => {
       return activeTeamName;
     }
     return activeSideItem ? `${tabLabel} • ${activeSideItem}` : tabLabel;
+  };
+
+  const renderLocationIndicators = (teamName: string, viewName?: string) => {
+    const usersHere = onlineUsers.filter(
+      (u) =>
+        u.focus?.teamName === teamName &&
+        (viewName ? u.focus?.viewName === viewName : true),
+    );
+
+    if (usersHere.length === 0) return null;
+
+    return (
+      <div className={styles.locationIndicators}>
+        {usersHere.map((u) => (
+          <span
+            key={u.uid}
+            className={styles.locationDot}
+            style={{ backgroundColor: u.color }}
+            title={`${u.name} is in ${u.focus?.viewName || teamName}`}
+          />
+        ))}
+      </div>
+    );
   };
 
   const sideNavClasses = [
@@ -148,8 +176,9 @@ const SideNav = () => {
                           handleNavItemClick(`/app/roster/${team.name}/All`);
                         }}
                       >
-                        <div>
+                        <div className={styles.teamHeadingContent}>
                           {team.emoji} {isDesktopSidebarExpanded && team.name}
+                          {renderLocationIndicators(team.name)}
                         </div>
                         <span className={styles.expandIcon}>
                           {isTeamExpanded ? "▼" : "▶"}
@@ -166,9 +195,7 @@ const SideNav = () => {
                               : ""
                           }`}
                           onClick={() => {
-                            handleNavItemClick(
-                              `/app/roster/${team.name}/All`,
-                            );
+                            handleNavItemClick(`/app/roster/${team.name}/All`);
                             dispatch(setMobileSidebarOpen(false));
                           }}
                           style={{
@@ -190,7 +217,8 @@ const SideNav = () => {
                           }}
                         >
                           <span className={styles.sideEmoji}>📋</span>{" "}
-                          {isDesktopSidebarExpanded && "All"}
+                          <span className={styles.navItemLabel}>{isDesktopSidebarExpanded && "All"}</span>
+                          {renderLocationIndicators(team.name, "All")}
                         </button>
                         {team.positions
                           ?.filter((pos) => !pos.parentId)
@@ -223,7 +251,8 @@ const SideNav = () => {
                                 <span className={styles.sideEmoji}>
                                   {pos.emoji}
                                 </span>{" "}
-                                {isDesktopSidebarExpanded && pos.name}
+                                <span className={styles.navItemLabel}>{isDesktopSidebarExpanded && pos.name}</span>
+                                {renderLocationIndicators(team.name, pos.name)}
                               </button>
                             );
                           })}
@@ -255,7 +284,8 @@ const SideNav = () => {
                             }}
                           >
                             <span className={styles.sideEmoji}>🏥</span>{" "}
-                            {isDesktopSidebarExpanded && "Absence"}
+                            <span className={styles.navItemLabel}>{isDesktopSidebarExpanded && "Absence"}</span>
+                            {renderLocationIndicators(team.name, "Absence")}
                           </button>
                         )}
                       </div>
@@ -276,7 +306,7 @@ const SideNav = () => {
                     }}
                   >
                     <span className={styles.sideEmoji}>{item.icon}</span>{" "}
-                    {isDesktopSidebarExpanded && item.label}
+                    <span className={styles.navItemLabel}>{isDesktopSidebarExpanded && item.label}</span>
                   </button>
                 ),
               )}
@@ -300,7 +330,7 @@ const SideNav = () => {
               }}
             >
               <span className={styles.sideEmoji}>{item.icon}</span>{" "}
-              {isDesktopSidebarExpanded && item.label}
+              <span className={styles.navItemLabel}>{isDesktopSidebarExpanded && item.label}</span>
             </button>
           ))}
         </div>
@@ -310,10 +340,7 @@ const SideNav = () => {
           className={styles.sidebarThemeToggle}
           iconClassName={styles.sidebarThemeIcon}
         />
-        <OnlineUsers
-          variant="sidebar"
-          showText={isDesktopSidebarExpanded}
-        />
+        <OnlineUsers variant="sidebar" showText={isDesktopSidebarExpanded} />
       </div>
     </aside>
   );

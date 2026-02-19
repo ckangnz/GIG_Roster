@@ -9,11 +9,7 @@ interface CustomRosterRowProps {
   rowIndex: number;
   focusedCell: { row: number; col: number; table: string } | null;
   setFocusedCell: (
-    cell: {
-      row: number;
-      col: number;
-      table: "roster" | "absence" | "all";
-    } | null,
+    cell: { row: number; col: number; table: "roster" | "absence" | "all" } | null,
   ) => void;
   entries: Record<string, RosterEntry>;
   onDateClick: (date: string) => void;
@@ -57,7 +53,6 @@ export const CustomRosterRow = memo(
             type="roster-custom"
             dateString={dateString}
             rowIndex={rowIndex}
-            colIndex={colIndex}
             isFocused={
               focusedCell?.row === rowIndex &&
               focusedCell?.col === colIndex &&
@@ -66,6 +61,7 @@ export const CustomRosterRow = memo(
             onFocus={() =>
               setFocusedCell({ row: rowIndex, col: colIndex, table: "roster" })
             }
+            identifier={label || ""}
             content={label && getCellContent(dateString, label)}
             onClick={() => {
               if (label) {
@@ -74,7 +70,6 @@ export const CustomRosterRow = memo(
             }}
           />
         ))}
-        <td />
       </RosterRow>
     );
   },

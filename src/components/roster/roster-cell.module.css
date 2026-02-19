@@ -1,6 +1,7 @@
 .rosterCell {
   vertical-align: middle;
   min-width: 80px;
+  position: relative; /* Base for remote cursors */
 }
 
 .clickable {
@@ -22,6 +23,7 @@
   outline: 2px solid var(--color-link);
   outline-offset: -2px;
   background-color: var(--background-primary-subtle);
+  z-index: 150; /* Higher than header's z-index (usually 20-60) */
   position: relative;
 }
 
@@ -33,6 +35,34 @@
   opacity: 1;
   background-color: var(--color-delete-dark) !important;
   position: relative;
+}
+
+/* Remote Cursor Styles */
+.remoteCursorBorder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border: 2px solid;
+  pointer-events: none;
+  z-index: 100;
+  transition: all 0.2s ease-out;
+}
+
+.remoteCursorBadge {
+  position: absolute;
+  top: -18px;
+  left: -2px;
+  padding: 2px 6px;
+  border-radius: 4px 4px 4px 0;
+  color: white;
+  font-size: 0.65rem;
+  font-weight: 700;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  line-height: 1;
 }
 
 .reasonPopover {
@@ -67,15 +97,13 @@
   transform: translateX(-50%);
   border-width: 6px;
   border-style: solid;
-  border-color: var(--border-color-secondary) transparent transparent
-    transparent;
+  border-color: var(--border-color-secondary) transparent transparent transparent;
 }
 
 .reasonPopover.popoverBottom::after {
   top: auto;
   bottom: 100%;
-  border-color: transparent transparent var(--border-color-secondary)
-    transparent;
+  border-color: transparent transparent var(--border-color-secondary) transparent;
 }
 
 .noReason {
@@ -84,25 +112,13 @@
 }
 
 @keyframes popIn {
-  from {
-    opacity: 0;
-    transform: translate(-50%, 4px);
-  }
-  to {
-    opacity: 1;
-    transform: translate(-50%, 0);
-  }
+  from { opacity: 0; transform: translate(-50%, 4px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
 }
 
 @keyframes popInBottom {
-  from {
-    opacity: 0;
-    transform: translate(-50%, -4px);
-  }
-  to {
-    opacity: 1;
-    transform: translate(-50%, 0);
-  }
+  from { opacity: 0; transform: translate(-50%, -4px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
 }
 
 @media (min-width: 768px) {
