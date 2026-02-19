@@ -1,5 +1,14 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
+interface AlertConfig {
+  title: string;
+  message: string;
+  onConfirm?: () => void;
+  showCancel?: boolean;
+  confirmText?: string;
+  cancelText?: string;
+}
+
 interface UIState {
   isMobileSidebarOpen: boolean;
   isDesktopSidebarExpanded: boolean;
@@ -7,6 +16,7 @@ interface UIState {
   hiddenUsers: Record<string, Record<string, string[]>>; // team -> position -> userEmails[]
   lastVisitedPaths: Record<string, string>; // tabId -> fullPathWithSearch
   rosterAllViewMode: 'user' | 'position';
+  alertConfig: AlertConfig | null;
 }
 
 const loadHiddenUsers = (): Record<string, Record<string, string[]>> => {
@@ -25,6 +35,7 @@ const initialState: UIState = {
   hiddenUsers: loadHiddenUsers(),
   lastVisitedPaths: {},
   rosterAllViewMode: 'user',
+  alertConfig: null,
 };
 
 const uiSlice = createSlice({
@@ -76,6 +87,12 @@ const uiSlice = createSlice({
       }
       localStorage.setItem('hidden-users', JSON.stringify(state.hiddenUsers));
     },
+    showAlert: (state, action: PayloadAction<AlertConfig>) => {
+      state.alertConfig = action.payload;
+    },
+    hideAlert: (state) => {
+      state.alertConfig = null;
+    },
   },
 });
 
@@ -87,5 +104,7 @@ export const {
   toggleTeamExpansion,
   expandTeam,
   toggleUserVisibility,
+  showAlert,
+  hideAlert,
 } = uiSlice.actions;
 export const uiReducer = uiSlice.reducer;

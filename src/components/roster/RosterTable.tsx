@@ -27,7 +27,7 @@ import {
   resetToUpcomingDates,
   loadNextYearDates,
 } from "../../store/slices/rosterViewSlice";
-import { toggleUserVisibility } from "../../store/slices/uiSlice";
+import { toggleUserVisibility, showAlert } from "../../store/slices/uiSlice";
 import NameTag from "../common/NameTag";
 import SaveFooter from "../common/SaveFooter";
 import Spinner from "../common/Spinner";
@@ -354,6 +354,39 @@ const RosterTable = () => {
       setFocusedCell({ row, col, table: "absence" });
       const isCurrentlyAbsent = isUserAbsent(dateString, userEmail);
 
+      if (!isCurrentlyAbsent) {
+        // Check for existing assignments before marking absent
+        const dateKey = dateString;
+        const entry = dirtyEntries[dateKey] || entries[dateKey];
+        const affectedAssignments: string[] = [];
+
+        if (entry) {
+          Object.entries(entry.teams).forEach(([tName, teamAssignments]) => {
+            if (teamAssignments[userEmail] && teamAssignments[userEmail].length > 0) {
+              affectedAssignments.push(`${tName}: ${teamAssignments[userEmail].join(", ")}`);
+            }
+          });
+        }
+
+        if (affectedAssignments.length > 0) {
+          dispatch(showAlert({
+            title: "Clear Existing Assignments?",
+            message: `User is already assigned to:\n\n${affectedAssignments.join("\n")}\n\nMarking them as absent will remove these assignments. Continue?`,
+            confirmText: "Mark Absent",
+            onConfirm: () => {
+              dispatch(
+                updateLocalAbsence({
+                  date: dateString,
+                  userIdentifier: userEmail,
+                  isAbsent: true,
+                }),
+              );
+            }
+          }));
+          return;
+        }
+      }
+
       dispatch(
         updateLocalAbsence({
           date: dateString,
@@ -362,7 +395,7 @@ const RosterTable = () => {
         }),
       );
     },
-    [dispatch, isUserAbsent],
+    [dispatch, isUserAbsent, dirtyEntries, entries],
   );
 
   const handleAbsenceReasonChange = useCallback(
@@ -434,15 +467,21 @@ const RosterTable = () => {
 
   const handleRemoveCustomLabel = (index: number) => {
     if (!currentPosition || !activePosition) return;
-    if (!window.confirm("Remove this column?")) return;
-    const currentLabels = [...(currentPosition.customLabels || [])];
-    currentLabels.splice(index, 1);
-    dispatch(
-      updatePositionCustomLabels({
-        positionName: activePosition,
-        labels: currentLabels,
-      }),
-    );
+    dispatch(showAlert({
+      title: "Remove Column",
+      message: "Are you sure you want to remove this column?",
+      confirmText: "Remove",
+      onConfirm: () => {
+        const currentLabels = [...(currentPosition.customLabels || [])];
+        currentLabels.splice(index, 1);
+        dispatch(
+          updatePositionCustomLabels({
+            positionName: activePosition,
+            labels: currentLabels,
+          }),
+        );
+      }
+    }));
   };
 
   const handleCancel = useCallback(() => {

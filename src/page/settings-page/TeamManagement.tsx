@@ -15,6 +15,7 @@ import SummaryCell from "../../components/common/SummaryCell";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { Position, Team, Weekday } from "../../model/model";
 import { updateTeams } from "../../store/slices/teamsSlice";
+import { showAlert } from "../../store/slices/uiSlice";
 
 import styles from "./settings-page.module.css";
 
@@ -137,16 +138,26 @@ const TeamManagement = () => {
 
   const addTeam = () => {
     if (!newTeam.name.trim() || !newTeam.emoji.trim()) {
-      return alert("Please provide both an emoji and a name for the team.");
+      dispatch(showAlert({
+        title: "Missing Information",
+        message: "Please provide both an emoji and a name for the team.",
+        showCancel: false
+      }));
+      return;
     }
     setTeams([...teams, newTeam]);
     setNewTeam(defaultTeam);
   };
 
   const deleteTeam = (index: number) => {
-    if (window.confirm("Are you sure you want to delete this team?")) {
-      setTeams(teams.filter((_, i) => i !== index));
-    }
+    dispatch(showAlert({
+      title: "Delete Team",
+      message: "Are you sure you want to delete this team?",
+      confirmText: "Delete",
+      onConfirm: () => {
+        setTeams(teams.filter((_, i) => i !== index));
+      }
+    }));
   };
 
   const saveToFirebase = async () => {
@@ -173,9 +184,11 @@ const TeamManagement = () => {
       setTimeout(() => setStatus("idle"), 2000);
     } catch (e) {
       console.error("Save Error:", e);
-      alert(
-        "Error saving: " + (e instanceof Error ? e.message : "Unknown error"),
-      );
+      dispatch(showAlert({
+        title: "Save Error",
+        message: "Error saving: " + (e instanceof Error ? e.message : "Unknown error"),
+        showCancel: false
+      }));
       setStatus("idle");
     }
   };

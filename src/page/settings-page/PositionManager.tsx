@@ -15,6 +15,7 @@ import Spinner from "../../components/common/Spinner";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { Position } from "../../model/model";
 import { updatePositions } from "../../store/slices/positionsSlice";
+import { showAlert } from "../../store/slices/uiSlice";
 
 import styles from "./settings-page.module.css";
 
@@ -192,28 +193,34 @@ const PositionManagement = () => {
 
   const addPosition = () => {
     if (!newPos.name.trim() || !newPos.emoji.trim()) {
-      return alert("Please provide both an emoji and a name.");
+      dispatch(showAlert({
+        title: "Missing Information",
+        message: "Please provide both an emoji and a name.",
+        showCancel: false
+      }));
+      return;
     }
     setPositions([...positions, newPos]);
     setNewPos(defaultPosition);
   };
 
   const deletePosition = (index: number) => {
-    if (
-      window.confirm(
-        "Delete this position? This will remove it from the global list, and any associated child positions.",
-      )
-    ) {
-      const positionToDelete = positions[index];
-      let updatedPositions = positions.filter((_, i) => i !== index);
+    dispatch(showAlert({
+      title: "Delete Position",
+      message: "Delete this position? This will remove it from the global list, and any associated child positions.",
+      confirmText: "Delete",
+      onConfirm: () => {
+        const positionToDelete = positions[index];
+        let updatedPositions = positions.filter((_, i) => i !== index);
 
-      if (!positionToDelete.parentId) {
-        updatedPositions = updatedPositions.filter(
-          (p) => p.parentId !== positionToDelete.name,
-        );
+        if (!positionToDelete.parentId) {
+          updatedPositions = updatedPositions.filter(
+            (p) => p.parentId !== positionToDelete.name,
+          );
+        }
+        setPositions(updatedPositions);
       }
-      setPositions(updatedPositions);
-    }
+    }));
   };
 
   const saveToFirebase = async () => {
@@ -236,9 +243,11 @@ const PositionManagement = () => {
       setTimeout(() => setStatus("idle"), 2000);
     } catch (e) {
       console.error("Save Error:", e);
-      alert(
-        "Error saving: " + (e instanceof Error ? e.message : "Unknown error"),
-      );
+      dispatch(showAlert({
+        title: "Save Error",
+        message: "Error saving: " + (e instanceof Error ? e.message : "Unknown error"),
+        showCancel: false
+      }));
       setStatus("idle");
     }
   };

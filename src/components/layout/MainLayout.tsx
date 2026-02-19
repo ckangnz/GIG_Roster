@@ -11,6 +11,7 @@ import {
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { useAppListeners } from "../../hooks/useAppListeners";
 import { setLastVisitedPath } from "../../store/slices/uiSlice";
+import ConfirmModal from "../common/ConfirmModal";
 import BottomNav from "../navigation/BottomNav";
 import SideNav from "../navigation/SideNav";
 
@@ -23,7 +24,7 @@ const MainLayout = () => {
   const params = useParams();
 
   const { userData } = useAppSelector((state) => state.auth);
-  
+
   // Initialize all real-time app listeners (Presence, Roster, Profile, Metadata)
   useAppListeners();
 
@@ -134,6 +135,7 @@ const MainLayout = () => {
 
         <BottomNav />
       </div>
+      <ConfirmModal />
     </div>
   );
 };
