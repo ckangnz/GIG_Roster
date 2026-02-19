@@ -1,4 +1,4 @@
-import { ReactNode, memo } from "react";
+import { ReactNode, memo, useEffect, useRef } from "react";
 
 import { X } from "lucide-react";
 
@@ -27,6 +27,7 @@ interface RosterCellProps {
 
 const RosterCell = memo(({
   type,
+  rowIndex,
   isFocused,
   onFocus,
   absent,
@@ -37,6 +38,16 @@ const RosterCell = memo(({
   handleAbsenceReasonChange,
   disabled,
 }: RosterCellProps) => {
+  const cellRef = useRef<HTMLTableCellElement>(null);
+
+  useEffect(() => {
+    if (isFocused && cellRef.current) {
+      cellRef.current.focus();
+      // Ensure the cell is visible during keyboard navigation
+      cellRef.current.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    }
+  }, [isFocused]);
+
   const commonClasses = [
     styles.rosterCell,
     isFocused ? styles.focused : "",
@@ -46,11 +57,17 @@ const RosterCell = memo(({
   if (type === "all-user") {
     return (
       <td
+        ref={cellRef}
         className={[...commonClasses, styles.clickable, absent ? styles.absentStrike : ""].filter(Boolean).join(" ")}
         tabIndex={0}
         onClick={onClick}
         onFocus={onFocus}
       >
+        {absent && isFocused && (
+          <div className={`${styles.reasonPopover} ${rowIndex === 0 ? styles.popoverBottom : ""}`}>
+            {absenceReason || <span className={styles.noReason}>No reason provided</span>}
+          </div>
+        )}
         {absent ? <span title={absenceReason}>❌</span> : content}
       </td>
     );
@@ -58,7 +75,7 @@ const RosterCell = memo(({
 
   if (type === "all-position") {
     return (
-      <td className={commonClasses.filter(Boolean).join(" ")} tabIndex={0} onFocus={onFocus}>
+      <td ref={cellRef} className={commonClasses.filter(Boolean).join(" ")} tabIndex={0} onFocus={onFocus}>
         {content}
       </td>
     );
@@ -67,6 +84,7 @@ const RosterCell = memo(({
   if (type === "roster-custom") {
     return (
       <td
+        ref={cellRef}
         className={[...commonClasses, styles.clickable].filter(Boolean).join(" ")}
         onClick={onClick}
         tabIndex={0}
@@ -80,6 +98,7 @@ const RosterCell = memo(({
   if (type === "roster-user") {
     return (
       <td
+        ref={cellRef}
         className={[
           ...commonClasses,
           !disabled ? styles.clickable : styles.disabled,
@@ -91,6 +110,11 @@ const RosterCell = memo(({
         tabIndex={0}
         onFocus={onFocus}
       >
+        {absent && isFocused && (
+          <div className={`${styles.reasonPopover} ${rowIndex === 0 ? styles.popoverBottom : ""}`}>
+            {absenceReason || <span className={styles.noReason}>No reason provided</span>}
+          </div>
+        )}
         {absent ? <span title={absenceReason}>❌</span> : content}
       </td>
     );
@@ -99,6 +123,7 @@ const RosterCell = memo(({
   if (type === "absence") {
     return (
       <td
+        ref={cellRef}
         className={[
           ...commonClasses, 
           styles.clickable, 
