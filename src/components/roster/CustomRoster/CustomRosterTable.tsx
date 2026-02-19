@@ -2,7 +2,6 @@ import { useMemo, useCallback } from "react";
 
 import { useRosterBaseLogic } from "../../../hooks/useRosterBaseLogic";
 import { updatePositionCustomLabels } from "../../../store/slices/positionsSlice";
-import { updateLocalAssignment } from "../../../store/slices/rosterSlice";
 import RosterTable from "../RosterTable";
 import { CustomRosterHeader } from "./CustomRosterHeader";
 import { CustomRosterRow } from "./CustomRosterRow";
@@ -16,11 +15,10 @@ const CustomRosterTable = () => {
     allPositions,
     userData,
     rosterDates,
-    dirtyEntries,
     entries,
-    isSaving,
     hiddenUserList,
     closestNextDate,
+    handleCellClick,
   } = logic;
 
   const currentPosition = useMemo(
@@ -88,22 +86,6 @@ const CustomRosterTable = () => {
     );
   }, [dispatch, currentPosition, activePosition]);
 
-  const handleCellClick = useCallback(
-    (dateString: string, label: string, row: number, col: number) => {
-      logic.setFocusedCell({ row, col, table: "roster" });
-      dispatch(
-        updateLocalAssignment({
-          date: dateString,
-          teamName: teamName!,
-          userIdentifier: label,
-          positionGroupNames: [activePosition!],
-          maxConflict: 99,
-        }),
-      );
-    },
-    [logic, dispatch, teamName, activePosition],
-  );
-
   const handleKeyboardCustomCellClick = useCallback((row: number, col: number) => {
     const dateString = rosterDates[row];
     const label = currentPosition?.customLabels?.[col];
@@ -114,12 +96,12 @@ const CustomRosterTable = () => {
 
   const getCellContent = useCallback(
     (dateString: string, label: string) => {
-      const entry = dirtyEntries[dateString] || entries[dateString];
+      const entry = entries[dateString];
       if (!entry || !teamName) return "";
       const assignments = entry.teams[teamName]?.[label] || [];
       return assignments.length > 0 ? currentPosition?.emoji || "✅" : "";
     },
-    [dirtyEntries, entries, teamName, currentPosition],
+    [entries, teamName, currentPosition],
   );
 
   const renderHeader = () => (
@@ -139,7 +121,6 @@ const CustomRosterTable = () => {
       {...logic}
       isAllView={false}
       isAbsenceView={false}
-      isSaving={isSaving}
       hiddenUserList={hiddenUserList}
       renderHeader={renderHeader}
       onLoadNextYear={logic.handleLoadNextYear}
@@ -152,7 +133,6 @@ const CustomRosterTable = () => {
           dateString={dateString}
           rowIndex={rowIndex}
           entries={entries}
-          dirtyEntries={dirtyEntries}
           closestNextDate={closestNextDate}
           onDateClick={logic.handleDateClick}
           focusedCell={logic.focusedCell}

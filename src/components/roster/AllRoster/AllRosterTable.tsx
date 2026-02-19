@@ -17,9 +17,7 @@ const AllRosterTable = () => {
     userData,
     rosterDates,
     navigate,
-    dirtyEntries,
     entries,
-    isSaving,
     hiddenUserList,
     closestNextDate,
   } = logic;
@@ -61,11 +59,11 @@ const AllRosterTable = () => {
   const getAssignmentsForIdentifier = useCallback(
     (dateString: string, identifier: string) => {
       const dateKey = dateString.split("T")[0];
-      const entry = dirtyEntries[dateKey] || entries[dateKey];
+      const entry = entries[dateKey];
       if (!entry || !teamName || !entry.teams[teamName]) return [];
 
       let assignments = entry.teams[teamName][identifier] || [];
-      if (assignments.length === 0) {
+      if (!Array.isArray(assignments) || assignments.length === 0) {
         const target = identifier.trim();
         const matchingKey = Object.keys(entry.teams[teamName]).find(
           (k) => k.trim() === target,
@@ -74,9 +72,9 @@ const AllRosterTable = () => {
           assignments = entry.teams[teamName][matchingKey];
         }
       }
-      return assignments;
+      return Array.isArray(assignments) ? assignments : [];
     },
-    [dirtyEntries, entries, teamName],
+    [entries, teamName],
   );
 
   const getAllViewUserCellContent = useCallback(
@@ -121,11 +119,11 @@ const AllRosterTable = () => {
   const getAllViewPositionCellContent = useCallback(
     (dateString: string, positionName: string) => {
       const dateKey = dateString.split("T")[0];
-      const entry = dirtyEntries[dateKey] || entries[dateKey];
+      const entry = entries[dateKey];
       if (!entry || !teamName) return "";
 
       const assignedEntries = Object.entries(entry.teams[teamName] || {}).filter(
-        ([, positions]) => positions.includes(positionName),
+        ([, positions]) => Array.isArray(positions) && positions.includes(positionName),
       );
 
       return (
@@ -144,7 +142,7 @@ const AllRosterTable = () => {
         </div>
       );
     },
-    [dirtyEntries, entries, teamName, filteredAllTeamUsers, userData],
+    [entries, teamName, filteredAllTeamUsers, userData],
   );
 
   const handleKeyboardAllCellClick = useCallback((row: number, col: number) => {
@@ -175,7 +173,6 @@ const AllRosterTable = () => {
       {...logic}
       isAllView={true}
       isAbsenceView={false}
-      isSaving={isSaving}
       hiddenUserList={hiddenUserList}
       renderHeader={renderHeader}
       onLoadNextYear={logic.handleLoadNextYear}
@@ -188,7 +185,6 @@ const AllRosterTable = () => {
           dateString={dateString}
           rowIndex={rowIndex}
           entries={entries}
-          dirtyEntries={dirtyEntries}
           closestNextDate={closestNextDate}
           onDateClick={logic.handleDateClick}
           focusedCell={logic.focusedCell}

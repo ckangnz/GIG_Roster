@@ -8,7 +8,6 @@ import styles from "./roster-row.module.css";
 interface RosterRowProps {
   dateString: string;
   entries: Record<string, RosterEntry>;
-  dirtyEntries: Record<string, RosterEntry>;
   onDateClick: (date: string) => void;
   closestNextDate?: string | null;
   showPeek?: boolean;
@@ -19,7 +18,6 @@ const RosterRow = memo(
   ({
     dateString,
     entries,
-    dirtyEntries,
     onDateClick,
     closestNextDate,
     showPeek,
@@ -27,13 +25,13 @@ const RosterRow = memo(
   }: RosterRowProps) => {
     const todayKey = useMemo(() => getTodayKey(), []);
     const dateKey = dateString.split("T")[0];
-    
+
     const isToday = dateKey === todayKey;
     const isPast = dateKey < todayKey;
-    
-    const entry = dirtyEntries[dateKey] || entries[dateKey];
+
+    const entry = entries[dateKey];
     const eventName = entry?.eventName;
-    
+
     const hasData = useMemo(() => {
       if (!entry) return false;
       return Object.values(entry.teams).some((teamAssignments) =>

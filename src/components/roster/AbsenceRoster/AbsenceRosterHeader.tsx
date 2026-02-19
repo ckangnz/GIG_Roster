@@ -1,6 +1,7 @@
 import { memo } from "react";
 
 import { AppUser } from "../../../model/model";
+import { DividerHeader } from "../Dividers";
 import styles from "../roster-header.module.css";
 import RosterHeader from "../RosterHeader";
 
@@ -18,7 +19,7 @@ export const AbsenceRosterHeader = memo(
             {user.name}
           </th>
         ))}
-        <th className={`${styles.genderDividerCell}`} />
+        <DividerHeader />
       </RosterHeader>
     );
   },

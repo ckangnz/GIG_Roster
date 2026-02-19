@@ -1,7 +1,6 @@
 import { Fragment, memo } from "react";
 
 import { AppUser, RosterEntry } from "../../../model/model";
-import styles from "../roster-row.module.css";
 import RosterCell from "../RosterCell";
 import RosterRow from "../RosterRow";
 
@@ -13,7 +12,6 @@ interface GeneralRosterRowProps {
     cell: { row: number; col: number; table: "roster" | "absence" | "all" } | null,
   ) => void;
   entries: Record<string, RosterEntry>;
-  dirtyEntries: Record<string, RosterEntry>;
   onDateClick: (date: string) => void;
   closestNextDate?: string | null;
   handleCellClick: (
@@ -39,7 +37,6 @@ export const GeneralRosterRow = memo(
     focusedCell,
     setFocusedCell,
     entries,
-    dirtyEntries,
     onDateClick,
     closestNextDate,
     handleCellClick,
@@ -56,7 +53,6 @@ export const GeneralRosterRow = memo(
       <RosterRow
         dateString={dateString}
         entries={entries}
-        dirtyEntries={dirtyEntries}
         onDateClick={onDateClick}
         closestNextDate={closestNextDate}
         showPeek={showPeek}
@@ -64,13 +60,11 @@ export const GeneralRosterRow = memo(
         {sortedUsers.map((user, colIndex) => (
           <Fragment key={user.email}>
             {genderDividerIndex === colIndex && (
-              <td className={styles.genderDividerCell} />
+              <td style={{ width: "8px", background: "var(--border-color-secondary)" }} />
             )}
             <RosterCell
               type="roster-user"
-              dateString={dateString}
               rowIndex={rowIndex}
-              colIndex={colIndex}
               isFocused={
                 focusedCell?.row === rowIndex &&
                 focusedCell?.col === colIndex &&
@@ -102,7 +96,7 @@ export const GeneralRosterRow = memo(
             />
           </Fragment>
         ))}
-        <td className={styles.genderDividerCell} />
+        <td style={{ width: "8px", background: "var(--border-color-secondary)" }} />
       </RosterRow>
     );
   },

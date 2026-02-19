@@ -4,7 +4,11 @@ import {
   query,
   getDocs,
   doc,
-  writeBatch,
+  updateDoc,
+  setDoc,
+  serverTimestamp,
+  deleteField,
+  FieldPath,
 } from "firebase/firestore";
 
 import { db } from "../../firebase";
@@ -12,19 +16,17 @@ import { RosterEntry } from "../../model/model";
 
 interface RosterState {
   entries: Record<string, RosterEntry>; // date -> RosterEntry
-  dirtyEntries: Record<string, RosterEntry>; // Staged changes
   loading: boolean;
   initialLoad: boolean;
-  saving: boolean;
+  syncing: Record<string, boolean>; // track which dates are currently syncing
   error: string | null;
 }
 
 const initialState: RosterState = {
   entries: {},
-  dirtyEntries: {},
   loading: true,
   initialLoad: false,
-  saving: false,
+  syncing: {},
   error: null,
 };
 
@@ -58,30 +60,124 @@ export const fetchRosterEntries = createAsyncThunk(
   },
 );
 
-export const saveRosterChanges = createAsyncThunk(
-  "roster/saveChanges",
-  async (dirtyEntries: Record<string, RosterEntry>, { rejectWithValue }) => {
-    try {
-      const batch = writeBatch(db);
-      const timestamp = Date.now();
-      const entriesWithTimestamp: Record<string, RosterEntry> = {};
+export const syncAssignmentRemote = createAsyncThunk(
+  "roster/syncAssignmentRemote",
+  async (
+    payload: {
+      date: string;
+      teamName: string;
+      userIdentifier: string;
+      updatedAssignments: string[];
+    },
+    { rejectWithValue }
+  ) => {
+    const { date, teamName, userIdentifier, updatedAssignments } = payload;
 
-      Object.values(dirtyEntries).forEach((entry) => {
-        const docRef = doc(db, "roster", entry.id);
-        const data = { ...entry, updatedAt: timestamp };
-        batch.set(docRef, data);
-        entriesWithTimestamp[entry.id] = data;
-      });
-      await batch.commit();
-      return entriesWithTimestamp;
-    } catch (error) {
-      return rejectWithValue(
-        error instanceof Error
-          ? error.message
-          : "Failed to save roster changes",
+    try {
+      const docRef = doc(db, "roster", date);
+      const isRemoving = updatedAssignments.length === 0;
+      const value = isRemoving ? deleteField() : updatedAssignments;
+
+      await updateDoc(
+        docRef, 
+        new FieldPath("teams", teamName, userIdentifier), value,
+        new FieldPath("updatedAt"), serverTimestamp()
       );
+      
+      return { date };
+    } catch (error: unknown) {
+      const firebaseError = error as { code?: string; message?: string };
+      if (firebaseError.code === 'not-found') {
+        const newEntry: RosterEntry = {
+          id: date,
+          date,
+          teams: { [teamName]: { [userIdentifier]: updatedAssignments } },
+          absence: {},
+          updatedAt: Date.now(),
+        };
+        await setDoc(doc(db, "roster", date), { ...newEntry, updatedAt: serverTimestamp() });
+        return { date };
+      }
+      return rejectWithValue(firebaseError.message || "Sync failed");
     }
-  },
+  }
+);
+
+export const syncAbsenceRemote = createAsyncThunk(
+  "roster/syncAbsenceRemote",
+  async (
+    payload: {
+      date: string;
+      userIdentifier: string;
+      isAbsent: boolean;
+      reason?: string;
+      clearedTeams: string[]; 
+    },
+    { rejectWithValue }
+  ) => {
+    const { date, userIdentifier, isAbsent, reason, clearedTeams } = payload;
+
+    try {
+      const docRef = doc(db, "roster", date);
+      const updates: (string | FieldPath | unknown)[] = [];
+      updates.push(new FieldPath("updatedAt"), serverTimestamp());
+
+      if (isAbsent) {
+        updates.push(new FieldPath("absence", userIdentifier), { reason: reason || "" });
+        clearedTeams.forEach(tName => {
+          updates.push(new FieldPath("teams", tName, userIdentifier), deleteField());
+        });
+      } else {
+        updates.push(new FieldPath("absence", userIdentifier), deleteField());
+      }
+
+      // @ts-expect-error - spread for variadic call
+      await updateDoc(docRef, ...updates);
+      return { date };
+    } catch (error: unknown) {
+      const firebaseError = error as { code?: string; message?: string };
+      if (firebaseError.code === 'not-found' && isAbsent) {
+        const newEntry: RosterEntry = {
+          id: date,
+          date,
+          teams: {},
+          absence: { [userIdentifier]: { reason: reason || "" } },
+          updatedAt: Date.now(),
+        };
+        await setDoc(doc(db, "roster", date), { ...newEntry, updatedAt: serverTimestamp() });
+        return { date };
+      }
+      return rejectWithValue(firebaseError.message || "Sync failed");
+    }
+  }
+);
+
+export const syncEventNameRemote = createAsyncThunk(
+  "roster/syncEventNameRemote",
+  async (payload: { date: string; eventName: string }, { rejectWithValue }) => {
+    const { date, eventName } = payload;
+    try {
+      const docRef = doc(db, "roster", date);
+      await updateDoc(docRef, { eventName, updatedAt: serverTimestamp() });
+      return { date };
+    } catch (error: unknown) {
+      const firebaseError = error as { code?: string; message?: string };
+      if (firebaseError.code === 'not-found') {
+        const docRef = doc(db, "roster", date);
+        const newEntry: RosterEntry = {
+          id: date,
+          date,
+          teams: {},
+          absence: {},
+          eventName,
+          updatedAt: Date.now(),
+        };
+        await setDoc(docRef, { ...newEntry, updatedAt: serverTimestamp() });
+        return { date };
+      }
+      return rejectWithValue(firebaseError.message || "Sync failed");
+    }
+  }
 );
 
 const rosterSlice = createSlice({
@@ -89,117 +185,6 @@ const rosterSlice = createSlice({
   initialState,
   reducers: {
     clearError: (state) => {
-      state.error = null;
-    },
-    updateLocalAssignment(
-      state,
-      action: PayloadAction<{
-        date: string;
-        teamName: string;
-        userIdentifier: string;
-        positionGroupNames: string[]; // [Parent, Child1, Child2...]
-        maxConflict: number;
-      }>,
-    ) {
-      const {
-        date,
-        teamName,
-        userIdentifier,
-        positionGroupNames,
-        maxConflict,
-      } = action.payload;
-
-      // Get base entry (either from dirty or original)
-      const entry = state.dirtyEntries[date] || state.entries[date];
-
-      // Clone or create new
-      let newEntry: RosterEntry;
-      if (entry) {
-        newEntry = JSON.parse(JSON.stringify(entry));
-      } else {
-        newEntry = { id: date, date, teams: {}, absence: {} };
-      }
-
-      if (!newEntry.teams[teamName]) {
-        newEntry.teams[teamName] = {};
-      }
-
-      const userAssignments = newEntry.teams[teamName][userIdentifier] || [];
-
-      // Find current assignment within this group (if any)
-      const currentInGroupIndex = positionGroupNames.findIndex((p) =>
-        userAssignments.includes(p),
-      );
-      const currentInGroupName =
-        currentInGroupIndex >= 0
-          ? positionGroupNames[currentInGroupIndex]
-          : null;
-
-      // Calculate next assignment in cycle: Parent -> Child1 -> Child2 -> ... -> None -> Parent
-      let nextPositionName: string | null = null;
-      if (currentInGroupName === null) {
-        // Current is None, move to Parent
-        nextPositionName = positionGroupNames[0];
-      } else if (currentInGroupIndex < positionGroupNames.length - 1) {
-        // Move to next Child
-        nextPositionName = positionGroupNames[currentInGroupIndex + 1];
-      } else {
-        // Last Child, move to None
-        nextPositionName = null;
-      }
-
-      // 1. Remove current group member from assignments
-      const updatedAssignments = userAssignments.filter(
-        (p) => !positionGroupNames.includes(p),
-      );
-
-      // 2. Add next member if not None
-      if (nextPositionName) {
-        // Check if user is absent on this date
-        if (newEntry.absence[userIdentifier]) {
-          state.error = `Cannot assign ${userIdentifier} because they are marked as absent on ${date}.`;
-          return;
-        }
-
-        if (updatedAssignments.length < maxConflict) {
-          updatedAssignments.push(nextPositionName);
-        } else {
-          state.error = `User already has ${maxConflict} assignment(s) in this team.`;
-          return;
-        }
-      }
-
-      // 3. Update entry
-      if (updatedAssignments.length === 0) {
-        delete newEntry.teams[teamName][userIdentifier];
-      } else {
-        newEntry.teams[teamName][userIdentifier] = updatedAssignments;
-      }
-
-      state.dirtyEntries[date] = newEntry;
-    },
-    updateLocalEventName(
-      state,
-      action: PayloadAction<{
-        date: string;
-        eventName: string;
-      }>,
-    ) {
-      const { date, eventName } = action.payload;
-      const entry = state.dirtyEntries[date] || state.entries[date];
-
-      let newEntry: RosterEntry;
-      if (entry) {
-        newEntry = JSON.parse(JSON.stringify(entry));
-      } else {
-        newEntry = { id: date, date, teams: {}, absence: {} };
-      }
-
-      newEntry.eventName = eventName;
-      state.dirtyEntries[date] = newEntry;
-    },
-    resetRosterEdits(state) {
-      state.dirtyEntries = {};
       state.error = null;
     },
     setRosterEntries(state, action: PayloadAction<Record<string, RosterEntry>>) {
@@ -210,42 +195,53 @@ const rosterSlice = createSlice({
     setLoading(state, action: PayloadAction<boolean>) {
       state.loading = action.payload;
     },
-    updateLocalAbsence(
-      state,
-      action: PayloadAction<{
-        date: string;
-        userIdentifier: string;
-        reason?: string;
-        isAbsent: boolean;
-      }>,
-    ) {
-      const { date, userIdentifier, reason, isAbsent } = action.payload;
-      const entry = state.dirtyEntries[date] || state.entries[date];
-
-      let newEntry: RosterEntry;
-      if (entry) {
-        newEntry = JSON.parse(JSON.stringify(entry));
-      } else {
-        newEntry = { id: date, date, teams: {}, absence: {} };
+    // Pure optimistic updates - now they just take the target state
+    applyOptimisticAssignment(state, action: PayloadAction<{
+      date: string;
+      teamName: string;
+      userIdentifier: string;
+      updatedAssignments: string[];
+    }>) {
+      const { date, teamName, userIdentifier, updatedAssignments } = action.payload;
+      if (!state.entries[date]) {
+        state.entries[date] = { id: date, date, teams: {}, absence: {} };
       }
-
+      const entry = state.entries[date];
+      if (!entry.teams[teamName]) entry.teams[teamName] = {};
+      
+      if (updatedAssignments.length === 0) {
+        delete entry.teams[teamName][userIdentifier];
+      } else {
+        entry.teams[teamName][userIdentifier] = updatedAssignments;
+      }
+    },
+    applyOptimisticAbsence(state, action: PayloadAction<{
+      date: string;
+      userIdentifier: string;
+      isAbsent: boolean;
+      reason?: string;
+    }>) {
+      const { date, userIdentifier, isAbsent, reason } = action.payload;
+      if (!state.entries[date]) {
+        state.entries[date] = { id: date, date, teams: {}, absence: {} };
+      }
+      const entry = state.entries[date];
       if (isAbsent) {
-        newEntry.absence[userIdentifier] = {
-          reason: reason ?? newEntry.absence[userIdentifier]?.reason ?? '',
-        };
-
-        // Clear user's assignments across ALL teams for this date
-        Object.keys(newEntry.teams).forEach((teamName) => {
-          if (newEntry.teams[teamName][userIdentifier]) {
-            delete newEntry.teams[teamName][userIdentifier];
-          }
+        entry.absence[userIdentifier] = { reason: reason || "" };
+        Object.keys(entry.teams).forEach(tName => {
+          delete entry.teams[tName][userIdentifier];
         });
       } else {
-        delete newEntry.absence[userIdentifier];
+        delete entry.absence[userIdentifier];
       }
-
-      state.dirtyEntries[date] = newEntry;
     },
+    applyOptimisticEventName(state, action: PayloadAction<{ date: string; eventName: string }>) {
+      const { date, eventName } = action.payload;
+      if (!state.entries[date]) {
+        state.entries[date] = { id: date, date, teams: {}, absence: {} };
+      }
+      state.entries[date].eventName = eventName;
+    }
   },
   extraReducers: (builder) => {
     builder
@@ -253,40 +249,53 @@ const rosterSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(
-        fetchRosterEntries.fulfilled,
-        (state, action: PayloadAction<Record<string, RosterEntry>>) => {
-          state.entries = action.payload;
-          state.loading = false;
-        },
-      )
+      .addCase(fetchRosterEntries.fulfilled, (state, action) => {
+        state.entries = action.payload;
+        state.loading = false;
+      })
       .addCase(fetchRosterEntries.rejected, (state, action) => {
         state.error = action.payload as string;
         state.loading = false;
       })
-      .addCase(saveRosterChanges.pending, (state) => {
-        state.saving = true;
-        state.error = null;
+      .addCase(syncAssignmentRemote.pending, (state, action) => {
+        state.syncing[action.meta.arg.date] = true;
       })
-      .addCase(saveRosterChanges.fulfilled, (state, action) => {
-        state.entries = { ...state.entries, ...action.payload };
-        state.dirtyEntries = {};
-        state.saving = false;
+      .addCase(syncAssignmentRemote.fulfilled, (state, action) => {
+        state.syncing[action.payload.date] = false;
       })
-      .addCase(saveRosterChanges.rejected, (state, action) => {
+      .addCase(syncAssignmentRemote.rejected, (state, action) => {
         state.error = action.payload as string;
-        state.saving = false;
+        state.syncing[action.meta.arg.date] = false;
+      })
+      .addCase(syncAbsenceRemote.pending, (state, action) => {
+        state.syncing[action.meta.arg.date] = true;
+      })
+      .addCase(syncAbsenceRemote.fulfilled, (state, action) => {
+        state.syncing[action.payload.date] = false;
+      })
+      .addCase(syncAbsenceRemote.rejected, (state, action) => {
+        state.error = action.payload as string;
+        state.syncing[action.meta.arg.date] = false;
+      })
+      .addCase(syncEventNameRemote.pending, (state, action) => {
+        state.syncing[action.meta.arg.date] = true;
+      })
+      .addCase(syncEventNameRemote.fulfilled, (state, action) => {
+        state.syncing[action.payload.date] = false;
+      })
+      .addCase(syncEventNameRemote.rejected, (state, action) => {
+        state.error = action.payload as string;
+        state.syncing[action.meta.arg.date] = false;
       });
   },
 });
 
 export const {
   clearError,
-  updateLocalAssignment,
-  updateLocalEventName,
-  resetRosterEdits,
   setRosterEntries,
   setLoading,
-  updateLocalAbsence,
+  applyOptimisticAssignment,
+  applyOptimisticAbsence,
+  applyOptimisticEventName,
 } = rosterSlice.actions;
 export const rosterReducer = rosterSlice.reducer;

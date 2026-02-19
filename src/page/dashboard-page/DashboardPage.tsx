@@ -4,16 +4,14 @@ import { collection, query, where, getDocs } from "firebase/firestore";
 import { CopyIcon, CheckCircle2 } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 
-import SaveFooter from "../../components/common/SaveFooter";
 import Spinner from "../../components/common/Spinner";
 import ThemeToggleButton from "../../components/common/ThemeToggleButton";
 import { db } from "../../firebase";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { Weekday, AppUser, getTodayKey } from "../../model/model";
 import {
-  saveRosterChanges,
-  updateLocalEventName,
-  resetRosterEdits,
+  applyOptimisticEventName,
+  syncEventNameRemote,
 } from "../../store/slices/rosterSlice";
 import { getUpcomingDates } from "../../store/slices/rosterViewSlice";
 
@@ -28,10 +26,8 @@ const DashboardPage = () => {
   const { teams: allTeams } = useAppSelector((state) => state.teams);
   const {
     entries,
-    dirtyEntries,
     loading: loadingRoster,
     initialLoad,
-    saving,
   } = useAppSelector((state) => state.roster);
   const { positions: allPositions } = useAppSelector(
     (state) => state.positions,
@@ -45,8 +41,6 @@ const DashboardPage = () => {
   const [isInitialized, setIsInitialized] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const hasInitialScrolled = useRef(false);
-
-  const hasDirtyChanges = Object.keys(dirtyEntries).length > 0;
 
   // Use ResizeObserver to detect when the container has a width
   useEffect(() => {
@@ -90,17 +84,17 @@ const DashboardPage = () => {
       const dateKey = dateStr;
       if (targetDate === dateKey) return true; // Never filter the date we specifically navigated to
 
-      const entry = entries[dateKey] || dirtyEntries[dateKey];
+      const entry = entries[dateKey];
       if (!entry) return false;
 
       return userTeams.some((team) => {
         const teamAssignments = entry.teams?.[team.name] || {};
         return Object.values(teamAssignments).some(
-          (posList) => posList.length > 0,
+          (posList) => Array.isArray(posList) && posList.length > 0,
         );
       });
     });
-  }, [userData, allTeams, entries, dirtyEntries, targetDate]);
+  }, [userData, allTeams, entries, targetDate]);
 
   // Handle deep-linking and tab-reclick resets
   useEffect(() => {
@@ -199,7 +193,7 @@ const DashboardPage = () => {
     (dateStr: string | null) => {
       if (!dateStr || !userData?.teams || allTeams.length === 0) return null;
       const dateKey = dateStr;
-      const entry = dirtyEntries[dateKey] || entries[dateKey];
+      const entry = entries[dateKey];
 
       const userTeams = allTeams
         .filter((t) => userData.teams.includes(t.name))
@@ -226,7 +220,7 @@ const DashboardPage = () => {
           const assignedUsers: AppUser[] = [];
 
           Object.entries(teamAssignments).forEach(([email, posList]) => {
-            if (posList.includes(posName)) {
+            if (Array.isArray(posList) && posList.includes(posName)) {
               const user = teamUsers.find((u) => u.email === email);
               if (user) {
                 assignedUsers.push(user);
@@ -271,7 +265,7 @@ const DashboardPage = () => {
       const filtered = data.filter((t) => t.hasAssignments);
       return filtered.length > 0 ? filtered : null;
     },
-    [entries, dirtyEntries, userData, allTeams, allPositions, teamUsers],
+    [entries, userData, allTeams, allPositions, teamUsers],
   );
 
   const handleCopy = (
@@ -338,15 +332,9 @@ const DashboardPage = () => {
   };
 
   const handleEventNameChange = (dateStr: string, eventName: string) => {
-    dispatch(updateLocalEventName({ date: dateStr, eventName }));
-  };
-
-  const handleSave = () => {
-    dispatch(saveRosterChanges(dirtyEntries));
-  };
-
-  const handleCancel = () => {
-    dispatch(resetRosterEdits());
+    const payload = { date: dateStr, eventName };
+    dispatch(applyOptimisticEventName(payload));
+    dispatch(syncEventNameRemote(payload));
   };
 
   if ((loadingRoster && !initialLoad) || loadingUsers) return <Spinner />;
@@ -380,7 +368,7 @@ const DashboardPage = () => {
     const data = getDashboardDataForDate(dateStr);
     if (!data) return null;
 
-    const entry = dirtyEntries[dateStr] || entries[dateStr];
+    const entry = entries[dateStr];
     const eventName = entry?.eventName;
 
     return (
@@ -493,7 +481,7 @@ const DashboardPage = () => {
         >
           {rosterDates.map((dateStr, index) => {
             const dateKey = dateStr;
-            const entry = dirtyEntries[dateKey] || entries[dateKey];
+            const entry = entries[dateKey];
             const eventName = entry?.eventName || "";
 
             return (
@@ -529,17 +517,6 @@ const DashboardPage = () => {
       <div className={styles.carouselPagination}>
         {currentDateIndex + 1} / {rosterDates.length}
       </div>
-
-      {hasDirtyChanges && (
-        <SaveFooter
-          label="Unsaved event labels"
-          saveText="Save Changes"
-          onSave={handleSave}
-          onCancel={handleCancel}
-          isSaving={saving}
-          hasSideNav={false}
-        />
-      )}
     </div>
   );
 };

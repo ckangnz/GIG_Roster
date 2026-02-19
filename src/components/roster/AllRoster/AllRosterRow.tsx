@@ -12,7 +12,6 @@ interface AllRosterRowProps {
     cell: { row: number; col: number; table: "roster" | "absence" | "all" } | null,
   ) => void;
   entries: Record<string, RosterEntry>;
-  dirtyEntries: Record<string, RosterEntry>;
   onDateClick: (date: string) => void;
   closestNextDate?: string | null;
   rosterAllViewMode?: "user" | "position";
@@ -43,7 +42,6 @@ export const AllRosterRow = memo(
     focusedCell,
     setFocusedCell,
     entries,
-    dirtyEntries,
     onDateClick,
     closestNextDate,
     rosterAllViewMode,
@@ -61,7 +59,6 @@ export const AllRosterRow = memo(
       <RosterRow
         dateString={dateString}
         entries={entries}
-        dirtyEntries={dirtyEntries}
         onDateClick={onDateClick}
         closestNextDate={closestNextDate}
       >

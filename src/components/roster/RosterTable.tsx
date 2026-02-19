@@ -2,7 +2,6 @@ import { ReactNode, useEffect, RefObject } from "react";
 
 import TopControls from "./TopControls";
 import { AppUser } from "../../model/model";
-import SaveFooter from "../common/SaveFooter";
 import Spinner from "../common/Spinner";
 
 import styles from "./roster-table.module.css";
@@ -20,11 +19,8 @@ interface RosterTableProps {
   isLoading: boolean;
   error: string | null;
 
-  // Saving
-  hasDirtyChanges: boolean;
-  isSaving: boolean;
-  handleSave: () => void;
-  handleCancel: () => void;
+  // Syncing
+  syncing: Record<string, boolean>;
 
   // Header & Rows
   renderHeader: () => ReactNode;
@@ -35,11 +31,26 @@ interface RosterTableProps {
 
   // Accessibility & Navigation
   containerRef: RefObject<HTMLDivElement | null>;
-  focusedCell: { row: number; col: number; table: "roster" | "absence" | "all" } | null;
-  setFocusedCell: (cell: { row: number; col: number; table: "roster" | "absence" | "all" } | null) => void;
+  focusedCell: {
+    row: number;
+    col: number;
+    table: "roster" | "absence" | "all";
+  } | null;
+  setFocusedCell: (
+    cell: {
+      row: number;
+      col: number;
+      table: "roster" | "absence" | "all";
+    } | null,
+  ) => void;
   rosterDates: string[];
   colCount: number;
   onCellClick?: (row: number, col: number) => void;
+
+  // Settings Actions (if any)
+  hasDirtyChanges?: boolean;
+  handleSave?: () => void;
+  handleCancel?: () => void;
 }
 
 const RosterTable = ({
@@ -51,10 +62,7 @@ const RosterTable = ({
   handleToggleVisibility,
   isLoading,
   error,
-  hasDirtyChanges,
-  isSaving,
-  handleSave,
-  handleCancel,
+  syncing,
   renderHeader,
   children,
   onLoadNextYear,
@@ -64,17 +72,19 @@ const RosterTable = ({
   rosterDates,
   colCount,
   onCellClick,
+  hasDirtyChanges,
+  handleSave,
+  handleCancel,
 }: RosterTableProps) => {
-
   useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement;
       if (target.tagName === "INPUT" || target.tagName === "TEXTAREA") return;
-      
-      // Escape should always clear focus and cancel if dirty
+
       if (e.key === "Escape") {
         e.preventDefault();
-        handleCancel();
+        setFocusedCell(null);
+        if (handleCancel && hasDirtyChanges) handleCancel();
         return;
       }
 
@@ -105,15 +115,16 @@ const RosterTable = ({
           if (e.shiftKey) {
             if (row > 0) setFocusedCell({ row: row - 1, col, table });
           } else {
-            if (row < rowCount - 1) setFocusedCell({ row: row + 1, col, table });
+            if (row < rowCount - 1)
+              setFocusedCell({ row: row + 1, col, table });
           }
           break;
-        case " ": 
+        case " ":
           e.preventDefault();
           if (onCellClick) onCellClick(row, col);
           break;
         case "Enter":
-          if (hasDirtyChanges) {
+          if (hasDirtyChanges && handleSave) {
             e.preventDefault();
             handleSave();
           }
@@ -123,7 +134,16 @@ const RosterTable = ({
 
     window.addEventListener("keydown", handleGlobalKeyDown);
     return () => window.removeEventListener("keydown", handleGlobalKeyDown);
-  }, [focusedCell, rosterDates.length, colCount, onCellClick, handleSave, handleCancel, hasDirtyChanges, setFocusedCell]);
+  }, [
+    focusedCell,
+    rosterDates.length,
+    colCount,
+    onCellClick,
+    handleSave,
+    handleCancel,
+    hasDirtyChanges,
+    setFocusedCell,
+  ]);
 
   if (isLoading) {
     return <Spinner />;
@@ -132,6 +152,8 @@ const RosterTable = ({
   if (error) {
     return <div className={styles.rosterTableError}>Error: {error}</div>;
   }
+
+  const isGlobalSyncing = Object.values(syncing).some((v) => v);
 
   return (
     <div ref={containerRef} className={styles.rosterTableWrapper} tabIndex={-1}>
@@ -144,30 +166,23 @@ const RosterTable = ({
         onToggleVisibility={handleToggleVisibility}
       />
 
+      {isGlobalSyncing && (
+        <div className={styles.syncIndicator}>Syncing changes...</div>
+      )}
+
       <div className={styles.rosterSection}>
-        <div className={styles.rosterTableContainer}>
-          <table
-            className={`${styles.rosterTable} ${isAbsenceView ? styles.absenceTable : ""}`}
-          >
-            {renderHeader()}
-            <tbody>{children}</tbody>
-          </table>
-        </div>
+        <table
+          className={`${styles.rosterTable} ${isAbsenceView ? styles.absenceTable : ""}`}
+        >
+          {renderHeader()}
+          <tbody>{children}</tbody>
+        </table>
         <div className={styles.loadMoreFooter}>
           <button className={styles.loadNextYearBtn} onClick={onLoadNextYear}>
             Load Next Year ↓
           </button>
         </div>
       </div>
-
-      {hasDirtyChanges && (
-        <SaveFooter
-          onSave={handleSave}
-          onCancel={handleCancel}
-          isSaving={isSaving}
-          saveText="Save Roster"
-        />
-      )}
     </div>
   );
 };

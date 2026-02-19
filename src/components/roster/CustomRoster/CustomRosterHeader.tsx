@@ -33,7 +33,7 @@ export const CustomRosterHeader = memo(
         {(currentPosition?.customLabels || []).map((label, index) => (
           <th
             key={`custom-${index}`}
-            className={`${styles.rosterTableHeaderCell}`}
+            className={styles.rosterTableHeaderCell}
           >
             <input
               type="text"
@@ -75,7 +75,7 @@ export const CustomRosterHeader = memo(
           </th>
         ))}
         {userData?.isAdmin && (
-          <th className={`${styles.rosterTableHeaderCell}`}>
+          <th className={styles.rosterTableHeaderCell}>
             <button
               className={customStyles.addColumnBtn}
               onClick={handleAddCustomLabel}
@@ -85,7 +85,7 @@ export const CustomRosterHeader = memo(
             </button>
           </th>
         )}
-        <th className={`${styles.genderDividerCell}`} />
+        <th className={styles.genderDividerCell} />
       </RosterHeader>
     );
   },

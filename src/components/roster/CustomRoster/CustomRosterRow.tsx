@@ -9,10 +9,13 @@ interface CustomRosterRowProps {
   rowIndex: number;
   focusedCell: { row: number; col: number; table: string } | null;
   setFocusedCell: (
-    cell: { row: number; col: number; table: "roster" | "absence" | "all" } | null,
+    cell: {
+      row: number;
+      col: number;
+      table: "roster" | "absence" | "all";
+    } | null,
   ) => void;
   entries: Record<string, RosterEntry>;
-  dirtyEntries: Record<string, RosterEntry>;
   onDateClick: (date: string) => void;
   closestNextDate?: string | null;
   currentPosition?: Position;
@@ -33,7 +36,6 @@ export const CustomRosterRow = memo(
     focusedCell,
     setFocusedCell,
     entries,
-    dirtyEntries,
     onDateClick,
     closestNextDate,
     currentPosition,
@@ -45,7 +47,6 @@ export const CustomRosterRow = memo(
       <RosterRow
         dateString={dateString}
         entries={entries}
-        dirtyEntries={dirtyEntries}
         onDateClick={onDateClick}
         closestNextDate={closestNextDate}
         showPeek={showPeek}
@@ -73,6 +74,7 @@ export const CustomRosterRow = memo(
             }}
           />
         ))}
+        <td />
       </RosterRow>
     );
   },

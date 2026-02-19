@@ -2,6 +2,7 @@ import { Fragment, memo } from "react";
 
 import { AppUser, Position } from "../../../model/model";
 import NameTag from "../../common/NameTag";
+import { DividerHeader } from "../Dividers";
 import styles from "../roster-header.module.css";
 import RosterHeader from "../RosterHeader";
 
@@ -33,9 +34,7 @@ export const GeneralRosterHeader = memo(
           const isMe = !!(user.email && user.email === userData?.email);
           return (
             <Fragment key={user.email}>
-              {genderDividerIndex === colIndex && (
-                <th className={`${styles.genderDividerCell}`} />
-              )}
+              {genderDividerIndex === colIndex && <DividerHeader />}
               <th
                 className={`${styles.rosterTableHeaderCell} ${generalStyles.clickableHeader} ${
                   user.email && assignedOnClosestDate.includes(user.email)
@@ -61,7 +60,7 @@ export const GeneralRosterHeader = memo(
             </Fragment>
           );
         })}
-        <th className={`${styles.genderDividerCell}`} />
+        <DividerHeader />
       </RosterHeader>
     );
   },

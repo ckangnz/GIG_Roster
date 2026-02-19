@@ -72,23 +72,6 @@ th.stickyCol {
   color: var(--color-link) !important;
 }
 
-.genderDividerCell {
-  width: 8px;
-  min-width: 8px !important;
-  max-width: 8px;
-  background-color: var(--border-color-secondary);
-  padding: 0 !important;
-  border: none !important;
-  position: sticky;
-  top: 0;
-  z-index: 20;
-}
-
-th.genderDividerCell {
-  z-index: 20;
-  background-color: var(--border-color-secondary) !important;
-}
-
 @media (min-width: 768px) {
   .dateHeaderContent {
     gap: 8px;
@@ -98,11 +81,5 @@ th.genderDividerCell {
     width: 24px;
     height: 24px;
     font-size: 1rem;
-  }
-
-  .genderDividerCell {
-    width: 12px;
-    min-width: 12px !important;
-    max-width: 12px;
   }
 }

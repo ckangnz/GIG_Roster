@@ -7,9 +7,7 @@ import styles from "./roster-cell.module.css";
 
 interface RosterCellProps {
   type: "all-user" | "all-position" | "roster-custom" | "roster-user" | "absence";
-  dateString: string;
   rowIndex: number;
-  colIndex: number;
   isFocused: boolean;
   onFocus: () => void;
   // All View
@@ -23,6 +21,9 @@ interface RosterCellProps {
   handleAbsenceReasonChange?: (reason: string) => void;
   // Roster View
   disabled?: boolean;
+  // Metadata for focus/presence
+  dateString?: string;
+  colIndex?: number;
 }
 
 const RosterCell = memo(({
@@ -43,7 +44,6 @@ const RosterCell = memo(({
   useEffect(() => {
     if (isFocused && cellRef.current) {
       cellRef.current.focus();
-      // Ensure the cell is visible during keyboard navigation
       cellRef.current.scrollIntoView({ block: 'nearest', inline: 'nearest' });
     }
   }, [isFocused]);
