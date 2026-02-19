@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
@@ -40,6 +40,17 @@ const SideNav = () => {
     (state) => state.positions,
   );
   const { onlineUsers } = useAppSelector((state) => state.presence);
+
+  // Track window width to force labels on mobile
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const isMobile = windowWidth <= 767;
+  const shouldShowLabels = isMobile || isDesktopSidebarExpanded;
 
   const activeTab = location.pathname.includes("/settings")
     ? AppTab.SETTINGS
@@ -131,7 +142,7 @@ const SideNav = () => {
     <aside className={sideNavClasses}>
       <div className={styles.sidebarContent}>
         <div className={styles.tabletSidebarHeader}>
-          {isDesktopSidebarExpanded && <h3>{getHeaderTitle()}</h3>}
+          {shouldShowLabels && <h3>{getHeaderTitle()}</h3>}
           <button
             className={styles.sidebarToggleButton}
             onClick={() =>
@@ -177,7 +188,7 @@ const SideNav = () => {
                         }}
                       >
                         <div className={styles.teamHeadingContent}>
-                          {team.emoji} {isDesktopSidebarExpanded && team.name}
+                          {team.emoji} {shouldShowLabels && team.name}
                         </div>
                         <span className={styles.expandIcon}>
                           {isTeamExpanded ? "▼" : "▶"}
@@ -217,7 +228,7 @@ const SideNav = () => {
                         >
                           <span className={styles.sideEmoji}>📋</span>
                           <span className={styles.navItemLabel}>
-                            {isDesktopSidebarExpanded && "All"}
+                            {shouldShowLabels && "All"}
                           </span>
                           {renderLocationIndicators(team.name, "All")}
                         </button>
@@ -253,7 +264,7 @@ const SideNav = () => {
                                   {pos.emoji}
                                 </span>
                                 <span className={styles.navItemLabel}>
-                                  {isDesktopSidebarExpanded && pos.name}
+                                  {shouldShowLabels && pos.name}
                                 </span>
                                 {renderLocationIndicators(team.name, pos.name)}
                               </button>
@@ -288,7 +299,7 @@ const SideNav = () => {
                           >
                             <span className={styles.sideEmoji}>🏥</span>
                             <span className={styles.navItemLabel}>
-                              {isDesktopSidebarExpanded && "Absence"}
+                              {shouldShowLabels && "Absence"}
                             </span>
                             {renderLocationIndicators(team.name, "Absence")}
                           </button>
@@ -312,7 +323,7 @@ const SideNav = () => {
                   >
                     <span className={styles.sideEmoji}>{item.icon}</span>
                     <span className={styles.navItemLabel}>
-                      {isDesktopSidebarExpanded && item.label}
+                      {shouldShowLabels && item.label}
                     </span>
                   </button>
                 ),
@@ -323,7 +334,7 @@ const SideNav = () => {
       {userData?.isAdmin && activeTab === AppTab.SETTINGS && (
         <div className={styles.adminOnlySectionWrapper}>
           <div className={styles.sidenavMenuSubheading}>
-            {isDesktopSidebarExpanded && <h4>Admin Only</h4>}
+            {shouldShowLabels && <h4>Admin Only</h4>}
           </div>
           {SETTINGS_NAV_ITEMS.filter((item) => item.adminOnly).map((item) => (
             <button
@@ -338,7 +349,7 @@ const SideNav = () => {
             >
               <span className={styles.sideEmoji}>{item.icon}</span>
               <span className={styles.navItemLabel}>
-                {isDesktopSidebarExpanded && item.label}
+                {shouldShowLabels && item.label}
               </span>
             </button>
           ))}
@@ -349,7 +360,7 @@ const SideNav = () => {
           className={styles.sidebarThemeToggle}
           iconClassName={styles.sidebarThemeIcon}
         />
-        <OnlineUsers variant="sidebar" showText={isDesktopSidebarExpanded} />
+        <OnlineUsers variant="sidebar" showText={shouldShowLabels} />
       </div>
     </aside>
   );
