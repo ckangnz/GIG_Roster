@@ -42,8 +42,6 @@
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
-  border: 1px solid var(--border-color-secondary);
-  border-radius: 8px;
 }
 
 .rosterTable th {
@@ -83,7 +81,7 @@
 .loadMoreFooter {
   display: flex;
   justify-content: center;
-  padding: 2rem 0;
+  padding: 1rem 0;
   width: 100%;
 }
 
@@ -119,11 +117,16 @@
     font-size: 0.9rem;
   }
 
+  .rosterSection {
+    border: 1px solid var(--border-color-secondary);
+    border-radius: 8px;
+  }
+
   .rosterTable td {
     padding: 8px;
   }
   .loadMoreFooter {
-    padding: 2rem 0 6rem;
+    padding: 1rem 0 6rem;
   }
 
   .loadNextYearBtn {
