@@ -208,23 +208,6 @@ const SideNav = () => {
                             handleNavItemClick(`/app/roster/${team.name}/All`);
                             dispatch(setMobileSidebarOpen(false));
                           }}
-                          style={{
-                            borderLeft:
-                              activeSideItem === "All" &&
-                              activeTeamName === team.name
-                                ? "4px solid var(--color-primary)"
-                                : "4px solid transparent",
-                            backgroundColor:
-                              activeSideItem === "All" &&
-                              activeTeamName === team.name
-                                ? "var(--background-toggle-on-transparent)"
-                                : "transparent",
-                            color:
-                              activeSideItem === "All" &&
-                              activeTeamName === team.name
-                                ? "var(--color-primary)"
-                                : "",
-                          }}
                         >
                           <span className={styles.sideEmoji}>📋</span>
                           <span className={styles.navItemLabel}>
@@ -250,15 +233,12 @@ const SideNav = () => {
                                   );
                                   dispatch(setMobileSidebarOpen(false));
                                 }}
-                                style={{
-                                  borderLeft: isActive
-                                    ? `4px solid ${pos.colour}`
-                                    : "4px solid transparent",
-                                  backgroundColor: isActive
-                                    ? `${pos.colour}15`
-                                    : "transparent",
-                                  color: isActive ? pos.colour : "",
-                                }}
+                                style={
+                                  {
+                                    "--active-color": pos.colour,
+                                    "--active-bg": `${pos.colour}15`,
+                                  } as React.CSSProperties
+                                }
                               >
                                 <span className={styles.sideEmoji}>
                                   {pos.emoji}
@@ -284,18 +264,13 @@ const SideNav = () => {
                               );
                               dispatch(setMobileSidebarOpen(false));
                             }}
-                            style={{
-                              borderLeft:
-                                activeSideItem === "Absence" &&
-                                activeTeamName === team.name
-                                  ? "4px solid var(--color-error)"
-                                  : "4px solid transparent",
-                              backgroundColor:
-                                activeSideItem === "Absence" &&
-                                activeTeamName === team.name
-                                  ? "var(--background-toggle-off-transparent)"
-                                  : "transparent",
-                            }}
+                            style={
+                              {
+                                "--active-color": "var(--color-error)",
+                                "--active-bg":
+                                  "var(--background-toggle-off-transparent)",
+                              } as React.CSSProperties
+                            }
                           >
                             <span className={styles.sideEmoji}>🏥</span>
                             <span className={styles.navItemLabel}>
@@ -310,51 +285,63 @@ const SideNav = () => {
                 );
               })
             : SETTINGS_NAV_ITEMS.filter((item) => !item.adminOnly).map(
-                (item) => (
-                  <button
-                    key={item.id}
-                    className={`${styles.sideNavItem} ${
-                      activeSideItem === item.id ? styles.sideNavItemActive : ""
-                    }`}
-                    onClick={() => {
-                      handleNavItemClick(`/app/settings/${item.id}`);
-                      dispatch(setMobileSidebarOpen(false));
-                    }}
-                  >
-                    <span className={styles.sideEmoji}>{item.icon}</span>
-                    <span className={styles.navItemLabel}>
-                      {shouldShowLabels && item.label}
-                    </span>
-                  </button>
-                ),
+                (item) => {
+                  const Icon = item.icon;
+                  return (
+                    <button
+                      key={item.id}
+                      className={`${styles.sideNavItem} ${
+                        activeSideItem === item.id
+                          ? styles.sideNavItemActive
+                          : ""
+                      }`}
+                      onClick={() => {
+                        handleNavItemClick(`/app/settings/${item.id}`);
+                        dispatch(setMobileSidebarOpen(false));
+                      }}
+                    >
+                      <span className={styles.sideEmoji}>
+                        <Icon size={18} />
+                      </span>
+                      <span className={styles.navItemLabel}>
+                        {shouldShowLabels && item.label}
+                      </span>
+                    </button>
+                  );
+                },
               )}
         </nav>
+        {userData?.isAdmin && activeTab === AppTab.SETTINGS && (
+          <div className={styles.adminOnlySectionWrapper}>
+            <div className={styles.sidenavMenuSubheading}>
+              {shouldShowLabels && <h4>Admin Only</h4>}
+            </div>
+            {SETTINGS_NAV_ITEMS.filter((item) => item.adminOnly).map((item) => {
+              const Icon = item.icon;
+              return (
+                <button
+                  key={item.id}
+                  className={`${styles.sideNavItem} ${
+                    activeSideItem === item.id ? styles.sideNavItemActive : ""
+                  }`}
+                  onClick={() => {
+                    handleNavItemClick(`/app/settings/${item.id}`);
+                    dispatch(setMobileSidebarOpen(false));
+                  }}
+                >
+                  <span className={styles.sideEmoji}>
+                    <Icon size={18} />
+                  </span>
+                  <span className={styles.navItemLabel}>
+                    {shouldShowLabels && item.label}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
 
-      {userData?.isAdmin && activeTab === AppTab.SETTINGS && (
-        <div className={styles.adminOnlySectionWrapper}>
-          <div className={styles.sidenavMenuSubheading}>
-            {shouldShowLabels && <h4>Admin Only</h4>}
-          </div>
-          {SETTINGS_NAV_ITEMS.filter((item) => item.adminOnly).map((item) => (
-            <button
-              key={item.id}
-              className={`${styles.sideNavItem} ${
-                activeSideItem === item.id ? styles.sideNavItemActive : ""
-              }`}
-              onClick={() => {
-                handleNavItemClick(`/app/settings/${item.id}`);
-                dispatch(setMobileSidebarOpen(false));
-              }}
-            >
-              <span className={styles.sideEmoji}>{item.icon}</span>
-              <span className={styles.navItemLabel}>
-                {shouldShowLabels && item.label}
-              </span>
-            </button>
-          ))}
-        </div>
-      )}
       <div className={styles.sidebarFooter}>
         <ThemeToggleButton
           className={styles.sidebarThemeToggle}

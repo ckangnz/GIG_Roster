@@ -36,18 +36,21 @@ const BottomNav = () => {
   return (
     <nav className={styles.bottomNavContainer}>
       <div className={styles.bottomNav}>
-        {BOTTOM_NAV_ITEMS.map((item) => (
-          <button
-            key={item.id}
-            className={`${styles.bottomNavBtn} ${
-              activeTab === item.id ? styles.bottomNavBtnActive : ""
-            }`}
-            onClick={() => handleTabChange(item.id)}
-          >
-            <span>{item.icon}</span>
-            <span>{item.label}</span>
-          </button>
-        ))}
+        {BOTTOM_NAV_ITEMS.map((item) => {
+          const Icon = item.icon;
+          return (
+            <button
+              key={item.id}
+              className={`${styles.bottomNavBtn} ${
+                activeTab === item.id ? styles.bottomNavBtnActive : ""
+              }`}
+              onClick={() => handleTabChange(item.id)}
+            >
+              <Icon size={20} />
+              <span>{item.label}</span>
+            </button>
+          );
+        })}
       </div>
     </nav>
   );
