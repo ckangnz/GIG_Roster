@@ -44,7 +44,9 @@ const TeamPositionEditor = ({
 
       {selectedTeams.length > 0 && (
         <div className={commonStyles.settingsSection}>
-          <label className={commonStyles.sectionLabel}>Positions per Team</label>
+          <label className={commonStyles.sectionLabel}>
+            Positions per Team
+          </label>
           {selectedTeams.map((teamName, index) => {
             const team = availableTeams.find((t) => t.name === teamName);
             if (!team) return null;
@@ -59,7 +61,11 @@ const TeamPositionEditor = ({
                   style={{ justifyContent: "space-between" }}
                 >
                   <div
-                    style={{ display: "flex", alignItems: "center", gap: "8px" }}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                    }}
                   >
                     {team.emoji} {team.name}
                   </div>
@@ -93,8 +99,9 @@ const TeamPositionEditor = ({
                         (p) => p.name === pos.name,
                       );
                       const isCustom = !!gp?.isCustom;
-                      const isSelected =
-                        teamPositions[teamName]?.includes(pos.name);
+                      const isSelected = teamPositions[teamName]?.includes(
+                        pos.name,
+                      );
                       return (
                         <Pill
                           key={pos.name}

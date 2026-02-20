@@ -77,7 +77,7 @@
   flex: 1;
   flex-direction: column;
   gap: 4px;
-  padding: 1rem 8px;
+  padding: 1rem 8px 1rem 0;
 }
 
 .sideNavItem {
@@ -91,7 +91,7 @@
   flex-direction: row; /* Emoji and Text Side-by-Side */
   font-size: 0.9rem;
   font-weight: 500;
-  padding: 10px 12px;
+  padding: 1rem 2rem;
   text-align: left;
   transition: all 0.2s;
   white-space: nowrap;
@@ -217,7 +217,7 @@
 .sidebarFooter {
   display: none; /* Hidden on mobile */
   border-top: 1px solid var(--border-color-secondary);
-  padding: 1rem 12px;
+  padding: 1rem 2rem;
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
@@ -240,6 +240,7 @@
 @media (min-width: 767px) {
   .sideNav {
     position: sticky;
+    top: 0;
     width: 240px;
     height: 100vh;
     max-height: none; /* Reset mobile-first constraint */

@@ -316,38 +316,43 @@ const SideNav = () => {
             <div className={styles.sidenavMenuSubheading}>
               {shouldShowLabels && <h4>Admin Only</h4>}
             </div>
-            {SETTINGS_NAV_ITEMS.filter((item) => item.adminOnly).map((item) => {
-              const Icon = item.icon;
-              return (
-                <button
-                  key={item.id}
-                  className={`${styles.sideNavItem} ${
-                    activeSideItem === item.id ? styles.sideNavItemActive : ""
-                  }`}
-                  onClick={() => {
-                    handleNavItemClick(`/app/settings/${item.id}`);
-                    dispatch(setMobileSidebarOpen(false));
-                  }}
-                >
-                  <span className={styles.sideEmoji}>
-                    <Icon size={18} />
-                  </span>
-                  <span className={styles.navItemLabel}>
-                    {shouldShowLabels && item.label}
-                  </span>
-                </button>
-              );
-            })}
+            <nav className={styles.sideMenuList}>
+              {SETTINGS_NAV_ITEMS.filter((item) => item.adminOnly).map(
+                (item) => {
+                  const Icon = item.icon;
+                  return (
+                    <button
+                      key={item.id}
+                      className={`${styles.sideNavItem} ${
+                        activeSideItem === item.id
+                          ? styles.sideNavItemActive
+                          : ""
+                      }`}
+                      onClick={() => {
+                        handleNavItemClick(`/app/settings/${item.id}`);
+                        dispatch(setMobileSidebarOpen(false));
+                      }}
+                    >
+                      <span className={styles.sideEmoji}>
+                        <Icon size={18} />
+                      </span>
+                      <span className={styles.navItemLabel}>
+                        {shouldShowLabels && item.label}
+                      </span>
+                    </button>
+                  );
+                },
+              )}
+            </nav>
           </div>
         )}
-      </div>
-
-      <div className={styles.sidebarFooter}>
-        <ThemeToggleButton
-          className={styles.sidebarThemeToggle}
-          iconClassName={styles.sidebarThemeIcon}
-        />
-        <OnlineUsers variant="sidebar" showText={shouldShowLabels} />
+        <div className={styles.sidebarFooter}>
+          <ThemeToggleButton
+            className={styles.sidebarThemeToggle}
+            iconClassName={styles.sidebarThemeIcon}
+          />
+          <OnlineUsers variant="sidebar" showText={shouldShowLabels} />
+        </div>
       </div>
     </aside>
   );

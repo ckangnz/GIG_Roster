@@ -26,36 +26,6 @@
   text-transform: uppercase;
 }
 
-.teamPositionsSection {
-  margin-top: 24px;
-  padding-top: 20px;
-  border-top: 1px solid var(--border-color-input);
-}
-
-.sectionLabel {
-  display: block;
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  color: var(--color-text-dim);
-  letter-spacing: 1px;
-  margin-bottom: 16px;
-}
-
-.teamPositionGroup {
-  margin-bottom: 24px;
-}
-
-.teamPositionHeader {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--color-text-primary);
-  margin-bottom: 12px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
 .actionContainer {
   margin-top: 20px;
   display: flex;

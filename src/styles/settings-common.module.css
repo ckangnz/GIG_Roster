@@ -12,6 +12,7 @@
   color: var(--color-text-dim);
   letter-spacing: 1px;
   margin-bottom: 16px;
+  text-align: left;
 }
 
 .subSectionGroup {

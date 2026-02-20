@@ -1,5 +1,6 @@
 .onlineUsersContainer {
   display: flex;
+  position: relative;
   justify-content: flex-end;
   align-items: center;
   gap: 8px;
@@ -75,7 +76,7 @@
   border: 1px solid var(--border-color-secondary);
   border-radius: 8px;
   padding: 8px 0;
-  min-width: 200px;
+  min-width: 180px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
   z-index: 1000;
 }
@@ -87,7 +88,7 @@
 
 .dropdownUp {
   bottom: calc(100% + 12px);
-  left: 0;
+  right: 0;
 }
 
 .dropdownTitle {
