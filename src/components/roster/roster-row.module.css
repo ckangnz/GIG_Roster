@@ -96,7 +96,6 @@
 .closestNextDateRow {
   position: relative;
   background-color: var(--background-primary-subtle);
-  z-index: 5;
 }
 
 .rosterCell {

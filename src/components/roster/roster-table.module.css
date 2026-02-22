@@ -118,6 +118,11 @@
   }
 
   .rosterSection {
+    border: 1px 1px 0 0 solid var(--border-color-secondary);
+    border-radius: 8px;
+  }
+
+  .rosterTable {
     border: 1px solid var(--border-color-secondary);
     border-radius: 8px;
   }
@@ -126,7 +131,7 @@
     padding: 8px;
   }
   .loadMoreFooter {
-    padding: 1rem 0 6rem;
+    padding: 2rem 0 6rem;
   }
 
   .loadNextYearBtn {

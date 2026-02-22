@@ -177,11 +177,11 @@ const RosterTable = ({
           {renderHeader()}
           <tbody>{children}</tbody>
         </table>
-      </div>
-      <div className={styles.loadMoreFooter}>
-        <button className={styles.loadNextYearBtn} onClick={onLoadNextYear}>
-          Load Next Year ↓
-        </button>
+        <div className={styles.loadMoreFooter}>
+          <button className={styles.loadNextYearBtn} onClick={onLoadNextYear}>
+            Load Next Year ↓
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -7,6 +7,12 @@
   background-color: var(--background-table-header);
 }
 
+th.stickyCol {
+  top: 0;
+  z-index: 60;
+  text-align: left;
+}
+
 .stickyCol {
   position: sticky;
   left: 0;
@@ -15,12 +21,6 @@
   white-space: nowrap;
   border-right: 2px solid var(--border-color-secondary) !important;
   background-color: var(--background-table-header);
-}
-
-th.stickyCol {
-  top: 0;
-  z-index: 60;
-  text-align: left;
 }
 
 .dateHeaderContent {
