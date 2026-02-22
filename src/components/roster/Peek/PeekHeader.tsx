@@ -20,7 +20,9 @@ export const PeekHeader = memo(() => {
   }, [currentTeamData, activePosition]);
 
   return (
-    <th className={`${styles.peekHeader} ${styles.stickyRight}`}>
+    <th
+      className={`${styles.peekHeader} ${peekPositionName ? styles.stickyRight : ""}`}
+    >
       <select
         className={styles.peekSelector}
         value={peekPositionName || ""}
