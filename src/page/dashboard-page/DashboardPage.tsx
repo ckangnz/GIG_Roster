@@ -12,7 +12,6 @@ import { CopyIcon, CheckCircle2, CalendarPlus } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 
 import Spinner from "../../components/common/Spinner";
-import ThemeToggleButton from "../../components/common/ThemeToggleButton";
 import { db } from "../../firebase";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { Weekday, AppUser, getTodayKey, RecurringEvent } from "../../model/model";
@@ -400,18 +399,16 @@ const DashboardPage = () => {
                   </span>
                 </h3>
                 {!isPeek && (
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "8px",
-                      position: "relative",
-                    }}
-                  >
-                    <ThemeToggleButton
-                      className={styles.dashboardThemeToggle}
-                    />
-                    {teamData.recurringEvents.length > 0 && (
+                                      <div
+                                        style={{
+                                          display: "flex",
+                                          alignItems: "center",
+                                          gap: "8px",
+                                          position: "relative",
+                                        }}
+                                      >
+                                        {teamData.recurringEvents.length > 0 && (
+                  
                       <div style={{ position: "relative" }}>
                         <button
                           className={styles.calendarBtn}
