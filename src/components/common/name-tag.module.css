@@ -51,6 +51,7 @@
 .isMe {
   color: #5c4eb1 !important;
   font-weight: 700 !important;
+  vertical-align: middle;
 }
 
 [data-theme="dark"] .isMe {

@@ -42,6 +42,7 @@
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
+  border-bottom: 1px solid var(--border-color-secondary);
 }
 
 .rosterTable th {
@@ -79,6 +80,9 @@
 }
 
 .loadMoreFooter {
+  position: sticky;
+  left: 0;
+  right: 0;
   display: flex;
   justify-content: center;
   padding: 1rem 0;
