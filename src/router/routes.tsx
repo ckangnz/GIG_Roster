@@ -8,6 +8,7 @@ import GuestPage from "../page/guest-page/GuestPage";
 import LoginPage from "../page/login-page/LoginPage";
 import RosterPage from "../page/roster-page/RosterPage";
 import SettingsPage from "../page/settings-page/SettingsPage";
+import ThoughtsPage from "../page/thoughts-page/ThoughtsPage";
 
 export const routes: RouteObject[] = [
   {
@@ -37,6 +38,10 @@ export const routes: RouteObject[] = [
           {
             path: "roster/:teamName?/:positionName?",
             element: <RosterPage />,
+          },
+          {
+            path: "thoughts",
+            element: <ThoughtsPage />,
           },
           {
             path: "settings/:section?",

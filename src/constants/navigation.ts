@@ -5,13 +5,15 @@ import {
   User, 
   Users, 
   Trophy, 
-  Music 
+  Music,
+  MessageSquareHeart
 } from "lucide-react";
 import { LucideIcon } from "lucide-react";
 
 export enum AppTab {
   DASHBOARD = "dashboard",
   ROSTER = "roster",
+  THOUGHTS = "thoughts",
   SETTINGS = "settings",
 }
 
@@ -32,6 +34,7 @@ export interface NavItem {
 export const BOTTOM_NAV_ITEMS: NavItem[] = [
   { id: AppTab.DASHBOARD, label: "Dashboard", icon: LayoutDashboard },
   { id: AppTab.ROSTER, label: "Roster", icon: Calendar },
+  { id: AppTab.THOUGHTS, label: "Thoughts", icon: MessageSquareHeart },
   { id: AppTab.SETTINGS, label: "Settings", icon: Settings },
 ];
 
