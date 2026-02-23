@@ -14,7 +14,9 @@ import { Thought, AppUser } from "../../model/model";
 import { 
   setThoughts, 
   syncHeartRemote, 
+  removeHeartRemote,
   applyOptimisticHeart,
+  applyOptimisticRemoveHeart,
   syncThoughtRemote,
   removeThoughtRemote,
   applyOptimisticThought,
@@ -26,7 +28,7 @@ import styles from "./thoughts-page.module.css";
 
 const ThoughtsPage = () => {
   const dispatch = useAppDispatch();
-  const { userData } = useAppSelector((state) => state.auth);
+  const { userData, firebaseUser } = useAppSelector((state) => state.auth);
   const { loading: teamsLoading } = useAppSelector((state) => state.teams);
   const { allUsers } = useAppSelector((state) => state.userManagement);
   const { thoughts } = useAppSelector((state) => state.thoughts);
@@ -38,72 +40,101 @@ const ThoughtsPage = () => {
   const [isInputOpen, setIsInputOpen] = useState(false);
   const [inputText, setInputText] = useState("");
 
-  const myThoughtId = `${userData?.id}_${selectedTeam}`;
+  const myThoughtId = `${firebaseUser?.uid}_${selectedTeam}`;
   const myThought = thoughts[myThoughtId];
 
+  // Focused user's thought
+  const focusedThoughtId = focusedUser ? `${focusedUser.id}_${selectedTeam}` : "";
+  const focusedThought = thoughts[focusedThoughtId];
+
+  const isMyProfileFocused = focusedUser?.id === firebaseUser?.uid;
+
   const handleOpenInput = () => {
-    setInputText(myThought?.text || "");
+    // If admin is focused on someone else, open that person's thought for editing
+    if (!isMyProfileFocused && userData?.isAdmin) {
+      setInputText(focusedThought?.text || "");
+    } else {
+      setInputText(myThought?.text || "");
+    }
     setIsInputOpen(true);
   };
 
   const handleSaveThought = () => {
-    if (!userData?.id || !selectedTeam || !inputText.trim()) return;
+    if (!selectedTeam || !inputText.trim()) return;
+
+    // Determine whose thought we are saving
+    let targetUid = firebaseUser?.uid;
+    let targetName = userData?.name || "Anonymous";
+    let targetId = myThoughtId;
+    let existingHearts = myThought?.hearts || {};
+
+    // Admin editing someone else
+    if (userData?.isAdmin && !isMyProfileFocused && focusedUser) {
+      targetUid = focusedUser.id || "";
+      targetName = focusedUser.name || "Anonymous";
+      targetId = focusedThoughtId;
+      existingHearts = focusedThought?.hearts || {};
+    }
+
+    if (!targetUid) return;
+
+    // Basic script injection prevention (strip html tags)
+    const sanitizedText = inputText.trim().replace(/<[^>]*>?/gm, "");
 
     const payload = {
-      userUid: userData.id,
+      userUid: targetUid,
       teamName: selectedTeam,
-      userName: userData.name || "Anonymous",
-      text: inputText.trim(),
+      userName: targetName,
+      text: sanitizedText,
     };
 
-    // Optimistic update
     dispatch(applyOptimisticThought({
-      id: myThoughtId,
+      id: targetId,
       ...payload,
       updatedAt: Date.now(),
-      hearts: myThought?.hearts || {},
+      hearts: existingHearts,
     }));
 
-    dispatch(syncThoughtRemote(payload));
+    dispatch(syncThoughtRemote(payload))
+      .unwrap()
+      .then(() => console.log("Thought saved successfully"))
+      .catch((err) => console.error("Failed to save thought:", err));
+      
     setIsInputOpen(false);
   };
 
-  const handleDeleteThought = () => {
+  const handleDeleteThought = (idToDelete: string = myThoughtId) => {
+    const isEditingSelf = idToDelete === myThoughtId;
+    const thoughtToClear = thoughts[idToDelete];
+    const targetName = isEditingSelf ? "your" : `${thoughtToClear?.userName || "this user"}'s`;
+
     dispatch(showAlert({
-      title: "Remove Thought",
-      message: "Are you sure you want to remove your thought? This cannot be undone.",
-      confirmText: "Remove",
+      title: "Clear Thought",
+      message: `Are you sure you want to clear ${targetName} thought? This will permanently remove the message and all ${thoughtToClear?.hearts ? Object.keys(thoughtToClear.hearts).length : 0} likes received for it.`,
+      confirmText: "Clear",
       onConfirm: () => {
-        dispatch(applyOptimisticRemove({ id: myThoughtId }));
-        dispatch(removeThoughtRemote({ id: myThoughtId }));
+        dispatch(applyOptimisticRemove({ id: idToDelete }));
+        dispatch(removeThoughtRemote({ id: idToDelete }));
         setIsInputOpen(false);
       }
     }));
   };
 
   const handleHeart = (thoughtId: string) => {
-    if (!userData?.id) return;
+    if (!firebaseUser?.uid) return;
     
     const thought = thoughts[thoughtId];
     if (!thought) return;
 
-    // Check once per day constraint
-    const lastHeart = thought.hearts?.[userData.id];
-    if (lastHeart) {
-      const today = new Date().setHours(0, 0, 0, 0);
-      const lastHeartDate = new Date(lastHeart).setHours(0, 0, 0, 0);
-      if (today === lastHeartDate) {
-        dispatch(showAlert({
-          title: "Already Hearted",
-          message: "You can only heart a thought once per day!",
-          showCancel: false
-        }));
-        return;
-      }
-    }
+    const hasHearted = !!thought.hearts?.[firebaseUser.uid];
 
-    dispatch(applyOptimisticHeart({ thoughtId, userUid: userData.id }));
-    dispatch(syncHeartRemote({ thoughtId, userUid: userData.id }));
+    if (hasHearted) {
+      dispatch(applyOptimisticRemoveHeart({ thoughtId, userUid: firebaseUser.uid }));
+      dispatch(removeHeartRemote({ thoughtId, userUid: firebaseUser.uid }));
+    } else {
+      dispatch(applyOptimisticHeart({ thoughtId, userUid: firebaseUser.uid }));
+      dispatch(syncHeartRemote({ thoughtId, userUid: firebaseUser.uid }));
+    }
   };
 
   // Sync selectedTeam if it's empty but userData exists
@@ -124,7 +155,16 @@ const ThoughtsPage = () => {
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const thoughtsMap: Record<string, Thought> = {};
       snapshot.forEach((doc) => {
-        thoughtsMap[doc.id] = doc.data() as Thought;
+        const data = doc.data();
+        const updatedAt = data.updatedAt;
+        const serializableData = {
+          ...data,
+          updatedAt:
+            updatedAt && typeof updatedAt === "object" && "toMillis" in updatedAt
+              ? (updatedAt as { toMillis: () => number }).toMillis()
+              : (updatedAt as number | undefined),
+        };
+        thoughtsMap[doc.id] = serializableData as Thought;
       });
       dispatch(setThoughts(thoughtsMap));
     });
@@ -140,53 +180,75 @@ const ThoughtsPage = () => {
   if (teamsLoading) return <Spinner />;
 
   return (
-    <div className={styles.container}>
-      <div className={styles.header}>
-        <div className={styles.teamSwitcher}>
-          <SelectField
-            value={selectedTeam}
-            onChange={(e) => setSelectedTeam(e.target.value)}
-          >
-            {userData?.teams?.map(t => (
-              <option key={t} value={t}>{t}</option>
-            ))}
-          </SelectField>
-        </div>
-      </div>
-
-      <div className={styles.wheelWrapper}>
-        {teamUsers.length > 0 ? (
-          <ThoughtWheel 
-            users={teamUsers} 
-            currentUserEmail={userData?.email || null} 
-            thoughts={thoughts}
-            selectedTeam={selectedTeam}
-            onUserFocus={setFocusedUser}
-            onHeart={handleHeart}
-          />
-        ) : (
-          <p className={styles.noUsers}>No users found in this team.</p>
-        )}
-      </div>
-
-      <div className={styles.focusedUserInfo}>
-        {focusedUser && (
-          <div className={styles.focusLabel}>
-            Viewing <strong>{focusedUser.name}</strong>'s thoughts
+    <>
+      <div className={styles.container}>
+        {userData?.teams && userData.teams.length > 1 && (
+          <div className={styles.header}>
+            <div className={styles.teamSwitcher}>
+              <SelectField
+                value={selectedTeam}
+                onChange={(e) => setSelectedTeam(e.target.value)}
+              >
+                {userData.teams.map((t) => (
+                  <option key={t} value={t}>
+                    {t}
+                  </option>
+                ))}
+              </SelectField>
+            </div>
           </div>
         )}
-      </div>
 
-      <div className={styles.footer}>
-        <Button onClick={handleOpenInput} className={styles.shareBtn}>
-          {myThought ? "Edit my thought" : "Share a thought"}
-        </Button>
+        <div className={styles.wheelWrapper}>
+          {teamUsers.length > 0 ? (
+            <ThoughtWheel
+              users={teamUsers}
+              currentUserEmail={userData?.email || null}
+              thoughts={thoughts}
+              selectedTeam={selectedTeam}
+              onUserFocus={setFocusedUser}
+              onHeart={handleHeart}
+            />
+          ) : (
+            <p className={styles.noUsers}>No users found in this team.</p>
+          )}
+        </div>
+
+              <div className={styles.focusedUserInfo}>
+                {focusedUser && (
+                  <div className={styles.focusLabel}>
+                    Viewing <strong>{focusedUser.name}</strong>'s thoughts
+                                {!isMyProfileFocused && userData?.isAdmin && focusedThought && (
+                                  <button 
+                                    className={styles.adminDeleteBtn}
+                                    onClick={() => handleDeleteThought(focusedThoughtId)}
+                                  >
+                                    Clear (Admin)
+                                  </button>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                    
+                          <div className={styles.footer}>
+                            <Button onClick={handleOpenInput} className={styles.shareBtn}>
+                              {isMyProfileFocused 
+                                ? (myThought ? "Edit my thought" : "Share a thought")
+                                : (userData?.isAdmin && focusedThought ? `Edit ${focusedUser?.name}'s thought` : "Share a thought")
+                              }
+                            </Button>
+                          </div>
+                    
       </div>
 
       <ActionSheet
         isOpen={isInputOpen}
         onClose={() => setIsInputOpen(false)}
-        title={myThought ? "Edit Thought" : "Share a Thought"}
+        title={
+          isMyProfileFocused 
+            ? (myThought ? "Edit My Thought" : "Share a Thought")
+            : (`Edit ${focusedUser?.name}'s Thought`)
+        }
       >
         <div className={styles.inputContainer}>
           <InputField
@@ -196,13 +258,13 @@ const ThoughtsPage = () => {
             autoFocus
           />
           <div className={styles.inputActions}>
-            {myThought && (
-              <Button variant="delete" onClick={handleDeleteThought}>
-                Remove
+            {((isMyProfileFocused && myThought) || (!isMyProfileFocused && userData?.isAdmin && focusedThought)) && (
+              <Button variant="delete" onClick={() => handleDeleteThought(isMyProfileFocused ? myThoughtId : focusedThoughtId)}>
+                Clear
               </Button>
             )}
-            <Button 
-              onClick={handleSaveThought} 
+            <Button
+              onClick={handleSaveThought}
               disabled={!inputText.trim()}
               className={styles.saveBtn}
             >
@@ -211,7 +273,7 @@ const ThoughtsPage = () => {
           </div>
         </div>
       </ActionSheet>
-    </div>
+    </>
   );
 };
 

@@ -30,6 +30,7 @@ export const store = configureStore({
           'auth/setUser',
           'roster/fetchEntries/fulfilled',
           'roster/saveChanges/fulfilled',
+          'ui/showAlert',
         ],
         ignoredPaths: [
           'auth.firebaseUser',
@@ -38,6 +39,7 @@ export const store = configureStore({
           'rosterView.users',
           'rosterView.allTeamUsers',
           'thoughts.thoughts',
+          'ui.alertConfig',
         ],
       },
     }).concat(authMiddleware),

@@ -5,6 +5,7 @@ import {
   deleteDoc,
   updateDoc,
   serverTimestamp,
+  deleteField,
 } from "firebase/firestore";
 
 import { db } from "../../firebase";
@@ -99,6 +100,31 @@ export const syncHeartRemote = createAsyncThunk(
   }
 );
 
+export const removeHeartRemote = createAsyncThunk(
+  "thoughts/removeHeartRemote",
+  async (
+    payload: {
+      thoughtId: string;
+      userUid: string;
+    },
+    { rejectWithValue }
+  ) => {
+    const { thoughtId, userUid } = payload;
+    try {
+      const docRef = doc(db, "thoughts", thoughtId);
+      await updateDoc(docRef, {
+        [`hearts.${userUid}`]: deleteField(),
+        updatedAt: serverTimestamp(),
+      });
+      return { thoughtId, userUid };
+    } catch (error: unknown) {
+      return rejectWithValue(
+        error instanceof Error ? error.message : "Failed to remove heart"
+      );
+    }
+  }
+);
+
 const thoughtsSlice = createSlice({
   name: "thoughts",
   initialState,
@@ -128,6 +154,15 @@ const thoughtsSlice = createSlice({
         state.thoughts[thoughtId].hearts[userUid] = Date.now();
       }
     },
+    applyOptimisticRemoveHeart(
+      state,
+      action: PayloadAction<{ thoughtId: string; userUid: string }>
+    ) {
+      const { thoughtId, userUid } = action.payload;
+      if (state.thoughts[thoughtId]?.hearts) {
+        delete state.thoughts[thoughtId].hearts[userUid];
+      }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -139,6 +174,9 @@ const thoughtsSlice = createSlice({
       })
       .addCase(syncHeartRemote.rejected, (state, action) => {
         state.error = action.payload as string;
+      })
+      .addCase(removeHeartRemote.rejected, (state, action) => {
+        state.error = action.payload as string;
       });
   },
 });
@@ -149,5 +187,6 @@ export const {
   applyOptimisticThought,
   applyOptimisticRemove,
   applyOptimisticHeart,
+  applyOptimisticRemoveHeart,
 } = thoughtsSlice.actions;
 export const thoughtsReducer = thoughtsSlice.reducer;

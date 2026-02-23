@@ -1,23 +1,31 @@
 .wheelContainer {
   position: relative;
   width: 100%;
-  height: 400px;
+  height: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
   overflow: visible;
   touch-action: none;
-  margin-top: 150px; /* Offset for large radius */
+  z-index: 1;
+}
+
+.wheelWrapper {
+  position: absolute;
+  /* The center of the rotation */
+  /* Radius will be controlled by JS for mobile/desktop diff */
+  top: calc(60% + var(--wheel-radius, 500px));
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: calc(2 * var(--wheel-radius, 500px));
+  height: calc(2 * var(--wheel-radius, 500px));
 }
 
 .wheel {
   position: relative;
-  width: 800px; /* 2 * radius */
-  height: 800px;
+  width: 100%;
+  height: 100%;
   border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
 }
 
 .userNode {
@@ -28,33 +36,58 @@
   justify-content: center;
   cursor: pointer;
   user-select: none;
+  z-index: 5;
 }
 
 .userName {
   font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--color-text-dim);
+  font-weight: 700;
+  color: var(--color-text-primary);
   text-align: center;
   white-space: nowrap;
   transition: all 0.3s;
+  opacity: 0.6;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hasThoughtDot {
+  width: 6px;
+  height: 6px;
+  background-color: var(--color-link);
+  border-radius: 50%;
+  display: inline-block;
+  box-shadow: 0 0 5px var(--color-link);
 }
 
 .userNodeActive .userName {
-  color: var(--color-text-primary);
-  font-size: 1.1rem;
-  font-weight: 800;
+  color: var(--color-link);
+  font-size: 1.2rem;
+  font-weight: 900;
   transform: scale(1.1);
+  opacity: 1;
 }
 
 .centerIndicator {
   position: absolute;
-  top: -20px;
+  top: 60%;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translate(-50%, -50%);
   width: 4px;
-  height: 10px;
+  height: 4px;
   background-color: var(--color-link);
   z-index: 10;
-  opacity: 0.8;
-  border-radius: 2px;
+  opacity: 0.3;
+  border-radius: 50%;
+}
+
+@media (min-width: 768px) {
+  .userName {
+    font-size: 1rem;
+  }
+  
+  .userNodeActive .userName {
+    font-size: 1.4rem;
+  }
 }

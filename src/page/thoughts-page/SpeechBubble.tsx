@@ -13,17 +13,23 @@ interface SpeechBubbleProps {
 
 const SpeechBubble = ({ thought, onHeart }: SpeechBubbleProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const lastTap = useRef<number>(0);
+  const clickTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const handleTouch = useCallback(() => {
-    const now = Date.now();
-    const DOUBLE_TAP_DELAY = 300;
-    if (now - lastTap.current < DOUBLE_TAP_DELAY) {
+  const handleClick = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    if (clickTimer.current) {
+      // Double click detected
+      clearTimeout(clickTimer.current);
+      clickTimer.current = null;
       if (thought) onHeart(thought.id);
     } else {
-      setIsExpanded(!isExpanded);
+      // First click
+      clickTimer.current = setTimeout(() => {
+        setIsExpanded(!isExpanded);
+        clickTimer.current = null;
+      }, 250); // 250ms threshold
     }
-    lastTap.current = now;
   }, [isExpanded, thought, onHeart]);
 
   if (!thought || !thought.text) return null;
@@ -34,7 +40,7 @@ const SpeechBubble = ({ thought, onHeart }: SpeechBubbleProps) => {
     <div className={styles.bubbleContainer}>
       <div 
         className={`${styles.bubble} ${isExpanded ? styles.bubbleExpanded : ""}`}
-        onClick={handleTouch}
+        onClick={handleClick}
       >
         <div className={`${styles.text} ${!isExpanded ? styles.truncated : ""}`}>
           {thought.text}
@@ -42,14 +48,14 @@ const SpeechBubble = ({ thought, onHeart }: SpeechBubbleProps) => {
         <div className={styles.tail}>
           <div className={styles.tailInner} />
         </div>
-        
-        {heartCount > 0 && (
-          <div className={styles.heartOverlay}>
-            <Heart size={12} fill="#ff4757" />
-            <span style={{ marginLeft: 2, fontWeight: 800 }}>{heartCount}</span>
-          </div>
-        )}
       </div>
+
+      {heartCount > 0 && (
+        <div className={styles.heartOverlay}>
+          <Heart size={12} fill="#ff4757" />
+          <span style={{ marginLeft: 4, fontWeight: 800 }}>{heartCount}</span>
+        </div>
+      )}
     </div>
   );
 };
