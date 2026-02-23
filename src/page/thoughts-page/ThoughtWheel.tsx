@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 
-import { motion, useMotionValue, useSpring, animate, PanInfo, useTransform } from "framer-motion";
+import { motion, useMotionValue, animate, PanInfo, useTransform } from "framer-motion";
 
 import SpeechBubble from "./SpeechBubble";
 import { AppUser, Thought } from "../../model/model";
@@ -28,9 +28,8 @@ const ThoughtWheel = ({
   const [radius, setRadius] = useState(window.innerWidth < 768 ? 250 : 500);
   
   const rotation = useMotionValue(0);
-  // Use spring for UI but stiffness is high for responsiveness
-  const springRotation = useSpring(rotation, { stiffness: 200, damping: 35 });
-  const counterRotation = useTransform(springRotation, (value) => -value);
+  // Remove useSpring to eliminate lag during direct interaction
+  const counterRotation = useTransform(rotation, (value) => -value);
 
   const userCount = users.length;
   const angleStep = userCount > 0 ? 360 / userCount : 0;
@@ -83,14 +82,15 @@ const ThoughtWheel = ({
 
   const handleDrag = useCallback((_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     const currentRot = rotation.get();
-    // Sensitivity based on radius
-    const sensitivity = (360 / (2 * Math.PI * radius)) * 0.8;
+    // Sensitivity based on radius - increased for snappier feel
+    const sensitivity = (360 / (2 * Math.PI * radius)) * 1.5; 
     rotation.set(currentRot + info.delta.x * sensitivity);
   }, [rotation, radius]);
 
   const handleDragEnd = useCallback((_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     const currentRot = rotation.get();
-    const angularVelocity = (info.velocity.x / radius) * 50; 
+    // Reduce momentum multiplier to make it easier to stop
+    const angularVelocity = (info.velocity.x / radius) * 25; 
     const targetRot = currentRot + angularVelocity;
     snapToItem(targetRot);
   }, [rotation, snapToItem, radius]);
@@ -146,7 +146,7 @@ const ThoughtWheel = ({
       <div className={styles.wheelWrapper}>
         <motion.div
           className={styles.wheel}
-          style={{ rotate: springRotation }}
+          style={{ rotate: rotation }}
         >
           {users.map((user, index) => {
             const angle = index * angleStep;
