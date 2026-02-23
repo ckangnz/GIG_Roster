@@ -34,6 +34,7 @@ export interface Team {
   emoji: string;
   positions: Position[];
   preferredDays: Weekday[];
+  dayEndTimes?: Partial<Record<Weekday, string>>;
   maxConflict: number;
   allowAbsence?: boolean;
   recurringEvents?: RecurringEvent[];
