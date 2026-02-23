@@ -327,14 +327,29 @@
   border: 1px solid var(--border-color-secondary);
   border-radius: 12px;
   text-align: left;
-  font-size: 0.95rem;
-  font-weight: 600;
   color: var(--color-text-primary);
   cursor: pointer;
   transition: all 0.2s;
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.calendarActionText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.calendarEventName {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.calendarEventTime {
+  font-size: 0.75rem;
+  color: var(--color-text-dim);
+  font-weight: 500;
 }
 
 .calendarActionItem:hover {

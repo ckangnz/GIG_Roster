@@ -564,9 +564,14 @@ const DashboardPage = () => {
                   )
                 }
               >
-                <span>
-                  {ev.label} ({ev.day})
-                </span>
+                <div className={styles.calendarActionText}>
+                  <div className={styles.calendarEventName}>
+                    {ev.label} ({ev.day})
+                  </div>
+                  <div className={styles.calendarEventTime}>
+                    {ev.startTime} - {ev.endTime}
+                  </div>
+                </div>
                 <CalendarPlus size={18} className={styles.calendarActionIcon} />
               </button>
             ))}
