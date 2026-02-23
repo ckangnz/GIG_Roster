@@ -47,8 +47,10 @@ const ThoughtWheel = ({
     
     const targetRotation = -targetIndex * angleStep;
     
+    // Stop any current animation and set
+    rotation.stop();
     rotation.set(targetRotation);
-    // Use setTimeout to avoid cascading renders warning
+    
     const timer = setTimeout(() => {
       setFocusedIndex(targetIndex);
       onUserFocus(users[targetIndex]);
@@ -56,14 +58,19 @@ const ThoughtWheel = ({
     return () => clearTimeout(timer);
   }, [users, currentUserEmail, userCount, angleStep, onUserFocus, rotation]);
 
+  const handleDrag = useCallback((_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    // Map horizontal drag to rotation (1px = 0.5 degrees for example)
+    const currentRot = rotation.get();
+    rotation.set(currentRot + info.delta.x * 0.5);
+  }, [rotation]);
+
   const handleDragEnd = useCallback((_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     const currentRot = rotation.get();
-    const velocity = info.velocity.x / 10; // Simple velocity scaling
+    const velocity = info.velocity.x / 10; 
     const targetRot = currentRot + velocity;
     
     // Snap to nearest item
     const snappedIndex = Math.round(-targetRot / angleStep);
-    
     const finalRot = -snappedIndex * angleStep;
     
     animate(rotation, finalRot, {
@@ -94,6 +101,9 @@ const ThoughtWheel = ({
         className={styles.wheel}
         style={{ rotate: springRotation }}
         drag="x"
+        dragConstraints={{ left: 0, right: 0 }}
+        dragElastic={0}
+        onDrag={handleDrag}
         onDragEnd={handleDragEnd}
       >
         {users.map((user, index) => {
