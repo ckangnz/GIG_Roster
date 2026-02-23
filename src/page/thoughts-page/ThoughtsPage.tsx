@@ -1,13 +1,98 @@
+import { useState, useMemo, useEffect } from "react";
+
+import { collection, query, where, onSnapshot } from "firebase/firestore";
+
+import ThoughtWheel from "./ThoughtWheel";
+import { SelectField } from "../../components/common/InputField";
+import Spinner from "../../components/common/Spinner";
+import { db } from "../../firebase";
+import { useAppSelector, useAppDispatch } from "../../hooks/redux";
+import { Thought, AppUser } from "../../model/model";
+import { setThoughts } from "../../store/slices/thoughtsSlice";
+
 import styles from "./thoughts-page.module.css";
 
-
 const ThoughtsPage = () => {
+  const dispatch = useAppDispatch();
+  const { userData } = useAppSelector((state) => state.auth);
+  const { loading: teamsLoading } = useAppSelector((state) => state.teams);
+  const { allUsers } = useAppSelector((state) => state.userManagement);
+
+  const [selectedTeam, setSelectedTeam] = useState<string>(
+    userData?.teams?.[0] || ""
+  );
+  const [focusedUser, setFocusedUser] = useState<AppUser | null>(null);
+
+  // Sync selectedTeam if it's empty but userData exists
+  useEffect(() => {
+    if (userData?.teams?.length && !selectedTeam) {
+      const timer = setTimeout(() => {
+        setSelectedTeam(userData.teams[0]);
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+  }, [userData, selectedTeam]);
+
+  // Real-time thoughts listener
+  useEffect(() => {
+    if (!selectedTeam) return;
+
+    const q = query(collection(db, "thoughts"), where("teamName", "==", selectedTeam));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const thoughtsMap: Record<string, Thought> = {};
+      snapshot.forEach((doc) => {
+        thoughtsMap[doc.id] = doc.data() as Thought;
+      });
+      dispatch(setThoughts(thoughtsMap));
+    });
+
+    return () => unsubscribe();
+  }, [selectedTeam, dispatch]);
+
+  const teamUsers = useMemo(() => {
+    if (!selectedTeam) return [];
+    return allUsers.filter(u => u.teams?.includes(selectedTeam) && u.isActive);
+  }, [allUsers, selectedTeam]);
+
+  if (teamsLoading) return <Spinner />;
+
   return (
     <div className={styles.container}>
-      <h1>Thoughts Page</h1>
-      <p>Coming soon...</p>
+      <div className={styles.header}>
+        <div className={styles.teamSwitcher}>
+          <SelectField
+            value={selectedTeam}
+            onChange={(e) => setSelectedTeam(e.target.value)}
+          >
+            {userData?.teams?.map(t => (
+              <option key={t} value={t}>{t}</option>
+            ))}
+          </SelectField>
+        </div>
+      </div>
+
+      <div className={styles.wheelWrapper}>
+        {teamUsers.length > 0 ? (
+          <ThoughtWheel 
+            users={teamUsers} 
+            currentUserEmail={userData?.email || null} 
+            onUserFocus={setFocusedUser}
+          />
+        ) : (
+          <p className={styles.noUsers}>No users found in this team.</p>
+        )}
+      </div>
+
+      <div className={styles.focusedUserInfo}>
+        {focusedUser && (
+          <div className={styles.focusLabel}>
+            Viewing <strong>{focusedUser.name}</strong>'s thoughts
+          </div>
+        )}
+      </div>
     </div>
   );
 };
 
 export default ThoughtsPage;
+

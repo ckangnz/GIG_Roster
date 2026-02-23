@@ -1,0 +1,51 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+.header {
+  margin-bottom: 2rem;
+  z-index: 100;
+}
+
+.teamSwitcher {
+  width: 100%;
+  max-width: 300px;
+  margin: 0 auto;
+}
+
+.wheelWrapper {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}
+
+.focusedUserInfo {
+  height: 60px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 1rem;
+}
+
+.focusLabel {
+  font-size: 0.9rem;
+  color: var(--color-text-dim);
+}
+
+.focusLabel strong {
+  color: var(--color-link);
+}
+
+.noUsers {
+  color: var(--color-text-dim);
+  font-style: italic;
+}
