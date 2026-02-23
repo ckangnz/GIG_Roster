@@ -9,7 +9,7 @@ import {
   SettingsTableInputCell,
 } from "../../components/common/SettingsTable";
 import SummaryCell from "../../components/common/SummaryCell";
-import { Position, Team, Weekday } from "../../model/model";
+import { Position, RecurringEvent, Team, Weekday } from "../../model/model";
 import styles from "../../styles/settings-common.module.css";
 
 interface TeamManagementRowProps {
@@ -22,6 +22,7 @@ interface TeamManagementRowProps {
   onTogglePosition: (teamIndex: number, pos: Position) => void;
   onToggleDay: (teamIndex: number, day: Weekday) => void;
   onToggleAllowAbsence: (teamIndex: number, allow: boolean) => void;
+  onUpdateEvents: (teamIndex: number, events: RecurringEvent[]) => void;
   isFirst: boolean;
   isLast: boolean;
 }
@@ -36,6 +37,7 @@ const TeamManagementRow = ({
   onTogglePosition,
   onToggleDay,
   onToggleAllowAbsence,
+  onUpdateEvents,
   isFirst,
   isLast,
 }: TeamManagementRowProps) => {
@@ -144,6 +146,7 @@ const TeamManagementRow = ({
         onTogglePosition={(pos) => onTogglePosition(teamIndex, pos)}
         onToggleDay={(day) => onToggleDay(teamIndex, day)}
         onToggleAllowAbsence={(allow) => onToggleAllowAbsence(teamIndex, allow)}
+        onUpdateEvents={(events) => onUpdateEvents(teamIndex, events)}
       />
     </>
   );

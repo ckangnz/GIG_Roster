@@ -13,7 +13,7 @@ import SettingsTable, {
 import Spinner from "../../components/common/Spinner";
 import SummaryCell from "../../components/common/SummaryCell";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
-import { Position, Team, Weekday } from "../../model/model";
+import { Position, RecurringEvent, Team, Weekday } from "../../model/model";
 import { updateTeams } from "../../store/slices/teamsSlice";
 import { showAlert } from "../../store/slices/uiSlice";
 
@@ -50,6 +50,13 @@ const TeamManagement = () => {
         preferredDays: [...(t.preferredDays || [])].sort(),
         maxConflict: t.maxConflict || 1,
         allowAbsence: t.allowAbsence !== false,
+        recurringEvents: (t.recurringEvents || []).map(ev => ({
+          label: ev.label,
+          day: ev.day,
+          startTime: ev.startTime,
+          endTime: ev.endTime,
+          offsetDays: ev.offsetDays
+        }))
       }));
     return (
       JSON.stringify(normalize(teams)) !== JSON.stringify(normalize(reduxTeams))
@@ -136,6 +143,16 @@ const TeamManagement = () => {
     setNewTeam({ ...newTeam, allowAbsence: allow });
   };
 
+  const handleUpdateEvents = (index: number, events: RecurringEvent[]) => {
+    const updated = [...teams];
+    updated[index] = { ...updated[index], recurringEvents: events };
+    setTeams(updated);
+  };
+
+  const handleNewTeamUpdateEvents = (events: RecurringEvent[]) => {
+    setNewTeam({ ...newTeam, recurringEvents: events });
+  };
+
   const addTeam = () => {
     if (!newTeam.name.trim() || !newTeam.emoji.trim()) {
       dispatch(showAlert({
@@ -169,6 +186,7 @@ const TeamManagement = () => {
         maxConflict: t.maxConflict || 1,
         allowAbsence: t.allowAbsence !== false, // Default to true
         preferredDays: t.preferredDays || [],
+        recurringEvents: t.recurringEvents || [],
         positions: (t.positions || []).map((p) => ({
           name: p.name || "",
           emoji: p.emoji || "",
@@ -258,6 +276,7 @@ const TeamManagement = () => {
             onTogglePosition={togglePosition}
             onToggleDay={toggleDay}
             onToggleAllowAbsence={toggleAllowAbsence}
+            onUpdateEvents={handleUpdateEvents}
             isFirst={teamIndex === 0}
             isLast={teamIndex === teams.length - 1}
           />
@@ -315,6 +334,7 @@ const TeamManagement = () => {
         onTogglePosition={toggleNewTeamPosition}
         onToggleDay={toggleNewTeamDay}
         onToggleAllowAbsence={toggleNewTeamAllowAbsence}
+        onUpdateEvents={handleNewTeamUpdateEvents}
       />
 
       {hasChanges && (
