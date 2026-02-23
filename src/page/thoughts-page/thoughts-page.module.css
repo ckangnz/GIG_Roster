@@ -78,3 +78,9 @@
 .saveBtn {
   flex: 1;
 }
+
+@media (min-width: 768px) {
+  .footer {
+    padding-bottom: 5rem;
+  }
+}
