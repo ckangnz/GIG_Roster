@@ -26,7 +26,6 @@ export interface RecurringEvent {
   day: Weekday;
   startTime: string; // HH:mm
   endTime: string; // HH:mm
-  offsetDays: number; // -ve for before, 0 for same day, +ve for after
 }
 
 export interface Team {

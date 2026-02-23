@@ -40,19 +40,6 @@
   flex: 0 0 100px;
 }
 
-.eventInputOffset {
-  flex: 0 0 80px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.offsetLabel {
-  font-size: 0.75rem;
-  color: var(--color-text-dim);
-  font-weight: 600;
-}
-
 .deleteBtn {
   margin-left: auto;
 }

@@ -54,8 +54,7 @@ const TeamManagement = () => {
           label: ev.label,
           day: ev.day,
           startTime: ev.startTime,
-          endTime: ev.endTime,
-          offsetDays: ev.offsetDays
+          endTime: ev.endTime
         }))
       }));
     return (

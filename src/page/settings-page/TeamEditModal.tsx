@@ -47,7 +47,6 @@ const TeamEditModal = ({
       day: "Sunday",
       startTime: "09:00",
       endTime: "10:30",
-      offsetDays: 0,
     };
     onUpdateEvents([...(team.recurringEvents || []), newEvent]);
   };
@@ -165,21 +164,6 @@ const TeamEditModal = ({
                   onChange={(e) =>
                     handleUpdateEvent(ev.id, "endTime", e.target.value)
                   }
-                />
-              </div>
-              <div className={localStyles.eventInputOffset}>
-                <span className={localStyles.offsetLabel}>Offset:</span>
-                <InputField
-                  type="number"
-                  value={ev.offsetDays}
-                  onChange={(e) =>
-                    handleUpdateEvent(
-                      ev.id,
-                      "offsetDays",
-                      parseInt(e.target.value) || 0,
-                    )
-                  }
-                  title="Days relative to rostered date (-ve for before, 0 for same day)"
                 />
               </div>
               <Button
