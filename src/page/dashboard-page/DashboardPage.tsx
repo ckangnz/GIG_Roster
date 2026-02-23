@@ -39,14 +39,12 @@ const DashboardPage = () => {
   const {
     entries,
     loading: loadingRoster,
-    initialLoad,
   } = useAppSelector((state) => state.roster);
   const { positions: allPositions } = useAppSelector(
     (state) => state.positions,
   );
 
   const [teamUsers, setTeamUsers] = useState<AppUser[]>([]);
-  const [loadingUsers, setLoadingUsers] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [activeCalendarTeam, setActiveCalendarTeam] = useState<{
     teamName: string;
@@ -154,7 +152,6 @@ const DashboardPage = () => {
   useEffect(() => {
     const fetchMyTeamsUsers = async () => {
       if (!userData?.teams || userData.teams.length === 0) return;
-      setLoadingUsers(true);
       try {
         const usersRef = collection(db, "users");
         const q = query(
@@ -167,8 +164,6 @@ const DashboardPage = () => {
         setTeamUsers(users);
       } catch (err) {
         console.error("Error fetching users for dashboard:", err);
-      } finally {
-        setLoadingUsers(false);
       }
     };
 
@@ -353,7 +348,30 @@ const DashboardPage = () => {
     dispatch(syncEventNameRemote(payload));
   };
 
-  const showSpinner = (loadingRoster && !initialLoad) || loadingUsers || !isInitialized;
+  const currentEventDate = rosterDates[currentDateIndex];
+  const todayKey = getTodayKey();
+
+  const isPast = useMemo(() => {
+    if (!currentEventDate) return false;
+    if (currentEventDate < todayKey) return true;
+    if (currentEventDate > todayKey) return false;
+
+    // It's today. Check if all assigned teams' end times have passed.
+    const dashboardData = getDashboardDataForDate(currentEventDate);
+    if (!dashboardData) return false;
+
+    const now = new Date();
+    const currentTimeStr = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+    const currentWeekday = new Intl.DateTimeFormat("en-US", {
+      weekday: "long",
+    }).format(now) as Weekday;
+
+    return dashboardData.every((teamData) => {
+      const team = allTeams.find((t) => t.name === teamData.teamName);
+      const endTime = team?.dayEndTimes?.[currentWeekday] || "23:59";
+      return currentTimeStr >= endTime;
+    });
+  }, [currentEventDate, todayKey, getDashboardDataForDate, allTeams]);
 
   if (rosterDates.length === 0 && !loadingRoster) {
     return (
@@ -364,9 +382,9 @@ const DashboardPage = () => {
     );
   }
 
-  const currentEventDate = rosterDates[currentDateIndex];
-  const todayKey = getTodayKey();
-  const isPast = currentEventDate && currentEventDate < todayKey;
+  const currentEntry = entries[currentEventDate] || { eventName: "" };
+  const showSpinner = loadingRoster || !isInitialized;
+
   const pageTitle = isPast ? "Previous Event" : "Upcoming Events";
 
   const formatDate = (dateStr: string) => {
@@ -490,8 +508,6 @@ const DashboardPage = () => {
       </div>
     );
   };
-
-  const currentEntry = entries[currentEventDate] || { eventName: "" };
 
   return (
     <div className={styles.dashboardContainer} style={{ opacity: isInitialized ? 1 : 0 }}>
