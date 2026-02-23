@@ -411,8 +411,7 @@ const DashboardPage = () => {
                                           position: "relative",
                                         }}
                                       >
-                                        {teamData.recurringEvents.length > 0 && (
-                  
+                                        {teamData.myPositionName && teamData.recurringEvents.length > 0 && (
                       <div style={{ position: "relative" }}>
                         <button
                           className={styles.calendarBtn}

@@ -110,7 +110,7 @@ const TeamEditModal = ({
 
       <div className={localStyles.recurringEventsSection}>
         <div className={localStyles.sectionHeader}>
-          <label className={commonStyles.sectionLabel}>Recurring Events</label>
+          <label className={commonStyles.sectionLabel}>Calendar Setup</label>
           <Button
             variant="secondary"
             size="small"
@@ -127,8 +127,9 @@ const TeamEditModal = ({
             <div key={ev.id} className={localStyles.eventItem}>
               <div className={localStyles.eventInputLabel}>
                 <InputField
+                  label="Event Name"
                   value={ev.label}
-                  placeholder="Nickname (e.g. Practice)"
+                  placeholder="e.g. Practice"
                   onChange={(e) =>
                     handleUpdateEvent(ev.id, "label", e.target.value)
                   }
@@ -136,6 +137,7 @@ const TeamEditModal = ({
               </div>
               <div className={localStyles.eventInputDay}>
                 <SelectField
+                  label="Week Day"
                   value={ev.day}
                   onChange={(e) =>
                     handleUpdateEvent(ev.id, "day", e.target.value as Weekday)
@@ -150,6 +152,7 @@ const TeamEditModal = ({
               </div>
               <div className={localStyles.eventInputTime}>
                 <InputField
+                  label="Starts"
                   type="time"
                   value={ev.startTime}
                   onChange={(e) =>
@@ -159,6 +162,7 @@ const TeamEditModal = ({
               </div>
               <div className={localStyles.eventInputTime}>
                 <InputField
+                  label="Finishes"
                   type="time"
                   value={ev.endTime}
                   onChange={(e) =>
@@ -185,13 +189,13 @@ const TeamEditModal = ({
                 fontStyle: "italic",
               }}
             >
-              No recurring events configured.
+              No calendar events configured.
             </p>
           )}
         </div>
       </div>
 
-      <div className={commonStyles.formGroup}>
+      <div className={localStyles.absenceSection}>
         <label className={commonStyles.sectionLabel}>Absence</label>
         <PillGroup>
           <Pill

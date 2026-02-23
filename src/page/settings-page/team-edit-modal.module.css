@@ -4,6 +4,12 @@
   margin-top: 1.5rem;
 }
 
+.absenceSection {
+  border-top: 1px solid var(--border-color-secondary);
+  padding-top: 1.5rem;
+  margin-top: 1.5rem;
+}
+
 .sectionHeader {
   display: flex;
   justify-content: space-between;
@@ -14,32 +20,51 @@
 .eventList {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
 }
 
 .eventItem {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  flex-wrap: wrap;
-  padding: 12px;
-  border-radius: 8px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 12px;
   background-color: var(--background-body);
   border: 1px solid var(--border-color-secondary);
+  position: relative;
 }
 
 .eventInputLabel {
-  flex: 2 1 180px;
+  grid-column: span 2;
 }
 
 .eventInputDay {
-  flex: 1 1 100px;
+  grid-column: span 2;
 }
 
 .eventInputTime {
-  flex: 0 0 100px;
+  grid-column: span 1;
 }
 
 .deleteBtn {
-  margin-left: auto;
+  position: absolute;
+  top: 12px;
+  right: 12px;
+}
+
+@media (min-width: 600px) {
+  .eventItem {
+    grid-template-columns: 2fr 1.5fr 1fr 1fr auto;
+    align-items: end;
+    padding-right: 8px;
+  }
+
+  .eventInputLabel, .eventInputDay, .eventInputTime {
+    grid-column: span 1;
+  }
+
+  .deleteBtn {
+    position: static;
+    margin-left: 4px;
+  }
 }

@@ -26,6 +26,13 @@
   outline: none;
   font-size: 0.85rem;
   transition: all 0.2s ease;
+  line-height: normal; /* Fix for iOS vertical alignment */
+}
+
+/* Specific fix for time inputs on mobile */
+.input[type="time"] {
+  display: flex;
+  align-items: center;
 }
 
 .input:focus {
