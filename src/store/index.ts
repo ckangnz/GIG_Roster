@@ -7,6 +7,7 @@ import { presenceReducer } from './slices/presenceSlice';
 import { rosterReducer } from './slices/rosterSlice';
 import { rosterViewReducer } from './slices/rosterViewSlice';
 import { teamsReducer } from './slices/teamsSlice';
+import { thoughtsReducer } from './slices/thoughtsSlice';
 import { uiReducer } from './slices/uiSlice';
 import { userManagementReducer } from './slices/userManagementSlice';
 
@@ -18,6 +19,7 @@ export const store = configureStore({
     roster: rosterReducer,
     rosterView: rosterViewReducer,
     teams: teamsReducer,
+    thoughts: thoughtsReducer,
     ui: uiReducer,
     userManagement: userManagementReducer,
   },
@@ -28,6 +30,7 @@ export const store = configureStore({
           'auth/setUser',
           'roster/fetchEntries/fulfilled',
           'roster/saveChanges/fulfilled',
+          'ui/showAlert',
         ],
         ignoredPaths: [
           'auth.firebaseUser',
@@ -35,6 +38,8 @@ export const store = configureStore({
           'roster.dirtyEntries',
           'rosterView.users',
           'rosterView.allTeamUsers',
+          'thoughts.thoughts',
+          'ui.alertConfig',
         ],
       },
     }).concat(authMiddleware),

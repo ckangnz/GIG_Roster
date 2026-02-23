@@ -9,6 +9,7 @@ export type Weekday =
   | "Sunday";
 
 export interface AppUser {
+  id?: string;
   name: string | null;
   email: string | null;
   teams: string[];
@@ -50,6 +51,16 @@ export interface Position {
 
 export interface Absence {
   reason: string;
+}
+
+export interface Thought {
+  id: string; // userUid_teamName
+  userUid: string;
+  userName: string;
+  teamName: string;
+  text: string;
+  updatedAt: number;
+  hearts: Record<string, number>; // userUid -> lastHeartTimestamp
 }
 
 export type TeamAssignments = Record<string, string[]>; // userEmail/uid -> positionNames[]

@@ -1,0 +1,115 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  padding: 1rem;
+  box-sizing: border-box;
+  position: relative;
+  overflow: hidden;
+}
+
+.header {
+  margin-bottom: 2rem;
+  position: relative;
+  z-index: 50;
+}
+
+.teamSwitcher {
+  width: 100%;
+  max-width: 300px;
+  margin: 0 auto;
+}
+
+.wheelWrapper {
+  flex: 1;
+  width: 100%;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.focusedUserInfo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 1rem;
+  z-index: 100;
+  pointer-events: none;
+  min-height: 30px;
+}
+
+.focusLabel {
+  font-size: 0.9rem;
+  color: var(--color-text-dim);
+  background: var(--background-card-transparent, rgba(255, 255, 255, 0.8));
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+
+[data-theme='dark'] .focusLabel {
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.focusLabel strong {
+  color: var(--color-link);
+}
+
+.adminDeleteBtn {
+  margin-left: 12px;
+  background: var(--color-error);
+  color: white;
+  border: none;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-transform: uppercase;
+}
+
+.noUsers {
+  color: var(--color-text-dim);
+  font-style: italic;
+  text-align: center;
+  margin-top: 2rem;
+}
+
+.footer {
+  margin-top: auto;
+  display: flex;
+  justify-content: center;
+  padding: 1.5rem 0;
+  position: relative;
+  z-index: 50;
+}
+
+.shareBtn {
+  width: 100%;
+  max-width: 300px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.inputContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 0.5rem;
+}
+
+.inputActions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.saveBtn {
+  flex: 1;
+}
+
+@media (min-width: 768px) {
+  .footer {
+    padding-bottom: 6rem;
+  }
+}

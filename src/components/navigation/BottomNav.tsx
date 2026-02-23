@@ -12,9 +12,11 @@ const BottomNav = () => {
 
   const activeTab = location.pathname.includes("/settings")
     ? AppTab.SETTINGS
-    : location.pathname.includes("/dashboard")
-      ? AppTab.DASHBOARD
-      : AppTab.ROSTER;
+    : location.pathname.includes("/thoughts")
+      ? AppTab.THOUGHTS
+      : location.pathname.includes("/dashboard")
+        ? AppTab.DASHBOARD
+        : AppTab.ROSTER;
 
   const handleTabChange = (tabId: string) => {
     if (activeTab === tabId) {

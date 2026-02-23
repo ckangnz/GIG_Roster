@@ -34,9 +34,11 @@ const MainLayout = () => {
 
   const activeTab = location.pathname.includes("/settings")
     ? AppTab.SETTINGS
-    : location.pathname.includes("/dashboard")
-      ? AppTab.DASHBOARD
-      : AppTab.ROSTER;
+    : location.pathname.includes("/thoughts")
+      ? AppTab.THOUGHTS
+      : location.pathname.includes("/dashboard")
+        ? AppTab.DASHBOARD
+        : AppTab.ROSTER;
   const { teamName: activeTeamName, positionName, section } = params;
   const activeSideItem = positionName || section || null;
 

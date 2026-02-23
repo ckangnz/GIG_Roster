@@ -54,9 +54,11 @@ const SideNav = () => {
 
   const activeTab = location.pathname.includes("/settings")
     ? AppTab.SETTINGS
-    : location.pathname.includes("/dashboard")
-      ? AppTab.DASHBOARD
-      : AppTab.ROSTER;
+    : location.pathname.includes("/thoughts")
+      ? AppTab.THOUGHTS
+      : location.pathname.includes("/dashboard")
+        ? AppTab.DASHBOARD
+        : AppTab.ROSTER;
   const activeSideItem = positionName || section;
 
   const prevTeamRef = useRef<string | undefined>(undefined);
@@ -186,150 +188,173 @@ const SideNav = () => {
             </div>
           )}
 
-          {activeTab === AppTab.ROSTER
-            ? userData?.teams?.map((teamName) => {
-                const team = allTeams.find((t) => t.name === teamName);
-                if (!team) return null;
+          {activeTab === AppTab.ROSTER &&
+            userData?.teams?.map((teamName) => {
+              const team = allTeams.find((t) => t.name === teamName);
+              if (!team) return null;
 
-                const hasOneTeam = userData.teams.length === 1;
-                const isTeamExpanded =
-                  hasOneTeam || expandedTeams.includes(team.name);
+              const hasOneTeam = userData.teams.length === 1;
+              const isTeamExpanded =
+                hasOneTeam || expandedTeams.includes(team.name);
 
-                return (
-                  <div key={team.name}>
-                    {!hasOneTeam && (
-                      <div
-                        className={`${styles.sidenavMenuSubheading} ${styles.sidenavMenuSubheadingClickable}`}
-                        style={{ cursor: "pointer" }}
+              return (
+                <div key={team.name}>
+                  {!hasOneTeam && (
+                    <div
+                      className={`${styles.sidenavMenuSubheading} ${styles.sidenavMenuSubheadingClickable}`}
+                      style={{ cursor: "pointer" }}
+                      onClick={() => {
+                        handleToggleTeamExpansion(team.name);
+                        handleNavItemClick(`/app/roster/${team.name}/All`);
+                      }}
+                    >
+                      <div className={styles.teamHeadingContent}>
+                        {team.emoji} {shouldShowLabels && team.name}
+                      </div>
+                      <span className={styles.expandIcon}>
+                        {isTeamExpanded ? "▼" : "▶"}
+                      </span>
+                    </div>
+                  )}
+                  {isTeamExpanded && (
+                    <div className={styles.sideNavSubItems}>
+                      <button
+                        className={`${styles.sideNavItem} ${styles.sideNavItemSub} ${
+                          activeSideItem === "All" &&
+                          activeTeamName === team.name
+                            ? styles.sideNavItemActive
+                            : ""
+                        }`}
                         onClick={() => {
-                          handleToggleTeamExpansion(team.name);
                           handleNavItemClick(`/app/roster/${team.name}/All`);
+                          dispatch(setMobileSidebarOpen(false));
                         }}
                       >
-                        <div className={styles.teamHeadingContent}>
-                          {team.emoji} {shouldShowLabels && team.name}
-                        </div>
-                        <span className={styles.expandIcon}>
-                          {isTeamExpanded ? "▼" : "▶"}
+                        <span className={styles.sideEmoji}>📋</span>
+                        <span className={styles.navItemLabel}>
+                          {shouldShowLabels && "All"}
                         </span>
-                      </div>
-                    )}
-                    {isTeamExpanded && (
-                      <div className={styles.sideNavSubItems}>
+                        {renderLocationIndicators(team.name, "All")}
+                      </button>
+                      {team.positions
+                        ?.filter((pos) => !pos.parentId)
+                        ?.map((pos) => {
+                          const isActive =
+                            activeSideItem === pos.name &&
+                            activeTeamName === team.name;
+                          return (
+                            <button
+                              key={pos.name}
+                              className={`${styles.sideNavItem} ${styles.sideNavItemSub} ${
+                                isActive ? styles.sideNavItemActive : ""
+                              }`}
+                              onClick={() => {
+                                handleNavItemClick(
+                                  `/app/roster/${team.name}/${pos.name}`,
+                                );
+                                dispatch(setMobileSidebarOpen(false));
+                              }}
+                              style={
+                                {
+                                  "--active-color": pos.colour,
+                                  "--active-bg": `${pos.colour}15`,
+                                } as React.CSSProperties
+                              }
+                            >
+                              <span className={styles.sideEmoji}>
+                                {pos.emoji}
+                              </span>
+                              <span className={styles.navItemLabel}>
+                                {shouldShowLabels && pos.name}
+                              </span>
+                              {renderLocationIndicators(team.name, pos.name)}
+                            </button>
+                          );
+                        })}
+                      {team.allowAbsence !== false && (
                         <button
                           className={`${styles.sideNavItem} ${styles.sideNavItemSub} ${
-                            activeSideItem === "All" &&
+                            activeSideItem === "Absence" &&
                             activeTeamName === team.name
                               ? styles.sideNavItemActive
                               : ""
                           }`}
                           onClick={() => {
-                            handleNavItemClick(`/app/roster/${team.name}/All`);
+                            handleNavItemClick(
+                              `/app/roster/${team.name}/Absence`,
+                            );
                             dispatch(setMobileSidebarOpen(false));
                           }}
+                          style={
+                            {
+                              "--active-color": "var(--color-error)",
+                              "--active-bg":
+                                "var(--background-toggle-off-transparent)",
+                            } as React.CSSProperties
+                          }
                         >
-                          <span className={styles.sideEmoji}>📋</span>
+                          <span className={styles.sideEmoji}>🏥</span>
                           <span className={styles.navItemLabel}>
-                            {shouldShowLabels && "All"}
+                            {shouldShowLabels && "Absence"}
                           </span>
-                          {renderLocationIndicators(team.name, "All")}
+                          {renderLocationIndicators(team.name, "Absence")}
                         </button>
-                        {team.positions
-                          ?.filter((pos) => !pos.parentId)
-                          ?.map((pos) => {
-                            const isActive =
-                              activeSideItem === pos.name &&
-                              activeTeamName === team.name;
-                            return (
-                              <button
-                                key={pos.name}
-                                className={`${styles.sideNavItem} ${styles.sideNavItemSub} ${
-                                  isActive ? styles.sideNavItemActive : ""
-                                }`}
-                                onClick={() => {
-                                  handleNavItemClick(
-                                    `/app/roster/${team.name}/${pos.name}`,
-                                  );
-                                  dispatch(setMobileSidebarOpen(false));
-                                }}
-                                style={
-                                  {
-                                    "--active-color": pos.colour,
-                                    "--active-bg": `${pos.colour}15`,
-                                  } as React.CSSProperties
-                                }
-                              >
-                                <span className={styles.sideEmoji}>
-                                  {pos.emoji}
-                                </span>
-                                <span className={styles.navItemLabel}>
-                                  {shouldShowLabels && pos.name}
-                                </span>
-                                {renderLocationIndicators(team.name, pos.name)}
-                              </button>
-                            );
-                          })}
-                        {team.allowAbsence !== false && (
-                          <button
-                            className={`${styles.sideNavItem} ${styles.sideNavItemSub} ${
-                              activeSideItem === "Absence" &&
-                              activeTeamName === team.name
-                                ? styles.sideNavItemActive
-                                : ""
-                            }`}
-                            onClick={() => {
-                              handleNavItemClick(
-                                `/app/roster/${team.name}/Absence`,
-                              );
-                              dispatch(setMobileSidebarOpen(false));
-                            }}
-                            style={
-                              {
-                                "--active-color": "var(--color-error)",
-                                "--active-bg":
-                                  "var(--background-toggle-off-transparent)",
-                              } as React.CSSProperties
-                            }
-                          >
-                            <span className={styles.sideEmoji}>🏥</span>
-                            <span className={styles.navItemLabel}>
-                              {shouldShowLabels && "Absence"}
-                            </span>
-                            {renderLocationIndicators(team.name, "Absence")}
-                          </button>
-                        )}
-                      </div>
-                    )}
-                  </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+
+          {activeTab === AppTab.THOUGHTS &&
+            BOTTOM_NAV_ITEMS.filter((item) => item.id === AppTab.THOUGHTS).map(
+              (item) => {
+                const Icon = item.icon;
+                return (
+                  <button
+                    key={item.id}
+                    className={`${styles.sideNavItem} ${styles.sideNavItemActive}`}
+                    onClick={() => {
+                      handleNavItemClick(`/app/${item.id}`);
+                      dispatch(setMobileSidebarOpen(false));
+                    }}
+                  >
+                    <span className={styles.sideEmoji}>
+                      <Icon size={18} />
+                    </span>
+                    <span className={styles.navItemLabel}>
+                      {shouldShowLabels && item.label}
+                    </span>
+                    {renderLocationIndicatorsByUrl(`/app/${item.id}`)}
+                  </button>
                 );
-              })
-            : SETTINGS_NAV_ITEMS.filter((item) => !item.adminOnly).map(
-                (item) => {
-                  const Icon = item.icon;
-                  return (
-                    <button
-                      key={item.id}
-                      className={`${styles.sideNavItem} ${
-                        activeSideItem === item.id
-                          ? styles.sideNavItemActive
-                          : ""
-                      }`}
-                      onClick={() => {
-                        handleNavItemClick(`/app/settings/${item.id}`);
-                        dispatch(setMobileSidebarOpen(false));
-                      }}
-                    >
-                      <span className={styles.sideEmoji}>
-                        <Icon size={18} />
-                      </span>
-                      <span className={styles.navItemLabel}>
-                        {shouldShowLabels && item.label}
-                      </span>
-                      {renderLocationIndicatorsByUrl(`/app/settings/${item.id}`)}
-                    </button>
-                  );
-                },
-              )}
+              },
+            )}
+
+          {activeTab === AppTab.SETTINGS &&
+            SETTINGS_NAV_ITEMS.filter((item) => !item.adminOnly).map((item) => {
+              const Icon = item.icon;
+              return (
+                <button
+                  key={item.id}
+                  className={`${styles.sideNavItem} ${
+                    activeSideItem === item.id ? styles.sideNavItemActive : ""
+                  }`}
+                  onClick={() => {
+                    handleNavItemClick(`/app/settings/${item.id}`);
+                    dispatch(setMobileSidebarOpen(false));
+                  }}
+                >
+                  <span className={styles.sideEmoji}>
+                    <Icon size={18} />
+                  </span>
+                  <span className={styles.navItemLabel}>
+                    {shouldShowLabels && item.label}
+                  </span>
+                  {renderLocationIndicatorsByUrl(`/app/settings/${item.id}`)}
+                </button>
+              );
+            })}
         </nav>
         {userData?.isAdmin && activeTab === AppTab.SETTINGS && (
           <div className={styles.adminOnlySectionWrapper}>
