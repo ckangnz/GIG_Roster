@@ -238,6 +238,7 @@ export const usePresenceListener = () => {
             color: String(data.color || "#5c4eb1"),
             lastSeen: lastSeenMillis,
             focus: data.focus || null,
+            location: data.location || "",
           });
         }
       });

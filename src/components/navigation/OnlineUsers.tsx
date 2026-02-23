@@ -32,9 +32,7 @@ const OnlineUsers = ({
     isMe?: boolean,
   ) => {
     e.stopPropagation();
-    console.log("[OnlineUsers] Clicked user:", { userLocation, isMe });
     if (!isMe && userLocation) {
-      console.log("[OnlineUsers] Navigating to:", userLocation);
       navigate(userLocation);
       setShowDropdown(false);
     }
