@@ -20,8 +20,8 @@ export const generateMultiIcsString = (
         "BEGIN:VEVENT",
         `DTSTART:${format(start)}`,
         `DTEND:${format(end)}`,
-        `SUMMARY:${event.label} - ${teamName} (${positionName})`,
-        "DESCRIPTION:GIG Roster Event",
+        `SUMMARY:${teamName} · ${event.label} - (${positionName})`,
+        "DESCRIPTION:",
         "END:VEVENT",
       ].join("\r\n");
     })
