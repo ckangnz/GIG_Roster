@@ -130,6 +130,25 @@ const SideNav = () => {
     );
   };
 
+  const renderLocationIndicatorsByUrl = (path: string) => {
+    const usersHere = onlineUsers.filter((u) => u.location === path);
+
+    if (usersHere.length === 0) return null;
+
+    return (
+      <div className={styles.locationIndicators}>
+        {usersHere.map((u) => (
+          <span
+            key={u.uid}
+            className={styles.locationDot}
+            style={{ backgroundColor: u.color }}
+            title={`${u.name} is on this page`}
+          />
+        ))}
+      </div>
+    );
+  };
+
   const sideNavClasses = [
     styles.sideNav,
     isMobileSidebarOpen ? styles.menuOpen : "",
@@ -306,6 +325,7 @@ const SideNav = () => {
                       <span className={styles.navItemLabel}>
                         {shouldShowLabels && item.label}
                       </span>
+                      {renderLocationIndicatorsByUrl(`/app/settings/${item.id}`)}
                     </button>
                   );
                 },
@@ -339,6 +359,7 @@ const SideNav = () => {
                       <span className={styles.navItemLabel}>
                         {shouldShowLabels && item.label}
                       </span>
+                      {renderLocationIndicatorsByUrl(`/app/settings/${item.id}`)}
                     </button>
                   );
                 },
