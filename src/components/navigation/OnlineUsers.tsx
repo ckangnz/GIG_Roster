@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 
+import { useNavigate } from "react-router-dom";
+
 import { useAppSelector } from "../../hooks/redux";
 import { useOnlineUsers, currentSessionId } from "../../hooks/usePresence";
 import NameTag from "../common/NameTag";
@@ -15,11 +17,28 @@ const OnlineUsers = ({
   variant = "top-bar",
   showText = false,
 }: OnlineUsersProps) => {
+  const navigate = useNavigate();
   const onlineUsers = useOnlineUsers();
   const { firebaseUser } = useAppSelector((state) => state.auth);
-  const currentSessionDocId = firebaseUser ? `${firebaseUser.uid}_${currentSessionId}` : null;
+  const currentSessionDocId = firebaseUser
+    ? `${firebaseUser.uid}_${currentSessionId}`
+    : null;
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const handleUserClick = (
+    e: React.MouseEvent,
+    userLocation?: string,
+    isMe?: boolean,
+  ) => {
+    e.stopPropagation();
+    console.log("[OnlineUsers] Clicked user:", { userLocation, isMe });
+    if (!isMe && userLocation) {
+      console.log("[OnlineUsers] Navigating to:", userLocation);
+      navigate(userLocation);
+      setShowDropdown(false);
+    }
+  };
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -41,7 +60,7 @@ const OnlineUsers = ({
   const remainingCount = onlineUsers.length - 3;
 
   const getInitials = (name: string | undefined | null) => {
-    if (!name || typeof name !== 'string') return "?";
+    if (!name || typeof name !== "string") return "?";
     const parts = name.trim().split(" ");
     if (parts.length === 0) return "?";
     return parts
@@ -80,11 +99,11 @@ const OnlineUsers = ({
           </div>
         )}
         {[...displayUsers].reverse().map((user) => (
-          <div 
-            key={user.uid} 
-            className={styles.avatarCircle} 
+          <div
+            key={user.uid}
+            className={styles.avatarCircle}
             title={user.name || "Unknown User"}
-            style={{ backgroundColor: user.color, borderColor: 'white' }}
+            style={{ backgroundColor: user.color, borderColor: "white" }}
           >
             {getInitials(user.name)}
           </div>
@@ -97,20 +116,32 @@ const OnlineUsers = ({
             Online Now ({onlineUsers.length})
           </div>
           <div className={styles.userListScroll}>
-            {onlineUsers.map((user) => (
-              <div key={user.uid} className={styles.userItem}>
-                <div 
-                  className={styles.userAvatarSmall}
-                  style={{ backgroundColor: user.color }}
+            {onlineUsers.map((user) => {
+              const isMe = user.uid === currentSessionDocId;
+              const canNavigate = !isMe && !!user.location;
+
+              return (
+                <div
+                  key={user.uid}
+                  className={`${styles.userItem} ${canNavigate ? styles.clickableUser : ""}`}
+                  onClick={(e) => handleUserClick(e, user.location, isMe)}
                 >
-                  {getInitials(user.name)}
+                  <div
+                    className={styles.userAvatarSmall}
+                    style={{ backgroundColor: user.color }}
+                  >
+                    {getInitials(user.name)}
+                  </div>
+                  <span className={styles.userNameText}>
+                    <NameTag
+                      displayName={user.name || "Unknown User"}
+                      isMe={isMe}
+                    />
+                  </span>
+                  <div className={styles.pulse} />
                 </div>
-                <span className={styles.userNameText}>
-                  <NameTag displayName={user.name || "Unknown User"} isMe={user.uid === currentSessionDocId} />
-                </span>
-                <div className={styles.pulse} />
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}

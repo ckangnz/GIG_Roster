@@ -116,7 +116,11 @@
   transition: background 0.2s;
 }
 
-.userItem:hover {
+.clickableUser {
+  cursor: pointer;
+}
+
+.userItem:hover.clickableUser {
   background: var(--background-button-secondary);
 }
 

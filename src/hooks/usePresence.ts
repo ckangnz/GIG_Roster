@@ -15,7 +15,7 @@ import {
   QuerySnapshot,
   updateDoc
 } from "firebase/firestore";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 
 import { db, auth } from "../firebase";
 import { useAppDispatch, useAppSelector } from "./redux";
@@ -37,6 +37,7 @@ export interface PresenceUser {
   lastSeen: number; 
   color: string;
   focus?: PresenceFocus | null;
+  location?: string;
 }
 
 const getSessionId = () => {
@@ -83,6 +84,7 @@ const PRESENCE_THRESHOLD = 90000;
 export const useTrackPresence = (firebaseUser: User | null, userData: AppUser | null) => {
   const hasCleanedUp = useRef(false);
   const { teamName, positionName: activePosition } = useParams();
+  const location = useLocation();
   
   const { focusedCell } = useAppSelector(state => state.ui);
   const { rosterDates, users, allTeamUsers } = useAppSelector(state => state.rosterView);
@@ -153,6 +155,7 @@ export const useTrackPresence = (firebaseUser: User | null, userData: AppUser | 
           color: sessionColor,
           lastSeen: serverTimestamp(),
           focus: focusData,
+          location: location.pathname,
         }, { merge: true });
       } catch (err: unknown) {
         const error = err as { code?: string; message?: string };
@@ -168,7 +171,7 @@ export const useTrackPresence = (firebaseUser: User | null, userData: AppUser | 
 
     markOnline();
     
-    const heartbeat = setInterval(() => markOnline(currentFocus), HEARTBEAT_INTERVAL);
+    const heartbeat = setInterval(() => markOnline(), HEARTBEAT_INTERVAL);
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
@@ -187,7 +190,7 @@ export const useTrackPresence = (firebaseUser: User | null, userData: AppUser | 
       window.removeEventListener("beforeunload", markOffline);
       markOffline();
     };
-  }, [firebaseUser?.uid, firebaseUser?.displayName, userData?.email, userData?.name, currentFocus]);
+  }, [firebaseUser?.uid, firebaseUser?.displayName, userData?.email, userData?.name, currentFocus, location.pathname]);
 
   useEffect(() => {
     const docId = `${firebaseUser?.uid}_${currentSessionId}`;
@@ -196,12 +199,13 @@ export const useTrackPresence = (firebaseUser: User | null, userData: AppUser | 
     const timeoutId = setTimeout(() => {
       updateDoc(doc(db, "presence", docId), {
         focus: currentFocus,
+        location: location.pathname,
         lastSeen: serverTimestamp()
       }).catch(() => {});
     }, 200);
 
     return () => clearTimeout(timeoutId);
-  }, [currentFocus, firebaseUser?.uid]);
+  }, [currentFocus, location.pathname, firebaseUser?.uid]);
 };
 
 export const usePresenceListener = () => {
