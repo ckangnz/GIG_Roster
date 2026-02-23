@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 
 import { useNavigate } from "react-router-dom";
 
+import { SETTINGS_NAV_ITEMS } from "../../constants/navigation";
 import { useAppSelector } from "../../hooks/redux";
 import { useOnlineUsers, currentSessionId } from "../../hooks/usePresence";
 import NameTag from "../common/NameTag";
@@ -19,12 +20,23 @@ const OnlineUsers = ({
 }: OnlineUsersProps) => {
   const navigate = useNavigate();
   const onlineUsers = useOnlineUsers();
-  const { firebaseUser } = useAppSelector((state) => state.auth);
+  const { firebaseUser, userData } = useAppSelector((state) => state.auth);
   const currentSessionDocId = firebaseUser
     ? `${firebaseUser.uid}_${currentSessionId}`
     : null;
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const isRestricted = (path?: string) => {
+    if (!path) return false;
+    // Check settings pages
+    if (path.startsWith("/app/settings/")) {
+      const sectionId = path.split("/").pop();
+      const item = SETTINGS_NAV_ITEMS.find((i) => i.id === sectionId);
+      return item?.adminOnly === true;
+    }
+    return false;
+  };
 
   const handleUserClick = (
     e: React.MouseEvent,
@@ -32,10 +44,16 @@ const OnlineUsers = ({
     isMe?: boolean,
   ) => {
     e.stopPropagation();
-    if (!isMe && userLocation) {
-      navigate(userLocation);
-      setShowDropdown(false);
+    if (isMe || !userLocation) return;
+
+    const restricted = isRestricted(userLocation);
+    if (restricted && !userData?.isAdmin) {
+      // Don't navigate non-admins to admin pages
+      return;
     }
+
+    navigate(userLocation);
+    setShowDropdown(false);
   };
 
   // Close dropdown when clicking outside
@@ -116,7 +134,11 @@ const OnlineUsers = ({
           <div className={styles.userListScroll}>
             {onlineUsers.map((user) => {
               const isMe = user.uid === currentSessionDocId;
-              const canNavigate = !isMe && !!user.location;
+              const restricted = isRestricted(user.location);
+              const canNavigate =
+                !isMe &&
+                !!user.location &&
+                (!restricted || userData?.isAdmin);
 
               return (
                 <div
