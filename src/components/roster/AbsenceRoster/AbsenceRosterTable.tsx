@@ -4,9 +4,11 @@ import { useRosterBaseLogic } from "../../../hooks/useRosterBaseLogic";
 import RosterTable from "../RosterTable";
 import { AbsenceRosterHeader } from "./AbsenceRosterHeader";
 import { AbsenceRosterRow } from "./AbsenceRosterRow";
+import { useRosterHeaderLogic } from "../RosterHeader";
 
 const AbsenceRosterTable = () => {
   const logic = useRosterBaseLogic();
+  const { hasPastDates } = useRosterHeaderLogic();
   const {
     allTeamUsers,
     rosterDates,
@@ -39,6 +41,7 @@ const AbsenceRosterTable = () => {
       onLoadNextYear={logic.handleLoadNextYear}
       colCount={allTeamUsers.length}
       onCellClick={handleKeyboardAbsenceClick}
+      hasPastDates={hasPastDates}
     >
       {rosterDates.map((dateString, rowIndex) => (
         <AbsenceRosterRow

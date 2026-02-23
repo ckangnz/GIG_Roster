@@ -5,9 +5,11 @@ import { updatePositionCustomLabels } from "../../../store/slices/positionsSlice
 import RosterTable from "../RosterTable";
 import { CustomRosterHeader } from "./CustomRosterHeader";
 import { CustomRosterRow } from "./CustomRosterRow";
+import { useRosterHeaderLogic } from "../RosterHeader";
 
 const CustomRosterTable = () => {
   const logic = useRosterBaseLogic();
+  const { hasPastDates } = useRosterHeaderLogic();
   const {
     dispatch,
     teamName,
@@ -126,6 +128,7 @@ const CustomRosterTable = () => {
       onLoadNextYear={logic.handleLoadNextYear}
       colCount={currentPosition?.customLabels?.length || 0}
       onCellClick={handleKeyboardCustomCellClick}
+      hasPastDates={hasPastDates}
     >
       {rosterDates.map((dateString, rowIndex) => (
         <CustomRosterRow

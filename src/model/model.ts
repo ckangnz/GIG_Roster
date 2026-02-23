@@ -73,6 +73,11 @@ export const formatToDateKey = (date: Date): string => {
   return `${yyyy}-${mm}-${dd}`;
 };
 
+export const formatDisplayDate = (dateString: string): string => {
+  const [yyyy, mm, dd] = dateString.split("-");
+  return `${dd}-${mm}-${yyyy.slice(-2)}`;
+};
+
 export const getTodayKey = (): string => {
   // Always calculate "Today" relative to NZ time (Pacific/Auckland)
   const nzDate = new Intl.DateTimeFormat("en-CA", {

@@ -10,7 +10,8 @@
 th.stickyCol {
   top: 0;
   z-index: 60;
-  text-align: left;
+  text-align: right;
+  padding-right: 12px;
 }
 
 .stickyCol {
@@ -27,34 +28,44 @@ th.stickyCol {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 4px;
+  width: 100%;
 }
 
-.dateHeaderActions {
-  display: flex;
-  gap: 4px;
+.dateText {
+  flex-grow: 1;
+  text-align: right;
+}
+
+.resetRow {
+  background-color: var(--background-primary-subtle);
+}
+
+.resetCell {
+  padding: 4px 8px;
+  text-align: left;
 }
 
 .loadPrevBtn {
   background: var(--background-button-secondary);
   border: 1px solid var(--border-color-input);
   color: var(--color-link);
-  border-radius: 4px;
-  width: 22px;
-  height: 22px;
+  border-radius: 6px;
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-weight: bold;
   transition: all 0.2s;
-  font-size: 0.8rem;
+  padding: 4px;
 }
 
 .loadPrevBtn:hover {
   background: var(--color-link);
   color: white;
   border-color: var(--color-link);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .resetDatesBtn {

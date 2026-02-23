@@ -4,9 +4,11 @@ import { useRosterBaseLogic } from "../../../hooks/useRosterBaseLogic";
 import RosterTable from "../RosterTable";
 import { GeneralRosterHeader } from "./GeneralRosterHeader";
 import { GeneralRosterRow } from "./GeneralRosterRow";
+import { useRosterHeaderLogic } from "../RosterHeader";
 
 const GeneralRosterTable = () => {
   const logic = useRosterBaseLogic();
+  const { hasPastDates } = useRosterHeaderLogic();
   const {
     teamName,
     activePosition,
@@ -160,6 +162,7 @@ const GeneralRosterTable = () => {
       onLoadNextYear={logic.handleLoadNextYear}
       colCount={sortedUsers.length}
       onCellClick={handleKeyboardCellClick}
+      hasPastDates={hasPastDates}
     >
       {rosterDates.map((dateString, rowIndex) => (
         <GeneralRosterRow

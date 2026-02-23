@@ -1,7 +1,7 @@
 import { ReactNode, memo, useMemo } from "react";
 
 import { PeekCell } from "./Peek/PeekCell";
-import { getTodayKey, RosterEntry } from "../../model/model";
+import { getTodayKey, RosterEntry, formatDisplayDate } from "../../model/model";
 
 import styles from "./roster-row.module.css";
 
@@ -61,7 +61,7 @@ const RosterRow = memo(
             {isToday && (
               <span className={styles.rosterTodayDot} title="Today" />
             )}
-            {new Date(dateString.replace(/-/g, "/")).toLocaleDateString()}
+            {formatDisplayDate(dateKey)}
           </div>
         </td>
         {children}

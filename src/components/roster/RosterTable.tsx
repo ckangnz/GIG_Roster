@@ -1,9 +1,16 @@
 import { ReactNode, useEffect, RefObject } from "react";
 
+import { RefreshCw } from "lucide-react";
+
 import TopControls from "./TopControls";
+import { useAppDispatch } from "../../hooks/redux";
 import { AppUser } from "../../model/model";
+import { resetToUpcomingDates } from "../../store/slices/rosterViewSlice";
 import Spinner from "../common/Spinner";
 
+import cellStyles from "./roster-cell.module.css";
+import headerStyles from "./roster-header.module.css";
+import rowStyles from "./roster-row.module.css";
 import styles from "./roster-table.module.css";
 
 interface RosterTableProps {
@@ -47,6 +54,9 @@ interface RosterTableProps {
   colCount: number;
   onCellClick?: (row: number, col: number) => void;
 
+  // Header Actions
+  hasPastDates?: boolean;
+
   // Settings Actions (if any)
   hasDirtyChanges?: boolean;
   handleSave?: () => void;
@@ -75,7 +85,10 @@ const RosterTable = ({
   hasDirtyChanges,
   handleSave,
   handleCancel,
+  hasPastDates,
 }: RosterTableProps) => {
+  const dispatch = useAppDispatch();
+
   useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement;
@@ -175,7 +188,39 @@ const RosterTable = ({
           className={`${styles.rosterTable} ${isAbsenceView ? styles.absenceTable : ""}`}
         >
           {renderHeader()}
-          <tbody>{children}</tbody>
+          <tbody>
+            {hasPastDates && (
+              <tr className={headerStyles.resetRow}>
+                <td
+                  className={`${rowStyles.dateCell} ${rowStyles.stickyCol} ${headerStyles.resetCell}`}
+                >
+                  <button
+                    className={headerStyles.loadPrevBtn}
+                    onClick={() => dispatch(resetToUpcomingDates())}
+                    title="Reset to upcoming dates"
+                  >
+                    <RefreshCw size={16} />
+                  </button>
+                </td>
+                <td
+                  colSpan={colCount + (isAllView ? 0 : 1)} // +1 for Peek column
+                  className={cellStyles.rosterCell}
+                  style={{
+                    textAlign: "left",
+                    paddingLeft: "12px",
+                    fontSize: "0.85rem",
+                    color: "var(--color-link)",
+                    fontWeight: "500",
+                    cursor: "pointer",
+                  }}
+                  onClick={() => dispatch(resetToUpcomingDates())}
+                >
+                  Past dates loaded. Click to reset to today.
+                </td>
+              </tr>
+            )}
+            {children}
+          </tbody>
         </table>
         <div className={styles.loadMoreFooter}>
           <button className={styles.loadNextYearBtn} onClick={onLoadNextYear}>

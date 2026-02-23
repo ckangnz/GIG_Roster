@@ -5,9 +5,11 @@ import NameTag from "../../common/NameTag";
 import RosterTable from "../RosterTable";
 import { AllRosterHeader } from "./AllRosterHeader";
 import { AllRosterRow } from "./AllRosterRow";
+import { useRosterHeaderLogic } from "../RosterHeader";
 
 const AllRosterTable = () => {
   const logic = useRosterBaseLogic();
+  const { hasPastDates } = useRosterHeaderLogic();
   const {
     teamName,
     allTeamUsers,
@@ -178,6 +180,7 @@ const AllRosterTable = () => {
       onLoadNextYear={logic.handleLoadNextYear}
       colCount={rosterAllViewMode === "user" ? allViewColumns.length : (currentTeamData?.positions.length || 0)}
       onCellClick={handleKeyboardAllCellClick}
+      hasPastDates={hasPastDates}
     >
       {rosterDates.map((dateString, rowIndex) => (
         <AllRosterRow
