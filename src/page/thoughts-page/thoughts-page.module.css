@@ -49,3 +49,32 @@
   color: var(--color-text-dim);
   font-style: italic;
 }
+
+.footer {
+  margin-top: auto;
+  display: flex;
+  justify-content: center;
+  padding: 1rem 0;
+}
+
+.shareBtn {
+  width: 100%;
+  max-width: 300px;
+}
+
+.inputContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 0.5rem;
+}
+
+.inputActions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.saveBtn {
+  flex: 1;
+}

@@ -3,7 +3,10 @@ import { useState, useMemo, useEffect } from "react";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 
 import ThoughtWheel from "./ThoughtWheel";
+import ActionSheet from "../../components/common/ActionSheet";
+import Button from "../../components/common/Button";
 import { SelectField } from "../../components/common/InputField";
+import { InputField } from "../../components/common/InputField";
 import Spinner from "../../components/common/Spinner";
 import { db } from "../../firebase";
 import { useAppSelector, useAppDispatch } from "../../hooks/redux";
@@ -11,7 +14,11 @@ import { Thought, AppUser } from "../../model/model";
 import { 
   setThoughts, 
   syncHeartRemote, 
-  applyOptimisticHeart 
+  applyOptimisticHeart,
+  syncThoughtRemote,
+  removeThoughtRemote,
+  applyOptimisticThought,
+  applyOptimisticRemove
 } from "../../store/slices/thoughtsSlice";
 import { showAlert } from "../../store/slices/uiSlice";
 
@@ -28,6 +35,51 @@ const ThoughtsPage = () => {
     userData?.teams?.[0] || ""
   );
   const [focusedUser, setFocusedUser] = useState<AppUser | null>(null);
+  const [isInputOpen, setIsInputOpen] = useState(false);
+  const [inputText, setInputText] = useState("");
+
+  const myThoughtId = `${userData?.id}_${selectedTeam}`;
+  const myThought = thoughts[myThoughtId];
+
+  const handleOpenInput = () => {
+    setInputText(myThought?.text || "");
+    setIsInputOpen(true);
+  };
+
+  const handleSaveThought = () => {
+    if (!userData?.id || !selectedTeam || !inputText.trim()) return;
+
+    const payload = {
+      userUid: userData.id,
+      teamName: selectedTeam,
+      userName: userData.name || "Anonymous",
+      text: inputText.trim(),
+    };
+
+    // Optimistic update
+    dispatch(applyOptimisticThought({
+      id: myThoughtId,
+      ...payload,
+      updatedAt: Date.now(),
+      hearts: myThought?.hearts || {},
+    }));
+
+    dispatch(syncThoughtRemote(payload));
+    setIsInputOpen(false);
+  };
+
+  const handleDeleteThought = () => {
+    dispatch(showAlert({
+      title: "Remove Thought",
+      message: "Are you sure you want to remove your thought? This cannot be undone.",
+      confirmText: "Remove",
+      onConfirm: () => {
+        dispatch(applyOptimisticRemove({ id: myThoughtId }));
+        dispatch(removeThoughtRemote({ id: myThoughtId }));
+        setIsInputOpen(false);
+      }
+    }));
+  };
 
   const handleHeart = (thoughtId: string) => {
     if (!userData?.id) return;
@@ -124,6 +176,41 @@ const ThoughtsPage = () => {
           </div>
         )}
       </div>
+
+      <div className={styles.footer}>
+        <Button onClick={handleOpenInput} className={styles.shareBtn}>
+          {myThought ? "Edit my thought" : "Share a thought"}
+        </Button>
+      </div>
+
+      <ActionSheet
+        isOpen={isInputOpen}
+        onClose={() => setIsInputOpen(false)}
+        title={myThought ? "Edit Thought" : "Share a Thought"}
+      >
+        <div className={styles.inputContainer}>
+          <InputField
+            value={inputText}
+            onChange={(e) => setInputText(e.target.value)}
+            placeholder="What's on your mind?"
+            autoFocus
+          />
+          <div className={styles.inputActions}>
+            {myThought && (
+              <Button variant="delete" onClick={handleDeleteThought}>
+                Remove
+              </Button>
+            )}
+            <Button 
+              onClick={handleSaveThought} 
+              disabled={!inputText.trim()}
+              className={styles.saveBtn}
+            >
+              Save Thought
+            </Button>
+          </div>
+        </div>
+      </ActionSheet>
     </div>
   );
 };
