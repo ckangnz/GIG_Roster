@@ -2,18 +2,29 @@ import { useState, useEffect, useCallback } from "react";
 
 import { motion, useMotionValue, useSpring, animate, PanInfo, useTransform } from "framer-motion";
 
-import { AppUser } from "../../model/model";
+import SpeechBubble from "./SpeechBubble";
+import { AppUser, Thought } from "../../model/model";
 
 import styles from "./thought-wheel.module.css";
-
 
 interface ThoughtWheelProps {
   users: AppUser[];
   currentUserEmail: string | null;
+  thoughts: Record<string, Thought>;
+  selectedTeam: string;
   onUserFocus: (user: AppUser) => void;
+  onHeart: (thoughtId: string) => void;
 }
 
-const ThoughtWheel = ({ users, currentUserEmail, onUserFocus }: ThoughtWheelProps) => {
+const ThoughtWheel = ({ 
+  users, 
+  currentUserEmail, 
+  thoughts, 
+  selectedTeam,
+  onUserFocus, 
+  onHeart 
+}: ThoughtWheelProps) => {
+
   const [focusedIndex, setFocusedIndex] = useState(0);
   
   // rotation in degrees
@@ -113,6 +124,12 @@ const ThoughtWheel = ({ users, currentUserEmail, onUserFocus }: ThoughtWheelProp
               <motion.div 
                 style={{ rotate: counterRotation, rotateZ: angle }}
               >
+                 {index === focusedIndex && (
+                   <SpeechBubble 
+                     thought={thoughts[`${user.id}_${selectedTeam}`]} 
+                     onHeart={onHeart}
+                   />
+                 )}
                  <div className={styles.avatar}>
                     {getInitials(user.name)}
                  </div>

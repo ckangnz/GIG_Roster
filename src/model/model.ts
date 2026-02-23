@@ -9,6 +9,7 @@ export type Weekday =
   | "Sunday";
 
 export interface AppUser {
+  id?: string;
   name: string | null;
   email: string | null;
   teams: string[];
