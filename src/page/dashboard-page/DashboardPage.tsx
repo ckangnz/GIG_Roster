@@ -8,19 +8,24 @@ import {
 } from "react";
 
 import { collection, query, where, getDocs } from "firebase/firestore";
-import { CopyIcon, CheckCircle2 } from "lucide-react";
+import { CopyIcon, CheckCircle2, CalendarPlus } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 
 import Spinner from "../../components/common/Spinner";
 import ThemeToggleButton from "../../components/common/ThemeToggleButton";
 import { db } from "../../firebase";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
-import { Weekday, AppUser, getTodayKey } from "../../model/model";
+import { Weekday, AppUser, getTodayKey, RecurringEvent } from "../../model/model";
 import {
   applyOptimisticEventName,
   syncEventNameRemote,
 } from "../../store/slices/rosterSlice";
 import { getUpcomingDates } from "../../store/slices/rosterViewSlice";
+import {
+  generateGoogleCalendarUrl,
+  generateIcsString,
+  downloadIcsFile,
+} from "../../utils/calendarUtils";
 
 import styles from "./dashboard-page.module.css";
 
@@ -43,6 +48,7 @@ const DashboardPage = () => {
   const [teamUsers, setTeamUsers] = useState<AppUser[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [calendarOpenId, setCalendarOpenId] = useState<string | null>(null);
   const [currentDateIndex, setCurrentDateIndex] = useState(0);
   const [containerWidth, setContainerWidth] = useState(0);
   const [isInitialized, setIsInitialized] = useState(false);
@@ -189,6 +195,7 @@ const DashboardPage = () => {
         const teamPositionNames = team.positions.map((p) => p.name);
 
         let totalAssignedInTeam = 0;
+        let myPositionName = "";
 
         teamPositionNames.forEach((posName) => {
           const posInfo = allPositions.find((p) => p.name === posName);
@@ -203,6 +210,9 @@ const DashboardPage = () => {
                 assignedUsers.push({ email, name: email } as AppUser);
               }
               totalAssignedInTeam++;
+              if (email === userData.email) {
+                myPositionName = posName;
+              }
             }
           });
 
@@ -232,6 +242,8 @@ const DashboardPage = () => {
           teamEmoji: team.emoji,
           positions: positionGroups,
           hasAssignments: totalAssignedInTeam > 0,
+          recurringEvents: team.recurringEvents || [],
+          myPositionName,
         };
       });
 
@@ -240,6 +252,35 @@ const DashboardPage = () => {
     },
     [entries, userData, allTeams, allPositions, teamUsers],
   );
+
+  const handleCalendarAction = (
+    type: "google" | "ical",
+    dateStr: string,
+    event: RecurringEvent,
+    teamName: string,
+    positionName: string,
+  ) => {
+    if (type === "google") {
+      const url = generateGoogleCalendarUrl(
+        dateStr,
+        event,
+        teamName,
+        positionName,
+      );
+      window.open(url, "_blank");
+    } else {
+      const ics = generateIcsString(dateStr, event, teamName, positionName);
+      downloadIcsFile(`${event.label}.ics`, ics);
+    }
+    setCalendarOpenId(null);
+  };
+
+  // Close calendar dropdown when clicking outside
+  useEffect(() => {
+    const handleClick = () => setCalendarOpenId(null);
+    window.addEventListener("click", handleClick);
+    return () => window.removeEventListener("click", handleClick);
+  }, []);
 
   const handleCopy = (
     dateStr: string,
@@ -364,11 +405,71 @@ const DashboardPage = () => {
                       display: "flex",
                       alignItems: "center",
                       gap: "8px",
+                      position: "relative",
                     }}
                   >
                     <ThemeToggleButton
                       className={styles.dashboardThemeToggle}
                     />
+                    {teamData.recurringEvents.length > 0 && (
+                      <div style={{ position: "relative" }}>
+                        <button
+                          className={styles.calendarBtn}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const id = `${dateStr}-${teamData.teamName}-cal`;
+                            setCalendarOpenId(calendarOpenId === id ? null : id);
+                          }}
+                          title="Add to calendar"
+                        >
+                          <CalendarPlus size={16} />
+                        </button>
+                        {calendarOpenId === `${dateStr}-${teamData.teamName}-cal` && (
+                          <div className={styles.calendarDropdown}>
+                            <div className={styles.calendarDropdownTitle}>
+                              Add to Calendar
+                            </div>
+                            {teamData.recurringEvents.map((ev) => (
+                              <div key={ev.id} className={styles.calendarEventItem}>
+                                <div className={styles.calendarEventLabel}>
+                                  {ev.label} ({ev.day})
+                                </div>
+                                <div className={styles.calendarActionLinks}>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleCalendarAction(
+                                        "google",
+                                        dateStr,
+                                        ev,
+                                        teamData.teamName,
+                                        teamData.myPositionName,
+                                      );
+                                    }}
+                                  >
+                                    Google
+                                  </button>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleCalendarAction(
+                                        "ical",
+                                        dateStr,
+                                        ev,
+                                        teamData.teamName,
+                                        teamData.myPositionName,
+                                      );
+                                    }}
+                                  >
+                                    iCal / Outlook
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
                     <button
                       className={`${styles.copyRosterBtn} ${isRecentlyCopied ? styles.copyRosterBtnSuccess : ""}`}
                       onClick={() =>
