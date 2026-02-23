@@ -23,6 +23,7 @@ interface TeamManagementRowProps {
   onToggleDay: (teamIndex: number, day: Weekday) => void;
   onToggleAllowAbsence: (teamIndex: number, allow: boolean) => void;
   onUpdateEvents: (teamIndex: number, events: RecurringEvent[]) => void;
+  onUpdateDayEndTime: (teamIndex: number, day: Weekday, time: string) => void;
   isFirst: boolean;
   isLast: boolean;
 }
@@ -38,6 +39,7 @@ const TeamManagementRow = ({
   onToggleDay,
   onToggleAllowAbsence,
   onUpdateEvents,
+  onUpdateDayEndTime,
   isFirst,
   isLast,
 }: TeamManagementRowProps) => {
@@ -147,6 +149,7 @@ const TeamManagementRow = ({
         onToggleDay={(day) => onToggleDay(teamIndex, day)}
         onToggleAllowAbsence={(allow) => onToggleAllowAbsence(teamIndex, allow)}
         onUpdateEvents={(events) => onUpdateEvents(teamIndex, events)}
+        onUpdateDayEndTime={(day, time) => onUpdateDayEndTime(teamIndex, day, time)}
       />
     </>
   );

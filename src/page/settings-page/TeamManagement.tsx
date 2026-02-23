@@ -50,6 +50,7 @@ const TeamManagement = () => {
         preferredDays: [...(t.preferredDays || [])].sort(),
         maxConflict: t.maxConflict || 1,
         allowAbsence: t.allowAbsence !== false,
+        dayEndTimes: t.dayEndTimes || {},
         recurringEvents: (t.recurringEvents || []).map(ev => ({
           label: ev.label,
           day: ev.day,
@@ -152,6 +153,24 @@ const TeamManagement = () => {
     setNewTeam({ ...newTeam, recurringEvents: events });
   };
 
+  const handleUpdateDayEndTime = (index: number, day: Weekday, time: string) => {
+    const updated = [...teams];
+    const currentEndTimes = updated[index].dayEndTimes || {};
+    updated[index] = { 
+      ...updated[index], 
+      dayEndTimes: { ...currentEndTimes, [day]: time } 
+    };
+    setTeams(updated);
+  };
+
+  const handleNewTeamUpdateDayEndTime = (day: Weekday, time: string) => {
+    const currentEndTimes = newTeam.dayEndTimes || {};
+    setNewTeam({ 
+      ...newTeam, 
+      dayEndTimes: { ...currentEndTimes, [day]: time } 
+    });
+  };
+
   const addTeam = () => {
     if (!newTeam.name.trim() || !newTeam.emoji.trim()) {
       dispatch(showAlert({
@@ -185,6 +204,7 @@ const TeamManagement = () => {
         maxConflict: t.maxConflict || 1,
         allowAbsence: t.allowAbsence !== false, // Default to true
         preferredDays: t.preferredDays || [],
+        dayEndTimes: t.dayEndTimes || {},
         recurringEvents: t.recurringEvents || [],
         positions: (t.positions || []).map((p) => ({
           name: p.name || "",
@@ -276,6 +296,7 @@ const TeamManagement = () => {
             onToggleDay={toggleDay}
             onToggleAllowAbsence={toggleAllowAbsence}
             onUpdateEvents={handleUpdateEvents}
+            onUpdateDayEndTime={handleUpdateDayEndTime}
             isFirst={teamIndex === 0}
             isLast={teamIndex === teams.length - 1}
           />
@@ -334,6 +355,7 @@ const TeamManagement = () => {
         onToggleDay={toggleNewTeamDay}
         onToggleAllowAbsence={toggleNewTeamAllowAbsence}
         onUpdateEvents={handleNewTeamUpdateEvents}
+        onUpdateDayEndTime={handleNewTeamUpdateDayEndTime}
       />
 
       {hasChanges && (

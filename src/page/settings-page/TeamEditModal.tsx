@@ -18,6 +18,7 @@ interface TeamEditModalProps {
   onToggleDay: (day: Weekday) => void;
   onToggleAllowAbsence: (allow: boolean) => void;
   onUpdateEvents: (events: RecurringEvent[]) => void;
+  onUpdateDayEndTime: (day: Weekday, time: string) => void;
 }
 
 const WEEK_DAYS: Weekday[] = [
@@ -39,6 +40,7 @@ const TeamEditModal = ({
   onToggleDay,
   onToggleAllowAbsence,
   onUpdateEvents,
+  onUpdateDayEndTime,
 }: TeamEditModalProps) => {
   const handleAddEvent = () => {
     const newEvent: RecurringEvent = {
@@ -96,16 +98,29 @@ const TeamEditModal = ({
           {WEEK_DAYS.map((day) => {
             const isActive = team.preferredDays?.includes(day);
             return (
-              <Pill
-                key={day}
-                isActive={isActive}
-                onClick={() => onToggleDay(day)}
-              >
-                {day}
-              </Pill>
+              <div key={day} style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                <Pill
+                  isActive={isActive}
+                  onClick={() => onToggleDay(day)}
+                >
+                  {day}
+                </Pill>
+                {isActive && (
+                  <InputField
+                    type="time"
+                    value={team.dayEndTimes?.[day] || ""}
+                    onChange={(e) => onUpdateDayEndTime(day, e.target.value)}
+                    title={`Duty end time for ${day}`}
+                    style={{ width: "90px" }}
+                  />
+                )}
+              </div>
             );
           })}
         </PillGroup>
+        <p style={{ fontSize: "0.7rem", color: "var(--color-text-faded)", marginTop: "8px" }}>
+          * Set an end time to automatically move today's roster to history after that time.
+        </p>
       </div>
 
       <div className={localStyles.recurringEventsSection}>
