@@ -306,13 +306,17 @@ const DashboardPage = () => {
     }
     text += `${teamEmoji} ${teamName} · ${formattedDate}\n`;
 
-    positions.forEach((p) => {
-      const namesText =
-        p.assignedUsers.length > 0
-          ? p.assignedUsers.map((u) => u.name).join(", ")
-          : "-";
-      text += `${p.emoji}: ${namesText}\n`;
-    });
+    const positionsText = positions
+      .map((p) => {
+        const namesText =
+          p.assignedUsers.length > 0
+            ? p.assignedUsers.map((u) => u.name).join(", ")
+            : "-";
+        return `${p.emoji}: ${namesText}`;
+      })
+      .join("\n");
+
+    text += positionsText;
 
     navigator.clipboard.writeText(text).then(() => {
       const id = `${dateStr}-${teamName}`;
