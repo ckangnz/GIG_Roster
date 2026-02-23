@@ -20,6 +20,15 @@ export interface AppUser {
   isActive: boolean;
 }
 
+export interface RecurringEvent {
+  id: string;
+  label: string;
+  day: Weekday;
+  startTime: string; // HH:mm
+  endTime: string; // HH:mm
+  offsetDays: number; // -ve for before, 0 for same day, +ve for after
+}
+
 export interface Team {
   name: string;
   emoji: string;
@@ -27,6 +36,7 @@ export interface Team {
   preferredDays: Weekday[];
   maxConflict: number;
   allowAbsence?: boolean;
+  recurringEvents?: RecurringEvent[];
 }
 
 export interface Position {
