@@ -1,25 +1,39 @@
 import { RecurringEvent, Weekday } from "../model/model";
 
 /**
- * Formats a date string (YYYY-MM-DD) and a time string (HH:mm) into a Google Calendar deep link.
+ * Formats multiple events into a single .ics string.
  */
-export const generateGoogleCalendarUrl = (
+export const generateMultiIcsString = (
   rosterDate: string,
-  event: RecurringEvent,
+  events: RecurringEvent[],
   teamName: string,
   positionName: string
 ): string => {
-  const start = calculateDateTime(rosterDate, event.day, event.startTime);
-  const end = calculateDateTime(rosterDate, event.day, event.endTime);
+  const eventsContent = events
+    .map((event) => {
+      const start = calculateDateTime(rosterDate, event.day, event.startTime);
+      const end = calculateDateTime(rosterDate, event.day, event.endTime);
+      const format = (date: Date) =>
+        date.toISOString().replace(/-|:|\.\d+/g, "");
 
-  const format = (date: Date) => date.toISOString().replace(/-|:|\.\d+/g, "");
+      return [
+        "BEGIN:VEVENT",
+        `DTSTART:${format(start)}`,
+        `DTEND:${format(end)}`,
+        `SUMMARY:${event.label} - ${teamName} (${positionName})`,
+        "DESCRIPTION:GIG Roster Event",
+        "END:VEVENT",
+      ].join("\r\n");
+    })
+    .join("\r\n");
 
-  const title = encodeURIComponent(
-    `${event.label} - ${teamName} (${positionName})`
-  );
-  const dates = `${format(start)}/${format(end)}`;
-
-  return `https://www.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${dates}&details=GIG%20Roster%20Event&sf=true&output=xml`;
+  return [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//GIG Roster//NONSGML v1.0//EN",
+    eventsContent,
+    "END:VCALENDAR",
+  ].join("\r\n");
 };
 
 /**
@@ -31,23 +45,7 @@ export const generateIcsString = (
   teamName: string,
   positionName: string
 ): string => {
-  const start = calculateDateTime(rosterDate, event.day, event.startTime);
-  const end = calculateDateTime(rosterDate, event.day, event.endTime);
-
-  const format = (date: Date) => date.toISOString().replace(/-|:|\.\d+/g, "");
-
-  return [
-    "BEGIN:VCALENDAR",
-    "VERSION:2.0",
-    "PRODID:-//GIG Roster//NONSGML v1.0//EN",
-    "BEGIN:VEVENT",
-    `DTSTART:${format(start)}`,
-    `DTEND:${format(end)}`,
-    `SUMMARY:${event.label} - ${teamName} (${positionName})`,
-    "DESCRIPTION:GIG Roster Event",
-    "END:VEVENT",
-    "END:VCALENDAR",
-  ].join("\r\n");
+  return generateMultiIcsString(rosterDate, [event], teamName, positionName);
 };
 
 /**
@@ -85,23 +83,14 @@ const calculateDateTime = (
   const [year, month, day] = rosterDate.split("-").map(Number);
   const [hours, minutes] = timeStr.split(":").map(Number);
 
-  // Date constructor uses 0-indexed months
   const anchorDate = new Date(year, month - 1, day, hours, minutes);
-
-  // Get Monday of the current week
-  // getDay() returns 0 for Sunday, 1 for Monday...
   const currentDay = anchorDate.getDay();
-  // We want Monday (1) to be the start of the week.
-  // If today is Sunday (0), we go back 6 days to get to Monday.
-  // If today is Monday (1), we go back 0 days.
   const daysToSubtract = currentDay === 0 ? 6 : currentDay - 1;
 
   const mondayDate = new Date(anchorDate);
   mondayDate.setDate(anchorDate.getDate() - daysToSubtract);
 
-  // Now find the target day relative to Monday
   const targetDayIndex = WEEKDAY_INDEX[targetDay];
-  // Convert Sunday (0) to index 6 relative to Monday
   const daysToAdd = targetDayIndex === 0 ? 6 : targetDayIndex - 1;
 
   const finalDate = new Date(mondayDate);

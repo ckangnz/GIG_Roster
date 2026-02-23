@@ -320,68 +320,45 @@
   border-color: var(--color-link);
 }
 
-.calendarDropdown {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  margin-top: 8px;
-  background: var(--background-card);
-  border: 1px solid var(--border-color-secondary);
-  border-radius: 8px;
-  padding: 8px;
-  min-width: 220px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-  z-index: 1000;
-}
-
-.calendarDropdownTitle {
-  font-size: 0.75rem;
-  font-weight: 800;
-  color: var(--color-text-dim);
-  margin-bottom: 8px;
-  padding: 4px;
-  border-bottom: 1px solid var(--border-color-secondary);
-  text-transform: uppercase;
-}
-
-.calendarEventItem {
-  padding: 8px;
-  border-bottom: 1px solid var(--border-color-secondary);
-}
-
-.calendarEventItem:last-child {
-  border-bottom: none;
-}
-
-.calendarEventLabel {
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: var(--color-text-primary);
-  margin-bottom: 8px;
-}
-
-.calendarActionLinks {
-  display: flex;
-  gap: 8px;
-}
-
-.calendarActionLinks button {
-  flex: 1;
+.calendarActionItem {
+  width: 100%;
+  padding: 1rem;
   background: var(--background-button-secondary);
-  border: 1px solid var(--border-color-input);
-  color: var(--color-text-primary);
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 0.7rem;
-  cursor: pointer;
+  border: 1px solid var(--border-color-secondary);
+  border-radius: 12px;
+  text-align: left;
+  font-size: 0.95rem;
   font-weight: 600;
+  color: var(--color-text-primary);
+  cursor: pointer;
   transition: all 0.2s;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.calendarActionLinks button:hover {
+.calendarActionItem:hover {
+  background: var(--background-primary-subtle);
+  border-color: var(--color-link);
+}
+
+.calendarActionIcon {
+  color: var(--color-link);
+}
+
+.calendarAddAllItem {
+  margin-top: 8px;
   background: var(--color-link);
   color: white;
   border-color: var(--color-link);
+}
+
+.calendarAddAllItem:hover {
+  opacity: 0.9;
+}
+
+.calendarAddAllItem .calendarActionIcon {
+  color: white;
 }
 
 /* Tablet and Desktop Styles */
