@@ -1,9 +1,13 @@
 import { Plus, Trash2 } from "lucide-react";
 
+import Button from "../../components/common/Button";
+import { InputField, SelectField } from "../../components/common/InputField";
 import Modal from "../../components/common/Modal";
 import Pill, { PillGroup } from "../../components/common/Pill";
 import { Position, RecurringEvent, Team, Weekday } from "../../model/model";
-import styles from "../../styles/settings-common.module.css";
+import commonStyles from "../../styles/settings-common.module.css";
+
+import localStyles from "./team-edit-modal.module.css";
 
 interface TeamEditModalProps {
   isOpen: boolean;
@@ -66,8 +70,8 @@ const TeamEditModal = ({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={`Edit Team: ${team.name}`}>
-      <div className={styles.formGroup}>
-        <label className={styles.sectionLabel}>Allowed Positions</label>
+      <div className={commonStyles.formGroup}>
+        <label className={commonStyles.sectionLabel}>Allowed Positions</label>
         <PillGroup>
           {availablePositions
             ?.filter((pos) => !pos.parentId)
@@ -87,8 +91,8 @@ const TeamEditModal = ({
         </PillGroup>
       </div>
 
-      <div className={styles.formGroup}>
-        <label className={styles.sectionLabel}>Preferred Days</label>
+      <div className={commonStyles.formGroup}>
+        <label className={commonStyles.sectionLabel}>Preferred Days</label>
         <PillGroup>
           {WEEK_DAYS.map((day) => {
             const isActive = team.preferredDays?.includes(day);
@@ -105,152 +109,88 @@ const TeamEditModal = ({
         </PillGroup>
       </div>
 
-      <div className={styles.formGroup}>
-        <label className={styles.sectionLabel}>Feature Settings</label>
-        <PillGroup>
-          <Pill
-            isActive={team.allowAbsence !== false}
-            onClick={() => onToggleAllowAbsence(team.allowAbsence === false)}
-            colour={
-              team.allowAbsence !== false
-                ? "var(--color-success-dark)"
-                : "var(--color-text-dim)"
-            }
-          >
-            Allow Absence: {team.allowAbsence !== false ? "YES" : "NO"}
-          </Pill>
-        </PillGroup>
-      </div>
-
-      <div className={styles.formGroup}>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <label className={styles.sectionLabel}>Recurring Events</label>
-          <button
-            className={styles.addEventBtn}
+      <div className={localStyles.recurringEventsSection}>
+        <div className={localStyles.sectionHeader}>
+          <label className={commonStyles.sectionLabel}>Recurring Events</label>
+          <Button
+            variant="secondary"
+            size="small"
+            isIcon
             onClick={handleAddEvent}
             title="Add event"
-            style={{
-              background: "none",
-              border: "none",
-              color: "var(--color-link)",
-              cursor: "pointer",
-            }}
           >
             <Plus size={18} />
-          </button>
+          </Button>
         </div>
 
-        <div className={styles.eventList}>
+        <div className={localStyles.eventList}>
           {(team.recurringEvents || []).map((ev) => (
-            <div
-              key={ev.id}
-              style={{
-                display: "flex",
-                gap: "8px",
-                alignItems: "center",
-                marginBottom: "8px",
-                flexWrap: "wrap",
-                padding: "8px",
-                borderRadius: "8px",
-                backgroundColor: "var(--background-secondary)",
-              }}
-            >
-              <input
-                type="text"
-                value={ev.label}
-                placeholder="Nickname (e.g. Practice)"
-                onChange={(e) =>
-                  handleUpdateEvent(ev.id, "label", e.target.value)
-                }
-                style={{
-                  flex: "1 1 120px",
-                  padding: "4px 8px",
-                  borderRadius: "4px",
-                  border: "1px solid var(--border-color-input)",
-                  fontSize: "0.85rem",
-                }}
-              />
-              <select
-                value={ev.day}
-                onChange={(e) =>
-                  handleUpdateEvent(ev.id, "day", e.target.value as Weekday)
-                }
-                style={{
-                  padding: "4px",
-                  borderRadius: "4px",
-                  border: "1px solid var(--border-color-input)",
-                  fontSize: "0.85rem",
-                }}
-              >
-                {WEEK_DAYS.map((d) => (
-                  <option key={d} value={d}>
-                    {d}
-                  </option>
-                ))}
-              </select>
-              <input
-                type="time"
-                value={ev.startTime}
-                onChange={(e) =>
-                  handleUpdateEvent(ev.id, "startTime", e.target.value)
-                }
-                style={{
-                  padding: "4px",
-                  borderRadius: "4px",
-                  border: "1px solid var(--border-color-input)",
-                  fontSize: "0.85rem",
-                }}
-              />
-              <input
-                type="time"
-                value={ev.endTime}
-                onChange={(e) =>
-                  handleUpdateEvent(ev.id, "endTime", e.target.value)
-                }
-                style={{
-                  padding: "4px",
-                  borderRadius: "4px",
-                  border: "1px solid var(--border-color-input)",
-                  fontSize: "0.85rem",
-                }}
-              />
-              <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                <span style={{ fontSize: "0.75rem", color: "var(--color-text-dim)" }}>
-                  Offset:
-                </span>
-                <input
+            <div key={ev.id} className={localStyles.eventItem}>
+              <div className={localStyles.eventInputLabel}>
+                <InputField
+                  value={ev.label}
+                  placeholder="Nickname (e.g. Practice)"
+                  onChange={(e) =>
+                    handleUpdateEvent(ev.id, "label", e.target.value)
+                  }
+                />
+              </div>
+              <div className={localStyles.eventInputDay}>
+                <SelectField
+                  value={ev.day}
+                  onChange={(e) =>
+                    handleUpdateEvent(ev.id, "day", e.target.value as Weekday)
+                  }
+                >
+                  {WEEK_DAYS.map((d) => (
+                    <option key={d} value={d}>
+                      {d}
+                    </option>
+                  ))}
+                </SelectField>
+              </div>
+              <div className={localStyles.eventInputTime}>
+                <InputField
+                  type="time"
+                  value={ev.startTime}
+                  onChange={(e) =>
+                    handleUpdateEvent(ev.id, "startTime", e.target.value)
+                  }
+                />
+              </div>
+              <div className={localStyles.eventInputTime}>
+                <InputField
+                  type="time"
+                  value={ev.endTime}
+                  onChange={(e) =>
+                    handleUpdateEvent(ev.id, "endTime", e.target.value)
+                  }
+                />
+              </div>
+              <div className={localStyles.eventInputOffset}>
+                <span className={localStyles.offsetLabel}>Offset:</span>
+                <InputField
                   type="number"
                   value={ev.offsetDays}
                   onChange={(e) =>
-                    handleUpdateEvent(ev.id, "offsetDays", parseInt(e.target.value) || 0)
+                    handleUpdateEvent(
+                      ev.id,
+                      "offsetDays",
+                      parseInt(e.target.value) || 0,
+                    )
                   }
-                  style={{
-                    width: "45px",
-                    padding: "4px",
-                    borderRadius: "4px",
-                    border: "1px solid var(--border-color-input)",
-                    fontSize: "0.85rem",
-                  }}
                   title="Days relative to rostered date (-ve for before, 0 for same day)"
                 />
               </div>
-              <button
+              <Button
+                variant="delete"
+                size="small"
+                isIcon
+                className={localStyles.deleteBtn}
                 onClick={() => handleRemoveEvent(ev.id)}
-                style={{
-                  background: "none",
-                  border: "none",
-                  color: "var(--color-error)",
-                  cursor: "pointer",
-                }}
               >
                 <Trash2 size={16} />
-              </button>
+              </Button>
             </div>
           ))}
           {(!team.recurringEvents || team.recurringEvents.length === 0) && (
@@ -265,6 +205,23 @@ const TeamEditModal = ({
             </p>
           )}
         </div>
+      </div>
+
+      <div className={commonStyles.formGroup}>
+        <label className={commonStyles.sectionLabel}>Absence</label>
+        <PillGroup>
+          <Pill
+            isActive={team.allowAbsence !== false}
+            onClick={() => onToggleAllowAbsence(team.allowAbsence === false)}
+            colour={
+              team.allowAbsence !== false
+                ? "var(--color-success-dark)"
+                : "var(--color-text-dim)"
+            }
+          >
+            Allow Absence: {team.allowAbsence !== false ? "YES" : "NO"}
+          </Pill>
+        </PillGroup>
       </div>
     </Modal>
   );

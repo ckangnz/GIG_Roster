@@ -1,0 +1,58 @@
+.recurringEventsSection {
+  border-top: 1px solid var(--border-color-secondary);
+  padding-top: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.eventList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.eventItem {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 12px;
+  border-radius: 8px;
+  background-color: var(--background-body);
+  border: 1px solid var(--border-color-secondary);
+}
+
+.eventInputLabel {
+  flex: 2 1 180px;
+}
+
+.eventInputDay {
+  flex: 1 1 100px;
+}
+
+.eventInputTime {
+  flex: 0 0 100px;
+}
+
+.eventInputOffset {
+  flex: 0 0 80px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.offsetLabel {
+  font-size: 0.75rem;
+  color: var(--color-text-dim);
+  font-weight: 600;
+}
+
+.deleteBtn {
+  margin-left: auto;
+}
