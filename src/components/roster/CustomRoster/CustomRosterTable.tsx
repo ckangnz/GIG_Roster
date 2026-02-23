@@ -5,7 +5,7 @@ import { updatePositionCustomLabels } from "../../../store/slices/positionsSlice
 import RosterTable from "../RosterTable";
 import { CustomRosterHeader } from "./CustomRosterHeader";
 import { CustomRosterRow } from "./CustomRosterRow";
-import { useRosterHeaderLogic } from "../RosterHeader";
+import { useRosterHeaderLogic } from "../../../hooks/useRosterHeaderLogic";
 
 const CustomRosterTable = () => {
   const logic = useRosterBaseLogic();

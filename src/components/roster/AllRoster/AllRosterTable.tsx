@@ -5,7 +5,7 @@ import NameTag from "../../common/NameTag";
 import RosterTable from "../RosterTable";
 import { AllRosterHeader } from "./AllRosterHeader";
 import { AllRosterRow } from "./AllRosterRow";
-import { useRosterHeaderLogic } from "../RosterHeader";
+import { useRosterHeaderLogic } from "../../../hooks/useRosterHeaderLogic";
 
 const AllRosterTable = () => {
   const logic = useRosterBaseLogic();

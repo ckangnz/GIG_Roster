@@ -1,10 +1,9 @@
-import { ReactNode, memo, useMemo } from "react";
+import { ReactNode, memo } from "react";
 
 import { History } from "lucide-react";
 
 import { PeekHeader } from "./Peek/PeekHeader";
-import { useAppDispatch, useAppSelector } from "../../hooks/redux";
-import { getTodayKey } from "../../model/model";
+import { useAppDispatch } from "../../hooks/redux";
 import {
   loadPreviousDates,
 } from "../../store/slices/rosterViewSlice";
@@ -15,15 +14,6 @@ interface RosterHeaderProps {
   showPeek?: boolean;
   children: ReactNode;
 }
-
-export const useRosterHeaderLogic = () => {
-  const { rosterDates } = useAppSelector((state) => state.rosterView);
-  const hasPastDates = useMemo(() => {
-    const todayKey = getTodayKey();
-    return rosterDates.length > 0 && rosterDates[0] < todayKey;
-  }, [rosterDates]);
-  return { hasPastDates };
-};
 
 const RosterHeader = memo(({ showPeek, children }: RosterHeaderProps) => {
   const dispatch = useAppDispatch();

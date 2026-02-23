@@ -4,7 +4,7 @@ import { useRosterBaseLogic } from "../../../hooks/useRosterBaseLogic";
 import RosterTable from "../RosterTable";
 import { AbsenceRosterHeader } from "./AbsenceRosterHeader";
 import { AbsenceRosterRow } from "./AbsenceRosterRow";
-import { useRosterHeaderLogic } from "../RosterHeader";
+import { useRosterHeaderLogic } from "../../../hooks/useRosterHeaderLogic";
 
 const AbsenceRosterTable = () => {
   const logic = useRosterBaseLogic();

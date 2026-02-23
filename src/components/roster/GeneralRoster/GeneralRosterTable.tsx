@@ -4,7 +4,7 @@ import { useRosterBaseLogic } from "../../../hooks/useRosterBaseLogic";
 import RosterTable from "../RosterTable";
 import { GeneralRosterHeader } from "./GeneralRosterHeader";
 import { GeneralRosterRow } from "./GeneralRosterRow";
-import { useRosterHeaderLogic } from "../RosterHeader";
+import { useRosterHeaderLogic } from "../../../hooks/useRosterHeaderLogic";
 
 const GeneralRosterTable = () => {
   const logic = useRosterBaseLogic();
