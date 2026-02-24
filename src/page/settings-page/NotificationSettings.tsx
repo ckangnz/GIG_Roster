@@ -25,10 +25,12 @@ const NotificationSettings = () => {
   const { requestPermission } = useNotifications();
 
   const [permission, setPermission] = useState<NotificationPermission>(
-    typeof Notification !== "undefined" ? Notification.permission : "default"
+    typeof Notification !== "undefined" ? Notification.permission : "default",
   );
-  
-  const [prefs, setPrefs] = useState(userData?.notificationPrefs || defaultPrefs);
+
+  const [prefs, setPrefs] = useState(
+    userData?.notificationPrefs || defaultPrefs,
+  );
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
@@ -37,7 +39,9 @@ const NotificationSettings = () => {
     }
   }, [userData?.notificationPrefs]);
 
-  const hasChanges = JSON.stringify(prefs) !== JSON.stringify(userData?.notificationPrefs || defaultPrefs);
+  const hasChanges =
+    JSON.stringify(prefs) !==
+    JSON.stringify(userData?.notificationPrefs || defaultPrefs);
 
   const handleRequestPermission = async () => {
     await requestPermission();
@@ -57,8 +61,8 @@ const NotificationSettings = () => {
       });
     } else {
       const newPrefs = { ...prefs, [key]: value };
-      // If any specific pref is turned on, "all" should be true? 
-      // Actually, if all are turned off, "all" should be false. 
+      // If any specific pref is turned on, "all" should be true?
+      // Actually, if all are turned off, "all" should be false.
       // If "all" is turned off, all others should be off.
       if (!value) {
         newPrefs.all = false;
@@ -66,7 +70,7 @@ const NotificationSettings = () => {
         // If all sub-prefs are now true, set "all" to true
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { all, ...rest } = newPrefs;
-        if (Object.values(rest).every(v => v)) {
+        if (Object.values(rest).every((v) => v)) {
           newPrefs.all = true;
         }
       }
@@ -78,10 +82,12 @@ const NotificationSettings = () => {
     if (!firebaseUser?.uid) return;
     setIsSaving(true);
     try {
-      await dispatch(updateUserProfile({ 
-        uid: firebaseUser.uid, 
-        data: { notificationPrefs: prefs } 
-      })).unwrap();
+      await dispatch(
+        updateUserProfile({
+          uid: firebaseUser.uid,
+          data: { notificationPrefs: prefs },
+        }),
+      ).unwrap();
     } catch (err) {
       console.error("Failed to save notification settings:", err);
     } finally {
@@ -110,20 +116,22 @@ const NotificationSettings = () => {
                 <span>Notifications are blocked</span>
               </div>
               <p className={styles.instructionText}>
-                To enable alerts, you must manually allow them in your device settings or browser preferences.
+                To enable alerts, you must manually allow them in your device
+                settings or browser preferences.
               </p>
             </div>
           ) : (
             <>
-              <Button 
-                onClick={handleRequestPermission} 
+              <Button
+                onClick={handleRequestPermission}
                 variant="primary"
                 className={styles.enableBtn}
               >
                 Enable Notifications on this Device
               </Button>
               <p className={styles.hintText}>
-                This allows your browser to receive alerts even when the app is closed.
+                This allows your browser to receive alerts even when the app is
+                closed.
               </p>
             </>
           )}
