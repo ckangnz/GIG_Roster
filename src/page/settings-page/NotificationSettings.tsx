@@ -137,9 +137,21 @@ const NotificationSettings = () => {
 
       <div className={commonStyles.formGroup}>
         <label className={commonStyles.sectionLabel}>System Notifications</label>
-        <div style={{ padding: "8px 0", fontSize: "0.85rem", color: "var(--color-text-dim)" }}>
-          Critical updates (Account Approval, Admin Status) are always enabled.
-        </div>
+        <Toggle
+          label="Account Approval"
+          checked={true}
+          onChange={() => {}}
+          disabled={true}
+        />
+        <Toggle
+          label="Admin Status Changes"
+          checked={true}
+          onChange={() => {}}
+          disabled={true}
+        />
+        <p style={{ fontSize: "0.75rem", color: "var(--color-text-faded)", marginTop: "8px" }}>
+          * Critical system updates cannot be disabled.
+        </p>
       </div>
 
       {hasChanges && (
