@@ -28,6 +28,7 @@ export const googleProvider = new GoogleAuthProvider();
 
 export const db = getFirestore(app);
 
-export const messaging = await isSupported().then((supported) => 
-  supported ? getMessaging(app) : null
-);
+export const getMessagingInstance = async () => {
+  const supported = await isSupported();
+  return supported ? getMessaging(app) : null;
+};

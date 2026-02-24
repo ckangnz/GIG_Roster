@@ -3,13 +3,14 @@ import { useEffect, useCallback } from "react";
 import { doc, updateDoc, arrayUnion } from "firebase/firestore";
 import { getToken, onMessage } from "firebase/messaging";
 
-import { messaging, db } from "../firebase";
+import { getMessagingInstance, db } from "../firebase";
 import { useAppSelector } from "./redux";
 
 export const useNotifications = () => {
   const { firebaseUser, userData } = useAppSelector((state) => state.auth);
 
   const requestPermission = useCallback(async () => {
+    const messaging = await getMessagingInstance();
     if (!messaging || !firebaseUser) return;
 
     try {
@@ -34,14 +35,23 @@ export const useNotifications = () => {
   }, [firebaseUser]);
 
   useEffect(() => {
-    if (messaging && firebaseUser && userData?.notificationPrefs?.all !== false) {
-      // Listen for foreground messages - just log to console, no OS banner
-      const unsubscribe = onMessage(messaging, (payload) => {
-        console.log("Foreground message received (silenced):", payload);
-      });
+    let unsubscribe: (() => void) | null = null;
 
-      return () => unsubscribe();
-    }
+    const setupListener = async () => {
+      const messaging = await getMessagingInstance();
+      if (messaging && firebaseUser && userData?.notificationPrefs?.all !== false) {
+        // Listen for foreground messages - just log to console, no OS banner
+        unsubscribe = onMessage(messaging, (payload) => {
+          console.log("Foreground message received (silenced):", payload);
+        });
+      }
+    };
+
+    setupListener();
+
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
   }, [firebaseUser, userData?.notificationPrefs?.all]);
 
   return { requestPermission };
