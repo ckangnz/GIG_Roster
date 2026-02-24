@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 
-import { motion, useMotionValue, animate, PanInfo, useTransform } from "framer-motion";
+import { motion, useMotionValue, animate, PanInfo, useTransform, useMotionValueEvent, AnimatePresence } from "framer-motion";
 
 import SpeechBubble from "./SpeechBubble";
 import { AppUser, Thought } from "../../model/model";
@@ -25,14 +25,29 @@ const ThoughtWheel = ({
   onHeart 
 }: ThoughtWheelProps) => {
   const [focusedIndex, setFocusedIndex] = useState(0);
+  const [realTimeRotation, setRealTimeRotation] = useState(0);
   const [radius, setRadius] = useState(window.innerWidth < 768 ? 250 : 500);
   
   const rotation = useMotionValue(0);
-  // Remove useSpring to eliminate lag during direct interaction
-  const counterRotation = useTransform(rotation, (value) => -value);
 
   const userCount = users.length;
   const angleStep = userCount > 0 ? 360 / userCount : 0;
+
+  // Listen to rotation changes in real-time
+  useMotionValueEvent(rotation, "change", (latest) => {
+    setRealTimeRotation(latest);
+    
+    const snappedIndex = Math.round(-latest / angleStep);
+    const normIdx = ((snappedIndex % userCount) + userCount) % userCount;
+    
+    if (normIdx !== focusedIndex) {
+      setFocusedIndex(normIdx);
+      onUserFocus(users[normIdx]);
+    }
+  });
+  // Remove useSpring to eliminate lag during direct interaction
+  const counterRotation = useTransform(rotation, (value) => -value);
+
   const wheelSnapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Update radius on resize
@@ -69,16 +84,8 @@ const ThoughtWheel = ({
       type: "spring",
       stiffness: 150,
       damping: 30,
-      onUpdate: (latest) => {
-        const idx = Math.round(-latest / angleStep);
-        const normIdx = ((idx % userCount) + userCount) % userCount;
-        if (normIdx !== focusedIndex) {
-          setFocusedIndex(normIdx);
-          onUserFocus(users[normIdx]);
-        }
-      }
     });
-  }, [angleStep, rotation, userCount, focusedIndex, onUserFocus, users]);
+  }, [angleStep, rotation]);
 
   const handleDrag = useCallback((_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     const currentRot = rotation.get();
@@ -108,16 +115,8 @@ const ThoughtWheel = ({
       type: "spring",
       stiffness: 150,
       damping: 30,
-      onUpdate: (latest) => {
-        const idx = Math.round(-latest / angleStep);
-        const normIdx = ((idx % userCount) + userCount) % userCount;
-        if (normIdx !== focusedIndex) {
-          setFocusedIndex(normIdx);
-          onUserFocus(users[normIdx]);
-        }
-      }
     });
-  }, [rotation, angleStep, onUserFocus, userCount, focusedIndex, users]);
+  }, [rotation, angleStep]);
 
   const handleWheel = useCallback((e: React.WheelEvent) => {
     const delta = e.deltaY || e.deltaX;
@@ -154,6 +153,12 @@ const ThoughtWheel = ({
             const x = radius * Math.cos(rad);
             const y = radius * Math.sin(rad);
 
+            // Calculate how far this node is from the center (0 degrees / top)
+            // realTimeRotation is the current wheel rotation.
+            // A node at 'angle' is at the top when realTimeRotation == -angle
+            const angularDistanceFromCenter = Math.abs(((angle + realTimeRotation + 180) % 360 + 360) % 360 - 180);
+            const isVisible = angularDistanceFromCenter < 10; // 10 degree threshold
+
             return (
               <div
                 key={user.id || user.email || index}
@@ -171,13 +176,22 @@ const ThoughtWheel = ({
                 <motion.div 
                   style={{ rotate: counterRotation }}
                 >
-                   {index === focusedIndex && (
-                     <SpeechBubble 
-                       thought={thoughts[`${user.id}_${selectedTeam}`]} 
-                       onHeart={onHeart}
-                     />
-                                    )}
-                                    <div className={styles.userName}>
+                   <AnimatePresence>
+                     {isVisible && (
+                       <motion.div
+                         initial={{ opacity: 0, scale: 0.8, y: 10 }}
+                         animate={{ opacity: 1, scale: 1, y: 0 }}
+                         exit={{ opacity: 0, scale: 0.8, y: 10 }}
+                         transition={{ duration: 0.2 }}
+                       >
+                         <SpeechBubble 
+                           thought={thoughts[`${user.id}_${selectedTeam}`]} 
+                           onHeart={onHeart}
+                         />
+                       </motion.div>
+                     )}
+                   </AnimatePresence>
+                   <div className={styles.userName}>
                                       {user.name}
                                       {thoughts[`${user.id}_${selectedTeam}`] && index !== focusedIndex && (
                                         <span className={styles.hasThoughtDot} />
