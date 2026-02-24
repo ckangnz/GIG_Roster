@@ -10,6 +10,7 @@ import {
 } from "../../constants/navigation";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { useAppListeners } from "../../hooks/useAppListeners";
+import { useNotifications } from "../../hooks/useNotifications";
 import { setLastVisitedPath } from "../../store/slices/uiSlice";
 import ConfirmModal from "../common/ConfirmModal";
 import BottomNav from "../navigation/BottomNav";
@@ -27,6 +28,7 @@ const MainLayout = () => {
 
   // Initialize all real-time app listeners (Presence, Roster, Profile, Metadata)
   useAppListeners();
+  useNotifications();
 
   const { teams: allTeams } = useAppSelector((state) => state.teams);
   const { isMobileSidebarOpen, isDesktopSidebarExpanded, lastVisitedPaths } =

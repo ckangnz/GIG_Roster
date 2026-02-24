@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 
+import Button from "../../components/common/Button";
 import SaveFooter from "../../components/common/SaveFooter";
 import Toggle from "../../components/common/Toggle";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
+import { useNotifications } from "../../hooks/useNotifications";
 import { updateUserProfile } from "../../store/slices/authSlice";
 import commonStyles from "../../styles/settings-common.module.css";
 
@@ -17,6 +19,7 @@ const defaultPrefs = {
 const NotificationSettings = () => {
   const dispatch = useAppDispatch();
   const { userData, firebaseUser } = useAppSelector((state) => state.auth);
+  const { requestPermission } = useNotifications();
   
   const [prefs, setPrefs] = useState(userData?.notificationPrefs || defaultPrefs);
   const [isSaving, setIsSaving] = useState(false);
@@ -78,6 +81,22 @@ const NotificationSettings = () => {
 
   return (
     <div className={commonStyles.managementWrapper}>
+      <div className={commonStyles.formGroup} style={{ marginBottom: "2rem" }}>
+        <label className={commonStyles.sectionLabel}>Device Status</label>
+        <div style={{ padding: "8px 0" }}>
+          <Button 
+            onClick={requestPermission} 
+            variant="primary"
+            style={{ width: "100%", justifyContent: "center" }}
+          >
+            Enable Notifications on this Device
+          </Button>
+          <p style={{ fontSize: "0.75rem", color: "var(--color-text-dim)", marginTop: "8px" }}>
+            This allows your browser to receive alerts even when the app is closed.
+          </p>
+        </div>
+      </div>
+
       <div className={commonStyles.formGroup}>
         <label className={commonStyles.sectionLabel}>General Settings</label>
         <Toggle
