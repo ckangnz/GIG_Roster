@@ -33,6 +33,12 @@
 .bubbleExpanded {
   max-width: 280px;
   z-index: 100;
+  border-color: var(--color-link);
+}
+
+.bubble:hover .tail,
+.bubbleExpanded .tail {
+  border-top-color: var(--color-link);
 }
 
 .text {
@@ -70,6 +76,7 @@
   border-left: 10px solid transparent;
   border-right: 10px solid transparent;
   border-top: 10px solid var(--border-color-secondary);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .tailInner {

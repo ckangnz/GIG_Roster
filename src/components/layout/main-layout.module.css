@@ -10,10 +10,6 @@
   overflow: hidden;
 }
 
-.layoutWrapper.menuOpen {
-  /* You might want to prevent scrolling on the body when menu is open on mobile */
-}
-
 .innerWrapper {
   display: flex;
   flex-direction: column;
@@ -23,19 +19,12 @@
   transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.layoutWrapper.sidebarExpanded .innerWrapper {
-  /* Desktop expanded state */
-}
-
-.layoutWrapper.sidebarCollapsed .innerWrapper {
-  /* Desktop collapsed state */
-}
-
 .mainContent {
   flex: 1;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
+  justify-content: center;
   animation: fadeIn 0.3s ease-in-out;
 }
 
