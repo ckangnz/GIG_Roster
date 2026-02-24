@@ -51,72 +51,20 @@
   margin-top: 1rem;
   z-index: 100;
   pointer-events: none;
-  min-height: 30px;
+  min-height: 60px;
 }
 
-.focusLabel {
-  font-size: 0.9rem;
-  color: var(--color-text-dim);
-  background: var(--background-card-transparent, rgba(255, 255, 255, 0.8));
-  padding: 4px 12px;
-  border-radius: 20px;
-}
-
-[data-theme='dark'] .focusLabel {
-  background: rgba(0, 0, 0, 0.4);
-}
-
-.focusLabel strong {
-  color: var(--color-link);
-}
-
-.adminDeleteBtn {
-  margin-left: 12px;
-  background: var(--color-error);
-  color: white;
-  border: none;
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 0.7rem;
-  font-weight: 700;
-  cursor: pointer;
-  text-transform: uppercase;
-}
-
-.noUsers {
-  color: var(--color-text-dim);
-  font-style: italic;
-  text-align: center;
-  margin-top: 2rem;
-}
-
-.bgDescription {
-  position: absolute;
-  top: 35%; /* Slightly adjusted from 30% to account for header space */
-  left: 50%;
-  transform: translate(-50%, -50%);
-  text-align: center;
-  z-index: 0;
-  width: 100%;
-  max-width: 280px;
-  pointer-events: none;
-  opacity: 0.3;
-}
-
-.bgDescription ol {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+.instructions {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-}
-
-.bgDescription li {
-  font-size: 0.8rem;
-  font-weight: 600;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
   color: var(--color-text-dim);
-  line-height: 1.4;
+  font-weight: 600;
+  text-align: center;
+  opacity: 0.8;
+  pointer-events: none;
 }
 
 .footer {
@@ -149,6 +97,81 @@
 
 .saveBtn {
   flex: 1;
+}
+
+.managementList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0.5rem;
+}
+
+.managementItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background-color: var(--background-body);
+  border: 1px solid var(--border-color-secondary);
+  border-radius: 12px;
+  gap: 12px;
+}
+
+.entryText {
+  font-size: 0.9rem;
+  color: var(--color-text-primary);
+  flex: 1;
+  word-break: break-word;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.entryActions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.addEntryBtn {
+  width: 100%;
+  margin-top: 8px;
+  justify-content: center;
+}
+
+.emptyThoughts {
+  text-align: center;
+  color: var(--color-text-dim);
+  font-style: italic;
+  padding: 1rem;
+}
+
+.likerList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0.5rem;
+}
+
+.likerItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: var(--background-body);
+  border: 1px solid var(--border-color-secondary);
+  border-radius: 12px;
+}
+
+.likerName {
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.likerEmail {
+  font-size: 0.8rem;
+  color: var(--color-text-dim);
 }
 
 @media (min-width: 768px) {

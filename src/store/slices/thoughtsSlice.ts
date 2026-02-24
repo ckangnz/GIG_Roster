@@ -9,7 +9,7 @@ import {
 } from "firebase/firestore";
 
 import { db } from "../../firebase";
-import { Thought } from "../../model/model";
+import { Thought, ThoughtEntry } from "../../model/model";
 
 interface ThoughtsState {
   thoughts: Record<string, Thought>; // id ({userUid}_{teamName}) -> Thought
@@ -23,18 +23,43 @@ const initialState: ThoughtsState = {
   error: null,
 };
 
-export const syncThoughtRemote = createAsyncThunk(
-  "thoughts/syncThoughtRemote",
+/**
+ * Normalizes a Thought object to ensure it has an entries array,
+ * handling legacy 'text' and 'hearts' fields.
+ */
+export const normalizeThought = (thought: Thought): Thought => {
+  if (thought.entries && Array.isArray(thought.entries)) {
+    return thought;
+  }
+
+  const entries: ThoughtEntry[] = [];
+  if (thought.text) {
+    entries.push({
+      id: "legacy",
+      text: thought.text,
+      hearts: thought.hearts || {},
+      updatedAt: thought.updatedAt,
+    });
+  }
+
+  return {
+    ...thought,
+    entries,
+  };
+};
+
+export const syncThoughtEntriesRemote = createAsyncThunk(
+  "thoughts/syncThoughtEntriesRemote",
   async (
     payload: {
       userUid: string;
       teamName: string;
       userName: string;
-      text: string;
+      entries: ThoughtEntry[];
     },
     { rejectWithValue }
   ) => {
-    const { userUid, teamName, userName, text } = payload;
+    const { userUid, teamName, userName, entries } = payload;
     const id = `${userUid}_${teamName}`;
 
     try {
@@ -46,15 +71,18 @@ export const syncThoughtRemote = createAsyncThunk(
           userUid,
           teamName,
           userName,
-          text,
+          entries,
           updatedAt: serverTimestamp(),
+          // Clear legacy fields when updating to new format
+          text: deleteField(),
+          hearts: deleteField(),
         },
         { merge: true }
       );
       return { id };
     } catch (error: unknown) {
       return rejectWithValue(
-        error instanceof Error ? error.message : "Failed to sync thought"
+        error instanceof Error ? error.message : "Failed to sync thoughts"
       );
     }
   }
@@ -75,51 +103,28 @@ export const removeThoughtRemote = createAsyncThunk(
   }
 );
 
-export const syncHeartRemote = createAsyncThunk(
-  "thoughts/syncHeartRemote",
+export const syncHeartEntryRemote = createAsyncThunk(
+  "thoughts/syncHeartEntryRemote",
   async (
     payload: {
       thoughtId: string;
+      entryId: string;
       userUid: string;
+      updatedEntries: ThoughtEntry[];
     },
     { rejectWithValue }
   ) => {
-    const { thoughtId, userUid } = payload;
+    const { thoughtId, updatedEntries } = payload;
     try {
       const docRef = doc(db, "thoughts", thoughtId);
       await updateDoc(docRef, {
-        [`hearts.${userUid}`]: Date.now(),
+        entries: updatedEntries,
         updatedAt: serverTimestamp(),
       });
-      return { thoughtId, userUid };
+      return { thoughtId };
     } catch (error: unknown) {
       return rejectWithValue(
         error instanceof Error ? error.message : "Failed to sync heart"
-      );
-    }
-  }
-);
-
-export const removeHeartRemote = createAsyncThunk(
-  "thoughts/removeHeartRemote",
-  async (
-    payload: {
-      thoughtId: string;
-      userUid: string;
-    },
-    { rejectWithValue }
-  ) => {
-    const { thoughtId, userUid } = payload;
-    try {
-      const docRef = doc(db, "thoughts", thoughtId);
-      await updateDoc(docRef, {
-        [`hearts.${userUid}`]: deleteField(),
-        updatedAt: serverTimestamp(),
-      });
-      return { thoughtId, userUid };
-    } catch (error: unknown) {
-      return rejectWithValue(
-        error instanceof Error ? error.message : "Failed to remove heart"
       );
     }
   }
@@ -130,52 +135,38 @@ const thoughtsSlice = createSlice({
   initialState,
   reducers: {
     setThoughts(state, action: PayloadAction<Record<string, Thought>>) {
-      state.thoughts = action.payload;
+      const normalized: Record<string, Thought> = {};
+      Object.entries(action.payload).forEach(([id, thought]) => {
+        normalized[id] = normalizeThought(thought);
+      });
+      state.thoughts = normalized;
       state.loading = false;
     },
     setLoading(state, action: PayloadAction<boolean>) {
       state.loading = action.payload;
     },
-    applyOptimisticThought(state, action: PayloadAction<Thought>) {
-      state.thoughts[action.payload.id] = action.payload;
+    applyOptimisticThoughts(
+      state,
+      action: PayloadAction<{ id: string; entries: ThoughtEntry[] }>
+    ) {
+      const { id, entries } = action.payload;
+      if (state.thoughts[id]) {
+        state.thoughts[id].entries = entries;
+      }
     },
     applyOptimisticRemove(state, action: PayloadAction<{ id: string }>) {
       delete state.thoughts[action.payload.id];
     },
-    applyOptimisticHeart(
-      state,
-      action: PayloadAction<{ thoughtId: string; userUid: string }>
-    ) {
-      const { thoughtId, userUid } = action.payload;
-      if (state.thoughts[thoughtId]) {
-        if (!state.thoughts[thoughtId].hearts) {
-          state.thoughts[thoughtId].hearts = {};
-        }
-        state.thoughts[thoughtId].hearts[userUid] = Date.now();
-      }
-    },
-    applyOptimisticRemoveHeart(
-      state,
-      action: PayloadAction<{ thoughtId: string; userUid: string }>
-    ) {
-      const { thoughtId, userUid } = action.payload;
-      if (state.thoughts[thoughtId]?.hearts) {
-        delete state.thoughts[thoughtId].hearts[userUid];
-      }
-    },
   },
   extraReducers: (builder) => {
     builder
-      .addCase(syncThoughtRemote.rejected, (state, action) => {
+      .addCase(syncThoughtEntriesRemote.rejected, (state, action) => {
         state.error = action.payload as string;
       })
       .addCase(removeThoughtRemote.rejected, (state, action) => {
         state.error = action.payload as string;
       })
-      .addCase(syncHeartRemote.rejected, (state, action) => {
-        state.error = action.payload as string;
-      })
-      .addCase(removeHeartRemote.rejected, (state, action) => {
+      .addCase(syncHeartEntryRemote.rejected, (state, action) => {
         state.error = action.payload as string;
       });
   },
@@ -184,9 +175,7 @@ const thoughtsSlice = createSlice({
 export const {
   setThoughts,
   setLoading,
-  applyOptimisticThought,
+  applyOptimisticThoughts,
   applyOptimisticRemove,
-  applyOptimisticHeart,
-  applyOptimisticRemoveHeart,
 } = thoughtsSlice.actions;
 export const thoughtsReducer = thoughtsSlice.reducer;

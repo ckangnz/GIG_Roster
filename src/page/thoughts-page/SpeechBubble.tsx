@@ -2,22 +2,30 @@ import { useState, useCallback, useRef, useEffect } from "react";
 
 import { Heart } from "lucide-react";
 
-import { Thought } from "../../model/model";
+import { ThoughtEntry } from "../../model/model";
 
 import styles from "./speech-bubble.module.css";
 
 interface SpeechBubbleProps {
-  thought?: Thought;
-  onHeart: (thoughtId: string) => void;
+  entry: ThoughtEntry;
+  onHeart: (entryId: string) => void;
+  isExpanded: boolean;
+  onToggleExpand: () => void;
+  onShowLikers: (hearts: Record<string, number>) => void;
 }
 
-const SpeechBubble = ({ thought, onHeart }: SpeechBubbleProps) => {
-  const [isExpanded, setIsExpanded] = useState(false);
+const SpeechBubble = ({ entry, onHeart, isExpanded, onToggleExpand, onShowLikers }: SpeechBubbleProps) => {
   const [isTruncated, setIsTruncated] = useState(false);
   const textRef = useRef<HTMLDivElement>(null);
   const clickTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Check for truncation whenever text changes
+  // Randomize floating animation duration and delay for a more organic feel
+  const [floatStyle] = useState(() => ({
+    animationDuration: `${4 + Math.random() * 3}s`,
+    animationDelay: `${-Math.random() * 5}s`,
+  }));
+
+  // Check for truncation
   useEffect(() => {
     const checkTruncation = () => {
       if (!isExpanded && textRef.current) {
@@ -28,7 +36,6 @@ const SpeechBubble = ({ thought, onHeart }: SpeechBubbleProps) => {
     };
 
     checkTruncation();
-    // Small delay to ensure styles are applied
     const timer = setTimeout(checkTruncation, 100);
     
     window.addEventListener("resize", checkTruncation);
@@ -36,58 +43,57 @@ const SpeechBubble = ({ thought, onHeart }: SpeechBubbleProps) => {
       window.removeEventListener("resize", checkTruncation);
       clearTimeout(timer);
     };
-  }, [thought?.text, isExpanded]);
+  }, [entry.text, isExpanded]);
 
   const handleClick = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation();
 
       if (clickTimer.current) {
-        // Double click detected
         clearTimeout(clickTimer.current);
         clickTimer.current = null;
-        if (thought) onHeart(thought.id);
+        onHeart(entry.id);
       } else {
-        // First click
         clickTimer.current = setTimeout(() => {
-          setIsExpanded(!isExpanded);
+          onToggleExpand();
           clickTimer.current = null;
-        }, 250); // 250ms threshold
+        }, 250);
       }
     },
-    [isExpanded, thought, onHeart],
+    [onToggleExpand, entry.id, onHeart],
   );
 
-  if (!thought || !thought.text) return null;
+  const handleHeartClick = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    onShowLikers(entry.hearts);
+  }, [entry.hearts, onShowLikers]);
 
-  const heartCount = thought.hearts ? Object.keys(thought.hearts).length : 0;
+  const heartCount = entry.hearts ? Object.keys(entry.hearts).length : 0;
 
   return (
-    <div className={styles.bubbleContainer}>
+    <div className={`${styles.bubbleContainer} ${isExpanded ? styles.expandedContainer : ""}`}>
       <div
         className={`${styles.bubble} ${isExpanded ? styles.bubbleExpanded : ""}`}
         onClick={handleClick}
+        style={floatStyle}
       >
         <div
           ref={textRef}
           className={`${styles.text} ${!isExpanded ? styles.truncated : ""}`}
         >
-          {thought.text}
+          {entry.text}
         </div>
         {isTruncated && !isExpanded && (
           <div className={styles.readMore}>... read more</div>
         )}
-        <div className={styles.tail}>
-          <div className={styles.tailInner} />
-        </div>
-      </div>
 
-      {heartCount > 0 && (
-        <div className={styles.heartOverlay}>
-          <Heart size={12} fill="#ff4757" />
-          <span style={{ marginLeft: 4, fontWeight: 800 }}>{heartCount}</span>
-        </div>
-      )}
+        {heartCount > 0 && (
+          <div className={styles.heartOverlayInside} onClick={handleHeartClick}>
+            <Heart size={10} fill="#ff4757" stroke="none" />
+            <span style={{ marginLeft: 3, fontWeight: 800 }}>{heartCount}</span>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

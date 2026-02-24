@@ -1,9 +1,17 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 
-import { motion, useMotionValue, animate, PanInfo, useTransform, useMotionValueEvent, AnimatePresence } from "framer-motion";
+import {
+  motion,
+  useMotionValue,
+  animate,
+  PanInfo,
+  useTransform,
+  useMotionValueEvent,
+  AnimatePresence,
+} from "framer-motion";
 
 import SpeechBubble from "./SpeechBubble";
-import { AppUser, Thought } from "../../model/model";
+import { AppUser, Thought, ThoughtEntry } from "../../model/model";
 
 import styles from "./thought-wheel.module.css";
 
@@ -13,47 +21,52 @@ interface ThoughtWheelProps {
   thoughts: Record<string, Thought>;
   selectedTeam: string;
   onUserFocus: (user: AppUser) => void;
-  onHeart: (thoughtId: string) => void;
+  onHeart: (entryId: string) => void;
+  onShowLikers: (hearts: Record<string, number>) => void;
 }
 
-const ThoughtWheel = ({ 
-  users, 
-  currentUserEmail, 
-  thoughts, 
+const ThoughtWheel = ({
+  users,
+  currentUserEmail,
+  thoughts,
   selectedTeam,
-  onUserFocus, 
-  onHeart 
+  onUserFocus,
+  onHeart,
+  onShowLikers,
 }: ThoughtWheelProps) => {
   const [focusedIndex, setFocusedIndex] = useState(0);
   const [realTimeRotation, setRealTimeRotation] = useState(0);
   const [radius, setRadius] = useState(window.innerWidth < 768 ? 250 : 500);
-  
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const [expandedEntryId, setExpandedEntryId] = useState<string | null>(null);
+
   const rotation = useMotionValue(0);
+  const counterRotation = useTransform(rotation, (value) => -value);
 
   const userCount = users.length;
   const angleStep = userCount > 0 ? 360 / userCount : 0;
+  const wheelSnapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Listen to rotation changes in real-time
   useMotionValueEvent(rotation, "change", (latest) => {
     setRealTimeRotation(latest);
-    
+
     const snappedIndex = Math.round(-latest / angleStep);
     const normIdx = ((snappedIndex % userCount) + userCount) % userCount;
-    
+
     if (normIdx !== focusedIndex) {
       setFocusedIndex(normIdx);
       onUserFocus(users[normIdx]);
+      setExpandedEntryId(null); // Reset expansion on wheel move
     }
   });
-  // Remove useSpring to eliminate lag during direct interaction
-  const counterRotation = useTransform(rotation, (value) => -value);
 
-  const wheelSnapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // Update radius on resize
+  // Update radius and windowWidth on resize
   useEffect(() => {
     const handleResize = () => {
-      setRadius(window.innerWidth < 768 ? 250 : 500);
+      const width = window.innerWidth;
+      setWindowWidth(width);
+      setRadius(width < 768 ? 250 : 500);
     };
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
@@ -61,14 +74,14 @@ const ThoughtWheel = ({
 
   useEffect(() => {
     if (userCount === 0) return;
-    
-    const myIndex = users.findIndex(u => u.email === currentUserEmail);
+
+    const myIndex = users.findIndex((u) => u.email === currentUserEmail);
     const targetIndex = myIndex >= 0 ? myIndex : 0;
     const targetRotation = -targetIndex * angleStep;
-    
+
     rotation.stop();
     rotation.set(targetRotation);
-    
+
     const timer = setTimeout(() => {
       setFocusedIndex(targetIndex);
       onUserFocus(users[targetIndex]);
@@ -76,63 +89,123 @@ const ThoughtWheel = ({
     return () => clearTimeout(timer);
   }, [users, currentUserEmail, userCount, angleStep, onUserFocus, rotation]);
 
-  const snapToItem = useCallback((rot: number) => {
-    const snappedIndex = Math.round(-rot / angleStep);
-    const finalRot = -snappedIndex * angleStep;
-    
-    animate(rotation, finalRot, {
-      type: "spring",
-      stiffness: 150,
-      damping: 30,
-    });
-  }, [angleStep, rotation]);
+  const snapToItem = useCallback(
+    (rot: number) => {
+      const snappedIndex = Math.round(-rot / angleStep);
+      const finalRot = -snappedIndex * angleStep;
 
-  const handleDrag = useCallback((_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    const currentRot = rotation.get();
-    // Sensitivity based on radius - increased for snappier feel
-    const sensitivity = (360 / (2 * Math.PI * radius)) * 1.5; 
-    rotation.set(currentRot + info.delta.x * sensitivity);
-  }, [rotation, radius]);
+      animate(rotation, finalRot, {
+        type: "spring",
+        stiffness: 150,
+        damping: 30,
+      });
+    },
+    [angleStep, rotation],
+  );
 
-  const handleDragEnd = useCallback((_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    const currentRot = rotation.get();
-    // Reduce momentum multiplier to make it easier to stop
-    const angularVelocity = (info.velocity.x / radius) * 25; 
-    const targetRot = currentRot + angularVelocity;
-    snapToItem(targetRot);
-  }, [rotation, snapToItem, radius]);
+  const handleDrag = useCallback(
+    (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+      const currentRot = rotation.get();
+      const sensitivity = (360 / (2 * Math.PI * radius)) * 1.5;
+      rotation.set(currentRot + info.delta.x * sensitivity);
+    },
+    [rotation, radius],
+  );
 
-  const handleUserClick = useCallback((index: number) => {
-    const currentRot = rotation.get();
-    const targetRotAbsolute = -index * angleStep;
-    
-    // Calculate shortest path
-    const diff = targetRotAbsolute - currentRot;
-    const shortestDiff = ((diff + 180) % 360 + 360) % 360 - 180;
-    const finalRot = currentRot + shortestDiff;
-    
-    animate(rotation, finalRot, {
-      type: "spring",
-      stiffness: 150,
-      damping: 30,
-    });
-  }, [rotation, angleStep]);
+  const handleDragEnd = useCallback(
+    (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+      const currentRot = rotation.get();
+      const angularVelocity = (info.velocity.x / radius) * 25;
+      const targetRot = currentRot + angularVelocity;
+      snapToItem(targetRot);
+    },
+    [rotation, snapToItem, radius],
+  );
 
-  const handleWheel = useCallback((e: React.WheelEvent) => {
-    const delta = e.deltaY || e.deltaX;
-    const currentRot = rotation.get();
-    const newRot = currentRot - delta * 0.05; 
-    rotation.set(newRot);
-    
-    if (wheelSnapTimerRef.current) clearTimeout(wheelSnapTimerRef.current);
-    wheelSnapTimerRef.current = setTimeout(() => {
-      snapToItem(rotation.get());
-    }, 150);
-  }, [rotation, snapToItem]);
+  const handleUserClick = useCallback(
+    (index: number) => {
+      const currentRot = rotation.get();
+      const targetRotAbsolute = -index * angleStep;
+
+      const diff = targetRotAbsolute - currentRot;
+      const shortestDiff = ((((diff + 180) % 360) + 360) % 360) - 180;
+      const finalRot = currentRot + shortestDiff;
+
+      animate(rotation, finalRot, {
+        type: "spring",
+        stiffness: 150,
+        damping: 30,
+      });
+    },
+    [rotation, angleStep],
+  );
+
+  const handleWheel = useCallback(
+    (e: React.WheelEvent) => {
+      const delta = e.deltaY || e.deltaX;
+      const currentRot = rotation.get();
+      const newRot = currentRot - delta * 0.05;
+      rotation.set(newRot);
+
+      if (wheelSnapTimerRef.current) clearTimeout(wheelSnapTimerRef.current);
+      wheelSnapTimerRef.current = setTimeout(() => {
+        snapToItem(rotation.get());
+      }, 150);
+    },
+    [rotation, snapToItem],
+  );
+
+  // Enhanced cluster bubble positioning with better spread
+  const getBubbleOffset = (index: number, total: number) => {
+    if (total === 1) return { x: 0, y: 0 };
+
+    const isMobile = windowWidth < 768;
+    const horizontalMargin = isMobile ? 40 : 150;
+    const maxAvailableWidth = windowWidth - horizontalMargin;
+
+    // Define relative "cloud cluster" layouts for 2-5 bubbles
+    const layouts: Record<number, { x: number; y: number }[]> = {
+      2: [
+        { x: -90, y: 0 },
+        { x: 90, y: -40 },
+      ],
+      3: [
+        { x: -130, y: 0 },
+        { x: 0, y: -70 },
+        { x: 130, y: 0 },
+      ],
+      4: [
+        { x: -150, y: -20 },
+        { x: 150, y: -20 },
+        { x: -70, y: -90 },
+        { x: 70, y: -90 },
+      ],
+      5: [
+        { x: 0, y: 0 }, // Bottom center
+        { x: -180, y: -45 }, // Mid left
+        { x: 180, y: -45 }, // Mid right
+        { x: -100, y: -110 }, // Top left
+        { x: 100, y: -110 }, // Top right
+      ],
+    };
+
+    const baseLayout = layouts[total as keyof typeof layouts] || layouts[5];
+    const pos = baseLayout[index] || { x: 0, y: 0 };
+
+    // Calculate how much horizontal space this layout needs (approx bubble width 140px)
+    const totalLayoutWidth =
+      Math.max(...baseLayout.map((p) => Math.abs(p.x))) * 2 + 140;
+    const scale = Math.min(1, maxAvailableWidth / totalLayoutWidth);
+
+    return {
+      x: pos.x * scale,
+      y: pos.y,
+    };
+  };
 
   return (
-    <motion.div 
-      className={styles.wheelContainer} 
+    <motion.div
+      className={styles.wheelContainer}
       onWheel={handleWheel}
       drag="x"
       dragConstraints={{ left: 0, right: 0 }}
@@ -143,21 +216,19 @@ const ThoughtWheel = ({
     >
       <div className={styles.centerIndicator} />
       <div className={styles.wheelWrapper}>
-        <motion.div
-          className={styles.wheel}
-          style={{ rotate: rotation }}
-        >
+        <motion.div className={styles.wheel} style={{ rotate: rotation }}>
           {users.map((user, index) => {
             const angle = index * angleStep;
             const rad = (angle - 90) * (Math.PI / 180);
             const x = radius * Math.cos(rad);
             const y = radius * Math.sin(rad);
 
-            // Calculate how far this node is from the center (0 degrees / top)
-            // realTimeRotation is the current wheel rotation.
-            // A node at 'angle' is at the top when realTimeRotation == -angle
-            const angularDistanceFromCenter = Math.abs(((angle + realTimeRotation + 180) % 360 + 360) % 360 - 180);
-            const isVisible = angularDistanceFromCenter < 10; // 10 degree threshold
+            const angularDistanceFromCenter = Math.abs(
+              ((((angle + realTimeRotation + 180) % 360) + 360) % 360) - 180,
+            );
+            const isVisible = angularDistanceFromCenter < 10;
+
+            const userThought = thoughts[`${user.id}_${selectedTeam}`];
 
             return (
               <div
@@ -166,39 +237,89 @@ const ThoughtWheel = ({
                 style={{
                   left: `calc(50% + ${x}px)`,
                   top: `calc(50% + ${y}px)`,
-                  transform: `translate(-50%, -50%)`, 
+                  transform: `translate(-50%, -50%)`,
                 }}
                 onClick={(e) => {
                   e.stopPropagation();
                   handleUserClick(index);
                 }}
               >
-                <motion.div 
-                  style={{ rotate: counterRotation }}
-                >
-                   <AnimatePresence>
-                     {isVisible && (
-                       <motion.div
-                         initial={{ opacity: 0, scale: 0.8, y: 10 }}
-                         animate={{ opacity: 1, scale: 1, y: 0 }}
-                         exit={{ opacity: 0, scale: 0.8, y: 10 }}
-                         transition={{ duration: 0.2 }}
-                       >
-                         <SpeechBubble 
-                           thought={thoughts[`${user.id}_${selectedTeam}`]} 
-                           onHeart={onHeart}
-                         />
-                       </motion.div>
-                     )}
-                   </AnimatePresence>
-                   <div className={styles.userName}>
-                                      {user.name}
-                                      {thoughts[`${user.id}_${selectedTeam}`] && index !== focusedIndex && (
-                                        <span className={styles.hasThoughtDot} />
-                                      )}
-                                    </div>
-                                 </motion.div>
-                   
+                <motion.div style={{ rotate: counterRotation }}>
+                  <AnimatePresence>
+                    {isVisible &&
+                      userThought?.entries?.map(
+                        (entry: ThoughtEntry, idx: number) => {
+                          const offset = getBubbleOffset(
+                            idx,
+                            userThought.entries!.length,
+                          );
+                          const isExpanded = expandedEntryId === entry.id;
+
+                          const isMobile = windowWidth < 768;
+                          // Move to a higher anchor on desktop (subtracting more vh)
+                          const targetVh = isMobile ? "30vh" : "55vh";
+
+                          return (
+                            <motion.div
+                              key={entry.id}
+                              initial={{
+                                opacity: 0,
+                                scale: 0.5,
+                                x: "-50%",
+                                y: 50,
+                              }}
+                              animate={{
+                                opacity: 1,
+                                scale: 1,
+                                x: isExpanded
+                                  ? "-50%"
+                                  : `calc(-50% + ${offset.x}px)`,
+                                y: isExpanded
+                                  ? `calc(${radius}px - ${targetVh} + 50%)`
+                                  : offset.y,
+                              }}
+                              exit={{
+                                opacity: 0,
+                                scale: 0.5,
+                                x: "-50%",
+                                y: 50,
+                              }}
+                              transition={{
+                                type: "spring",
+                                stiffness: 100,
+                                damping: 20,
+                                delay: idx * 0.05,
+                              }}
+                              style={{
+                                position: "absolute",
+                                bottom: "100%",
+                                left: "50%",
+                                zIndex: isExpanded ? 1000 : 10 + idx,
+                              }}
+                            >
+                              <SpeechBubble
+                                entry={entry}
+                                onHeart={onHeart}
+                                isExpanded={isExpanded}
+                                onToggleExpand={() =>
+                                  setExpandedEntryId(
+                                    isExpanded ? null : entry.id,
+                                  )
+                                }
+                                onShowLikers={onShowLikers}
+                              />
+                            </motion.div>
+                          );
+                        },
+                      )}
+                  </AnimatePresence>
+                  <div className={styles.userName}>
+                    {user.name}
+                    {userThought?.entries?.length && index !== focusedIndex && (
+                      <span className={styles.hasThoughtDot} />
+                    )}
+                  </div>
+                </motion.div>
               </div>
             );
           })}

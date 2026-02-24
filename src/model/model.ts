@@ -54,14 +54,23 @@ export interface Absence {
   reason: string;
 }
 
+export interface ThoughtEntry {
+  id: string;
+  text: string;
+  hearts: Record<string, number>; // userUid -> lastHeartTimestamp
+  updatedAt: number;
+}
+
 export interface Thought {
   id: string; // userUid_teamName
   userUid: string;
   userName: string;
   teamName: string;
-  text: string;
+  entries?: ThoughtEntry[]; // NEW
   updatedAt: number;
-  hearts: Record<string, number>; // userUid -> lastHeartTimestamp
+  // Legacy fields for backward compatibility
+  text?: string;
+  hearts?: Record<string, number>;
 }
 
 export type TeamAssignments = Record<string, string[]>; // userEmail/uid -> positionNames[]

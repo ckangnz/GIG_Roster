@@ -14,7 +14,7 @@
   position: absolute;
   /* The center of the rotation */
   /* Radius will be controlled by JS for mobile/desktop diff */
-  top: calc(60% + var(--wheel-radius, 500px));
+  top: calc(80% + var(--wheel-radius, 500px));
   left: 50%;
   transform: translate(-50%, -50%);
   width: calc(2 * var(--wheel-radius, 500px));
@@ -71,7 +71,7 @@
 
 .centerIndicator {
   position: absolute;
-  top: 60%;
+  top: 80%;
   left: 50%;
   transform: translate(-50%, -50%);
   width: 4px;
