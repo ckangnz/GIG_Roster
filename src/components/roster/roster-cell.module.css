@@ -49,8 +49,21 @@
   position: relative;
 }
 
+.highlightedUser.focused {
+  outline-color: #ff9800 !important;
+}
+
 .highlightedCell {
   background-color: var(--background-primary-subtle) !important;
+}
+
+.highlightedUserName {
+  color: #ff9800 !important;
+  font-weight: bold !important;
+}
+
+.cellWithHighlightedUser {
+  background-color: rgba(255, 152, 0, 0.08) !important;
 }
 
 .absentStrike {

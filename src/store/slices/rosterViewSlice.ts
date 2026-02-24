@@ -99,6 +99,8 @@ interface RosterViewState {
   loadingTeam: boolean;
   loadingAllTeamUsers: boolean;
   error: string | null;
+  filterUserId: string | null;
+  highlightedUserId: string | null;
 }
 
 const initialState: RosterViewState = {
@@ -110,6 +112,8 @@ const initialState: RosterViewState = {
   loadingTeam: false,
   loadingAllTeamUsers: false,
   error: null,
+  filterUserId: null,
+  highlightedUserId: null,
 };
 
 export const fetchAllTeamUsers = createAsyncThunk(
@@ -225,6 +229,12 @@ const rosterViewSlice = createSlice({
         );
         state.rosterDates = [...state.rosterDates, ...nextYearDates];
       }
+    },
+    setFilterUserId(state, action: PayloadAction<string | null>) {
+      state.filterUserId = action.payload;
+    },
+    setHighlightedUserId(state, action: PayloadAction<string | null>) {
+      state.highlightedUserId = action.payload;
     }
   },
   extraReducers: (builder) => {
@@ -280,6 +290,11 @@ const rosterViewSlice = createSlice({
   },
 });
 
-export const { loadPreviousDates, resetToUpcomingDates, loadNextYearDates } =
-  rosterViewSlice.actions;
+export const {
+  loadPreviousDates,
+  resetToUpcomingDates,
+  loadNextYearDates,
+  setFilterUserId,
+  setHighlightedUserId,
+} = rosterViewSlice.actions;
 export const rosterViewReducer = rosterViewSlice.reducer;

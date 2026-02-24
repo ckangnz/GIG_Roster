@@ -20,3 +20,7 @@
   background-color: var(--background-primary-subtle);
   color: var(--color-link);
 }
+
+.filteredTableContainer {
+  max-width: 280px;
+}

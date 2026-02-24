@@ -21,6 +21,7 @@ interface RosterCellProps {
   absent?: boolean;
   absenceReason?: string;
   isAssignedOnClosestDate?: boolean;
+  isHighlighted?: boolean;
   content?: ReactNode;
   onClick?: () => void;
   // Absence View
@@ -39,6 +40,7 @@ const RosterCell = memo(({
   absent,
   absenceReason,
   isAssignedOnClosestDate,
+  isHighlighted,
   content,
   onClick,
   handleAbsenceReasonChange,
@@ -69,10 +71,13 @@ const RosterCell = memo(({
     });
   }, [onlineUsers, dateString, identifier, teamName, firebaseUser?.uid]);
 
+  const hasContent = !!content || absent;
+
   const commonClasses = [
     styles.rosterCell,
-    isFocused ? styles.focused : "",
+    isFocused && type !== "all-position" ? styles.focused : "",
     isAssignedOnClosestDate ? styles.highlightedCell : "",
+    isHighlighted ? styles.cellWithHighlightedUser : "",
   ];
 
   const renderRemoteCursors = () => {
@@ -98,10 +103,16 @@ const RosterCell = memo(({
     return (
       <td
         ref={cellRef}
-        className={[...commonClasses, styles.clickable, absent ? styles.absentStrike : ""].filter(Boolean).join(" ")}
-        tabIndex={0}
-        onClick={onClick}
-        onFocus={onFocus}
+        className={[
+          ...commonClasses,
+          hasContent ? styles.clickable : "",
+          absent ? styles.absentStrike : "",
+        ]
+          .filter(Boolean)
+          .join(" ")}
+        tabIndex={hasContent ? 0 : -1}
+        onClick={hasContent ? onClick : undefined}
+        onFocus={hasContent ? onFocus : undefined}
       >
         {renderRemoteCursors()}
         {absent && isFocused && (
@@ -116,7 +127,11 @@ const RosterCell = memo(({
 
   if (type === "all-position") {
     return (
-      <td ref={cellRef} className={commonClasses.filter(Boolean).join(" ")} tabIndex={0} onFocus={onFocus}>
+      <td
+        ref={cellRef}
+        className={commonClasses.filter(Boolean).join(" ")}
+        tabIndex={-1}
+      >
         {renderRemoteCursors()}
         {content}
       </td>
@@ -129,7 +144,7 @@ const RosterCell = memo(({
         ref={cellRef}
         className={[...commonClasses, styles.clickable].filter(Boolean).join(" ")}
         onClick={onClick}
-        tabIndex={0}
+        tabIndex={hasContent ? 0 : -1}
         onFocus={onFocus}
       >
         {renderRemoteCursors()}
@@ -150,7 +165,7 @@ const RosterCell = memo(({
           .filter(Boolean)
           .join(" ")}
         onClick={onClick}
-        tabIndex={0}
+        tabIndex={hasContent ? 0 : -1}
         onFocus={onFocus}
       >
         {renderRemoteCursors()}

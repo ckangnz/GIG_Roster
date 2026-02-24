@@ -5,11 +5,18 @@ import NameTag from "../../common/NameTag";
 import RosterTable from "../RosterTable";
 import { AllRosterHeader } from "./AllRosterHeader";
 import { AllRosterRow } from "./AllRosterRow";
+import { useAppDispatch, useAppSelector } from "../../../hooks/redux";
 import { useRosterHeaderLogic } from "../../../hooks/useRosterHeaderLogic";
+import { setHighlightedUserId } from "../../../store/slices/rosterViewSlice";
+import cellStyles from "../roster-cell.module.css";
+
+import allStyles from "./all-roster.module.css";
 
 const AllRosterTable = () => {
   const logic = useRosterBaseLogic();
+  const dispatch = useAppDispatch();
   const { hasPastDates } = useRosterHeaderLogic();
+  const { filterUserId, highlightedUserId } = useAppSelector((state) => state.rosterView);
   const {
     teamName,
     allTeamUsers,
@@ -34,12 +41,16 @@ const AllRosterTable = () => {
   }, [allTeamUsers, teamName]);
 
   const allViewColumns = useMemo(() => {
-    const userCols = filteredAllTeamUsers.map((u) => ({
+    let userCols = filteredAllTeamUsers.map((u) => ({
       id: u.email || "",
       name: u.name || "",
       isUser: true,
       gender: u.gender,
     }));
+
+    if (rosterAllViewMode === "user" && filterUserId) {
+      userCols = userCols.filter((col) => col.id === filterUserId);
+    }
 
     if (!currentTeamData) return userCols;
 
@@ -56,7 +67,13 @@ const AllRosterTable = () => {
     ).map((l) => ({ id: l, name: l, isUser: false }));
 
     return [...userCols, ...customLabels];
-  }, [filteredAllTeamUsers, currentTeamData, allPositions]);
+  }, [
+    filteredAllTeamUsers,
+    currentTeamData,
+    allPositions,
+    filterUserId,
+    rosterAllViewMode,
+  ]);
 
   const getAssignmentsForIdentifier = useCallback(
     (dateString: string, identifier: string) => {
@@ -85,7 +102,7 @@ const AllRosterTable = () => {
         dateString,
         userIdentifier,
       );
-      if (userAssignments.length === 0) return "";
+      if (userAssignments.length === 0) return null;
 
       return (
         <div
@@ -122,11 +139,14 @@ const AllRosterTable = () => {
     (dateString: string, positionName: string) => {
       const dateKey = dateString.split("T")[0];
       const entry = entries[dateKey];
-      if (!entry || !teamName) return "";
+      if (!entry || !teamName) return null;
 
       const assignedEntries = Object.entries(entry.teams[teamName] || {}).filter(
-        ([, positions]) => Array.isArray(positions) && positions.includes(positionName),
+        ([, positions]) =>
+          Array.isArray(positions) && positions.includes(positionName),
       );
+
+      if (assignedEntries.length === 0) return null;
 
       return (
         <div style={{ fontSize: "0.75rem" }}>
@@ -134,9 +154,23 @@ const AllRosterTable = () => {
             const user = filteredAllTeamUsers.find((u) => u.email === id);
             const isMe = id === userData?.email;
             const displayName = user ? user.name : id;
+            const isHighlighted = id === highlightedUserId;
             return (
               <span key={id}>
-                <NameTag displayName={displayName} isMe={isMe} />
+                <span
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    dispatch(
+                      setHighlightedUserId(
+                        highlightedUserId === id ? null : id,
+                      ),
+                    );
+                  }}
+                  style={{ cursor: "pointer" }}
+                  className={isHighlighted ? cellStyles.highlightedUserName : ""}
+                >
+                  <NameTag displayName={displayName} isMe={isMe} />
+                </span>
                 {idx < assignedEntries.length - 1 ? ", " : ""}
               </span>
             );
@@ -144,8 +178,30 @@ const AllRosterTable = () => {
         </div>
       );
     },
-    [entries, teamName, filteredAllTeamUsers, userData],
+    [
+      entries,
+      teamName,
+      filteredAllTeamUsers,
+      userData,
+      dispatch,
+      highlightedUserId,
+    ],
   );
+
+  const isHighlightedCell = (dateString: string, identifier: string, type: 'user' | 'position') => {
+    if (!highlightedUserId || !entries) return false;
+    const dateKey = dateString.split('T')[0];
+    const entry = entries[dateKey];
+    if (!entry || !teamName || !entry.teams[teamName]) return false;
+
+    if (type === 'user') {
+      return identifier === highlightedUserId;
+    } else {
+      // position
+      const assignments = entry.teams[teamName][highlightedUserId] || [];
+      return assignments.includes(identifier);
+    }
+  };
 
   const handleKeyboardAllCellClick = useCallback((row: number, col: number) => {
     if (rosterAllViewMode !== "user") return;
@@ -171,40 +227,47 @@ const AllRosterTable = () => {
   );
 
   return (
-    <RosterTable
-      {...logic}
-      isAllView={true}
-      isAbsenceView={false}
-      hiddenUserList={hiddenUserList}
-      renderHeader={renderHeader}
-      onLoadNextYear={logic.handleLoadNextYear}
-      colCount={rosterAllViewMode === "user" ? allViewColumns.length : (currentTeamData?.positions.length || 0)}
-      onCellClick={handleKeyboardAllCellClick}
-      hasPastDates={hasPastDates}
-    >
-      {rosterDates.map((dateString, rowIndex) => (
-        <AllRosterRow
-          key={dateString}
-          dateString={dateString}
-          rowIndex={rowIndex}
-          entries={entries}
-          closestNextDate={closestNextDate}
-          onDateClick={logic.handleDateClick}
-          focusedCell={logic.focusedCell}
-          setFocusedCell={logic.setFocusedCell}
-          rosterAllViewMode={rosterAllViewMode}
-          allViewColumns={allViewColumns}
-          currentTeamData={currentTeamData}
-          getAllViewUserCellContent={getAllViewUserCellContent}
-          getAllViewPositionCellContent={getAllViewPositionCellContent}
-          getAssignmentsForIdentifier={getAssignmentsForIdentifier}
-          navigate={navigate}
-          teamName={teamName}
-          isUserAbsent={logic.isUserAbsent}
-          getAbsenceReason={logic.getAbsenceReason}
-        />
-      ))}
-    </RosterTable>
+    <div className={filterUserId ? allStyles.filteredTableContainer : ""}>
+      <RosterTable
+        {...logic}
+        isAllView={true}
+        isAbsenceView={false}
+        hiddenUserList={hiddenUserList}
+        renderHeader={renderHeader}
+        onLoadNextYear={logic.handleLoadNextYear}
+        colCount={
+          rosterAllViewMode === "user"
+            ? allViewColumns.length
+            : currentTeamData?.positions.length || 0
+        }
+        onCellClick={handleKeyboardAllCellClick}
+        hasPastDates={hasPastDates}
+      >
+        {rosterDates.map((dateString, rowIndex) => (
+          <AllRosterRow
+            key={dateString}
+            dateString={dateString}
+            rowIndex={rowIndex}
+            entries={entries}
+            closestNextDate={closestNextDate}
+            onDateClick={logic.handleDateClick}
+            focusedCell={logic.focusedCell}
+            setFocusedCell={logic.setFocusedCell}
+            rosterAllViewMode={rosterAllViewMode}
+            allViewColumns={allViewColumns}
+            currentTeamData={currentTeamData}
+            getAllViewUserCellContent={getAllViewUserCellContent}
+            getAllViewPositionCellContent={getAllViewPositionCellContent}
+            getAssignmentsForIdentifier={getAssignmentsForIdentifier}
+            navigate={navigate}
+            teamName={teamName}
+            isUserAbsent={logic.isUserAbsent}
+            getAbsenceReason={logic.getAbsenceReason}
+            isHighlightedCell={isHighlightedCell}
+          />
+        ))}
+      </RosterTable>
+    </div>
   );
 };
 

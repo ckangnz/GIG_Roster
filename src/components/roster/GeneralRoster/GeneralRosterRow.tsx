@@ -1,6 +1,8 @@
 import { Fragment, memo } from "react";
 
+import { useAppSelector } from "../../../hooks/redux";
 import { AppUser, RosterEntry } from "../../../model/model";
+import cellStyles from "../roster-cell.module.css";
 import RosterCell from "../RosterCell";
 import RosterRow from "../RosterRow";
 
@@ -46,60 +48,75 @@ export const GeneralRosterRow = memo(
     isCellDisabled,
     isUserAbsent,
     getAbsenceReason,
-    assignedOnClosestDate,
-    showPeek,
-  }: GeneralRosterRowProps) => {
-    return (
-      <RosterRow
-        dateString={dateString}
-        entries={entries}
-        onDateClick={onDateClick}
-        closestNextDate={closestNextDate}
-        showPeek={showPeek}
-      >
-        {sortedUsers.map((user, colIndex) => (
-          <Fragment key={user.email}>
-            {genderDividerIndex === colIndex && (
-              <td style={{ width: "8px", background: "var(--border-color-secondary)" }} />
-            )}
-            <RosterCell
-              type="roster-user"
-              dateString={dateString}
-              rowIndex={rowIndex}
-              isFocused={
-                focusedCell?.row === rowIndex &&
-                focusedCell?.col === colIndex &&
-                focusedCell?.table === "roster"
-              }
-              onFocus={() =>
-                setFocusedCell({ row: rowIndex, col: colIndex, table: "roster" })
-              }
-              identifier={user.email || ""}
-              disabled={
-                user.email ? isCellDisabled(dateString, user.email) : false
-              }
-              absent={user.email ? isUserAbsent(dateString, user.email) : false}
-              absenceReason={
-                user.email ? getAbsenceReason(dateString, user.email) : ""
-              }
-              isAssignedOnClosestDate={!!(
-                dateString === closestNextDate &&
-                user.email &&
-                assignedOnClosestDate.includes(user.email)
+      assignedOnClosestDate,
+      showPeek,
+    }: GeneralRosterRowProps) => {
+      const { highlightedUserId } = useAppSelector((state) => state.rosterView);
+    
+      return (
+        <RosterRow
+          dateString={dateString}
+          entries={entries}
+          onDateClick={onDateClick}
+          closestNextDate={closestNextDate}
+          showPeek={showPeek}
+        >
+          {sortedUsers.map((user, colIndex) => (
+            <Fragment key={user.email}>
+              {genderDividerIndex === colIndex && (
+                <td style={{ width: "8px", background: "var(--border-color-secondary)" }} />
               )}
-              content={
-                user.email ? getCellContent(dateString, user.email) : null
-              }
-              onClick={() => {
-                if (user.email && !isCellDisabled(dateString, user.email)) {
-                  handleCellClick(dateString, user.email, rowIndex, colIndex);
+              <RosterCell
+                type="roster-user"
+                dateString={dateString}
+                rowIndex={rowIndex}
+                isFocused={
+                  focusedCell?.row === rowIndex &&
+                  focusedCell?.col === colIndex &&
+                  focusedCell?.table === "roster"
                 }
-              }}
-            />
-          </Fragment>
-        ))}
-        <td style={{ width: "8px", background: "var(--border-color-secondary)" }} />
-      </RosterRow>
-    );
-  },
+                onFocus={() =>
+                  setFocusedCell({ row: rowIndex, col: colIndex, table: "roster" })
+                }
+                identifier={user.email || ""}
+                disabled={
+                  user.email ? isCellDisabled(dateString, user.email) : false
+                }
+                absent={user.email ? isUserAbsent(dateString, user.email) : false}
+                absenceReason={
+                  user.email ? getAbsenceReason(dateString, user.email) : ""
+                }
+                isAssignedOnClosestDate={!!(
+                  dateString === closestNextDate &&
+                  user.email &&
+                  assignedOnClosestDate.includes(user.email)
+                )}
+                            isHighlighted={user.email === highlightedUserId}
+                                          content={
+                                            user.email ? (
+                                              <div
+                                                className={
+                                                  user.email === highlightedUserId
+                                                    ? cellStyles.highlightedUserName
+                                                    : ""
+                                                }
+                                              >
+                                                {getCellContent(dateString, user.email)}
+                                              </div>
+                                            ) : null
+                                          }
+                            
+                            onClick={() => {
+                
+                  if (user.email && !isCellDisabled(dateString, user.email)) {
+                    handleCellClick(dateString, user.email, rowIndex, colIndex);
+                  }
+                }}
+              />
+            </Fragment>
+          ))}
+          <td style={{ width: "8px", background: "var(--border-color-secondary)" }} />
+        </RosterRow>
+      );
+    },
 );

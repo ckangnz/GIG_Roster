@@ -33,6 +33,7 @@ interface AllRosterRowProps {
   teamName?: string;
   isUserAbsent: (dateString: string, userEmail: string) => boolean;
   getAbsenceReason: (dateString: string, userEmail: string) => string;
+  isHighlightedCell: (dateString: string, identifier: string, type: 'user' | 'position') => boolean;
 }
 
 export const AllRosterRow = memo(
@@ -54,6 +55,7 @@ export const AllRosterRow = memo(
     teamName,
     isUserAbsent,
     getAbsenceReason,
+    isHighlightedCell,
   }: AllRosterRowProps) => {
     return (
       <RosterRow
@@ -82,6 +84,7 @@ export const AllRosterRow = memo(
                 absenceReason={
                   col.id ? getAbsenceReason(dateString, col.id) : ""
                 }
+                isHighlighted={isHighlightedCell(dateString, col.id, 'user')}
                 content={
                   col.id ? getAllViewUserCellContent(dateString, col.id) : null
                 }
@@ -111,6 +114,7 @@ export const AllRosterRow = memo(
                   setFocusedCell({ row: rowIndex, col: colIndex, table: "all" })
                 }
                 identifier={pos.name}
+                isHighlighted={isHighlightedCell(dateString, pos.name, 'position')}
                 content={getAllViewPositionCellContent(dateString, pos.name)}
               />
             ))}
