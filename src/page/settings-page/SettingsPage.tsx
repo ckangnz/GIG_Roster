@@ -5,7 +5,7 @@ import PositionManagement from "./PositionManager";
 import ProfileSettings from "./ProfileSettings";
 import TeamManagement from "./TeamManagement";
 import UserManagement from "./UserManagement";
-import { SettingsSection, TESTER_EMAILS } from "../../constants/navigation";
+import { SettingsSection } from "../../constants/navigation";
 import { useAppSelector } from "../../hooks/redux";
 
 import styles from "./settings-page.module.css";
@@ -20,9 +20,7 @@ const SettingsPage = () => {
     <div className={styles.settingsContainer}>
       {activeSection === SettingsSection.PROFILE && <ProfileSettings />}
 
-      {activeSection === SettingsSection.NOTIFICATIONS && 
-        userData.email && TESTER_EMAILS.some(e => e.toLowerCase() === userData.email?.toLowerCase()) && 
-        <NotificationSettings />}
+      {activeSection === SettingsSection.NOTIFICATIONS && <NotificationSettings />}
 
       {activeSection === SettingsSection.USER_MANAGEMENT &&
         (userData.isAdmin ? <UserManagement /> : <p>Access Denied</p>)}

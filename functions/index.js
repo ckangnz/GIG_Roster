@@ -2,8 +2,6 @@ const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 admin.initializeApp();
 
-const TESTER_EMAILS = ["chris.sm.kang542@gmail.com"];
-
 /**
  * 1. onThoughtLiked: Fires when someone hearts a thought.
  * Notify the thought owner.
@@ -35,24 +33,13 @@ exports.onHeartAdded = functions.firestore
         if (!authorDoc.exists) return null;
 
                 const authorData = authorDoc.data();
+        const tokens = authorData.fcmTokens || [];
 
-                const tokens = authorData.fcmTokens || [];
-
-        
-
-                if (
-
-                  tokens.length > 0 && 
-
-                  authorData.notificationPrefs?.thoughtLikes !== false &&
-
-                  TESTER_EMAILS.includes(authorData.email)
-
-                ) {
-
-                  const message = {
-
-        
+        if (
+          tokens.length > 0 && 
+          authorData.notificationPrefs?.thoughtLikes !== false
+        ) {
+          const message = {
             notification: {
               title: "New Love! ❤️",
               body: `${likerName} hearted your thought in ${newValue.teamName}.`,
@@ -91,13 +78,12 @@ exports.onThoughtCreated = functions.firestore
       const tokens = [];
       usersSnapshot.forEach((doc) => {
         const userData = doc.data();
-                // Don't notify the author and check preferences + whitelist
-                if (doc.id !== authorUid && 
-                    userData.fcmTokens && 
-                    userData.notificationPrefs?.newTeamThought !== false &&
-                    TESTER_EMAILS.includes(userData.email)) {
-                  tokens.push(...userData.fcmTokens);
-                }
+        // Don't notify the author and check preferences
+        if (doc.id !== authorUid && 
+            userData.fcmTokens && 
+            userData.notificationPrefs?.newTeamThought !== false) {
+          tokens.push(...userData.fcmTokens);
+        }
         
       });
 
@@ -129,7 +115,6 @@ exports.onUserStatusChange = functions.firestore
     const tokens = newValue.fcmTokens || [];
 
     if (tokens.length === 0) return null;
-    if (!TESTER_EMAILS.includes(newValue.email)) return null;
 
     let title = "";
     let body = "";

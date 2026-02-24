@@ -7,7 +7,6 @@ import {
   BOTTOM_NAV_ITEMS,
   AppTab,
   SettingsSection,
-  TESTER_EMAILS,
 } from "../../constants/navigation";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { useAppListeners } from "../../hooks/useAppListeners";
@@ -29,11 +28,7 @@ const MainLayout = () => {
 
   // Initialize all real-time app listeners (Presence, Roster, Profile, Metadata)
   useAppListeners();
-  
-  if (userData?.email && TESTER_EMAILS.some(e => e.toLowerCase() === userData.email?.toLowerCase())) {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    useNotifications();
-  }
+  useNotifications();
 
   const { teams: allTeams } = useAppSelector((state) => state.teams);
   const { isMobileSidebarOpen, isDesktopSidebarExpanded, lastVisitedPaths } =

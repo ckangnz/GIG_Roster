@@ -33,8 +33,6 @@ export interface NavItem {
   adminOnly?: boolean;
 }
 
-export const TESTER_EMAILS = ["chris.sm.kang542@gmail.com"];
-
 export const BOTTOM_NAV_ITEMS: NavItem[] = [
   { id: AppTab.DASHBOARD, label: "Dashboard", icon: LayoutDashboard },
   { id: AppTab.ROSTER, label: "Roster", icon: Calendar },

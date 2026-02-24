@@ -8,8 +8,6 @@ import {
   BOTTOM_NAV_ITEMS,
   AppTab,
   SETTINGS_NAV_ITEMS,
-  SettingsSection,
-  TESTER_EMAILS,
 } from "../../constants/navigation";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { fetchPositions } from "../../store/slices/positionsSlice";
@@ -334,12 +332,7 @@ const SideNav = () => {
             )}
 
           {activeTab === AppTab.SETTINGS &&
-            SETTINGS_NAV_ITEMS.filter((item) => {
-              if (item.id === SettingsSection.NOTIFICATIONS) {
-                return userData?.email && TESTER_EMAILS.some(e => e.toLowerCase() === userData.email?.toLowerCase());
-              }
-              return !item.adminOnly;
-            }).map((item) => {
+            SETTINGS_NAV_ITEMS.filter((item) => !item.adminOnly).map((item) => {
               const Icon = item.icon;
               return (
                 <button
