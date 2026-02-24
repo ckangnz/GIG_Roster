@@ -20,7 +20,9 @@ const SettingsPage = () => {
     <div className={styles.settingsContainer}>
       {activeSection === SettingsSection.PROFILE && <ProfileSettings />}
 
-      {activeSection === SettingsSection.NOTIFICATIONS && <NotificationSettings />}
+      {activeSection === SettingsSection.NOTIFICATIONS && 
+        import.meta.env.VITE_ENABLE_PUSH_NOTIFICATIONS === "true" && 
+        <NotificationSettings />}
 
       {activeSection === SettingsSection.USER_MANAGEMENT &&
         (userData.isAdmin ? <UserManagement /> : <p>Access Denied</p>)}

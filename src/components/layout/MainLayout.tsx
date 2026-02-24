@@ -28,7 +28,11 @@ const MainLayout = () => {
 
   // Initialize all real-time app listeners (Presence, Roster, Profile, Metadata)
   useAppListeners();
-  useNotifications();
+  
+  if (import.meta.env.VITE_ENABLE_PUSH_NOTIFICATIONS === "true") {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    useNotifications();
+  }
 
   const { teams: allTeams } = useAppSelector((state) => state.teams);
   const { isMobileSidebarOpen, isDesktopSidebarExpanded, lastVisitedPaths } =

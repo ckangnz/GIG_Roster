@@ -55,7 +55,8 @@ This plan outlines the integration of **Firebase Cloud Messaging (FCM)** into th
 
 ---
 
-## 4. Suggested Expansion Ideas
-1. **"On my way" / "Checking in":** A quick notification to let the team know you've arrived at the venue.
-2. **Urgent Roster Change:** Notify specifically when an assignment is changed within 48 hours of an event.
-3. **Team Prayer/Thought Request:** Admins can send a ping asking the team to share their thoughts for the week.
+## 5. Testing in Production (Safety)
+To test notifications in production without spamming real users:
+1. **Feature Flag:** Set `VITE_ENABLE_PUSH_NOTIFICATIONS=true` only in your local `.env.local`. This hides the UI and prevents token registration for other users.
+2. **Whitelist (Backend):** In `functions/index.js`, implement a whitelist of emails allowed to receive notifications during the testing phase.
+3. **Manual Ping:** Use the Firebase Console "Messaging" tool to send a test message directly to your `fcmToken` (visible in your user document in Firestore).
