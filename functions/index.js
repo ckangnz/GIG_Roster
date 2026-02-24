@@ -1,5 +1,6 @@
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
+const { DateTime } = require("luxon");
 admin.initializeApp();
 
 /**
@@ -160,5 +161,122 @@ exports.onUserStatusChange = functions.firestore
       return response;
     }
 
+    return null;
+  });
+
+/**
+ * 4. checkRosterHandoff: Runs every 10 minutes.
+ * Notifies the NEXT rostered users when a team's current duty ends.
+ */
+exports.checkRosterHandoff = functions.pubsub
+  .schedule("every 10 minutes")
+  .onRun(async (context) => {
+    const nzNow = DateTime.now().setZone("Pacific/Auckland");
+    const todayKey = nzNow.toFormat("yyyy-MM-dd");
+    const currentWeekday = nzNow.weekdayLong; // e.g. "Sunday"
+
+    try {
+      // 1. Get all teams
+      const teamsDoc = await admin.firestore().doc("metadata/teams").get();
+      if (!teamsDoc.exists) return null;
+      const teams = teamsDoc.data().list || [];
+
+      for (const team of teams) {
+        const endTime = team.dayEndTimes?.[currentWeekday];
+        if (!endTime) continue;
+
+        // Check if current time is within 10 minutes AFTER the endTime
+        // (Ensures we only trigger once per handoff)
+        const [endHour, endMin] = endTime.split(":").map(Number);
+        const endDateTime = nzNow.set({
+          hour: endHour,
+          minute: endMin,
+          second: 0,
+          millisecond: 0,
+        });
+
+        const diffMins = nzNow.diff(endDateTime, "minutes").minutes;
+
+        if (diffMins >= 0 && diffMins < 10) {
+          console.log(
+            `Handoff detected for team ${team.name} (End time: ${endTime})`
+          );
+
+          // 2. Check if we already sent this handoff
+          const handoffId = `${team.name}_${todayKey}`;
+          const handoffRef = admin.firestore().doc(`handoffs/${handoffId}`);
+          const handoffSnap = await handoffRef.get();
+          if (handoffSnap.exists) {
+            console.log(`Handoff already processed for ${handoffId}`);
+            continue;
+          }
+
+          // 3. Find the NEXT upcoming roster date for this team
+          // We look for dates > today
+          const rosterSnap = await admin
+            .firestore()
+            .collection("roster")
+            .where("date", ">", todayKey)
+            .orderBy("date", "asc")
+            .limit(1)
+            .get();
+
+          if (rosterSnap.empty) {
+            console.log(`No upcoming roster found for team ${team.name}`);
+            continue;
+          }
+
+          const nextRoster = rosterSnap.docs[0].data();
+          const nextDate = nextRoster.date;
+          const assignments = nextRoster.teams?.[team.name] || {};
+          const usersToNotify = Object.keys(assignments);
+
+          if (usersToNotify.length === 0) {
+            console.log(`No users assigned for next roster on ${nextDate}`);
+            continue;
+          }
+
+          // 4. Collect tokens for these users
+          const tokens = [];
+          for (const email of usersToNotify) {
+            const userSnap = await admin
+              .firestore()
+              .collection("users")
+              .where("email", "==", email)
+              .get();
+
+            if (!userSnap.empty) {
+              const userData = userSnap.docs[0].data();
+              if (
+                userData.fcmTokens &&
+                userData.notificationPrefs?.rosterHandoff !== false
+              ) {
+                tokens.push(...userData.fcmTokens);
+              }
+            }
+          }
+
+          // 5. Send notifications
+          if (tokens.length > 0) {
+            const message = {
+              notification: {
+                title: `${team.emoji} Next Roster is Live!`,
+                body: `Duties for ${team.name} have ended. You are rostered for the next event on ${nextDate}.`,
+              },
+              tokens: tokens,
+            };
+            await admin.messaging().sendEachForMulticast(message);
+            console.log(`Sent handoff notification to ${tokens.length} tokens.`);
+          }
+
+          // 6. Mark as processed
+          await handoffRef.set({
+            processedAt: admin.firestore.FieldValue.serverTimestamp(),
+          });
+        }
+      }
+    } catch (err) {
+      console.error("Error in checkRosterHandoff:", err);
+    }
     return null;
   });
