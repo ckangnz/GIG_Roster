@@ -220,42 +220,36 @@ const ThoughtsPage = () => {
           )}
         </div>
 
-              <div className={styles.focusedUserInfo}>
-                {focusedUser && (
-                  <div className={styles.focusLabel}>
-                    Viewing <strong>{focusedUser.name}</strong>'s thoughts
-                                {!isMyProfileFocused && userData?.isAdmin && focusedThought && (
-                                  <button 
-                                    className={styles.adminDeleteBtn}
-                                    onClick={() => handleDeleteThought(focusedThoughtId)}
-                                  >
-                                    Clear (Admin)
-                                  </button>
-                                )}
-                              </div>
-                            )}
-                          </div>
-                    
-                          <div className={styles.footer}>
-                            <Button onClick={handleOpenInput} className={styles.shareBtn}>
-                              {isMyProfileFocused 
-                                ? (myThought ? "Edit my thought" : "Share a thought")
-                                : (userData?.isAdmin && focusedThought ? `Edit ${focusedUser?.name}'s thought` : "Share a thought")
-                              }
-                            </Button>
-                          </div>
-                    
+                    <div className={styles.focusedUserInfo}>
+                      {focusedUser && (
+                        <div className={styles.focusLabel}>
+                          Viewing <strong>{focusedUser.name}</strong>'s thoughts
+                        </div>
+                      )}
+                    </div>
+      <div className={styles.footer}>
+        <Button 
+          onClick={handleOpenInput} 
+          className={styles.shareBtn}
+          variant={(!isMyProfileFocused && userData?.isAdmin) ? "secondary" : "primary"}
+        >
+          {(!isMyProfileFocused && userData?.isAdmin)
+            ? (focusedThought ? `Moderate ${focusedUser?.name}'s thought` : `Share for ${focusedUser?.name}`)
+            : (myThought ? "Edit my thought" : "Share a thought")
+          }
+        </Button>
       </div>
+    </div>
 
-      <ActionSheet
-        isOpen={isInputOpen}
-        onClose={() => setIsInputOpen(false)}
-        title={
-          isMyProfileFocused 
-            ? (myThought ? "Edit My Thought" : "Share a Thought")
-            : (`Edit ${focusedUser?.name}'s Thought`)
-        }
-      >
+    <ActionSheet
+      isOpen={isInputOpen}
+      onClose={() => setIsInputOpen(false)}
+      title={
+        (!isMyProfileFocused && userData?.isAdmin)
+          ? `Acting on behalf of ${focusedUser?.name}`
+          : (myThought ? "Edit My Thought" : "Share a Thought")
+      }
+    >
         <div className={styles.inputContainer}>
           <TextAreaField
             value={inputText}
