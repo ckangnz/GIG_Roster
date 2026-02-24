@@ -23,6 +23,3 @@ dist-ssr
 *.sln
 *.sw?
 .env.local
-
-# Firebase
-public/firebase-messaging-sw.js

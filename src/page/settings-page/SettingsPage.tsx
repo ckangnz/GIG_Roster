@@ -1,6 +1,5 @@
 import { useParams } from "react-router-dom";
 
-import NotificationSettings from "./NotificationSettings";
 import PositionManagement from "./PositionManager";
 import ProfileSettings from "./ProfileSettings";
 import TeamManagement from "./TeamManagement";
@@ -19,8 +18,6 @@ const SettingsPage = () => {
   return (
     <div className={styles.settingsContainer}>
       {activeSection === SettingsSection.PROFILE && <ProfileSettings />}
-
-      {activeSection === SettingsSection.NOTIFICATIONS && <NotificationSettings />}
 
       {activeSection === SettingsSection.USER_MANAGEMENT &&
         (userData.isAdmin ? <UserManagement /> : <p>Access Denied</p>)}

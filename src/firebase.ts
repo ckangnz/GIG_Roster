@@ -1,7 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
-import { getMessaging, isSupported } from "firebase/messaging";
 
 function requiredEnv(name: keyof ImportMetaEnv): string {
   const value = import.meta.env[name];
@@ -27,8 +26,3 @@ export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 
 export const db = getFirestore(app);
-
-export const getMessagingInstance = async () => {
-  const supported = await isSupported();
-  return supported ? getMessaging(app) : null;
-};
