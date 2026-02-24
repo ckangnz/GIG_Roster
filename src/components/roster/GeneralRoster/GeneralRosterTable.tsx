@@ -5,6 +5,7 @@ import RosterTable from "../RosterTable";
 import { GeneralRosterHeader } from "./GeneralRosterHeader";
 import { GeneralRosterRow } from "./GeneralRosterRow";
 import { useRosterHeaderLogic } from "../../../hooks/useRosterHeaderLogic";
+import cellStyles from "../roster-cell.module.css";
 
 const GeneralRosterTable = () => {
   const logic = useRosterBaseLogic();
@@ -104,37 +105,38 @@ const GeneralRosterTable = () => {
         return "";
 
       return (
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            gap: "4px",
-            flexWrap: "wrap",
-          }}
-        >
-          {currentTeamAssignments.map((posName) => {
-            const pos = allPositions.find((p) => p.name === posName);
-            return (
-              <span key={posName} title={`${teamName}: ${posName}`}>
-                {pos?.emoji || "❓"}
-              </span>
-            );
-          })}
-          {otherTeamsAssignments.map((ota) =>
-            ota.positions.map((posName) => {
-              const pos = allPositions.find((p) => p.name === posName);
-              return (
-                <span
-                  key={`${ota.team}-${posName}`}
-                  title={`${ota.team}: ${posName}`}
-                  style={{ opacity: 0.6 }}
-                >
-                  {pos?.emoji || "❓"}
-                </span>
-              );
-            }),
+        <>
+          {currentTeamAssignments.length > 0 && (
+            <div className={cellStyles.currentTeamContainer}>
+              {currentTeamAssignments.map((posName) => {
+                const pos = allPositions.find((p) => p.name === posName);
+                return (
+                  <span key={posName} title={`${teamName}: ${posName}`}>
+                    {pos?.emoji || "❓"}
+                  </span>
+                );
+              })}
+            </div>
           )}
-        </div>
+          {otherTeamsAssignments.length > 0 && (
+            <div className={cellStyles.otherTeamsIndicator}>
+              {otherTeamsAssignments.map((ota) =>
+                ota.positions.map((posName) => {
+                  const pos = allPositions.find((p) => p.name === posName);
+                  return (
+                    <span
+                      key={`${ota.team}-${posName}`}
+                      title={`${ota.team}: ${posName}`}
+                      className={cellStyles.otherTeamEmoji}
+                    >
+                      {pos?.emoji || "❓"}
+                    </span>
+                  );
+                }),
+              )}
+            </div>
+          )}
+        </>
       );
     },
     [entries, teamName, allPositions],

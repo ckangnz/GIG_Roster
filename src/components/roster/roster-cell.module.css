@@ -4,6 +4,29 @@
   position: relative; /* Base for remote cursors */
 }
 
+.currentTeamContainer {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.otherTeamsIndicator {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  gap: 2px;
+  line-height: 1;
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.otherTeamEmoji {
+  font-size: 0.7rem;
+}
+
 .clickable {
   cursor: pointer;
   transition: background-color 0.2s;
