@@ -5,8 +5,7 @@ import { collection, query, where, onSnapshot } from "firebase/firestore";
 import ThoughtWheel from "./ThoughtWheel";
 import ActionSheet from "../../components/common/ActionSheet";
 import Button from "../../components/common/Button";
-import { SelectField } from "../../components/common/InputField";
-import { InputField } from "../../components/common/InputField";
+import { SelectField, TextAreaField } from "../../components/common/InputField";
 import Spinner from "../../components/common/Spinner";
 import { db } from "../../firebase";
 import { useAppSelector, useAppDispatch } from "../../hooks/redux";
@@ -200,6 +199,13 @@ const ThoughtsPage = () => {
         )}
 
         <div className={styles.wheelWrapper}>
+          <div className={styles.bgDescription}>
+            <ol>
+              <li>Share what's on your mind</li>
+              <li>Tap to read, double-tap to love</li>
+              <li>Clear your thought to start fresh</li>
+            </ol>
+          </div>
           {teamUsers.length > 0 ? (
             <ThoughtWheel
               users={teamUsers}
@@ -251,11 +257,16 @@ const ThoughtsPage = () => {
         }
       >
         <div className={styles.inputContainer}>
-          <InputField
+          <TextAreaField
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             placeholder="What's on your mind?"
             autoFocus
+            onKeyDown={(e) => {
+              if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+                handleSaveThought();
+              }
+            }}
           />
           <div className={styles.inputActions}>
             {((isMyProfileFocused && myThought) || (!isMyProfileFocused && userData?.isAdmin && focusedThought)) && (

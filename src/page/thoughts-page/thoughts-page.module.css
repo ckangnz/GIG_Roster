@@ -76,6 +76,35 @@
   margin-top: 2rem;
 }
 
+.bgDescription {
+  position: absolute;
+  top: 35%; /* Slightly adjusted from 30% to account for header space */
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  z-index: 0;
+  width: 100%;
+  max-width: 280px;
+  pointer-events: none;
+  opacity: 0.3;
+}
+
+.bgDescription ol {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.bgDescription li {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text-dim);
+  line-height: 1.4;
+}
+
 .footer {
   margin-top: auto;
   display: flex;

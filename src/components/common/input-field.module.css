@@ -73,3 +73,27 @@
   background-color: var(--background-card);
   box-shadow: 0 0 0 2px var(--background-primary-subtle);
 }
+
+.textarea {
+  background: var(--background-input);
+  border: 1px solid var(--border-color-input);
+  color: var(--color-text-primary);
+  padding: 12px;
+  min-height: 80px;
+  box-sizing: border-box;
+  display: block;
+  border-radius: 8px;
+  width: 100%;
+  outline: none;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+  line-height: 1.4;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.textarea:focus {
+  border-color: var(--border-color-primary);
+  background: var(--background-card);
+  box-shadow: 0 0 0 2px var(--background-primary-subtle);
+}

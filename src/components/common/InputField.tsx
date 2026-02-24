@@ -30,3 +30,16 @@ export const SelectField = ({ label, className, children, ...props }: SelectFiel
     </div>
   );
 };
+
+interface TextAreaFieldProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+  label?: string;
+}
+
+export const TextAreaField = ({ label, className, ...props }: TextAreaFieldProps) => {
+  return (
+    <div className={styles.inputWrapper}>
+      {label && <label className={styles.label}>{label}</label>}
+      <textarea className={`${styles.textarea} ${className || ""}`} {...props} />
+    </div>
+  );
+};

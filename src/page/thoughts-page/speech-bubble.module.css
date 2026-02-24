@@ -50,6 +50,16 @@
   overflow: hidden;
 }
 
+.readMore {
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: var(--color-link);
+  text-align: right;
+  margin-top: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
 .tail {
   position: absolute;
   bottom: -10px;
@@ -87,8 +97,8 @@
 
 .heartOverlay {
   position: absolute;
-  bottom: 80%;
-  left: 70%;
+  bottom: 90%;
+  left: 75%;
   background: white;
   border-radius: 20px;
   padding: 4px 12px;

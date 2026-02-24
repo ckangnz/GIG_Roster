@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 
 import { Heart } from "lucide-react";
 
@@ -13,24 +13,50 @@ interface SpeechBubbleProps {
 
 const SpeechBubble = ({ thought, onHeart }: SpeechBubbleProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isTruncated, setIsTruncated] = useState(false);
+  const textRef = useRef<HTMLDivElement>(null);
   const clickTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const handleClick = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation();
+  // Check for truncation whenever text changes
+  useEffect(() => {
+    const checkTruncation = () => {
+      if (!isExpanded && textRef.current) {
+        setIsTruncated(
+          textRef.current.scrollHeight > textRef.current.clientHeight,
+        );
+      }
+    };
+
+    checkTruncation();
+    // Small delay to ensure styles are applied
+    const timer = setTimeout(checkTruncation, 100);
     
-    if (clickTimer.current) {
-      // Double click detected
-      clearTimeout(clickTimer.current);
-      clickTimer.current = null;
-      if (thought) onHeart(thought.id);
-    } else {
-      // First click
-      clickTimer.current = setTimeout(() => {
-        setIsExpanded(!isExpanded);
+    window.addEventListener("resize", checkTruncation);
+    return () => {
+      window.removeEventListener("resize", checkTruncation);
+      clearTimeout(timer);
+    };
+  }, [thought?.text, isExpanded]);
+
+  const handleClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+
+      if (clickTimer.current) {
+        // Double click detected
+        clearTimeout(clickTimer.current);
         clickTimer.current = null;
-      }, 250); // 250ms threshold
-    }
-  }, [isExpanded, thought, onHeart]);
+        if (thought) onHeart(thought.id);
+      } else {
+        // First click
+        clickTimer.current = setTimeout(() => {
+          setIsExpanded(!isExpanded);
+          clickTimer.current = null;
+        }, 250); // 250ms threshold
+      }
+    },
+    [isExpanded, thought, onHeart],
+  );
 
   if (!thought || !thought.text) return null;
 
@@ -38,13 +64,19 @@ const SpeechBubble = ({ thought, onHeart }: SpeechBubbleProps) => {
 
   return (
     <div className={styles.bubbleContainer}>
-      <div 
+      <div
         className={`${styles.bubble} ${isExpanded ? styles.bubbleExpanded : ""}`}
         onClick={handleClick}
       >
-        <div className={`${styles.text} ${!isExpanded ? styles.truncated : ""}`}>
+        <div
+          ref={textRef}
+          className={`${styles.text} ${!isExpanded ? styles.truncated : ""}`}
+        >
           {thought.text}
         </div>
+        {isTruncated && !isExpanded && (
+          <div className={styles.readMore}>... read more</div>
+        )}
         <div className={styles.tail}>
           <div className={styles.tailInner} />
         </div>
