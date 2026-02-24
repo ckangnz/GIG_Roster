@@ -7,6 +7,7 @@ import {
   BOTTOM_NAV_ITEMS,
   AppTab,
   SettingsSection,
+  TESTER_EMAILS,
 } from "../../constants/navigation";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { useAppListeners } from "../../hooks/useAppListeners";
@@ -29,7 +30,7 @@ const MainLayout = () => {
   // Initialize all real-time app listeners (Presence, Roster, Profile, Metadata)
   useAppListeners();
   
-  if (import.meta.env.VITE_ENABLE_PUSH_NOTIFICATIONS === "true") {
+  if (userData?.email && TESTER_EMAILS.includes(userData.email)) {
     // eslint-disable-next-line react-hooks/rules-of-hooks
     useNotifications();
   }

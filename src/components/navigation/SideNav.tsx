@@ -9,6 +9,7 @@ import {
   AppTab,
   SETTINGS_NAV_ITEMS,
   SettingsSection,
+  TESTER_EMAILS,
 } from "../../constants/navigation";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { fetchPositions } from "../../store/slices/positionsSlice";
@@ -335,7 +336,7 @@ const SideNav = () => {
           {activeTab === AppTab.SETTINGS &&
             SETTINGS_NAV_ITEMS.filter((item) => {
               if (item.id === SettingsSection.NOTIFICATIONS) {
-                return import.meta.env.VITE_ENABLE_PUSH_NOTIFICATIONS === "true";
+                return userData?.email && TESTER_EMAILS.includes(userData.email);
               }
               return !item.adminOnly;
             }).map((item) => {

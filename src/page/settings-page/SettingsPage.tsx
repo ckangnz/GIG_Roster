@@ -5,7 +5,7 @@ import PositionManagement from "./PositionManager";
 import ProfileSettings from "./ProfileSettings";
 import TeamManagement from "./TeamManagement";
 import UserManagement from "./UserManagement";
-import { SettingsSection } from "../../constants/navigation";
+import { SettingsSection, TESTER_EMAILS } from "../../constants/navigation";
 import { useAppSelector } from "../../hooks/redux";
 
 import styles from "./settings-page.module.css";
@@ -21,7 +21,7 @@ const SettingsPage = () => {
       {activeSection === SettingsSection.PROFILE && <ProfileSettings />}
 
       {activeSection === SettingsSection.NOTIFICATIONS && 
-        import.meta.env.VITE_ENABLE_PUSH_NOTIFICATIONS === "true" && 
+        userData.email && TESTER_EMAILS.includes(userData.email) && 
         <NotificationSettings />}
 
       {activeSection === SettingsSection.USER_MANAGEMENT &&

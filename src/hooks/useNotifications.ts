@@ -35,16 +35,9 @@ export const useNotifications = () => {
 
   useEffect(() => {
     if (messaging && firebaseUser && userData?.notificationPrefs?.all !== false) {
-      // Listen for foreground messages
+      // Listen for foreground messages - just log to console, no OS banner
       const unsubscribe = onMessage(messaging, (payload) => {
-        console.log("Foreground message received:", payload);
-        // Show a custom toast or browser notification if desired
-        if (payload.notification) {
-          new Notification(payload.notification.title || "GIG Roster", {
-            body: payload.notification.body,
-            icon: "/gig_logo.png",
-          });
-        }
+        console.log("Foreground message received (silenced):", payload);
       });
 
       return () => unsubscribe();

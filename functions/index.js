@@ -2,6 +2,8 @@ const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 admin.initializeApp();
 
+const TESTER_EMAILS = ["chris.sm.kang542@gmail.com"];
+
 /**
  * 1. onThoughtLiked: Fires when someone hearts a thought.
  * Notify the thought owner.
@@ -26,14 +28,31 @@ exports.onHeartAdded = functions.firestore
         const likerName = likerDoc.data()?.name || "Someone";
 
         // Get the author's tokens and preferences
-        const authorDoc = await admin.firestore().doc(`users/${newValue.userUid}`).get();
+        const authorDoc = await admin
+          .firestore()
+          .doc(`users/${newValue.userUid}`)
+          .get();
         if (!authorDoc.exists) return null;
-        
-        const authorData = authorDoc.data();
-        const tokens = authorData.fcmTokens || [];
 
-        if (tokens.length > 0 && authorData.notificationPrefs?.thoughtLikes !== false) {
-          const message = {
+                const authorData = authorDoc.data();
+
+                const tokens = authorData.fcmTokens || [];
+
+        
+
+                if (
+
+                  tokens.length > 0 && 
+
+                  authorData.notificationPrefs?.thoughtLikes !== false &&
+
+                  TESTER_EMAILS.includes(authorData.email)
+
+                ) {
+
+                  const message = {
+
+        
             notification: {
               title: "New Love! ❤️",
               body: `${likerName} hearted your thought in ${newValue.teamName}.`,
@@ -63,7 +82,8 @@ exports.onThoughtCreated = functions.firestore
 
     try {
       // Find all users in this team
-      const usersSnapshot = await admin.firestore()
+      const usersSnapshot = await admin
+        .firestore()
         .collection("users")
         .where("teams", "array-contains", teamName)
         .get();
@@ -71,12 +91,14 @@ exports.onThoughtCreated = functions.firestore
       const tokens = [];
       usersSnapshot.forEach((doc) => {
         const userData = doc.data();
-        // Don't notify the author and check preferences
-        if (doc.id !== authorUid && 
-            userData.fcmTokens && 
-            userData.notificationPrefs?.newTeamThought !== false) {
-          tokens.push(...userData.fcmTokens);
-        }
+                // Don't notify the author and check preferences + whitelist
+                if (doc.id !== authorUid && 
+                    userData.fcmTokens && 
+                    userData.notificationPrefs?.newTeamThought !== false &&
+                    TESTER_EMAILS.includes(userData.email)) {
+                  tokens.push(...userData.fcmTokens);
+                }
+        
       });
 
       if (tokens.length > 0) {
@@ -107,6 +129,7 @@ exports.onUserStatusChange = functions.firestore
     const tokens = newValue.fcmTokens || [];
 
     if (tokens.length === 0) return null;
+    if (!TESTER_EMAILS.includes(newValue.email)) return null;
 
     let title = "";
     let body = "";
@@ -114,12 +137,14 @@ exports.onUserStatusChange = functions.firestore
     // Check for Approval
     if (newValue.isApproved === true && previousValue.isApproved !== true) {
       title = "Welcome to GIG Roster! 🎉";
-      body = "Your account has been approved. You can now access your team rosters.";
-    } 
+      body =
+        "Your account has been approved. You can now access your team rosters.";
+    }
     // Check for Admin status
     else if (newValue.isAdmin === true && previousValue.isAdmin !== true) {
       title = "Admin Privileges Granted 🛡️";
-      body = "You have been promoted to an Admin. You can now manage teams and users.";
+      body =
+        "You have been promoted to an Admin. You can now manage teams and users.";
     }
 
     if (title && body) {
