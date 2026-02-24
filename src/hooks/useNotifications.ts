@@ -16,8 +16,16 @@ export const useNotifications = () => {
     try {
       const permission = await Notification.requestPermission();
       if (permission === "granted") {
+        // Register service worker explicitly to get the registration object
+        const registration = await navigator.serviceWorker.register(
+          import.meta.env.MODE === "production" 
+            ? "/GIG_Roster/firebase-messaging-sw.js" 
+            : "/firebase-messaging-sw.js"
+        );
+
         const token = await getToken(messaging, {
           vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,
+          serviceWorkerRegistration: registration,
         });
 
         if (token) {

@@ -18,7 +18,12 @@ exports.onHeartAdded = functions.firestore
     // Only trigger if a heart was added, not removed
     if (newHearts.length > oldHearts.length) {
       const likerUid = newHearts.find((uid) => !oldHearts.includes(uid));
-      if (!likerUid || likerUid === newValue.userUid) return null; // Don't notify if liking own thought
+      console.log(`Liker UID: ${likerUid}, Author UID: ${newValue.userUid}`);
+      
+      if (!likerUid || likerUid === newValue.userUid) {
+        console.log("Skipping notification: Liking own thought or no UID found.");
+        return null; 
+      }
 
       try {
         // Get the liker's name
@@ -30,10 +35,15 @@ exports.onHeartAdded = functions.firestore
           .firestore()
           .doc(`users/${newValue.userUid}`)
           .get();
-        if (!authorDoc.exists) return null;
+        
+        if (!authorDoc.exists) {
+          console.warn(`Author doc not found for UID: ${newValue.userUid}`);
+          return null;
+        }
 
-                const authorData = authorDoc.data();
+        const authorData = authorDoc.data();
         const tokens = authorData.fcmTokens || [];
+        console.log(`Author Name: ${authorData.name}, Tokens count: ${tokens.length}, thoughtLikes pref: ${authorData.notificationPrefs?.thoughtLikes}`);
 
         if (
           tokens.length > 0 && 
@@ -46,7 +56,9 @@ exports.onHeartAdded = functions.firestore
             },
             tokens: tokens,
           };
-          return admin.messaging().sendEachForMulticast(message);
+          const response = await admin.messaging().sendEachForMulticast(message);
+          console.log(`Successfully sent ${response.successCount} heart notifications.`);
+          return response;
         }
       } catch (err) {
         console.error("Error sending heart notification:", err);
@@ -79,13 +91,16 @@ exports.onThoughtCreated = functions.firestore
       usersSnapshot.forEach((doc) => {
         const userData = doc.data();
         // Don't notify the author and check preferences
-        if (doc.id !== authorUid && 
-            userData.fcmTokens && 
-            userData.notificationPrefs?.newTeamThought !== false) {
-          tokens.push(...userData.fcmTokens);
+        if (doc.id !== authorUid) {
+          if (userData.fcmTokens && userData.notificationPrefs?.newTeamThought !== false) {
+            tokens.push(...userData.fcmTokens);
+          } else {
+            console.log(`Skipping notification for ${userData.name}: No tokens or pref disabled.`);
+          }
         }
-        
       });
+
+      console.log(`Team: ${teamName}, Recipients count: ${tokens.length}`);
 
       if (tokens.length > 0) {
         const message = {
@@ -95,7 +110,9 @@ exports.onThoughtCreated = functions.firestore
           },
           tokens: tokens,
         };
-        return admin.messaging().sendEachForMulticast(message);
+        const response = await admin.messaging().sendEachForMulticast(message);
+        console.log(`Successfully sent ${response.successCount} new thought notifications.`);
+        return response;
       }
     } catch (err) {
       console.error("Error sending new thought notification:", err);
@@ -133,11 +150,14 @@ exports.onUserStatusChange = functions.firestore
     }
 
     if (title && body) {
+      console.log(`Sending status change notification to ${newValue.name}. Tokens: ${tokens.length}`);
       const message = {
         notification: { title, body },
         tokens: tokens,
       };
-      return admin.messaging().sendEachForMulticast(message);
+      const response = await admin.messaging().sendEachForMulticast(message);
+      console.log(`Successfully sent ${response.successCount} status notifications.`);
+      return response;
     }
 
     return null;
