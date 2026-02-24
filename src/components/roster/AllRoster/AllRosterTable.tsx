@@ -8,7 +8,6 @@ import { AllRosterRow } from "./AllRosterRow";
 import { useAppDispatch, useAppSelector } from "../../../hooks/redux";
 import { useRosterHeaderLogic } from "../../../hooks/useRosterHeaderLogic";
 import { setHighlightedUserId } from "../../../store/slices/rosterViewSlice";
-import cellStyles from "../roster-cell.module.css";
 
 import allStyles from "./all-roster.module.css";
 
@@ -167,9 +166,12 @@ const AllRosterTable = () => {
                     );
                   }}
                   style={{ cursor: "pointer" }}
-                  className={isHighlighted ? cellStyles.highlightedUserName : ""}
                 >
-                  <NameTag displayName={displayName} isMe={isMe} />
+                  <NameTag
+                    displayName={displayName}
+                    isMe={isMe}
+                    isHighlighted={isHighlighted}
+                  />
                 </span>
                 {idx < assignedEntries.length - 1 ? ", " : ""}
               </span>

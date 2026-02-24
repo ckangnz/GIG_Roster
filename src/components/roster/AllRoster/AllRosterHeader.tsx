@@ -58,7 +58,11 @@ export const AllRosterHeader = memo(
                   className={`${styles.rosterTableHeaderCell} ${isMe ? styles.isMe : ""} ${isFiltered ? styles.isFiltered : ""} ${allStyles.clickableHeader}`}
                   onClick={() => handleHeaderClick(col.id)}
                 >
-                  <NameTag displayName={col.name} isMe={isMe} />
+                  <NameTag
+                    displayName={col.name}
+                    isMe={isMe}
+                    isHighlighted={isFiltered}
+                  />
                 </th>
               );
             })

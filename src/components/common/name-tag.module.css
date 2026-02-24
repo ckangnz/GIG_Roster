@@ -57,3 +57,12 @@
 [data-theme="dark"] .isMe {
   color: #d1c9ff !important;
 }
+
+.isHighlighted {
+  color: #ff9800 !important;
+  font-weight: 800 !important;
+}
+
+[data-theme="dark"] .isMe.isHighlighted {
+  color: #ff9800 !important;
+}
