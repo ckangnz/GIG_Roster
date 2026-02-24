@@ -181,8 +181,9 @@ const ThoughtsPage = () => {
   return (
     <>
       <div className={styles.container}>
-        {userData?.teams && userData.teams.length > 1 && (
-          <div className={styles.header}>
+        <div className={styles.header}>
+          <h1 className={styles.pageTitle}>Team Thoughts</h1>
+          {userData?.teams && userData.teams.length > 1 && (
             <div className={styles.teamSwitcher}>
               <SelectField
                 value={selectedTeam}
@@ -195,8 +196,8 @@ const ThoughtsPage = () => {
                 ))}
               </SelectField>
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
         <div className={styles.wheelWrapper}>
           <div className={styles.bgDescription}>
