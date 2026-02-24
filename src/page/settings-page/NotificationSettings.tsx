@@ -6,7 +6,8 @@ import Toggle from "../../components/common/Toggle";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { useNotifications } from "../../hooks/useNotifications";
 import { updateUserProfile } from "../../store/slices/authSlice";
-import commonStyles from "../../styles/settings-common.module.css";
+
+import styles from "./notification-settings.module.css";
 
 const defaultPrefs = {
   all: true,
@@ -80,25 +81,25 @@ const NotificationSettings = () => {
   };
 
   return (
-    <div className={commonStyles.managementWrapper}>
-      <div className={commonStyles.formGroup} style={{ marginBottom: "2rem" }}>
-        <label className={commonStyles.sectionLabel}>Device Status</label>
-        <div style={{ padding: "8px 0" }}>
+    <div className={styles.managementWrapper}>
+      <div className={styles.formGroup} style={{ marginBottom: "2rem" }}>
+        <label className={styles.sectionLabel}>Device Status</label>
+        <div className={styles.deviceStatusContent}>
           <Button 
             onClick={requestPermission} 
             variant="primary"
-            style={{ width: "100%", justifyContent: "center" }}
+            className={styles.enableBtn}
           >
             Enable Notifications on this Device
           </Button>
-          <p style={{ fontSize: "0.75rem", color: "var(--color-text-dim)", marginTop: "8px" }}>
+          <p className={styles.hintText}>
             This allows your browser to receive alerts even when the app is closed.
           </p>
         </div>
       </div>
 
-      <div className={commonStyles.formGroup}>
-        <label className={commonStyles.sectionLabel}>General Settings</label>
+      <div className={styles.formGroup}>
+        <label className={styles.sectionLabel}>General Settings</label>
         <Toggle
           label="All Notifications"
           checked={prefs.all}
@@ -106,13 +107,12 @@ const NotificationSettings = () => {
         />
       </div>
 
-      <div className={commonStyles.formGroup}>
-        <label className={commonStyles.sectionLabel}>Roster Updates</label>
+      <div className={styles.formGroup}>
+        <label className={styles.sectionLabel}>Roster Updates</label>
         <Toggle
           label="Roster Handoff (Team End Time)"
           checked={prefs.rosterHandoff}
           onChange={(val) => handleToggle("rosterHandoff", val)}
-          disabled={!prefs.all && false} // Actually we want them independent but "all" is a master switch
         />
         <Toggle
           label="Duty Reminders (24h before)"
@@ -121,8 +121,8 @@ const NotificationSettings = () => {
         />
       </div>
 
-      <div className={commonStyles.formGroup}>
-        <label className={commonStyles.sectionLabel}>Thoughts & Connection</label>
+      <div className={styles.formGroup}>
+        <label className={styles.sectionLabel}>Thoughts & Connection</label>
         <Toggle
           label="New Team Thoughts"
           checked={prefs.newTeamThought}
@@ -135,8 +135,8 @@ const NotificationSettings = () => {
         />
       </div>
 
-      <div className={commonStyles.formGroup}>
-        <label className={commonStyles.sectionLabel}>System Notifications</label>
+      <div className={styles.formGroup}>
+        <label className={styles.sectionLabel}>System Notifications</label>
         <Toggle
           label="Account Approval"
           checked={true}
@@ -149,7 +149,7 @@ const NotificationSettings = () => {
           onChange={() => {}}
           disabled={true}
         />
-        <p style={{ fontSize: "0.75rem", color: "var(--color-text-faded)", marginTop: "8px" }}>
+        <p className={styles.criticalHint}>
           * Critical system updates cannot be disabled.
         </p>
       </div>

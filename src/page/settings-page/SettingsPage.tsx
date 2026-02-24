@@ -21,7 +21,7 @@ const SettingsPage = () => {
       {activeSection === SettingsSection.PROFILE && <ProfileSettings />}
 
       {activeSection === SettingsSection.NOTIFICATIONS && 
-        userData.email && TESTER_EMAILS.includes(userData.email) && 
+        userData.email && TESTER_EMAILS.some(e => e.toLowerCase() === userData.email?.toLowerCase()) && 
         <NotificationSettings />}
 
       {activeSection === SettingsSection.USER_MANAGEMENT &&

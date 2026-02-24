@@ -336,7 +336,7 @@ const SideNav = () => {
           {activeTab === AppTab.SETTINGS &&
             SETTINGS_NAV_ITEMS.filter((item) => {
               if (item.id === SettingsSection.NOTIFICATIONS) {
-                return userData?.email && TESTER_EMAILS.includes(userData.email);
+                return userData?.email && TESTER_EMAILS.some(e => e.toLowerCase() === userData.email?.toLowerCase());
               }
               return !item.adminOnly;
             }).map((item) => {

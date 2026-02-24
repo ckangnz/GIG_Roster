@@ -1,0 +1,44 @@
+.managementWrapper {
+  width: 100%;
+  max-width: 750px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.formGroup {
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
+.sectionLabel {
+  display: block;
+  margin-bottom: 12px;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--color-text-dim);
+  font-weight: 700;
+}
+
+.hintText {
+  font-size: 0.75rem;
+  color: var(--color-text-dim);
+  margin-top: 8px;
+}
+
+.criticalHint {
+  font-size: 0.75rem;
+  color: var(--color-text-faded);
+  margin-top: 8px;
+}
+
+.deviceStatusContent {
+  padding: 8px 0;
+}
+
+.enableBtn {
+  width: 100%;
+  justify-content: center;
+}

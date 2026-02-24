@@ -30,7 +30,7 @@ const MainLayout = () => {
   // Initialize all real-time app listeners (Presence, Roster, Profile, Metadata)
   useAppListeners();
   
-  if (userData?.email && TESTER_EMAILS.includes(userData.email)) {
+  if (userData?.email && TESTER_EMAILS.some(e => e.toLowerCase() === userData.email?.toLowerCase())) {
     // eslint-disable-next-line react-hooks/rules-of-hooks
     useNotifications();
   }
