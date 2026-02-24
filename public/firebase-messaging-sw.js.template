@@ -5,12 +5,12 @@ importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-com
 
 // Config is injected during build from .env
 firebase.initializeApp({
-  apiKey: "AIzaSyBrABPwgyh2eahhQZEqjh7vXgNLxtSoOcY",
-  authDomain: "gig-roster.firebaseapp.com",
-  projectId: "gig-roster",
-  storageBucket: "gig-roster.firebasestorage.app",
-  messagingSenderId: "770561557903",
-  appId: "1:770561557903:web:fbcc85b6e9be1e06b2f7fa"
+  apiKey: "__VITE_FIREBASE_API_KEY__",
+  authDomain: "__VITE_FIREBASE_AUTH_DOMAIN__",
+  projectId: "__VITE_FIREBASE_PROJECT_ID__",
+  storageBucket: "__VITE_FIREBASE_STORAGE_BUCKET__",
+  messagingSenderId: "__VITE_FIREBASE_MESSAGING_SENDER_ID__",
+  appId: "__VITE_FIREBASE_APP_ID__"
 });
 
 const messaging = firebase.messaging();
