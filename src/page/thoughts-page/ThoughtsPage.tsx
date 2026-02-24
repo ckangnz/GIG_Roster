@@ -256,6 +256,7 @@ const ThoughtsPage = () => {
             onChange={(e) => setInputText(e.target.value)}
             placeholder="What's on your mind?"
             autoFocus
+            aria-label="Your thought"
             onKeyDown={(e) => {
               if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
                 handleSaveThought();
