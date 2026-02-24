@@ -19,6 +19,14 @@ export interface AppUser {
   isApproved: boolean;
   isAdmin: boolean;
   isActive: boolean;
+  fcmTokens?: string[];
+  notificationPrefs?: {
+    all: boolean;
+    rosterHandoff: boolean;
+    thoughtLikes: boolean;
+    newTeamThought: boolean;
+    rosterReminder: boolean;
+  };
 }
 
 export interface RecurringEvent {
