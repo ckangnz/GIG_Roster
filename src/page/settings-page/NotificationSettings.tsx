@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 
+import { CheckCircle, AlertTriangle } from "lucide-react";
+
 import Button from "../../components/common/Button";
 import SaveFooter from "../../components/common/SaveFooter";
 import Toggle from "../../components/common/Toggle";
@@ -21,6 +23,10 @@ const NotificationSettings = () => {
   const dispatch = useAppDispatch();
   const { userData, firebaseUser } = useAppSelector((state) => state.auth);
   const { requestPermission } = useNotifications();
+
+  const [permission, setPermission] = useState<NotificationPermission>(
+    typeof Notification !== "undefined" ? Notification.permission : "default"
+  );
   
   const [prefs, setPrefs] = useState(userData?.notificationPrefs || defaultPrefs);
   const [isSaving, setIsSaving] = useState(false);
@@ -32,6 +38,13 @@ const NotificationSettings = () => {
   }, [userData?.notificationPrefs]);
 
   const hasChanges = JSON.stringify(prefs) !== JSON.stringify(userData?.notificationPrefs || defaultPrefs);
+
+  const handleRequestPermission = async () => {
+    await requestPermission();
+    if (typeof Notification !== "undefined") {
+      setPermission(Notification.permission);
+    }
+  };
 
   const handleToggle = (key: keyof typeof defaultPrefs, value: boolean) => {
     if (key === "all") {
@@ -85,16 +98,35 @@ const NotificationSettings = () => {
       <div className={styles.formGroup} style={{ marginBottom: "2rem" }}>
         <label className={styles.sectionLabel}>Device Status</label>
         <div className={styles.deviceStatusContent}>
-          <Button 
-            onClick={requestPermission} 
-            variant="primary"
-            className={styles.enableBtn}
-          >
-            Enable Notifications on this Device
-          </Button>
-          <p className={styles.hintText}>
-            This allows your browser to receive alerts even when the app is closed.
-          </p>
+          {permission === "granted" ? (
+            <div className={styles.statusBadgeSuccess}>
+              <CheckCircle size={18} />
+              <span>Notifications active on this device</span>
+            </div>
+          ) : permission === "denied" ? (
+            <div className={styles.statusBadgeError}>
+              <div className={styles.errorHeader}>
+                <AlertTriangle size={18} />
+                <span>Notifications are blocked</span>
+              </div>
+              <p className={styles.instructionText}>
+                To enable alerts, you must manually allow them in your device settings or browser preferences.
+              </p>
+            </div>
+          ) : (
+            <>
+              <Button 
+                onClick={handleRequestPermission} 
+                variant="primary"
+                className={styles.enableBtn}
+              >
+                Enable Notifications on this Device
+              </Button>
+              <p className={styles.hintText}>
+                This allows your browser to receive alerts even when the app is closed.
+              </p>
+            </>
+          )}
         </div>
       </div>
 
