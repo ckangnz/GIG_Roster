@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, matchPath } from "react-router-dom";
 
 import OnlineUsers from "./OnlineUsers";
 import {
@@ -22,10 +22,18 @@ import ThemeToggleButton from "../common/ThemeToggleButton";
 
 import styles from "./side-nav.module.css";
 
+const safeDecode = (str: string | undefined) => {
+  if (!str) return "";
+  try {
+    return decodeURIComponent(str);
+  } catch {
+    return str;
+  }
+};
+
 const SideNav = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { teamName: activeTeamName, positionName, section } = useParams();
   const dispatch = useAppDispatch();
 
   const { userData } = useAppSelector((state) => state.auth);
@@ -52,14 +60,31 @@ const SideNav = () => {
   const isMobile = windowWidth <= 767;
   const shouldShowLabels = isMobile || isDesktopSidebarExpanded;
 
-  const activeTab = location.pathname.includes("/settings")
+  const rosterFullMatch = matchPath("/app/roster/:teamName/:positionName", location.pathname);
+  const rosterTeamMatch = matchPath("/app/roster/:teamName", location.pathname);
+  const thoughtsFullMatch = matchPath("/app/thoughts/:teamName", location.pathname);
+  const settingsFullMatch = matchPath("/app/settings/:section", location.pathname);
+
+  const activeTeamName = safeDecode(
+    rosterFullMatch?.params.teamName || 
+    rosterTeamMatch?.params.teamName || 
+    thoughtsFullMatch?.params.teamName || 
+    ""
+  ).trim() || undefined;
+                         
+  const activeSideItem = safeDecode(
+    rosterFullMatch?.params.positionName || 
+    settingsFullMatch?.params.section || 
+    ""
+  ).trim() || undefined;
+
+  const activeTab: AppTab = location.pathname.includes("/settings")
     ? AppTab.SETTINGS
     : location.pathname.includes("/thoughts")
       ? AppTab.THOUGHTS
       : location.pathname.includes("/dashboard")
         ? AppTab.DASHBOARD
         : AppTab.ROSTER;
-  const activeSideItem = positionName || section;
 
   const prevTeamRef = useRef<string | undefined>(undefined);
 
@@ -116,8 +141,8 @@ const SideNav = () => {
   const renderLocationIndicators = (teamName: string, viewName?: string) => {
     const usersHere = onlineUsers.filter(
       (u) =>
-        u.focus?.teamName === teamName &&
-        (viewName ? u.focus?.viewName === viewName : true),
+        u.focus?.teamName?.trim() === teamName.trim() &&
+        (viewName ? u.focus?.viewName?.trim() === viewName.trim() : true),
     );
 
     if (usersHere.length === 0) return null;
@@ -333,7 +358,7 @@ const SideNav = () => {
                   <span className={styles.navItemLabel}>
                     {shouldShowLabels && team.name}
                   </span>
-                  {renderLocationIndicatorsByUrl(`/app/thoughts/${team.name}`)}
+                  {renderLocationIndicators(team.name)}
                 </button>
               );
             })}

@@ -215,7 +215,7 @@
 }
 
 .sidebarFooter {
-  display: none; /* Hidden on mobile */
+  display: flex;
   border-top: 1px solid var(--border-color-secondary);
   padding: 1rem 2rem;
   padding-bottom: max(1rem, constant(safe-area-inset-bottom));
@@ -254,10 +254,6 @@
   }
 
   .tabletSidebarHeader {
-    display: flex;
-  }
-
-  .sidebarFooter {
     display: flex;
   }
 

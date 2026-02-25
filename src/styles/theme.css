@@ -62,11 +62,12 @@
   
   --background-input: #1c1c1e;
   --background-table-header: #1c1c1e;
-  --background-mobile-header: #000000;
+  --background-mobile-header: #1c1c1e;
+  --background-bottom-nav: #1c1c1e;
   --background-order-controls: var(--neutral-800);
   --background-new-row: #1c1c1e;
   
-  --background-secondary-subtle: rgba(100, 210, 255, 0.25); /* Cyan/Teal Tint */
+  --background-secondary-subtle: rgba(100, 210, 255, 0.22); /* Cyan/Teal Tint */
   --background-pill-active: var(--neutral-800);
   --background-occupied: var(--neutral-800);
   --background-hover: rgba(255, 255, 255, 0.06);
@@ -118,6 +119,7 @@
   --background-input: #ffffff;
   --background-table-header: #f2f2f7;
   --background-mobile-header: #ffffff;
+  --background-bottom-nav: #ffffff;
   --background-new-row: #f0f0ff;
   
   --background-secondary-subtle: #c7f3ff; /* Much more visible cyan */

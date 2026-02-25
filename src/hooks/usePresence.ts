@@ -15,7 +15,7 @@ import {
   QuerySnapshot,
   updateDoc
 } from "firebase/firestore";
-import { useParams, useLocation } from "react-router-dom";
+import { useLocation, matchPath } from "react-router-dom";
 
 import { db, auth } from "../firebase";
 import { useAppDispatch, useAppSelector } from "./redux";
@@ -26,7 +26,7 @@ export interface PresenceFocus {
   date: string;
   identifier: string; // email or custom label
   teamName: string;
-  viewName?: string; // "All", "Absence", or PositionName
+  viewName?: string | null; // "All", "Absence", or PositionName
 }
 
 export interface PresenceUser {
@@ -81,9 +81,17 @@ const sessionColor = getSessionColor();
 const HEARTBEAT_INTERVAL = 60000;
 const PRESENCE_THRESHOLD = 90000;
 
+const safeDecode = (str: string | undefined) => {
+  if (!str) return "";
+  try {
+    return decodeURIComponent(str);
+  } catch {
+    return str;
+  }
+};
+
 export const useTrackPresence = (firebaseUser: User | null, userData: AppUser | null) => {
   const hasCleanedUp = useRef(false);
-  const { teamName, positionName: activePosition } = useParams();
   const location = useLocation();
   
   const { focusedCell } = useAppSelector(state => state.ui);
@@ -91,8 +99,20 @@ export const useTrackPresence = (firebaseUser: User | null, userData: AppUser | 
   const { positions: allPositions } = useAppSelector(state => state.positions);
   
   const currentFocus: PresenceFocus | null = useMemo(() => {
-    // If no specific cell is focused, we still want to broadcast the VIEW level focus for the sidebar
-    if (!teamName) return null;
+    const rosterFullMatch = matchPath("/app/roster/:teamName/:positionName", location.pathname);
+    const rosterTeamMatch = matchPath("/app/roster/:teamName", location.pathname);
+    const thoughtsFullMatch = matchPath("/app/thoughts/:teamName", location.pathname);
+    
+    const rawTeamName = rosterFullMatch?.params.teamName || 
+                        rosterTeamMatch?.params.teamName || 
+                        thoughtsFullMatch?.params.teamName;
+                     
+    const rawActivePosition = rosterFullMatch?.params.positionName;
+
+    if (!rawTeamName) return null;
+
+    const teamName = safeDecode(rawTeamName).trim();
+    const activePosition = rawActivePosition ? safeDecode(rawActivePosition).trim() : undefined;
 
     let identifier = "";
     let date = "";
@@ -116,9 +136,9 @@ export const useTrackPresence = (firebaseUser: User | null, userData: AppUser | 
       date,
       identifier,
       teamName,
-      viewName: activePosition // Tracks "All", "Absence", or PositionName
+      viewName: activePosition || null // Use null instead of undefined for Firestore compatibility
     };
-  }, [focusedCell, rosterDates, users, allTeamUsers, teamName, allPositions, activePosition]);
+  }, [focusedCell, rosterDates, users, allTeamUsers, allPositions, location.pathname]);
 
   useEffect(() => {
     if (!firebaseUser?.uid || !userData?.email) return;

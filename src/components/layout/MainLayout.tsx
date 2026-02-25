@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-import { useLocation, useNavigate, useParams, Outlet } from "react-router-dom";
+import { useLocation, useNavigate, Outlet, matchPath } from "react-router-dom";
 
 import MobileHeader from "./Mobile-Header";
 import {
@@ -17,11 +17,19 @@ import SideNav from "../navigation/SideNav";
 
 import styles from "./main-layout.module.css";
 
+const safeDecode = (str: string | undefined) => {
+  if (!str) return "";
+  try {
+    return decodeURIComponent(str);
+  } catch {
+    return str;
+  }
+};
+
 const MainLayout = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const location = useLocation();
-  const params = useParams();
 
   const { userData } = useAppSelector((state) => state.auth);
 
@@ -32,15 +40,31 @@ const MainLayout = () => {
   const { isMobileSidebarOpen, isDesktopSidebarExpanded, lastVisitedPaths } =
     useAppSelector((state) => state.ui);
 
-  const activeTab = location.pathname.includes("/settings")
+  const rosterFullMatch = matchPath("/app/roster/:teamName/:positionName", location.pathname);
+  const rosterTeamMatch = matchPath("/app/roster/:teamName", location.pathname);
+  const thoughtsFullMatch = matchPath("/app/thoughts/:teamName", location.pathname);
+  const settingsFullMatch = matchPath("/app/settings/:section", location.pathname);
+
+  const activeTeamName = safeDecode(
+    rosterFullMatch?.params.teamName || 
+    rosterTeamMatch?.params.teamName || 
+    thoughtsFullMatch?.params.teamName || 
+    ""
+  ).trim() || undefined;
+                         
+  const activeSideItem = safeDecode(
+    rosterFullMatch?.params.positionName || 
+    settingsFullMatch?.params.section || 
+    ""
+  ).trim() || null;
+
+  const activeTab: AppTab = location.pathname.includes("/settings")
     ? AppTab.SETTINGS
     : location.pathname.includes("/thoughts")
       ? AppTab.THOUGHTS
       : location.pathname.includes("/dashboard")
         ? AppTab.DASHBOARD
         : AppTab.ROSTER;
-  const { teamName: activeTeamName, positionName, section } = params;
-  const activeSideItem = positionName || section || null;
 
   const hasSideNav = activeTab !== AppTab.DASHBOARD;
 
@@ -112,6 +136,10 @@ const MainLayout = () => {
       (item) => item.id === activeTab,
     );
     const tabLabel = currentTabInfo ? currentTabInfo.label : "GIG ROSTER";
+
+    if (activeTab === AppTab.THOUGHTS && activeTeamName) {
+      return `${tabLabel} • ${activeTeamName}`;
+    }
 
     if (activeTeamName && activeSideItem) {
       return `${activeTeamName} • ${activeSideItem}`;

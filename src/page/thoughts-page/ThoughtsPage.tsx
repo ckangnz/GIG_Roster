@@ -37,10 +37,21 @@ const formatRelativeTime = (timestamp: number) => {
   return `${days}d ago`;
 };
 
+const safeDecode = (str: string | undefined) => {
+  if (!str) return "";
+  try {
+    return decodeURIComponent(str);
+  } catch {
+    return str;
+  }
+};
+
 const ThoughtsPage = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const { teamName } = useParams();
+  const { teamName: rawTeamName } = useParams();
+  const teamName = safeDecode(rawTeamName).trim();
+
   const { userData, firebaseUser } = useAppSelector((state) => state.auth);
   const { loading: teamsLoading } = useAppSelector((state) => state.teams);
   const { allUsers } = useAppSelector((state) => state.userManagement);
@@ -224,7 +235,18 @@ const ThoughtsPage = () => {
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const thoughtsMap: Record<string, Thought> = {};
       snapshot.forEach((doc) => {
-        thoughtsMap[doc.id] = doc.data() as Thought;
+        const data = doc.data();
+        const updatedAt = data.updatedAt;
+        const serializableData = {
+          ...data,
+          updatedAt:
+            updatedAt &&
+            typeof updatedAt === "object" &&
+            "toMillis" in updatedAt
+              ? (updatedAt as { toMillis: () => number }).toMillis()
+              : (updatedAt as number | undefined),
+        };
+        thoughtsMap[doc.id] = { ...serializableData, id: doc.id } as Thought;
       });
       dispatch(setThoughts(thoughtsMap));
     });
@@ -239,16 +261,13 @@ const ThoughtsPage = () => {
 
   if (teamsLoading) return <Spinner />;
 
+  const displayTitle = selectedTeam ? `Thoughts • ${selectedTeam}` : "Team Thoughts";
+
   return (
     <>
       <div className={styles.container}>
         <div className={styles.header}>
-          <h1 className={styles.pageTitle}>Team Thoughts</h1>
-          {selectedTeam && (
-            <div className={styles.selectedTeamBadge}>
-              {selectedTeam}
-            </div>
-          )}
+          <h1 className={styles.pageTitle}>{displayTitle}</h1>
         </div>
 
         <div className={styles.wheelWrapper}>
