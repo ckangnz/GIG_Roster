@@ -128,13 +128,6 @@ const ProfileSettings = ({ className }: { className?: string }) => {
     });
   };
 
-  const handleReorderPositions = (teamName: string, newOrder: string[]) => {
-    setFormState((prev) => ({
-      ...prev,
-      teamPositions: { ...prev.teamPositions, [teamName]: newOrder },
-    }));
-  };
-
   if (!userData) {
     return <div>Loading profile...</div>;
   }
@@ -187,7 +180,6 @@ const ProfileSettings = ({ className }: { className?: string }) => {
         onReorderTeams={(newOrder) =>
           setFormState((prev) => ({ ...prev, teams: newOrder }))
         }
-        onReorderPositions={handleReorderPositions}
         availableTeams={availableTeams}
         globalPositions={globalPositions}
       />

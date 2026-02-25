@@ -1,7 +1,7 @@
 import { Reorder, useDragControls } from "framer-motion";
 import { GripVertical } from "lucide-react";
 
-import Pill from "../../components/common/Pill";
+import Pill, { PillGroup } from "../../components/common/Pill";
 import { Position, Team } from "../../model/model";
 import commonStyles from "../../styles/settings-common.module.css";
 
@@ -11,62 +11,9 @@ interface TeamPositionEditorProps {
   onToggleTeam: (teamName: string) => void;
   onTogglePosition: (teamName: string, posName: string) => void;
   onReorderTeams?: (newOrder: string[]) => void;
-  onReorderPositions?: (teamName: string, newOrder: string[]) => void;
   availableTeams: Team[];
   globalPositions: Position[];
 }
-
-const ReorderablePositionPill = ({
-  teamName,
-  posName,
-  pos,
-  isSelected,
-  isCustom,
-  onTogglePosition,
-}: {
-  teamName: string;
-  posName: string;
-  pos: Position | undefined;
-  isSelected: boolean;
-  isCustom: boolean;
-  onTogglePosition: (teamName: string, posName: string) => void;
-}) => {
-  const dragControls = useDragControls();
-
-  return (
-    <Reorder.Item
-      value={posName}
-      dragListener={false}
-      dragControls={dragControls}
-      style={{ listStyle: "none", padding: 0, margin: 0 }}
-    >
-      <Pill
-        onClick={() => onTogglePosition(teamName, posName)}
-        isActive={isSelected}
-        isDisabled={isCustom}
-        colour={pos?.colour}
-      >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "4px",
-          }}
-        >
-          {isSelected && (
-            <div
-              style={{ cursor: "grab", touchAction: "none" }}
-              onPointerDown={(e) => dragControls.start(e)}
-            >
-              <GripVertical size={14} style={{ opacity: 0.5 }} />
-            </div>
-          )}
-          <span>{pos?.emoji}</span> {posName}
-        </div>
-      </Pill>
-    </Reorder.Item>
-  );
-};
 
 const ReorderableTeamItem = ({
   teamName,
@@ -75,7 +22,6 @@ const ReorderableTeamItem = ({
   globalPositions,
   teamPositions,
   onTogglePosition,
-  onReorderPositions,
 }: {
   teamName: string;
   team: Team;
@@ -83,10 +29,9 @@ const ReorderableTeamItem = ({
   globalPositions: Position[];
   teamPositions: Record<string, string[]>;
   onTogglePosition: (teamName: string, posName: string) => void;
-  onReorderPositions?: (teamName: string, newOrder: string[]) => void;
 }) => {
   const dragControls = useDragControls();
-  const selectedInOrder = teamPositions[teamName] || [];
+  const selectedPositions = teamPositions[teamName] || [];
 
   return (
     <Reorder.Item
@@ -117,52 +62,24 @@ const ReorderableTeamItem = ({
         </div>
       </div>
       {allTopLevelPositions.length > 0 ? (
-        <Reorder.Group
-          axis="x"
-          values={selectedInOrder}
-          onReorder={(newOrder) => onReorderPositions?.(teamName, newOrder)}
-          style={{
-            display: "flex",
-            flexWrap: "wrap",
-            gap: "8px",
-            padding: 0,
-            margin: 0,
-            listStyle: "none",
-          }}
-        >
-          {/* Render selected positions first (draggable) */}
-          {selectedInOrder.map((posName) => {
-            const gp = globalPositions.find((p) => p.name === posName);
+        <PillGroup>
+          {allTopLevelPositions.map((pos) => {
+            const gp = globalPositions.find((p) => p.name === pos.name);
+            const isCustom = !!gp?.isCustom;
+            const isSelected = selectedPositions.includes(pos.name);
             return (
-              <ReorderablePositionPill
-                key={posName}
-                teamName={teamName}
-                posName={posName}
-                pos={gp}
-                isSelected={true}
-                isCustom={!!gp?.isCustom}
-                onTogglePosition={onTogglePosition}
-              />
+              <Pill
+                key={pos.name}
+                onClick={() => onTogglePosition(teamName, pos.name)}
+                isActive={isSelected}
+                isDisabled={isCustom}
+                colour={pos.colour}
+              >
+                <span>{pos.emoji}</span> {pos.name}
+              </Pill>
             );
           })}
-          {/* Render unselected positions (not draggable) */}
-          {allTopLevelPositions
-            .filter((pos) => !selectedInOrder.includes(pos.name))
-            .map((pos) => {
-              const gp = globalPositions.find((p) => p.name === pos.name);
-              return (
-                <Pill
-                  key={pos.name}
-                  onClick={() => onTogglePosition(teamName, pos.name)}
-                  isActive={false}
-                  isDisabled={!!gp?.isCustom}
-                  colour={pos.colour}
-                >
-                  <span>{pos.emoji}</span> {pos.name}
-                </Pill>
-              );
-            })}
-        </Reorder.Group>
+        </PillGroup>
       ) : (
         <p
           style={{
@@ -184,7 +101,6 @@ const TeamPositionEditor = ({
   onToggleTeam,
   onTogglePosition,
   onReorderTeams,
-  onReorderPositions,
   availableTeams,
   globalPositions,
 }: TeamPositionEditorProps) => {
@@ -217,7 +133,14 @@ const TeamPositionEditor = ({
             axis="y"
             values={selectedTeams}
             onReorder={onReorderTeams || (() => {})}
-            style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "16px" }}
+            style={{ 
+              listStyle: "none", 
+              padding: 0, 
+              margin: 0, 
+              display: "flex", 
+              flexDirection: "column", 
+              gap: "16px" 
+            }}
           >
             {selectedTeams.map((teamName) => {
               const team = availableTeams.find((t) => t.name === teamName);
@@ -235,7 +158,6 @@ const TeamPositionEditor = ({
                   globalPositions={globalPositions}
                   teamPositions={teamPositions}
                   onTogglePosition={onTogglePosition}
-                  onReorderPositions={onReorderPositions}
                 />
               );
             })}

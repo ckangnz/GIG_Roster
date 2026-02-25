@@ -147,20 +147,6 @@ const userManagementSlice = createSlice({
         user.teams = newOrder;
       }
     },
-    reorderUserTeamPositions(
-      state,
-      action: PayloadAction<{
-        userId: string;
-        teamName: string;
-        newOrder: string[];
-      }>,
-    ) {
-      const { userId, teamName, newOrder } = action.payload;
-      const user = state.allUsers.find((u) => u.id === userId);
-      if (user && user.teamPositions) {
-        user.teamPositions[teamName] = newOrder;
-      }
-    },
     resetUserChanges(state) {
       state.allUsers = JSON.parse(JSON.stringify(state.originalUsers));
     },
@@ -210,7 +196,6 @@ export const {
   toggleUserTeam,
   toggleUserTeamPosition,
   reorderUserTeams,
-  reorderUserTeamPositions,
   resetUserChanges,
   setAllUsers,
 } = userManagementSlice.actions;
