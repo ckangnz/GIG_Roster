@@ -36,13 +36,16 @@ export const SettingsTableAnyCell = ({
   textAlign = "left",
   className,
   children,
+  colSpan,
 }: {
   isSticky?: boolean;
   textAlign?: "left" | "center" | "right";
   className?: string;
   children: React.ReactNode;
+  colSpan?: number;
 }) => (
   <td
+    colSpan={colSpan}
     style={{
       textAlign: textAlign,
       display: textAlign === "center" ? "table-cell" : undefined,
@@ -78,6 +81,7 @@ export const SettingsTableInputCell = ({
   isReadOnly = false,
   isChild = false,
   onChange,
+  style,
 }: {
   name: string;
   value: string;
@@ -87,6 +91,7 @@ export const SettingsTableInputCell = ({
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   isReadOnly?: boolean;
   isChild?: boolean;
+  style?: React.CSSProperties;
 }) => (
   <SettingsTableAnyCell isSticky={isSticky}>
     {isChild && <CornerDownRight />}
@@ -98,6 +103,7 @@ export const SettingsTableInputCell = ({
       value={value}
       onChange={onChange}
       readOnly={isReadOnly}
+      style={style}
     />
   </SettingsTableAnyCell>
 );
@@ -134,12 +140,21 @@ export const SettingsTableColourInputCell = ({
 interface SettingsTableProps {
   headers: SettingsTableHeaderProps[];
   children: React.ReactNode;
+  customBody?: React.ReactNode;
+  tableAs?: React.ElementType;
+  tableProps?: Record<string, unknown>;
 }
 
-const SettingsTable = ({ headers, children }: SettingsTableProps) => {
+const SettingsTable = ({
+  headers,
+  children,
+  customBody,
+  tableAs: TableTag = "table",
+  tableProps = {},
+}: SettingsTableProps) => {
   return (
     <div className={styles.appTableContainer}>
-      <table className={styles.appTable}>
+      <TableTag className={styles.appTable} {...tableProps}>
         <thead>
           <tr>
             {headers.map((headerProps, i) => (
@@ -147,8 +162,8 @@ const SettingsTable = ({ headers, children }: SettingsTableProps) => {
             ))}
           </tr>
         </thead>
-        <tbody>{children}</tbody>
-      </table>
+        {customBody ? customBody : <tbody>{children}</tbody>}
+      </TableTag>
     </div>
   );
 };

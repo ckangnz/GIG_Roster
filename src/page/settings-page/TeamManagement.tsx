@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 
+import { Reorder } from "framer-motion";
 import { Plus } from "lucide-react";
 
 import TeamEditModal from "./TeamEditModal";
@@ -8,7 +9,6 @@ import Button from "../../components/common/Button";
 import SaveFooter from "../../components/common/SaveFooter";
 import SettingsTable, {
   SettingsTableAnyCell,
-  SettingsTableInputCell,
 } from "../../components/common/SettingsTable";
 import Spinner from "../../components/common/Spinner";
 import SummaryCell from "../../components/common/SummaryCell";
@@ -16,6 +16,7 @@ import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { Position, RecurringEvent, Team, Weekday } from "../../model/model";
 import { updateTeams } from "../../store/slices/teamsSlice";
 import { showAlert } from "../../store/slices/uiSlice";
+import formStyles from "../../styles/form.module.css";
 
 import styles from "./settings-page.module.css";
 
@@ -74,18 +75,6 @@ const TeamManagement = () => {
   ) => {
     const updated = [...teams];
     updated[index] = { ...updated[index], [field]: value };
-    setTeams(updated);
-  };
-
-  const move = (index: number, direction: "up" | "down") => {
-    const updated = [...teams];
-    const target = direction === "up" ? index - 1 : index + 1;
-    if (target < 0 || target >= updated.length) return;
-
-    const temp = updated[index];
-    updated[index] = updated[target];
-    updated[target] = temp;
-
     setTeams(updated);
   };
 
@@ -272,80 +261,102 @@ const TeamManagement = () => {
         headers={[
           {
             text: "Name",
-            minWidth: 100,
-            width: 120,
+            minWidth: 150,
+            width: 250,
             textAlign: "center",
           },
-          { text: "Order", width: 30, textAlign: "center" },
           { text: "Emoji", width: 30, textAlign: "center" },
           { text: "Conflicts", width: 60, textAlign: "center" },
           { text: "Config", minWidth: 180, textAlign: "center" },
           { text: "", width: 50 },
         ]}
+        customBody={
+          <Reorder.Group axis="y" values={teams} onReorder={setTeams} as="tbody">
+            {teams.map((team, teamIndex) => (
+              <TeamManagementRow
+                key={`${team.emoji}-${team.name}`}
+                team={team}
+                teamIndex={teamIndex}
+                availablePositions={availablePositions}
+                onUpdate={handleUpdate}
+                onDelete={deleteTeam}
+                onTogglePosition={togglePosition}
+                onToggleDay={toggleDay}
+                onToggleAllowAbsence={toggleAllowAbsence}
+                onUpdateEvents={handleUpdateEvents}
+                onUpdateDayEndTime={handleUpdateDayEndTime}
+              />
+            ))}
+            <tr className="team-row-new">
+              <SettingsTableAnyCell isSticky>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    width: "100%",
+                  }}
+                >
+                  <input
+                    name={`new-team-name`}
+                    className={formStyles.formInput}
+                    value={newTeam.name}
+                    placeholder="Team Name"
+                    onChange={(e) =>
+                      setNewTeam({ ...newTeam, name: e.target.value })
+                    }
+                    style={{ width: "100%" }}
+                  />
+                </div>
+              </SettingsTableAnyCell>
+              <SettingsTableAnyCell>
+                <input
+                  name={`new-team-emoji`}
+                  className={formStyles.formInput}
+                  value={newTeam.emoji}
+                  placeholder="✨"
+                  onChange={(e) =>
+                    setNewTeam({ ...newTeam, emoji: e.target.value })
+                  }
+                />
+              </SettingsTableAnyCell>
+              <SettingsTableAnyCell>
+                <input
+                  name={`new-team-maxConflict`}
+                  className={formStyles.formInput}
+                  value={newTeam.maxConflict?.toString() || "1"}
+                  type="number"
+                  onChange={(e) =>
+                    setNewTeam({
+                      ...newTeam,
+                      maxConflict: parseInt(e.target.value) || 1,
+                    })
+                  }
+                />
+              </SettingsTableAnyCell>
+              <SettingsTableAnyCell>
+                <SummaryCell
+                  primaryText={getNewTeamPositionsSummary()}
+                  secondaryText={getNewTeamDaysSummary()}
+                  onClick={() => setIsNewTeamModalOpen(true)}
+                />
+              </SettingsTableAnyCell>
+              <SettingsTableAnyCell>
+                <Button
+                  variant="primary"
+                  size="small"
+                  onClick={addTeam}
+                  disabled={!newTeam.name.trim() || !newTeam.emoji.trim()}
+                >
+                  <Plus size={16} style={{ marginRight: "6px" }} />
+                  Add
+                </Button>
+              </SettingsTableAnyCell>
+            </tr>
+          </Reorder.Group>
+        }
       >
-        {teams.map((team, teamIndex) => (
-          <TeamManagementRow
-            key={`${team.emoji}-${teamIndex}`}
-            team={team}
-            teamIndex={teamIndex}
-            availablePositions={availablePositions}
-            onUpdate={handleUpdate}
-            onMove={move}
-            onDelete={deleteTeam}
-            onTogglePosition={togglePosition}
-            onToggleDay={toggleDay}
-            onToggleAllowAbsence={toggleAllowAbsence}
-            onUpdateEvents={handleUpdateEvents}
-            onUpdateDayEndTime={handleUpdateDayEndTime}
-            isFirst={teamIndex === 0}
-            isLast={teamIndex === teams.length - 1}
-          />
-        ))}
-        <tr className="team-row-new">
-          <SettingsTableInputCell
-            name={`new-team-name`}
-            value={newTeam.name}
-            placeholder="Team Name"
-            onChange={(e) => setNewTeam({ ...newTeam, name: e.target.value })}
-            isSticky
-          />
-          <SettingsTableAnyCell>{""}</SettingsTableAnyCell>
-          <SettingsTableInputCell
-            name={`new-team-emoji`}
-            value={newTeam.emoji}
-            placeholder="✨"
-            onChange={(e) => setNewTeam({ ...newTeam, emoji: e.target.value })}
-          />
-          <SettingsTableInputCell
-            name={`new-team-maxConflict`}
-            value={newTeam.maxConflict?.toString() || "1"}
-            type="number"
-            onChange={(e) =>
-              setNewTeam({
-                ...newTeam,
-                maxConflict: parseInt(e.target.value) || 1,
-              })
-            }
-          />
-          <SettingsTableAnyCell>
-            <SummaryCell
-              primaryText={getNewTeamPositionsSummary()}
-              secondaryText={getNewTeamDaysSummary()}
-              onClick={() => setIsNewTeamModalOpen(true)}
-            />
-          </SettingsTableAnyCell>
-          <SettingsTableAnyCell>
-            <Button
-              variant="primary"
-              size="small"
-              onClick={addTeam}
-              disabled={!newTeam.name.trim() || !newTeam.emoji.trim()}
-            >
-              <Plus size={16} style={{ marginRight: "6px" }} />
-              Add
-            </Button>
-          </SettingsTableAnyCell>
-        </tr>
+        {null}
       </SettingsTable>
 
       <TeamEditModal

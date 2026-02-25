@@ -54,7 +54,7 @@ export const SETTINGS_NAV_ITEMS: NavItem[] = [
   },
   {
     id: SettingsSection.POSITIONS,
-    label: "Position Setup",
+    label: "Position Management",
     icon: Music,
     adminOnly: true,
   },

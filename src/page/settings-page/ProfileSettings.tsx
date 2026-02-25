@@ -4,6 +4,7 @@ import TeamPositionEditor from "./TeamPositionEditor";
 import Button from "../../components/common/Button";
 import Pill, { PillGroup } from "../../components/common/Pill";
 import SaveFooter from "../../components/common/SaveFooter";
+import Toggle from "../../components/common/Toggle";
 import { auth } from "../../firebase";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { updateUserProfile } from "../../store/slices/authSlice";
@@ -127,22 +128,11 @@ const ProfileSettings = ({ className }: { className?: string }) => {
     });
   };
 
-  const moveTeam = (teamName: string, direction: "up" | "down") => {
-    setFormState((prev) => {
-      const currentIndex = prev.teams.indexOf(teamName);
-      if (currentIndex === -1) return prev;
-
-      const targetIndex =
-        direction === "up" ? currentIndex - 1 : currentIndex + 1;
-      if (targetIndex < 0 || targetIndex >= prev.teams.length) return prev;
-
-      const newTeams = [...prev.teams];
-      [newTeams[currentIndex], newTeams[targetIndex]] = [
-        newTeams[targetIndex],
-        newTeams[currentIndex],
-      ];
-      return { ...prev, teams: newTeams };
-    });
+  const handleReorderPositions = (teamName: string, newOrder: string[]) => {
+    setFormState((prev) => ({
+      ...prev,
+      teamPositions: { ...prev.teamPositions, [teamName]: newOrder },
+    }));
   };
 
   if (!userData) {
@@ -194,26 +184,32 @@ const ProfileSettings = ({ className }: { className?: string }) => {
         teamPositions={formState.teamPositions}
         onToggleTeam={toggleTeam}
         onTogglePosition={toggleTeamPosition}
-        onMoveTeam={moveTeam}
+        onReorderTeams={(newOrder) =>
+          setFormState((prev) => ({ ...prev, teams: newOrder }))
+        }
+        onReorderPositions={handleReorderPositions}
         availableTeams={availableTeams}
         globalPositions={globalPositions}
       />
 
-      <div className={formStyles.formGroup}>
+      <div className={formStyles.formGroup} style={{ marginTop: "24px" }}>
         <label>Availability Status</label>
-        <Pill
-          colour={
-            formState.isActive
-              ? "var(--color-success-dark)"
-              : "var(--color-warning-dark)"
-          }
-          onClick={() =>
-            setFormState((prev) => ({ ...prev, isActive: !prev.isActive }))
-          }
-          isActive
-        >
-          {formState.isActive ? "ACTIVE & AVAILABLE" : "INACTIVE / AWAY"}
-        </Pill>
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <span
+            style={{
+              fontSize: "0.95rem",
+              color: "var(--color-text-secondary)",
+            }}
+          >
+            {formState.isActive ? "ACTIVE & AVAILABLE" : "INACTIVE / AWAY"}
+          </span>
+          <Toggle
+            isOn={formState.isActive}
+            onToggle={(isOn) =>
+              setFormState((prev) => ({ ...prev, isActive: isOn }))
+            }
+          />
+        </div>
         <p className={formStyles.fieldHint}>
           Turn off if you want to be hidden from the roster.
         </p>

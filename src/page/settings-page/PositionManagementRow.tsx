@@ -1,13 +1,14 @@
-import { CornerDownRight, Plus, Trash2 } from "lucide-react";
+import { DragControls } from "framer-motion";
+import { CornerDownRight, Plus, Trash2, GripVertical } from "lucide-react";
 
 import Button from "../../components/common/Button";
 import {
   SettingsTableAnyCell,
   SettingsTableColourInputCell,
-  SettingsTableInputCell,
 } from "../../components/common/SettingsTable";
 import Toggle from "../../components/common/Toggle";
 import { Position } from "../../model/model";
+import formStyles from "../../styles/form.module.css";
 
 interface PositionManagementRowProps {
   position: Position;
@@ -17,68 +18,68 @@ interface PositionManagementRowProps {
     field: keyof Position,
     value: Position[keyof Position],
   ) => void;
-  onMove: (index: number, direction: "up" | "down") => void;
   onDelete: (index: number) => void;
   onAddChild: (parentName: string) => void;
-  isFirst: boolean;
-  isLast: boolean;
+  isDragDisabled?: boolean;
+  dragControls?: DragControls;
 }
 
 const PositionManagementRow = ({
   position,
   index,
   onUpdate,
-  onMove,
   onDelete,
   onAddChild,
-  isFirst,
-  isLast,
+  isDragDisabled = false,
+  dragControls,
 }: PositionManagementRowProps) => {
+  const isChild = !!position.parentId;
+
   return (
-    <tr>
-      <SettingsTableInputCell
-        name={`name-${index}`}
-        value={position.name}
-        onChange={(e) => onUpdate(index, "name", e.target.value)}
-        isSticky
-      />
-      <SettingsTableAnyCell textAlign="center">
-        {position.parentId ? (
-          <CornerDownRight />
-        ) : (
-          <div
-            style={{
-              display: "flex",
-              gap: "4px",
-              justifyContent: "center",
-            }}
-          >
-            <Button
-              variant="secondary"
-              size="small"
-              isIcon
-              onClick={() => onMove(index, "up")}
-              disabled={isFirst}
+    <tr style={{ background: "var(--background-card)" }}>
+      <SettingsTableAnyCell isSticky={true}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            paddingLeft: isChild ? "24px" : "0",
+            width: "100%",
+          }}
+        >
+          {!isDragDisabled && !isChild && dragControls && (
+            <div
+              style={{
+                cursor: "grab",
+                display: "flex",
+                alignItems: "center",
+                touchAction: "none",
+              }}
+              onPointerDown={(e) => dragControls.start(e)}
             >
-              ▲
-            </Button>
-            <Button
-              variant="secondary"
-              size="small"
-              isIcon
-              onClick={() => onMove(index, "down")}
-              disabled={isLast}
-            >
-              ▼
-            </Button>
-          </div>
-        )}
+              <GripVertical size={20} style={{ opacity: 0.4 }} />
+            </div>
+          )}
+          {isChild && (
+            <CornerDownRight size={18} style={{ opacity: 0.5, flexShrink: 0 }} />
+          )}
+          <input
+            name={`name-${index}`}
+            className={formStyles.formInput}
+            value={position.name}
+            onChange={(e) => onUpdate(index, "name", e.target.value)}
+            style={{ width: "100%" }}
+          />
+        </div>
       </SettingsTableAnyCell>
-      <SettingsTableInputCell
-        name={`emoji-${index}`}
-        value={position.emoji}
-        onChange={(e) => onUpdate(index, "emoji", e.target.value)}
-      />
+      <SettingsTableAnyCell>
+        <input
+          name={`emoji-${index}`}
+          className={formStyles.formInput}
+          value={position.emoji}
+          onChange={(e) => onUpdate(index, "emoji", e.target.value)}
+        />
+      </SettingsTableAnyCell>
       <SettingsTableColourInputCell
         name={`colour-${index}`}
         value={position.colour}
@@ -88,17 +89,18 @@ const PositionManagementRow = ({
         <Toggle
           isOn={!!position.sortByGender}
           onToggle={(isOn) => onUpdate(index, "sortByGender", isOn)}
-          disabled={position.isCustom}
+          disabled={position.isCustom || isChild}
         />
       </SettingsTableAnyCell>
       <SettingsTableAnyCell textAlign="center">
         <Toggle
           isOn={!!position.isCustom}
           onToggle={(isOn) => onUpdate(index, "isCustom", isOn)}
+          disabled={isChild}
         />
       </SettingsTableAnyCell>
       <SettingsTableAnyCell textAlign="center">
-        {!position.parentId && (
+        {!isChild && (
           <Button
             variant="primary"
             size="small"

@@ -134,30 +134,31 @@ const userManagementSlice = createSlice({
         user.teamPositions[teamName] = newPos;
       }
     },
-    moveUserTeam(
+    reorderUserTeams(
+      state,
+      action: PayloadAction<{
+        userId: string;
+        newOrder: string[];
+      }>,
+    ) {
+      const { userId, newOrder } = action.payload;
+      const user = state.allUsers.find((u) => u.id === userId);
+      if (user) {
+        user.teams = newOrder;
+      }
+    },
+    reorderUserTeamPositions(
       state,
       action: PayloadAction<{
         userId: string;
         teamName: string;
-        direction: "up" | "down";
+        newOrder: string[];
       }>,
     ) {
-      const { userId, teamName, direction } = action.payload;
+      const { userId, teamName, newOrder } = action.payload;
       const user = state.allUsers.find((u) => u.id === userId);
-      if (user && user.teams) {
-        const currentIndex = user.teams.indexOf(teamName);
-        if (currentIndex === -1) return;
-
-        const targetIndex =
-          direction === "up" ? currentIndex - 1 : currentIndex + 1;
-        if (targetIndex < 0 || targetIndex >= user.teams.length) return;
-
-        const updatedTeams = [...user.teams];
-        [updatedTeams[currentIndex], updatedTeams[targetIndex]] = [
-          updatedTeams[targetIndex],
-          updatedTeams[currentIndex],
-        ];
-        user.teams = updatedTeams;
+      if (user && user.teamPositions) {
+        user.teamPositions[teamName] = newOrder;
       }
     },
     resetUserChanges(state) {
@@ -208,7 +209,8 @@ export const {
   updateUserField,
   toggleUserTeam,
   toggleUserTeamPosition,
-  moveUserTeam,
+  reorderUserTeams,
+  reorderUserTeamPositions,
   resetUserChanges,
   setAllUsers,
 } = userManagementSlice.actions;

@@ -54,6 +54,10 @@
 }
 
 .appTable tbody tr:last-child td {
+  border-bottom: 1px solid var(--border-color-table);
+}
+
+.appTable tbody:last-of-type tr:last-child td {
   border-bottom: none;
 }
 
@@ -64,11 +68,16 @@
   width: min-content;
   white-space: nowrap;
   border-right: 2px solid var(--border-color-secondary) !important;
-  background-color: var(--background-table-header);
+  background-color: inherit;
 }
 
 .appTable th.stickyCol {
   top: 0;
   z-index: 60;
   text-align: left;
+  background-color: var(--background-table-header);
+}
+
+.appTable td.stickyCol {
+  background-color: var(--background-card);
 }

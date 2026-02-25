@@ -2,7 +2,7 @@ import TeamPositionEditor from "./TeamPositionEditor";
 import Modal from "../../components/common/Modal";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { AppUser, Team } from "../../model/model";
-import { toggleUserTeam, toggleUserTeamPosition, moveUserTeam } from "../../store/slices/userManagementSlice";
+import { toggleUserTeam, toggleUserTeamPosition, reorderUserTeams, reorderUserTeamPositions } from "../../store/slices/userManagementSlice";
 
 interface UserEditModalProps {
   isOpen: boolean;
@@ -23,8 +23,12 @@ const UserEditModal = ({ isOpen, onClose, user, availableTeams }: UserEditModalP
     dispatch(toggleUserTeamPosition({ userId: user.id, teamName, posName }));
   };
 
-  const handleMoveTeam = (teamName: string, direction: "up" | "down") => {
-    dispatch(moveUserTeam({ userId: user.id, teamName, direction }));
+  const handleReorderTeams = (newOrder: string[]) => {
+    dispatch(reorderUserTeams({ userId: user.id, newOrder }));
+  };
+
+  const handleReorderPositions = (teamName: string, newOrder: string[]) => {
+    dispatch(reorderUserTeamPositions({ userId: user.id, teamName, newOrder }));
   };
 
   return (
@@ -34,7 +38,8 @@ const UserEditModal = ({ isOpen, onClose, user, availableTeams }: UserEditModalP
         teamPositions={user.teamPositions || {}}
         onToggleTeam={handleToggleTeam}
         onTogglePosition={handleTogglePosition}
-        onMoveTeam={handleMoveTeam}
+        onReorderTeams={handleReorderTeams}
+        onReorderPositions={handleReorderPositions}
         availableTeams={availableTeams}
         globalPositions={globalPositions}
       />
