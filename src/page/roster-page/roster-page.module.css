@@ -2,3 +2,9 @@
   height: 100%;
   overflow: auto;
 }
+
+@media (min-width: 768px) {
+  .rosterPage {
+    padding: 1rem;
+  }
+}

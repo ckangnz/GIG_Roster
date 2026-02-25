@@ -9,6 +9,7 @@
   min-width: 0;
   box-sizing: border-box;
   padding: 1rem;
+  overflow: auto;
 }
 
 .managementWrapper {
@@ -23,6 +24,6 @@
 /* Tablet and Desktop Styles */
 @media (min-width: 768px) {
   .settingsContainer {
-    padding-bottom: 90px;
+    padding-bottom: 110px;
   }
 }
