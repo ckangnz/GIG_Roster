@@ -1,12 +1,12 @@
 import { CornerDownRight, Plus, Trash2 } from "lucide-react";
 
 import Button from "../../components/common/Button";
-import Pill from "../../components/common/Pill";
 import {
   SettingsTableAnyCell,
   SettingsTableColourInputCell,
   SettingsTableInputCell,
 } from "../../components/common/SettingsTable";
+import Toggle from "../../components/common/Toggle";
 import { Position } from "../../model/model";
 
 interface PositionManagementRowProps {
@@ -85,36 +85,22 @@ const PositionManagementRow = ({
         onChange={(e) => onUpdate(index, "colour", e.target.value)}
       />
       <SettingsTableAnyCell textAlign="center">
-        <Pill
-          colour={
-            position.sortByGender
-              ? "var(--color-success-dark)"
-              : "var(--color-text-dim)"
-          }
-          isActive={position.sortByGender}
-          onClick={() => onUpdate(index, "sortByGender", !position.sortByGender)}
-          isDisabled={position.isCustom}
-        >
-          {position.sortByGender ? "YES" : "NO"}
-        </Pill>
+        <Toggle
+          isOn={!!position.sortByGender}
+          onToggle={(isOn) => onUpdate(index, "sortByGender", isOn)}
+          disabled={position.isCustom}
+        />
       </SettingsTableAnyCell>
       <SettingsTableAnyCell textAlign="center">
-        <Pill
-          colour={
-            position.isCustom
-              ? "var(--color-success-dark)"
-              : "var(--color-text-dim)"
-          }
-          isActive={position.isCustom}
-          onClick={() => onUpdate(index, "isCustom", !position.isCustom)}
-        >
-          {position.isCustom ? "YES" : "NO"}
-        </Pill>
+        <Toggle
+          isOn={!!position.isCustom}
+          onToggle={(isOn) => onUpdate(index, "isCustom", isOn)}
+        />
       </SettingsTableAnyCell>
       <SettingsTableAnyCell textAlign="center">
         {!position.parentId && (
           <Button
-            variant="secondary"
+            variant="primary"
             size="small"
             onClick={() => onAddChild(position.name)}
             title="Add Child Position"

@@ -336,6 +336,8 @@ const TeamManagement = () => {
           </SettingsTableAnyCell>
           <SettingsTableAnyCell>
             <Button
+              variant="primary"
+              size="small"
               onClick={addTeam}
               disabled={!newTeam.name.trim() || !newTeam.emoji.trim()}
             >

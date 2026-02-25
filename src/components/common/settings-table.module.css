@@ -39,7 +39,7 @@
   padding: 8px;
   border-bottom: 1px solid var(--border-color-table);
   border-right: 1px solid var(--border-color-secondary);
-  vertical-align: top;
+  vertical-align: middle;
 }
 
 .appTable th:last-child,

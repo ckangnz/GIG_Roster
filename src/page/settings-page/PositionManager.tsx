@@ -4,7 +4,6 @@ import { Plus } from "lucide-react";
 
 import PositionManagementRow from "./PositionManagementRow";
 import Button from "../../components/common/Button";
-import Pill from "../../components/common/Pill";
 import SaveFooter from "../../components/common/SaveFooter";
 import SettingsTable, {
   SettingsTableAnyCell,
@@ -12,6 +11,7 @@ import SettingsTable, {
   SettingsTableInputCell,
 } from "../../components/common/SettingsTable";
 import Spinner from "../../components/common/Spinner";
+import Toggle from "../../components/common/Toggle";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { Position } from "../../model/model";
 import { updatePositions } from "../../store/slices/positionsSlice";
@@ -61,7 +61,14 @@ const PositionManagement = () => {
     value: Position[keyof Position],
   ) => {
     const updated = [...positions];
-    updated[index] = { ...updated[index], [field]: value };
+    const newValue = value;
+    const updates: Partial<Position> = { [field]: newValue };
+
+    if (field === "isCustom" && value === true) {
+      updates.sortByGender = false;
+    }
+
+    updated[index] = { ...updated[index], ...updates };
     setPositions(updated);
   };
 
@@ -340,38 +347,26 @@ const PositionManagement = () => {
             onChange={(e) => setNewPos({ ...newPos, colour: e.target.value })}
           />
           <SettingsTableAnyCell textAlign="center">
-            <Pill
-              colour={
-                newPos.sortByGender
-                  ? "var(--color-success-dark)"
-                  : "var(--color-text-dim)"
-              }
-              isActive={newPos.sortByGender}
-              onClick={() =>
-                setNewPos({ ...newPos, sortByGender: !newPos.sortByGender })
-              }
-              isDisabled={newPos.isCustom}
-            >
-              {newPos.sortByGender ? "YES" : "NO"}
-            </Pill>
+            <Toggle
+              isOn={!!newPos.sortByGender}
+              onToggle={(isOn) => setNewPos({ ...newPos, sortByGender: isOn })}
+              disabled={newPos.isCustom}
+            />
           </SettingsTableAnyCell>
           <SettingsTableAnyCell textAlign="center">
-            <Pill
-              colour={
-                newPos.isCustom
-                  ? "var(--color-success-dark)"
-                  : "var(--color-text-dim)"
-              }
-              isActive={newPos.isCustom}
-              onClick={() =>
-                setNewPos({ ...newPos, isCustom: !newPos.isCustom })
-              }
-            >
-              {newPos.isCustom ? "YES" : "NO"}
-            </Pill>
+            <Toggle
+              isOn={!!newPos.isCustom}
+              onToggle={(isOn) => {
+                const updates: Partial<Position> = { isCustom: isOn };
+                if (isOn) updates.sortByGender = false;
+                setNewPos({ ...newPos, ...updates });
+              }}
+            />
           </SettingsTableAnyCell>
           <SettingsTableAnyCell textAlign="center">
             <Button
+              variant="primary"
+              size="small"
               onClick={addPosition}
               disabled={!newPos.name.trim() || !newPos.emoji.trim()}
             >

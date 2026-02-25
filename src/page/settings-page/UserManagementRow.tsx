@@ -1,12 +1,12 @@
 import { useState } from "react";
 
 import UserEditModal from "./UserEditModal";
-import Pill from "../../components/common/Pill";
 import {
   SettingsTableAnyCell,
   SettingsTableInputCell,
 } from "../../components/common/SettingsTable";
 import SummaryCell from "../../components/common/SummaryCell";
+import Toggle from "../../components/common/Toggle";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { AppUser, Gender, Team } from "../../model/model";
 import { updateUserField } from "../../store/slices/userManagementSlice";
@@ -112,47 +112,23 @@ const UserManagementRow = ({
           />
         </SettingsTableAnyCell>
         <SettingsTableAnyCell textAlign="center">
-          <Pill
-            colour={
-              user.isActive
-                ? "var(--color-success-dark)"
-                : "var(--color-warning-dark)"
-            }
-            minWidth={35}
-            onClick={() => handleUpdate("isActive", !user.isActive)}
-            isActive
-          >
-            {user.isActive ? "YES" : "NO"}
-          </Pill>
+          <Toggle
+            isOn={user.isActive}
+            onToggle={(isOn) => handleUpdate("isActive", isOn)}
+          />
         </SettingsTableAnyCell>
         <SettingsTableAnyCell textAlign="center">
-          <Pill
-            colour={
-              user.isApproved
-                ? "var(--color-success-dark)"
-                : "var(--color-warning-dark)"
-            }
-            minWidth={35}
-            onClick={() => handleUpdate("isApproved", !user.isApproved)}
-            isActive
-          >
-            {user.isApproved ? "YES" : "NO"}
-          </Pill>
+          <Toggle
+            isOn={user.isApproved}
+            onToggle={(isOn) => handleUpdate("isApproved", isOn)}
+          />
         </SettingsTableAnyCell>
         <SettingsTableAnyCell textAlign="center">
-          <Pill
-            colour={
-              user.isAdmin
-                ? "var(--color-success-dark)"
-                : "var(--color-warning-dark)"
-            }
-            minWidth={35}
-            onClick={() => handleUpdate("isAdmin", !user.isAdmin)}
-            isActive
-            isDisabled={user.email === adminEmail}
-          >
-            {user.isAdmin ? "YES" : "NO"}
-          </Pill>
+          <Toggle
+            isOn={user.isAdmin}
+            onToggle={(isOn) => handleUpdate("isAdmin", isOn)}
+            disabled={user.email === adminEmail}
+          />
         </SettingsTableAnyCell>
       </tr>
 

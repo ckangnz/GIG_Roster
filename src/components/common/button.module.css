@@ -3,72 +3,98 @@
   height: var(--field-height);
   padding: 0 1.2em;
   font-size: 0.95rem;
-  font-weight: 500;
+  font-weight: 600;
   font-family: inherit;
   cursor: pointer;
-  background-color: var(--background-button-secondary);
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border-radius: 8px;
   box-sizing: border-box;
-  color: var(--color-text-primary);
   text-decoration: none;
+  gap: 8px;
 }
 
 .button:disabled {
-  background: var(--border-color-input);
+  background: var(--neutral-800);
+  color: var(--neutral-500);
+  border-color: var(--neutral-700);
   cursor: not-allowed;
-  opacity: 0.2;
+  opacity: 0.5;
 }
 
+[data-theme="light"] .button:disabled {
+  background: var(--neutral-100);
+  color: var(--neutral-400);
+  border-color: var(--neutral-200);
+  opacity: 0.6;
+}
+
+/* Primary Variant (Indigo) */
 .primary {
-  background: var(--background-button-primary);
-  color: white;
+  background: var(--background-primary-subtle);
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
 }
 
+/* Secondary Variant (Neutral) */
 .secondary {
-  background: var(--background-button-secondary);
+  background: var(--background-hover);
   color: var(--color-text-primary);
+  border: 1px solid var(--neutral-700);
 }
 
+/* Delete Variant (Red) */
 .delete {
-  color: var(--color-delete);
-  background: var(--color-delete-dark);
-  border: 1px solid var(--border-color-delete);
+  color: var(--color-error);
+  background: var(--background-toggle-off-transparent);
+  border: 1px solid var(--color-error);
 }
 
 .icon {
   width: auto;
   padding: 0 12px;
-  font-weight: bold;
 }
 
 .small {
-  font-size: 0.85em;
-  padding: 0 8px;
+  height: 30px;
+  font-size: 0.8rem;
+  padding: 0 10px;
 }
 
 @media (hover: hover) {
   .button:hover:not(:disabled) {
-    transform: translateY(-2px);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
   }
 
   .primary:hover:not(:disabled) {
-    background: var(--background-button-primary-hover);
-    color: white;
+    background: var(--color-primary);
+    color: #ffffff;
   }
   
   .secondary:hover:not(:disabled) {
-    background: var(--background-button-secondary-hover);
-    color: var(--color-text-primary);
+    background: var(--neutral-700);
+    border-color: var(--neutral-700);
+    color: #ffffff;
   }
   
   .delete:hover:not(:disabled) {
-    color: white;
-    background: var(--background-button-delete-hover);
+    background: var(--color-error);
+    border-color: var(--color-error);
+    color: var(--color-on-error);
   }
+}
+
+[data-theme="light"] .secondary {
+  border-color: var(--neutral-300);
+}
+
+[data-theme="light"] .secondary:hover:not(:disabled) {
+  background: var(--neutral-200);
+  border-color: var(--neutral-200);
+  color: var(--neutral-900);
 }
 
 .button:active:not(:disabled) {

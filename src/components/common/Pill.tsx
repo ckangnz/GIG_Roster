@@ -6,6 +6,8 @@ import styles from "./pill.module.css";
 
 interface PillProps {
   colour?: string;
+  bgColour?: string;
+  textColour?: string;
   isDropdown?: boolean;
   isActive?: boolean;
   isDisabled?: boolean;
@@ -28,6 +30,8 @@ export const PillGroup = ({
 
 const Pill = ({
   colour,
+  bgColour,
+  textColour,
   isDropdown,
   isActive,
   isDisabled,
@@ -37,21 +41,19 @@ const Pill = ({
 }: PillProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
-  if (colour && colour.startsWith("var(--color-")) {
-    colour = getComputedStyle(document.documentElement)
-      .getPropertyValue(colour.slice(4, -1))
-      .trim();
-  }
+  // Directly use the variable or fallback
+  const pillColour = colour || "var(--color-primary)";
 
   return (
     <div
       className={`${styles.pill} ${styles.pillText} ${isActive ? styles.pillActive : ""} ${isDisabled ? styles.pillDisabled : ""}`}
       style={
         {
-          "--pill-colour": colour ? colour : "var(--color-link)",
-          "--pill-subtle-hover-color": `${colour}15`,
+          "--pill-colour": pillColour,
+          "--pill-bg": bgColour,
+          "--pill-color": textColour,
           minWidth: minWidth ? `${minWidth}px` : "fit-content",
-        } as React.CSSProperties & { [key: string]: string | number | undefined }
+        } as React.CSSProperties
       }
       onClick={(evt) => {
         if (isDisabled) return;

@@ -4,6 +4,7 @@ import Button from "../../components/common/Button";
 import { InputField, SelectField } from "../../components/common/InputField";
 import Modal from "../../components/common/Modal";
 import Pill, { PillGroup } from "../../components/common/Pill";
+import Toggle from "../../components/common/Toggle";
 import { Position, RecurringEvent, Team, Weekday } from "../../model/model";
 import commonStyles from "../../styles/settings-common.module.css";
 
@@ -212,19 +213,15 @@ const TeamEditModal = ({
 
       <div className={localStyles.absenceSection}>
         <label className={commonStyles.sectionLabel}>Absence</label>
-        <PillGroup>
-          <Pill
-            isActive={team.allowAbsence !== false}
-            onClick={() => onToggleAllowAbsence(team.allowAbsence === false)}
-            colour={
-              team.allowAbsence !== false
-                ? "var(--color-success-dark)"
-                : "var(--color-text-dim)"
-            }
-          >
-            Allow Absence: {team.allowAbsence !== false ? "YES" : "NO"}
-          </Pill>
-        </PillGroup>
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <span style={{ fontSize: "0.9rem", color: "var(--color-text-secondary)" }}>
+            Allow Absence
+          </span>
+          <Toggle
+            isOn={team.allowAbsence !== false}
+            onToggle={(isOn) => onToggleAllowAbsence(isOn)}
+          />
+        </div>
       </div>
     </Modal>
   );

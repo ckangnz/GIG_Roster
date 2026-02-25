@@ -1,67 +1,71 @@
 .pillGroup {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-}
-.pillGroup::-webkit-scrollbar {
-  display: none;
-}
-.pillGroup.pillGroupNowrap {
-  flex-wrap: nowrap;
-  width: max-content;
+  gap: 8px;
 }
 
 .pill {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;
   cursor: pointer;
-  border-radius: 8px;
-  width: fit-content;
-  flex-shrink: 0;
-  padding: 0 16px;
-  height: var(--field-height);
+  border-radius: 100px;
+  padding: 4px 12px;
+  height: 28px;
+  font-size: 0.8rem;
+  font-weight: 600;
   transition: all 0.2s ease;
   box-sizing: border-box;
-  border: 1px solid transparent;
+  border: 1px solid var(--neutral-700);
+  background: var(--background-hover);
+  color: var(--color-text-secondary);
+  user-select: none;
 }
 
-@media (hover: hover) {
-  .pill:hover {
-    transform: translateY(-2px);
-  }
-
-  .pill:hover:not(.pillActive) {
-    color: var(--pill-colour);
-    border-color: 1px solid var(--pill-colour);
-    background: var(--pill-subtle-hover-color);
-  }
-  .pill.pillDisabled:hover {
-    transform: none;
-    color: var(--color-text-muted);
-    border-color: 1px solid transparent;
-    background: var(--background-button-secondary);
-    cursor: not-allowed;
-  }
-}
-
-.pill.pillDisabled {
-  opacity: 0.5;
-  filter: grayscale(1);
-  border: 1px solid var(--border-color-secondary);
+[data-theme="light"] .pill {
+  border-color: var(--neutral-300);
 }
 
 .pill.pillActive {
+  background: var(--pill-bg, var(--background-primary-subtle));
+  color: var(--pill-color, var(--pill-colour));
+  border-color: var(--pill-bg, var(--pill-colour));
+}
+
+/* Specific logic for custom colors (Position colors) */
+/* When a custom color is passed via style attribute */
+.pill.pillActive[style*="--pill-colour"] {
+  background-color: color-mix(in srgb, var(--pill-colour) 15%, transparent);
+  border-color: var(--pill-colour);
   color: var(--pill-colour);
-  border-color: 1px solid var(--pill-colour);
-  background: var(--pill-subtle-hover-color);
+}
+
+.pill.pillDisabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  filter: grayscale(0.5);
+}
+
+@media (hover: hover) {
+  .pill:hover:not(.pillDisabled) {
+    transform: translateY(-1px);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+  }
+
+  .pill.pillActive:hover:not(.pillDisabled) {
+    filter: brightness(1.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* Solid hover for active custom colors */
+  .pill.pillActive[style*="--pill-colour"]:hover:not(.pillDisabled) {
+    background-color: var(--pill-colour);
+    color: #ffffff;
+  }
 }
 
 .pillText {
-  font-size: 0.9rem;
-  color: var(--color-text-muted);
-  border: 1px solid transparent;
-  background: var(--background-button-secondary);
-  border-radius: 12px;
+  /* Base styles inherited */
 }

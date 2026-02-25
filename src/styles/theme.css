@@ -28,6 +28,26 @@
   --error: #ff453a;
   --error-dark: #450a0a;
 
+  /* Muted Semantic Tints (Pro Look) */
+  --surface-success: rgba(50, 215, 75, 0.12);
+  --text-success: #32d74b;
+  --surface-error: rgba(255, 69, 58, 0.12);
+  --text-error: #ff453a;
+  --surface-warning: rgba(255, 159, 10, 0.12);
+  --text-warning: #ff9f0a;
+
+  /* Pill-specific semantic colours - Dark */
+  --pill-success-bg: rgba(50, 215, 75, 0.15);
+  --pill-success-text: #32d74b;
+  --pill-error-bg: rgba(255, 69, 58, 0.15);
+  --pill-error-text: #ff453a;
+  --pill-warning-bg: rgba(255, 159, 10, 0.15);
+  --pill-warning-text: #ff9f0a;
+  --pill-primary-bg: rgba(94, 92, 230, 0.15);
+  --pill-primary-text: #7d7aff;
+  --pill-secondary-bg: rgba(100, 210, 255, 0.15);
+  --pill-secondary-text: #64d2ff;
+
   /* SEMANTIC MAPPING - DARK THEME (Midnight) */
   --color-text-primary: #ffffff;
   --color-text-secondary: var(--neutral-200);
@@ -45,7 +65,8 @@
   --color-success-light: var(--success);
   --color-warning-light: var(--warning);
   --color-delete: var(--error);
-  --color-delete-dark: #2d0a0a;
+  --color-delete-dark: rgba(255, 69, 58, 0.15);
+  --color-on-error: #ffffff;
   --color-controls: var(--neutral-400);
 
   --background-body: #000000;
@@ -101,7 +122,8 @@
   --color-success-light: #28a745;
   --color-warning-light: #e67e00;
   --color-delete: #cc2d24;
-  --color-delete-dark: #fff5f5;
+  --color-delete-dark: #fff1f2;
+  --color-on-error: #ffffff;
   --color-controls: #636366;
 
   --background-body: #ffffff;
@@ -132,4 +154,24 @@
   --border-color-input: #aeaeb2;
   --border-color-table: #d1d1d6;
   --border-color-delete: #ff9b9b;
+
+  /* Muted Semantic Tints - Light */
+  --surface-success: #e2fbe8;
+  --text-success: #1a832d;
+  --surface-error: #ffe5e5;
+  --text-error: #b91c1c;
+  --surface-warning: #fff4d6;
+  --text-warning: #92400e;
+
+  /* Pill-specific semantic colours - Light */
+  --pill-success-bg: #e2fbe8;
+  --pill-success-text: #1a832d;
+  --pill-error-bg: #ffe5e5;
+  --pill-error-text: #b91c1c;
+  --pill-warning-bg: #fff4d6;
+  --pill-warning-text: #92400e;
+  --pill-primary-bg: #f2f2ff;
+  --pill-primary-text: #4a49d1;
+  --pill-secondary-bg: #e0f7fa;
+  --pill-secondary-text: #006680;
 }
