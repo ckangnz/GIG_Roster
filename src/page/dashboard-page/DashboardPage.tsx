@@ -12,6 +12,7 @@ import { CopyIcon, CheckCircle2, CalendarPlus } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 
 import ActionSheet from "../../components/common/ActionSheet";
+import NameTag from "../../components/common/NameTag";
 import Spinner from "../../components/common/Spinner";
 import { db } from "../../firebase";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
@@ -490,10 +491,10 @@ const DashboardPage = () => {
                       {group.assignedUsers.length > 0
                         ? group.assignedUsers.map((user, idx) => (
                             <Fragment key={`${user.name}-${idx}`}>
-                              {user.name}
-                              {user.isMe && (
-                                <span className={styles.meTag}>Me</span>
-                              )}
+                              <NameTag
+                                displayName={user.name}
+                                isMe={user.isMe}
+                              />
                               {idx < group.assignedUsers.length - 1 ? ", " : ""}
                             </Fragment>
                           ))

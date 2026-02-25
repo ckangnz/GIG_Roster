@@ -261,28 +261,6 @@
   opacity: 0.6;
 }
 
-.meTag {
-  display: inline-flex;
-  align-items: center;
-  background-color: var(--background-primary-subtle);
-  color: var(--color-primary);
-  font-size: 0.6rem;
-  font-weight: 800;
-  padding: 1px 5px;
-  border-radius: 4px;
-  margin-left: 4px;
-  vertical-align: middle;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  border: 1px solid var(--border-color-primary);
-}
-
-[data-theme='dark'] .meTag {
-  background-color: var(--background-primary-subtle);
-  color: var(--color-primary);
-  border-color: var(--border-color-primary);
-}
-
 .carouselPagination {
   text-align: center;
   padding: 0.5rem 0;

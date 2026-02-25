@@ -61,6 +61,7 @@ interface RosterTableProps {
   hasDirtyChanges?: boolean;
   handleSave?: () => void;
   handleCancel?: () => void;
+  className?: string;
 }
 
 const RosterTable = ({
@@ -86,6 +87,7 @@ const RosterTable = ({
   handleSave,
   handleCancel,
   hasPastDates,
+  className,
 }: RosterTableProps) => {
   const dispatch = useAppDispatch();
 
@@ -169,7 +171,11 @@ const RosterTable = ({
   const isGlobalSyncing = Object.values(syncing).some((v) => v);
 
   return (
-    <div ref={containerRef} className={styles.rosterTableWrapper} tabIndex={-1}>
+    <div
+      ref={containerRef}
+      className={`${styles.rosterTableWrapper} ${className || ""}`}
+      tabIndex={-1}
+    >
       <TopControls
         isAllView={isAllView}
         isAbsenceView={isAbsenceView}

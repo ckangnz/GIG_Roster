@@ -263,23 +263,23 @@ const AllRosterTable = () => {
   );
 
   return (
-    <div className={filterUserId ? allStyles.filteredTableContainer : ""}>
-      <RosterTable
-        {...logic}
-        isAllView={true}
-        isAbsenceView={false}
-        hiddenUserList={hiddenUserList}
-        renderHeader={renderHeader}
-        onLoadNextYear={logic.handleLoadNextYear}
-        colCount={
-          rosterAllViewMode === "user"
-            ? allViewColumns.length
-            : currentTeamData?.positions.length || 0
-        }
-        onCellClick={handleKeyboardAllCellClick}
-        hasPastDates={hasPastDates}
-      >
-        {rosterDates.map((dateString, rowIndex) => (
+    <RosterTable
+      {...logic}
+      isAllView={true}
+      isAbsenceView={false}
+      hiddenUserList={hiddenUserList}
+      renderHeader={renderHeader}
+      onLoadNextYear={logic.handleLoadNextYear}
+      colCount={
+        rosterAllViewMode === "user"
+          ? allViewColumns.length
+          : currentTeamData?.positions.length || 0
+      }
+      onCellClick={handleKeyboardAllCellClick}
+      hasPastDates={hasPastDates}
+      className={filterUserId ? allStyles.filteredTableContainer : ""}
+    >
+      {rosterDates.map((dateString, rowIndex) => (
           <AllRosterRow
             key={dateString}
             dateString={dateString}
@@ -303,7 +303,6 @@ const AllRosterTable = () => {
           />
         ))}
       </RosterTable>
-    </div>
   );
 };
 

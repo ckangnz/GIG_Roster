@@ -36,7 +36,7 @@ const PositionManagementRow = ({
   const isChild = !!position.parentId;
 
   return (
-    <tr style={{ background: "var(--background-card)" }}>
+    <tr style={{ background: "var(--background-card)", transform: "translateZ(0)" }}>
       <SettingsTableAnyCell isSticky={true}>
         <div
           style={{

@@ -55,6 +55,7 @@ const DraggableRowBlock = ({
       dragListener={false}
       dragControls={dragControls}
       as="tbody"
+      layout
     >
       <PositionManagementRow
         position={block.parent}
@@ -283,6 +284,7 @@ const PositionManagement = () => {
           values: positionBlocks,
           onReorder: handleReorderBlocks,
           as: "table",
+          layout: true,
         }}
         customBody={
           <>

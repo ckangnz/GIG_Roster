@@ -78,17 +78,17 @@ th.stickyCol {
 
 /* Header States */
 .highlightedHeader {
-  background-color: var(--background-primary-subtle) !important;
+  background-color: color-mix(in srgb, var(--color-primary) 20%, var(--background-table-header)) !important;
   color: var(--color-primary) !important;
 }
 
 .isMe {
-  background-color: var(--background-primary-subtle) !important;
+  background-color: color-mix(in srgb, var(--color-primary) 20%, var(--background-table-header)) !important;
   color: var(--color-primary) !important;
 }
 
 .isFiltered {
-  background-color: var(--background-secondary-subtle) !important;
+  background-color: color-mix(in srgb, var(--color-secondary) 25%, var(--background-table-header)) !important;
   box-shadow: inset 0 -4px 0 0 var(--color-secondary) !important;
   color: var(--color-secondary) !important;
 }

@@ -28,7 +28,7 @@
   padding: 1px 6px;
   border-radius: 4px;
   margin-left: 6px;
-  vertical-align: middle;
+  vertical-align: text-top;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   border: 1px solid #4a49d1;
@@ -54,7 +54,7 @@
 .isMe {
   color: var(--color-primary) !important;
   font-weight: 700 !important;
-  vertical-align: middle;
+  vertical-align: top;
 }
 
 [data-theme="dark"] .isMe {
