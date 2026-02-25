@@ -1,4 +1,4 @@
-.appTableContainer {
+.settingsTableContainer {
   width: 100%;
   height: fit-content;
   max-width: 100%;
@@ -9,7 +9,7 @@
   box-sizing: border-box;
 }
 
-.appTable {
+.settingsTable {
   width: 100%;
   height: max(100%, fit-content);
   border-collapse: separate;
@@ -18,7 +18,7 @@
   color: var(--color-text-primary);
 }
 
-.appTable th {
+.settingsTable th {
   background: var(--background-table-header);
   padding: 12px 8px;
   text-align: left;
@@ -31,33 +31,33 @@
   white-space: nowrap;
 }
 
-.appTable thead tr th:first-child {
+.settingsTable thead tr th:first-child {
   z-index: 70;
 }
 
-.appTable td {
+.settingsTable td {
   padding: 8px;
   border-bottom: 1px solid var(--border-color-table);
   border-right: 1px solid var(--border-color-secondary);
   vertical-align: middle;
 }
 
-.appTable th:last-child,
-.appTable td:last-child {
+.settingsTable th:last-child,
+.settingsTable td:last-child {
   border-right: none;
 }
 
-.appTable td.colorPickerGroup {
+.settingsTable td.colorPickerGroup {
   display: flex;
   align-items: center;
   background: transparent;
 }
 
-.appTable tbody tr:last-child td {
+.settingsTable tbody tr:last-child td {
   border-bottom: 1px solid var(--border-color-table);
 }
 
-.appTable tbody:last-of-type tr:last-child td {
+.settingsTable tbody:last-of-type tr:last-child td {
   border-bottom: none;
 }
 
@@ -71,13 +71,13 @@
   background-color: inherit;
 }
 
-.appTable th.stickyCol {
+.settingsTable th.stickyCol {
   top: 0;
   z-index: 60;
   text-align: left;
   background-color: var(--background-table-header);
 }
 
-.appTable td.stickyCol {
+.settingsTable td.stickyCol {
   background-color: var(--background-card);
 }

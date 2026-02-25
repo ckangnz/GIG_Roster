@@ -153,8 +153,8 @@ const SettingsTable = ({
   tableProps = {},
 }: SettingsTableProps) => {
   return (
-    <div className={styles.appTableContainer}>
-      <TableTag className={styles.appTable} {...tableProps}>
+    <div className={styles.settingsTableContainer}>
+      <TableTag className={styles.settingsTable} {...tableProps}>
         <thead>
           <tr>
             {headers.map((headerProps, i) => (
