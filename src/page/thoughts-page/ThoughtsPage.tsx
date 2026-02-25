@@ -12,13 +12,13 @@ import Spinner from "../../components/common/Spinner";
 import { db } from "../../firebase";
 import { useAppSelector, useAppDispatch } from "../../hooks/redux";
 import { Thought, AppUser, ThoughtEntry } from "../../model/model";
-import { 
-  setThoughts, 
+import {
+  setThoughts,
   syncThoughtEntriesRemote,
   removeThoughtRemote,
   applyOptimisticThoughts,
   applyOptimisticRemove,
-  syncHeartEntryRemote
+  syncHeartEntryRemote,
 } from "../../store/slices/thoughtsSlice";
 import { showAlert } from "../../store/slices/uiSlice";
 
@@ -59,14 +59,16 @@ const ThoughtsPage = () => {
 
   const selectedTeam = teamName || userData?.teams?.[0] || "";
   const [focusedUser, setFocusedUser] = useState<AppUser | null>(null);
-  
+
   // UI State
   const [isManagementOpen, setIsManagementOpen] = useState(false);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [editingEntryId, setEditingEntryId] = useState<string | null>(null);
   const [inputText, setInputText] = useState("");
 
-  const [likerList, setLikerList] = useState<{name: string, time: string}[] | null>(null);
+  const [likerList, setLikerList] = useState<
+    { name: string; time: string }[] | null
+  >(null);
 
   // Auto-navigate to first team if none in URL
   useEffect(() => {
@@ -75,12 +77,14 @@ const ThoughtsPage = () => {
     }
   }, [teamName, userData, navigate]);
 
-  const focusedThoughtId = focusedUser ? `${focusedUser.id}_${selectedTeam}` : "";
+  const focusedThoughtId = focusedUser
+    ? `${focusedUser.id}_${selectedTeam}`
+    : "";
   const focusedThought = thoughts[focusedThoughtId];
 
   const isMyProfileFocused = focusedUser?.id === firebaseUser?.uid;
-  const targetThought = isMyProfileFocused 
-    ? thoughts[`${firebaseUser?.uid}_${selectedTeam}`] 
+  const targetThought = isMyProfileFocused
+    ? thoughts[`${firebaseUser?.uid}_${selectedTeam}`]
     : focusedThought;
 
   const handleOpenManagement = () => {
@@ -90,7 +94,7 @@ const ThoughtsPage = () => {
   const handleOpenEditor = (entryId: string | null = null) => {
     setIsManagementOpen(false); // Close management to avoid focus conflicts
     if (entryId) {
-      const entry = targetThought?.entries?.find(e => e.id === entryId);
+      const entry = targetThought?.entries?.find((e) => e.id === entryId);
       setInputText(entry?.text || "");
       setEditingEntryId(entryId);
     } else {
@@ -114,10 +118,10 @@ const ThoughtsPage = () => {
 
     const sanitizedText = inputText.trim().replace(/<[^>]*>?/gm, "");
     const currentEntries = [...(targetThought?.entries || [])];
-    
+
     if (editingEntryId) {
       // Update existing
-      const index = currentEntries.findIndex(e => e.id === editingEntryId);
+      const index = currentEntries.findIndex((e) => e.id === editingEntryId);
       if (index >= 0) {
         currentEntries[index] = {
           ...currentEntries[index],
@@ -128,11 +132,13 @@ const ThoughtsPage = () => {
     } else {
       // Add new (max 5)
       if (currentEntries.length >= 5) {
-        dispatch(showAlert({
-          title: "Limit Reached",
-          message: "You can only have up to 5 thoughts at a time.",
-          showCancel: false
-        }));
+        dispatch(
+          showAlert({
+            title: "Limit Reached",
+            message: "You can only have up to 5 thoughts at a time.",
+            showCancel: false,
+          }),
+        );
         return;
       }
       currentEntries.push({
@@ -146,14 +152,16 @@ const ThoughtsPage = () => {
     const payload = {
       userUid: isMyProfileFocused ? firebaseUser!.uid : focusedUser.id!,
       teamName: selectedTeam,
-      userName: isMyProfileFocused ? (userData?.name || "Anonymous") : (focusedUser.name || "Anonymous"),
+      userName: isMyProfileFocused
+        ? userData?.name || "Anonymous"
+        : focusedUser.name || "Anonymous",
       entries: currentEntries,
     };
 
     const id = `${payload.userUid}_${selectedTeam}`;
     dispatch(applyOptimisticThoughts({ id, entries: currentEntries }));
     dispatch(syncThoughtEntriesRemote(payload));
-    
+
     setIsEditorOpen(false);
     setEditingEntryId(null);
     setIsManagementOpen(true); // Go back to management after saving
@@ -162,76 +170,105 @@ const ThoughtsPage = () => {
   const handleClearEntry = (entryId: string) => {
     if (!targetThought || !focusedUser) return;
 
-    dispatch(showAlert({
-      title: "Clear Thought",
-      message: "Are you sure you want to clear this thought? This will permanently remove the message and all likes received for it.",
-      confirmText: "Clear",
-      onConfirm: () => {
-        const updatedEntries = targetThought.entries?.filter(e => e.id !== entryId) || [];
-        
-        if (updatedEntries.length === 0) {
-          // If last one, remove the whole doc
-          dispatch(applyOptimisticRemove({ id: targetThought.id }));
-          dispatch(removeThoughtRemote({ id: targetThought.id }));
-          setIsManagementOpen(false);
-        } else {
-          const payload = {
-            userUid: targetThought.userUid,
-            teamName: selectedTeam,
-            userName: targetThought.userName,
-            entries: updatedEntries,
-          };
-          dispatch(applyOptimisticThoughts({ id: targetThought.id, entries: updatedEntries }));
-          dispatch(syncThoughtEntriesRemote(payload));
-        }
-        setIsEditorOpen(false);
-      }
-    }));
+    dispatch(
+      showAlert({
+        title: "Clear Thought",
+        message:
+          "Are you sure you want to clear this thought? This will permanently remove the message and all likes received for it.",
+        confirmText: "Clear",
+        onConfirm: () => {
+          const updatedEntries =
+            targetThought.entries?.filter((e) => e.id !== entryId) || [];
+
+          if (updatedEntries.length === 0) {
+            // If last one, remove the whole doc
+            dispatch(applyOptimisticRemove({ id: targetThought.id }));
+            dispatch(removeThoughtRemote({ id: targetThought.id }));
+            setIsManagementOpen(false);
+          } else {
+            const payload = {
+              userUid: targetThought.userUid,
+              teamName: selectedTeam,
+              userName: targetThought.userName,
+              entries: updatedEntries,
+            };
+            dispatch(
+              applyOptimisticThoughts({
+                id: targetThought.id,
+                entries: updatedEntries,
+              }),
+            );
+            dispatch(syncThoughtEntriesRemote(payload));
+          }
+          setIsEditorOpen(false);
+        },
+      }),
+    );
   };
 
-  const handleHeart = useCallback((entryId: string) => {
-    if (!firebaseUser?.uid || !focusedThought) return;
-    
-    const entryIndex = focusedThought.entries?.findIndex(e => e.id === entryId);
-    if (entryIndex === undefined || entryIndex < 0) return;
+  const handleHeart = useCallback(
+    (entryId: string) => {
+      if (!firebaseUser?.uid || !focusedThought) return;
 
-    const updatedEntries = JSON.parse(JSON.stringify(focusedThought.entries)) as ThoughtEntry[];
-    const entry = updatedEntries[entryIndex];
-    
-    if (entry.hearts[firebaseUser.uid]) {
-      delete entry.hearts[firebaseUser.uid];
-    } else {
-      entry.hearts[firebaseUser.uid] = Date.now();
-    }
+      const entryIndex = focusedThought.entries?.findIndex(
+        (e) => e.id === entryId,
+      );
+      if (entryIndex === undefined || entryIndex < 0) return;
 
-    dispatch(applyOptimisticThoughts({ id: focusedThought.id, entries: updatedEntries }));
-    dispatch(syncHeartEntryRemote({ 
-      thoughtId: focusedThought.id, 
-      entryId, 
-      userUid: firebaseUser.uid,
-      updatedEntries 
-    }));
-  }, [firebaseUser, focusedThought, dispatch]);
+      const updatedEntries = JSON.parse(
+        JSON.stringify(focusedThought.entries),
+      ) as ThoughtEntry[];
+      const entry = updatedEntries[entryIndex];
 
-  const handleShowLikers = useCallback((hearts: Record<string, number>) => {
-    const list = Object.entries(hearts).map(([uid, timestamp]) => {
-      const user = allUsers.find(u => u.id === uid);
-      return {
-        name: user?.name || "Unknown User",
-        time: formatRelativeTime(timestamp),
-        timestamp // Keep for sorting
-      };
-    });
-    // Sort by most recent
-    list.sort((a, b) => b.timestamp - a.timestamp);
-    setLikerList(list.map(l => ({ name: l.name, time: l.time })));
-  }, [allUsers]);
+      if (entry.hearts[firebaseUser.uid]) {
+        delete entry.hearts[firebaseUser.uid];
+      } else {
+        entry.hearts[firebaseUser.uid] = Date.now();
+      }
+
+      dispatch(
+        applyOptimisticThoughts({
+          id: focusedThought.id,
+          entries: updatedEntries,
+        }),
+      );
+      dispatch(
+        syncHeartEntryRemote({
+          thoughtId: focusedThought.id,
+          entryId,
+          userUid: firebaseUser.uid,
+          updatedEntries,
+        }),
+      );
+    },
+    [firebaseUser, focusedThought, dispatch],
+  );
+
+  const handleShowLikers = useCallback(
+    (hearts: Record<string, number>) => {
+      const list = Object.entries(hearts).map(([uid, timestamp]) => {
+        const user = allUsers.find((u) => u.id === uid);
+        return {
+          name: user?.name || "Unknown User",
+          time: formatRelativeTime(timestamp),
+          timestamp, // Keep for sorting
+        };
+      });
+      // Sort by most recent
+      list.sort((a, b) => b.timestamp - a.timestamp);
+      setLikerList(list.map((l) => ({ name: l.name, time: l.time })));
+    },
+    [allUsers],
+  );
 
   // Real-time thoughts listener
   useEffect(() => {
     if (!selectedTeam) return;
 
-    const q = query(collection(db, "thoughts"), where("teamName", "==", selectedTeam));
+    const q = query(
+      collection(db, "thoughts"),
+      where("teamName", "==", selectedTeam),
+    );
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const thoughtsMap: Record<string, Thought> = {};
       snapshot.forEach((doc) => {
@@ -256,12 +293,16 @@ const ThoughtsPage = () => {
 
   const teamUsers = useMemo(() => {
     if (!selectedTeam) return [];
-    return allUsers.filter(u => u.teams?.includes(selectedTeam) && u.isActive);
+    return allUsers.filter(
+      (u) => u.teams?.includes(selectedTeam) && u.isActive,
+    );
   }, [allUsers, selectedTeam]);
 
   if (teamsLoading) return <Spinner />;
 
-  const displayTitle = selectedTeam ? `Thoughts • ${selectedTeam}` : "Team Thoughts";
+  const displayTitle = selectedTeam
+    ? `Thoughts • ${selectedTeam}`
+    : "Team Thoughts";
 
   return (
     <>
@@ -294,69 +335,74 @@ const ThoughtsPage = () => {
           </div>
         </div>
 
-              <div className={styles.footer}>
+        <div className={styles.footer}>
+          <Button
+            onClick={handleOpenManagement}
+            className={styles.shareBtn}
+            variant={
+              !isMyProfileFocused && userData?.isAdmin ? "secondary" : "primary"
+            }
+          >
+            {!isMyProfileFocused && userData?.isAdmin
+              ? focusedThought
+                ? `Moderate ${focusedUser?.name}'s thoughts`
+                : `Share for ${focusedUser?.name}`
+              : targetThought?.entries?.length
+                ? "Manage my thoughts"
+                : "Share a thought"}
+          </Button>
+        </div>
+      </div>
 
-                <Button 
+      {/* Thought Management List */}
 
-                  onClick={handleOpenManagement} 
-
-                  className={styles.shareBtn}
-
-                  variant={(!isMyProfileFocused && userData?.isAdmin) ? "secondary" : "primary"}
-
-                >
-
-                  {(!isMyProfileFocused && userData?.isAdmin)
-
-                    ? (focusedThought ? `Moderate ${focusedUser?.name}'s thoughts` : `Share for ${focusedUser?.name}`)
-
-                    : (targetThought?.entries?.length ? "Manage my thoughts" : "Share a thought")
-
-                  }
-
-                </Button>
-
-              </div>
-
-            </div>
-
-        
-
-            {/* Thought Management List */}
-
-            <ActionSheet
-
-              isOpen={isManagementOpen}
-
-              onClose={() => setIsManagementOpen(false)}
-
-              title={isMyProfileFocused ? "My Thoughts" : `Acting on behalf of ${focusedUser?.name}`}
-
-            >
-
-        
+      <ActionSheet
+        isOpen={isManagementOpen}
+        onClose={() => setIsManagementOpen(false)}
+        title={
+          isMyProfileFocused
+            ? "My Thoughts"
+            : `Acting on behalf of ${focusedUser?.name}`
+        }
+      >
         <div className={styles.managementList}>
           {targetThought?.entries?.map((entry) => (
             <div key={entry.id} className={styles.managementItem}>
               <div className={styles.entryText}>{entry.text}</div>
               <div className={styles.entryActions}>
-                <Button variant="secondary" size="small" isIcon onClick={() => handleOpenEditor(entry.id)}>
+                <Button
+                  variant="secondary"
+                  size="small"
+                  isIcon
+                  onClick={() => handleOpenEditor(entry.id)}
+                >
                   <Edit2 size={14} />
                 </Button>
-                <Button variant="delete" size="small" isIcon onClick={() => handleClearEntry(entry.id)}>
+                <Button
+                  variant="delete"
+                  size="small"
+                  isIcon
+                  onClick={() => handleClearEntry(entry.id)}
+                >
                   <Trash2 size={14} />
                 </Button>
               </div>
             </div>
           ))}
-          
-          {(targetThought?.entries?.length || 0) < 5 && (isMyProfileFocused || userData?.isAdmin) && (
-            <Button onClick={() => handleOpenEditor(null)} className={styles.addEntryBtn} variant="secondary">
-              <Plus size={16} style={{ marginRight: 8 }} /> Add another thought
-            </Button>
-          )}
-          
-          {(!targetThought?.entries?.length) && (
+
+          {(targetThought?.entries?.length || 0) < 5 &&
+            (isMyProfileFocused || userData?.isAdmin) && (
+              <Button
+                onClick={() => handleOpenEditor(null)}
+                className={styles.addEntryBtn}
+                variant="secondary"
+              >
+                <Plus size={16} style={{ marginRight: 8 }} /> Add another
+                thought
+              </Button>
+            )}
+
+          {!targetThought?.entries?.length && (
             <p className={styles.emptyThoughts}>No thoughts shared yet.</p>
           )}
         </div>
@@ -406,7 +452,9 @@ const ThoughtsPage = () => {
               <span className={styles.likerTime}>{user.time}</span>
             </div>
           ))}
-          {likerList?.length === 0 && <p className={styles.emptyThoughts}>No likes yet.</p>}
+          {likerList?.length === 0 && (
+            <p className={styles.emptyThoughts}>No likes yet.</p>
+          )}
         </div>
       </ActionSheet>
     </>
@@ -414,4 +462,3 @@ const ThoughtsPage = () => {
 };
 
 export default ThoughtsPage;
-

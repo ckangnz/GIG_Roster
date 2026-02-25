@@ -25,46 +25,100 @@
 
 .eventItem {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-areas: 
+    "handle label label delete"
+    "handle day day day"
+    "handle start end end";
+  grid-template-columns: auto 1fr 1fr auto;
   gap: 12px;
-  padding: 16px;
-  border-radius: 12px;
-  background-color: var(--background-body);
+  padding: 16px 12px;
+  border-radius: 16px;
+  background-color: var(--background-card);
   border: 1px solid var(--border-color-secondary);
   position: relative;
+  align-items: start;
+}
+
+.dragHandle {
+  grid-area: handle;
+  cursor: grab;
+  color: var(--color-text-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  align-self: stretch;
+  opacity: 0.5;
+  touch-action: none;
 }
 
 .eventInputLabel {
-  grid-column: span 2;
+  grid-area: label;
 }
 
 .eventInputDay {
-  grid-column: span 2;
+  grid-area: day;
 }
 
-.eventInputTime {
-  grid-column: span 1;
+.eventInputStart {
+  grid-area: start;
+}
+
+.eventInputEnd {
+  grid-area: end;
 }
 
 .deleteBtn {
-  position: absolute;
-  top: 12px;
-  right: 12px;
+  grid-area: delete;
+  margin-top: 24px;
+}
+
+.preferredDaysGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.preferredDayItem {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: var(--background-card);
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid var(--border-color-table);
+  transition: all 0.2s ease;
+}
+
+.preferredDayItemActive {
+  border-color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 5%, var(--background-card));
+}
+
+.dayLabel {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
 }
 
 @media (min-width: 600px) {
   .eventItem {
-    grid-template-columns: 2fr 1.5fr 1fr 1fr auto;
+    grid-template-areas: 
+      "handle label label label delete"
+      "handle day start end end";
+    grid-template-columns: auto 2fr 1fr 1fr auto;
     align-items: end;
-    padding-right: 8px;
-  }
-
-  .eventInputLabel, .eventInputDay, .eventInputTime {
-    grid-column: span 1;
+    padding: 20px 16px;
+    gap: 16px;
   }
 
   .deleteBtn {
-    position: static;
-    margin-left: 4px;
+    grid-area: delete;
+    margin-top: 0;
+    margin-bottom: 8px;
+  }
+
+  .preferredDaysGrid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   }
 }

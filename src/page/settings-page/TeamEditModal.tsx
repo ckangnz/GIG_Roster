@@ -1,4 +1,5 @@
-import { Plus, Trash2 } from "lucide-react";
+import { Reorder, useDragControls } from "framer-motion";
+import { Plus, Trash2, GripVertical } from "lucide-react";
 
 import Button from "../../components/common/Button";
 import { InputField, SelectField } from "../../components/common/InputField";
@@ -31,6 +32,83 @@ const WEEK_DAYS: Weekday[] = [
   "Friday",
   "Saturday",
 ];
+
+const EventItem = ({
+  ev,
+  onUpdate,
+  onRemove,
+}: {
+  ev: RecurringEvent;
+  onUpdate: (id: string, field: keyof RecurringEvent, value: string | number) => void;
+  onRemove: (id: string) => void;
+}) => {
+  const dragControls = useDragControls();
+
+  return (
+    <Reorder.Item
+      value={ev}
+      dragListener={false}
+      dragControls={dragControls}
+      className={localStyles.eventItem}
+    >
+      <div
+        className={localStyles.dragHandle}
+        onPointerDown={(e) => dragControls.start(e)}
+      >
+        <GripVertical size={20} />
+      </div>
+
+      <div className={localStyles.eventInputLabel}>
+        <InputField
+          label="Event Name"
+          value={ev.label}
+          placeholder="e.g. Practice"
+          onChange={(e) => onUpdate(ev.id, "label", e.target.value)}
+        />
+      </div>
+      <div className={localStyles.eventInputDay}>
+        <SelectField
+          label="Week Day"
+          value={ev.day}
+          onChange={(e) =>
+            onUpdate(ev.id, "day", e.target.value as Weekday)
+          }
+        >
+          {WEEK_DAYS.map((d) => (
+            <option key={d} value={d}>
+              {d}
+            </option>
+          ))}
+        </SelectField>
+      </div>
+      <div className={localStyles.eventInputStart}>
+        <InputField
+          label="Starts"
+          type="time"
+          value={ev.startTime}
+          onChange={(e) => onUpdate(ev.id, "startTime", e.target.value)}
+        />
+      </div>
+      <div className={localStyles.eventInputEnd}>
+        <InputField
+          label="Finishes"
+          type="time"
+          value={ev.endTime}
+          onChange={(e) => onUpdate(ev.id, "endTime", e.target.value)}
+        />
+      </div>
+      <Button
+        variant="delete"
+        size="small"
+        isIcon
+        className={localStyles.deleteBtn}
+        onClick={() => onRemove(ev.id)}
+      >
+        <Trash2 size={16} />
+      </Button>
+    </Reorder.Item>
+  );
+};
 
 const TeamEditModal = ({
   isOpen,
@@ -70,6 +148,10 @@ const TeamEditModal = ({
     onUpdateEvents(updated);
   };
 
+  const handleReorderEvents = (newOrder: RecurringEvent[]) => {
+    onUpdateEvents(newOrder);
+  };
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={`Edit Team: ${team.name}`}>
       <div className={commonStyles.formGroup}>
@@ -94,33 +176,37 @@ const TeamEditModal = ({
       </div>
 
       <div className={commonStyles.formGroup}>
-        <label className={commonStyles.sectionLabel}>Preferred Days</label>
-        <PillGroup>
+        <label className={commonStyles.sectionLabel}>Preferred Days & End Times</label>
+        <div className={localStyles.preferredDaysGrid}>
           {WEEK_DAYS.map((day) => {
             const isActive = team.preferredDays?.includes(day);
             return (
-              <div key={day} style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                <Pill
-                  isActive={isActive}
-                  onClick={() => onToggleDay(day)}
-                >
-                  {day}
-                </Pill>
+              <div
+                key={day}
+                className={`${localStyles.preferredDayItem} ${isActive ? localStyles.preferredDayItemActive : ""}`}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
+                  <span className={localStyles.dayLabel}>{day}</span>
+                  <Toggle
+                    isOn={isActive}
+                    onToggle={() => onToggleDay(day)}
+                  />
+                </div>
                 {isActive && (
                   <InputField
                     type="time"
+                    label="End Time"
                     value={team.dayEndTimes?.[day] || ""}
                     onChange={(e) => onUpdateDayEndTime(day, e.target.value)}
-                    title={`Duty end time for ${day}`}
-                    style={{ width: "90px" }}
+                    style={{ width: "100%" }}
                   />
                 )}
               </div>
             );
           })}
-        </PillGroup>
-        <p style={{ fontSize: "0.7rem", color: "var(--color-text-faded)", marginTop: "8px" }}>
-          * Set an end time to automatically move today's roster to history after that time.
+        </div>
+        <p style={{ fontSize: "0.75rem", color: "var(--color-text-dim)", marginTop: "12px", opacity: 0.8 }}>
+          * Setting an end time automatically moves today's roster to history after that time.
         </p>
       </div>
 
@@ -128,93 +214,51 @@ const TeamEditModal = ({
         <div className={localStyles.sectionHeader}>
           <label className={commonStyles.sectionLabel}>Calendar Setup</label>
           <Button
-            variant="secondary"
+            variant="primary"
             size="small"
-            isIcon
             onClick={handleAddEvent}
-            title="Add event"
           >
-            <Plus size={18} />
+            <Plus size={16} style={{ marginRight: "6px" }} />
+            Add Event
           </Button>
         </div>
 
-        <div className={localStyles.eventList}>
+        <Reorder.Group
+          axis="y"
+          values={team.recurringEvents || []}
+          onReorder={handleReorderEvents}
+          className={localStyles.eventList}
+          style={{ listStyle: "none", padding: 0, margin: 0 }}
+        >
           {(team.recurringEvents || []).map((ev) => (
-            <div key={ev.id} className={localStyles.eventItem}>
-              <div className={localStyles.eventInputLabel}>
-                <InputField
-                  label="Event Name"
-                  value={ev.label}
-                  placeholder="e.g. Practice"
-                  onChange={(e) =>
-                    handleUpdateEvent(ev.id, "label", e.target.value)
-                  }
-                />
-              </div>
-              <div className={localStyles.eventInputDay}>
-                <SelectField
-                  label="Week Day"
-                  value={ev.day}
-                  onChange={(e) =>
-                    handleUpdateEvent(ev.id, "day", e.target.value as Weekday)
-                  }
-                >
-                  {WEEK_DAYS.map((d) => (
-                    <option key={d} value={d}>
-                      {d}
-                    </option>
-                  ))}
-                </SelectField>
-              </div>
-              <div className={localStyles.eventInputTime}>
-                <InputField
-                  label="Starts"
-                  type="time"
-                  value={ev.startTime}
-                  onChange={(e) =>
-                    handleUpdateEvent(ev.id, "startTime", e.target.value)
-                  }
-                />
-              </div>
-              <div className={localStyles.eventInputTime}>
-                <InputField
-                  label="Finishes"
-                  type="time"
-                  value={ev.endTime}
-                  onChange={(e) =>
-                    handleUpdateEvent(ev.id, "endTime", e.target.value)
-                  }
-                />
-              </div>
-              <Button
-                variant="delete"
-                size="small"
-                isIcon
-                className={localStyles.deleteBtn}
-                onClick={() => handleRemoveEvent(ev.id)}
-              >
-                <Trash2 size={16} />
-              </Button>
-            </div>
+            <EventItem
+              key={ev.id}
+              ev={ev}
+              onUpdate={handleUpdateEvent}
+              onRemove={handleRemoveEvent}
+            />
           ))}
-          {(!team.recurringEvents || team.recurringEvents.length === 0) && (
-            <p
-              style={{
-                fontSize: "0.85rem",
-                color: "var(--color-text-dim)",
-                fontStyle: "italic",
-              }}
-            >
-              No calendar events configured.
-            </p>
-          )}
-        </div>
+        </Reorder.Group>
+
+        {(!team.recurringEvents || team.recurringEvents.length === 0) && (
+          <p
+            style={{
+              fontSize: "0.85rem",
+              color: "var(--color-text-dim)",
+              fontStyle: "italic",
+              textAlign: "center",
+              padding: "20px 0",
+            }}
+          >
+            No calendar events configured.
+          </p>
+        )}
       </div>
 
       <div className={localStyles.absenceSection}>
-        <label className={commonStyles.sectionLabel}>Absence</label>
+        <label className={commonStyles.sectionLabel}>Absence Settings</label>
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          <span style={{ fontSize: "0.9rem", color: "var(--color-text-secondary)" }}>
+          <span style={{ fontSize: "0.95rem", color: "var(--color-text-secondary)" }}>
             Allow Absence
           </span>
           <Toggle
