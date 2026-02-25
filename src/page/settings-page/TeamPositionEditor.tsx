@@ -2,6 +2,7 @@ import { Reorder, useDragControls } from "framer-motion";
 import { GripVertical } from "lucide-react";
 
 import Pill, { PillGroup } from "../../components/common/Pill";
+import { SettingsGroup } from "../../components/common/SettingsGroup";
 import { Position, Team } from "../../model/model";
 import commonStyles from "../../styles/settings-common.module.css";
 
@@ -38,59 +39,62 @@ const ReorderableTeamItem = ({
       value={teamName}
       dragListener={false}
       dragControls={dragControls}
-      className={commonStyles.subSectionGroup}
       style={{ listStyle: "none", padding: 0, margin: 0 }}
     >
-      <div
-        className={commonStyles.subSectionHeader}
-        style={{ justifyContent: "space-between" }}
-      >
+      <SettingsGroup>
         <div
-          style={{
-            display: "flex",
+          style={{ 
+            display: "flex", 
+            justifyContent: "space-between", 
             alignItems: "center",
-            gap: "8px",
+            marginBottom: allTopLevelPositions.length > 0 ? "8px" : 0
           }}
         >
-          <div
-            style={{ cursor: "grab", touchAction: "none" }}
-            onPointerDown={(e) => dragControls.start(e)}
-          >
-            <GripVertical size={18} style={{ opacity: 0.4 }} />
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <div
+              style={{ cursor: "grab", touchAction: "none", opacity: 0.4 }}
+              onPointerDown={(e) => dragControls.start(e)}
+            >
+              <GripVertical size={18} />
+            </div>
+            <span style={{ fontWeight: 700, fontSize: "0.95rem" }}>
+              {team.emoji} {team.name}
+            </span>
           </div>
-          {team.emoji} {team.name}
         </div>
-      </div>
-      {allTopLevelPositions.length > 0 ? (
-        <PillGroup>
-          {allTopLevelPositions.map((pos) => {
-            const gp = globalPositions.find((p) => p.name === pos.name);
-            const isCustom = !!gp?.isCustom;
-            const isSelected = selectedPositions.includes(pos.name);
-            return (
-              <Pill
-                key={pos.name}
-                onClick={() => onTogglePosition(teamName, pos.name)}
-                isActive={isSelected}
-                isDisabled={isCustom}
-                colour={pos.colour}
-              >
-                <span>{pos.emoji}</span> {pos.name}
-              </Pill>
-            );
-          })}
-        </PillGroup>
-      ) : (
-        <p
-          style={{
-            fontSize: "0.8rem",
-            color: "var(--color-text-dim)",
-            margin: "8px 0",
-          }}
-        >
-          No assignable positions for this team.
-        </p>
-      )}
+
+        {allTopLevelPositions.length > 0 ? (
+          <PillGroup>
+            {allTopLevelPositions.map((pos) => {
+              const gp = globalPositions.find((p) => p.name === pos.name);
+              const isCustom = !!gp?.isCustom;
+              const isSelected = selectedPositions.includes(pos.name);
+              return (
+                <Pill
+                  key={pos.name}
+                  onClick={() => onTogglePosition(teamName, pos.name)}
+                  isActive={isSelected}
+                  isDisabled={isCustom}
+                  colour={pos.colour}
+                >
+                  <span>{pos.emoji}</span> {pos.name}
+                </Pill>
+              );
+            })}
+          </PillGroup>
+        ) : (
+          <p
+            style={{
+              fontSize: "0.8rem",
+              color: "var(--color-text-dim)",
+              margin: 0,
+              fontStyle: "italic"
+            }}
+          >
+            No assignable positions for this team.
+          </p>
+        )}
+      </SettingsGroup>
     </Reorder.Item>
   );
 };
@@ -139,7 +143,7 @@ const TeamPositionEditor = ({
               margin: 0, 
               display: "flex", 
               flexDirection: "column", 
-              gap: "16px" 
+              gap: "12px" 
             }}
           >
             {selectedTeams.map((teamName) => {

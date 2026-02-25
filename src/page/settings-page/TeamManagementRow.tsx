@@ -123,6 +123,7 @@ const TeamManagementRow = ({
             className={formStyles.formInput}
             value={team.maxConflict?.toString() || "1"}
             type="number"
+            title="Maximum number of simultaneous positions a member can be assigned to within this team."
             onChange={(e) =>
               onUpdate(teamIndex, "maxConflict", parseInt(e.target.value) || 1)
             }

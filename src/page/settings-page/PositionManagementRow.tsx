@@ -1,5 +1,5 @@
 import { DragControls } from "framer-motion";
-import { CornerDownRight, Plus, Trash2, GripVertical } from "lucide-react";
+import { CornerDownRight, Trash2, GripVertical } from "lucide-react";
 
 import Button from "../../components/common/Button";
 import {
@@ -19,7 +19,6 @@ interface PositionManagementRowProps {
     value: Position[keyof Position],
   ) => void;
   onDelete: (index: number) => void;
-  onAddChild: (parentName: string) => void;
   isDragDisabled?: boolean;
   dragControls?: DragControls;
 }
@@ -29,7 +28,6 @@ const PositionManagementRow = ({
   index,
   onUpdate,
   onDelete,
-  onAddChild,
   isDragDisabled = false,
   dragControls,
 }: PositionManagementRowProps) => {
@@ -98,19 +96,6 @@ const PositionManagementRow = ({
           onToggle={(isOn) => onUpdate(index, "isCustom", isOn)}
           disabled={isChild}
         />
-      </SettingsTableAnyCell>
-      <SettingsTableAnyCell textAlign="center">
-        {!isChild && (
-          <Button
-            variant="primary"
-            size="small"
-            onClick={() => onAddChild(position.name)}
-            title="Add Child Position"
-          >
-            <Plus size={14} style={{ marginRight: "4px" }} />
-            Add
-          </Button>
-        )}
       </SettingsTableAnyCell>
       <SettingsTableAnyCell textAlign="center">
         <Button

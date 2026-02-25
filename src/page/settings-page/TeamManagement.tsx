@@ -3,31 +3,18 @@ import { useState, useEffect, useMemo } from "react";
 import { Reorder } from "framer-motion";
 import { Plus } from "lucide-react";
 
-import TeamEditModal from "./TeamEditModal";
+import NewTeamModal from "./NewTeamModal";
 import TeamManagementRow from "./TeamManagementRow";
 import Button from "../../components/common/Button";
 import SaveFooter from "../../components/common/SaveFooter";
-import SettingsTable, {
-  SettingsTableAnyCell,
-} from "../../components/common/SettingsTable";
+import SettingsTable from "../../components/common/SettingsTable";
 import Spinner from "../../components/common/Spinner";
-import SummaryCell from "../../components/common/SummaryCell";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { Position, RecurringEvent, Team, Weekday } from "../../model/model";
 import { updateTeams } from "../../store/slices/teamsSlice";
 import { showAlert } from "../../store/slices/uiSlice";
-import formStyles from "../../styles/form.module.css";
 
 import styles from "./settings-page.module.css";
-
-const defaultTeam: Team = {
-  name: "",
-  emoji: "",
-  positions: [],
-  preferredDays: [],
-  maxConflict: 1,
-  allowAbsence: true,
-};
 
 const TeamManagement = () => {
   const dispatch = useAppDispatch();
@@ -38,9 +25,8 @@ const TeamManagement = () => {
     useAppSelector((state) => state.positions);
 
   const [teams, setTeams] = useState<Team[]>(reduxTeams);
-  const [newTeam, setNewTeam] = useState<Team>(defaultTeam);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [status, setStatus] = useState("idle");
-  const [isNewTeamModalOpen, setIsNewTeamModalOpen] = useState(false);
 
   const hasChanges = useMemo(() => {
     const normalize = (list: Team[]) =>
@@ -112,34 +98,10 @@ const TeamManagement = () => {
     setTeams(updatedTeams);
   };
 
-  const toggleNewTeamPosition = (pos: Position) => {
-    const currentPositions = newTeam.positions || [];
-    const newPositions = currentPositions.some((p) => p.name === pos.name)
-      ? currentPositions.filter((p) => p.name !== pos.name)
-      : [...currentPositions, pos];
-    setNewTeam({ ...newTeam, positions: newPositions });
-  };
-
-  const toggleNewTeamDay = (day: Weekday) => {
-    const currentDays = newTeam.preferredDays || [];
-    const newDays = currentDays.includes(day)
-      ? currentDays.filter((d) => d !== day)
-      : [...currentDays, day];
-    setNewTeam({ ...newTeam, preferredDays: newDays });
-  };
-
-  const toggleNewTeamAllowAbsence = (allow: boolean) => {
-    setNewTeam({ ...newTeam, allowAbsence: allow });
-  };
-
   const handleUpdateEvents = (index: number, events: RecurringEvent[]) => {
     const updated = [...teams];
     updated[index] = { ...updated[index], recurringEvents: events };
     setTeams(updated);
-  };
-
-  const handleNewTeamUpdateEvents = (events: RecurringEvent[]) => {
-    setNewTeam({ ...newTeam, recurringEvents: events });
   };
 
   const handleUpdateDayEndTime = (index: number, day: Weekday, time: string) => {
@@ -152,25 +114,8 @@ const TeamManagement = () => {
     setTeams(updated);
   };
 
-  const handleNewTeamUpdateDayEndTime = (day: Weekday, time: string) => {
-    const currentEndTimes = newTeam.dayEndTimes || {};
-    setNewTeam({ 
-      ...newTeam, 
-      dayEndTimes: { ...currentEndTimes, [day]: time } 
-    });
-  };
-
-  const addTeam = () => {
-    if (!newTeam.name.trim() || !newTeam.emoji.trim()) {
-      dispatch(showAlert({
-        title: "Missing Information",
-        message: "Please provide both an emoji and a name for the team.",
-        showCancel: false
-      }));
-      return;
-    }
+  const addTeam = (newTeam: Team) => {
     setTeams([...teams, newTeam]);
-    setNewTeam(defaultTeam);
   };
 
   const deleteTeam = (index: number) => {
@@ -227,34 +172,6 @@ const TeamManagement = () => {
     return <Spinner />;
   }
 
-  const getNewTeamPositionsSummary = () => {
-    if (!newTeam.positions || newTeam.positions.length === 0) {
-      return "No positions";
-    }
-
-    const displayEmojis = newTeam.positions.slice(0, 3).map((p) => (
-      <span key={p.name} className={styles.summaryEmoji}>
-        {p.emoji}
-      </span>
-    ));
-    const remainingCount = newTeam.positions.length - 3;
-
-    return (
-      <>
-        {displayEmojis}
-        {remainingCount > 0 && (
-          <span className={styles.remainingCount}>+{remainingCount}</span>
-        )}
-      </>
-    );
-  };
-
-  const getNewTeamDaysSummary = () => {
-    if (!newTeam.preferredDays || newTeam.preferredDays.length === 0)
-      return "No days";
-    return newTeam.preferredDays.map((d) => d.substring(0, 3)).join(", ");
-  };
-
   return (
     <div className={styles.managementWrapper}>
       <SettingsTable
@@ -266,7 +183,7 @@ const TeamManagement = () => {
             textAlign: "center",
           },
           { text: "Emoji", width: 30, textAlign: "center" },
-          { text: "Conflicts", width: 60, textAlign: "center" },
+          { text: "Max Pos", width: 60, textAlign: "center" },
           { text: "Config", minWidth: 180, textAlign: "center" },
           { text: "", width: 50 },
         ]}
@@ -287,88 +204,24 @@ const TeamManagement = () => {
                 onUpdateDayEndTime={handleUpdateDayEndTime}
               />
             ))}
-            <tr className="team-row-new">
-              <SettingsTableAnyCell isSticky>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "8px",
-                    width: "100%",
-                  }}
-                >
-                  <input
-                    name={`new-team-name`}
-                    className={formStyles.formInput}
-                    value={newTeam.name}
-                    placeholder="Team Name"
-                    onChange={(e) =>
-                      setNewTeam({ ...newTeam, name: e.target.value })
-                    }
-                    style={{ width: "100%" }}
-                  />
-                </div>
-              </SettingsTableAnyCell>
-              <SettingsTableAnyCell>
-                <input
-                  name={`new-team-emoji`}
-                  className={formStyles.formInput}
-                  value={newTeam.emoji}
-                  placeholder="✨"
-                  onChange={(e) =>
-                    setNewTeam({ ...newTeam, emoji: e.target.value })
-                  }
-                />
-              </SettingsTableAnyCell>
-              <SettingsTableAnyCell>
-                <input
-                  name={`new-team-maxConflict`}
-                  className={formStyles.formInput}
-                  value={newTeam.maxConflict?.toString() || "1"}
-                  type="number"
-                  onChange={(e) =>
-                    setNewTeam({
-                      ...newTeam,
-                      maxConflict: parseInt(e.target.value) || 1,
-                    })
-                  }
-                />
-              </SettingsTableAnyCell>
-              <SettingsTableAnyCell>
-                <SummaryCell
-                  primaryText={getNewTeamPositionsSummary()}
-                  secondaryText={getNewTeamDaysSummary()}
-                  onClick={() => setIsNewTeamModalOpen(true)}
-                />
-              </SettingsTableAnyCell>
-              <SettingsTableAnyCell>
-                <Button
-                  variant="primary"
-                  size="small"
-                  onClick={addTeam}
-                  disabled={!newTeam.name.trim() || !newTeam.emoji.trim()}
-                >
-                  <Plus size={16} style={{ marginRight: "6px" }} />
-                  Add
-                </Button>
-              </SettingsTableAnyCell>
-            </tr>
           </Reorder.Group>
         }
       >
         {null}
       </SettingsTable>
 
-      <TeamEditModal
-        isOpen={isNewTeamModalOpen}
-        onClose={() => setIsNewTeamModalOpen(false)}
-        team={newTeam}
+      <div style={{ display: "flex", justifyContent: "flex-end" }}>
+        <Button variant="primary" onClick={() => setIsModalOpen(true)}>
+          <Plus size={18} style={{ marginRight: "8px" }} />
+          New Team
+        </Button>
+      </div>
+
+      <NewTeamModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onAdd={addTeam}
         availablePositions={availablePositions}
-        onTogglePosition={toggleNewTeamPosition}
-        onToggleDay={toggleNewTeamDay}
-        onToggleAllowAbsence={toggleNewTeamAllowAbsence}
-        onUpdateEvents={handleNewTeamUpdateEvents}
-        onUpdateDayEndTime={handleNewTeamUpdateDayEndTime}
       />
 
       {hasChanges && (

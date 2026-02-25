@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 import { Reorder, useDragControls } from "framer-motion";
 import { Plus, Trash2, GripVertical } from "lucide-react";
 
@@ -7,20 +9,17 @@ import Modal from "../../components/common/Modal";
 import Pill, { PillGroup } from "../../components/common/Pill";
 import { SettingsGroup, SettingsRow } from "../../components/common/SettingsGroup";
 import Toggle from "../../components/common/Toggle";
-import { Position, RecurringEvent, Team, Weekday } from "../../model/model";
+import { Position, Team, Weekday, RecurringEvent } from "../../model/model";
+import formStyles from "../../styles/form.module.css";
 
 import localStyles from "./team-edit-modal.module.css";
 
-interface TeamEditModalProps {
+
+interface NewTeamModalProps {
   isOpen: boolean;
   onClose: () => void;
-  team: Team;
+  onAdd: (team: Team) => void;
   availablePositions: Position[];
-  onTogglePosition: (pos: Position) => void;
-  onToggleDay: (day: Weekday) => void;
-  onToggleAllowAbsence: (allow: boolean) => void;
-  onUpdateEvents: (events: RecurringEvent[]) => void;
-  onUpdateDayEndTime: (day: Weekday, time: string) => void;
 }
 
 const WEEK_DAYS: Weekday[] = [
@@ -32,6 +31,20 @@ const WEEK_DAYS: Weekday[] = [
   "Friday",
   "Saturday",
 ];
+
+const defaultTeam: Team = {
+  name: "",
+  emoji: "",
+  positions: [],
+  preferredDays: [],
+  maxConflict: 1,
+  allowAbsence: true,
+  recurringEvents: [],
+  dayEndTimes: {},
+};
+
+// Simple emoji regex
+const EMOJI_REGEX = /(\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])/g;
 
 const EventItem = ({
   ev,
@@ -110,17 +123,22 @@ const EventItem = ({
   );
 };
 
-const TeamEditModal = ({
-  isOpen,
-  onClose,
-  team,
-  availablePositions,
-  onTogglePosition,
-  onToggleDay,
-  onToggleAllowAbsence,
-  onUpdateEvents,
-  onUpdateDayEndTime,
-}: TeamEditModalProps) => {
+const NewTeamModal = ({ isOpen, onClose, onAdd, availablePositions }: NewTeamModalProps) => {
+  const [newTeam, setNewTeam] = useState<Team>(defaultTeam);
+
+  const handleAdd = () => {
+    if (!newTeam.name.trim() || !newTeam.emoji.trim()) return;
+    onAdd(newTeam);
+    setNewTeam(defaultTeam);
+    onClose();
+  };
+
+  const handleEmojiChange = (val: string) => {
+    const onlyEmojis = val.match(EMOJI_REGEX)?.join("") || "";
+    const limited = Array.from(onlyEmojis).slice(0, 1).join("");
+    setNewTeam({ ...newTeam, emoji: limited });
+  };
+
   const handleAddEvent = () => {
     const newEvent: RecurringEvent = {
       id: Math.random().toString(36).substring(2, 10),
@@ -129,44 +147,75 @@ const TeamEditModal = ({
       startTime: "09:00",
       endTime: "10:30",
     };
-    onUpdateEvents([...(team.recurringEvents || []), newEvent]);
+    setNewTeam({ ...newTeam, recurringEvents: [...(newTeam.recurringEvents || []), newEvent] });
   };
 
-  const handleUpdateEvent = (
-    id: string,
-    field: keyof RecurringEvent,
-    value: string | number,
-  ) => {
-    const updated = (team.recurringEvents || []).map((ev) =>
+  const handleUpdateEvent = (id: string, field: keyof RecurringEvent, value: string | number) => {
+    const updated = (newTeam.recurringEvents || []).map((ev) =>
       ev.id === id ? { ...ev, [field]: value } : ev,
     );
-    onUpdateEvents(updated);
+    setNewTeam({ ...newTeam, recurringEvents: updated });
   };
 
   const handleRemoveEvent = (id: string) => {
-    const updated = (team.recurringEvents || []).filter((ev) => ev.id !== id);
-    onUpdateEvents(updated);
-  };
-
-  const handleReorderEvents = (newOrder: RecurringEvent[]) => {
-    onUpdateEvents(newOrder);
+    const updated = (newTeam.recurringEvents || []).filter((ev) => ev.id !== id);
+    setNewTeam({ ...newTeam, recurringEvents: updated });
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={`Edit Team: ${team.name}`}>
+    <Modal isOpen={isOpen} onClose={onClose} title="Create New Team">
       <div style={{ display: "flex", flexDirection: "column", gap: "24px", padding: "10px 0" }}>
-        <SettingsGroup label="Allowed Positions" description="Available roles for this team">
+        {/* Basic Info */}
+        <SettingsGroup label="General Information">
+          <InputField
+            label="Team Name"
+            value={newTeam.name}
+            placeholder=""
+            onChange={(e) => setNewTeam({ ...newTeam, name: e.target.value })}
+            autoFocus
+          />
+          
+          <InputField
+            label="Team Emoji"
+            value={newTeam.emoji}
+            placeholder="Select emoji"
+            onChange={(e) => handleEmojiChange(e.target.value)}
+            maxLength={10}
+          />
+
+          <SettingsRow 
+            label="Max Concurrent Conflicts" 
+            description="Maximum number of simultaneous positions a member can be assigned to within this team on a single day."
+          >
+            <input
+              type="number"
+              className={formStyles.formInput}
+              value={newTeam.maxConflict?.toString() || "1"}
+              onChange={(e) => setNewTeam({ ...newTeam, maxConflict: parseInt(e.target.value) || 1 })}
+              style={{ width: "100px", marginTop: "8px" }}
+            />
+          </SettingsRow>
+        </SettingsGroup>
+
+        {/* Positions */}
+        <SettingsGroup label="Allowed Positions" description="Select which positions are available for this team">
           <PillGroup>
             {availablePositions
               ?.filter((pos) => !pos.parentId)
               ?.map((pos) => {
-                const isActive = team.positions?.some((p) => p.name === pos.name);
+                const isActive = newTeam.positions?.some((p) => p.name === pos.name);
                 return (
                   <Pill
                     key={pos.name}
                     colour={pos.colour}
                     isActive={isActive}
-                    onClick={() => onTogglePosition(pos)}
+                    onClick={() => {
+                      const current = newTeam.positions || [];
+                      const updated = current.find(p => p.name === pos.name)
+                        ? current.filter(p => p.name !== pos.name)
+                        : [...current, pos];
+                      setNewTeam({ ...newTeam, positions: updated });
+                    }}
                   >
                     {pos.emoji} {pos.name}
                   </Pill>
@@ -175,10 +224,11 @@ const TeamEditModal = ({
           </PillGroup>
         </SettingsGroup>
 
-        <SettingsGroup label="Preferred Days & End Times" description="Operating schedule and roster cut-off times">
+        {/* Preferred Days */}
+        <SettingsGroup label="Preferred Days & End Times" description="Operating days and when the roster cycle ends">
           <div className={localStyles.preferredDaysGrid}>
             {WEEK_DAYS.map((day) => {
-              const isActive = team.preferredDays?.includes(day);
+              const isActive = newTeam.preferredDays?.includes(day);
               return (
                 <div
                   key={day}
@@ -188,15 +238,24 @@ const TeamEditModal = ({
                     <span className={localStyles.dayLabel}>{day}</span>
                     <Toggle
                       isOn={isActive}
-                      onToggle={() => onToggleDay(day)}
+                      onToggle={(isOn) => {
+                        const current = newTeam.preferredDays || [];
+                        const updated = isOn
+                          ? [...current, day]
+                          : current.filter(d => d !== day);
+                        setNewTeam({ ...newTeam, preferredDays: updated });
+                      }}
                     />
                   </div>
                   {isActive && (
                     <InputField
                       type="time"
                       label="End Time"
-                      value={team.dayEndTimes?.[day] || ""}
-                      onChange={(e) => onUpdateDayEndTime(day, e.target.value)}
+                      value={newTeam.dayEndTimes?.[day] || ""}
+                      onChange={(e) => {
+                        const currentEndTimes = newTeam.dayEndTimes || {};
+                        setNewTeam({ ...newTeam, dayEndTimes: { ...currentEndTimes, [day]: e.target.value } });
+                      }}
                       style={{ width: "100%" }}
                     />
                   )}
@@ -206,26 +265,23 @@ const TeamEditModal = ({
           </div>
         </SettingsGroup>
 
+        {/* Calendar Setup */}
         <SettingsGroup label="Calendar Setup">
           <div className={localStyles.sectionHeader} style={{ marginTop: 0, border: "none", paddingTop: 0 }}>
-            <span style={{ fontSize: "0.85rem", color: "var(--color-text-dim)" }}>Events for calendar export</span>
-            <Button
-              variant="primary"
-              size="small"
-              onClick={handleAddEvent}
-            >
+            <span style={{ fontSize: "0.85rem", color: "var(--color-text-dim)" }}>Recurring events for calendar export</span>
+            <Button variant="primary" size="small" onClick={handleAddEvent}>
               <Plus size={16} />
             </Button>
           </div>
 
           <Reorder.Group
             axis="y"
-            values={team.recurringEvents || []}
-            onReorder={handleReorderEvents}
+            values={newTeam.recurringEvents || []}
+            onReorder={(newOrder) => setNewTeam({ ...newTeam, recurringEvents: newOrder })}
             className={localStyles.eventList}
             style={{ listStyle: "none", padding: 0, margin: 0 }}
           >
-            {(team.recurringEvents || []).map((ev) => (
+            {(newTeam.recurringEvents || []).map((ev) => (
               <EventItem
                 key={ev.id}
                 ev={ev}
@@ -234,33 +290,32 @@ const TeamEditModal = ({
               />
             ))}
           </Reorder.Group>
-
-          {(!team.recurringEvents || team.recurringEvents.length === 0) && (
-            <p
-              style={{
-                fontSize: "0.85rem",
-                color: "var(--color-text-dim)",
-                fontStyle: "italic",
-                textAlign: "center",
-                padding: "10px 0",
-              }}
-            >
-              No calendar events configured.
-            </p>
-          )}
         </SettingsGroup>
 
+        {/* Absence */}
         <SettingsGroup label="Absence Settings">
-          <SettingsRow label="Allow Absence" description="Enable users to mark themselves as absent">
+          <SettingsRow label="Allow Absence" description="Enable users to mark themselves as absent for this team">
             <Toggle
-              isOn={team.allowAbsence !== false}
-              onToggle={(isOn) => onToggleAllowAbsence(isOn)}
+              isOn={newTeam.allowAbsence !== false}
+              onToggle={(isOn) => setNewTeam({ ...newTeam, allowAbsence: isOn })}
             />
           </SettingsRow>
         </SettingsGroup>
+
+        <div style={{ marginTop: "10px" }}>
+          <Button
+            variant="primary"
+            onClick={handleAdd}
+            disabled={!newTeam.name.trim() || !newTeam.emoji.trim()}
+            style={{ width: "100%", height: "48px" }}
+          >
+            <Plus size={20} style={{ marginRight: "8px" }} />
+            Create Team
+          </Button>
+        </div>
       </div>
     </Modal>
   );
 };
 
-export default TeamEditModal;
+export default NewTeamModal;

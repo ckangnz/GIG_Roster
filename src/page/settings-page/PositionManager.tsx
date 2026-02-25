@@ -3,30 +3,18 @@ import { useState, useEffect, useMemo } from "react";
 import { Reorder, useDragControls } from "framer-motion";
 import { Plus } from "lucide-react";
 
+import NewPositionModal from "./NewPositionModal";
 import PositionManagementRow from "./PositionManagementRow";
 import Button from "../../components/common/Button";
 import SaveFooter from "../../components/common/SaveFooter";
-import SettingsTable, {
-  SettingsTableAnyCell,
-  SettingsTableColourInputCell,
-} from "../../components/common/SettingsTable";
+import SettingsTable from "../../components/common/SettingsTable";
 import Spinner from "../../components/common/Spinner";
-import Toggle from "../../components/common/Toggle";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { Position } from "../../model/model";
 import { updatePositions } from "../../store/slices/positionsSlice";
 import { showAlert } from "../../store/slices/uiSlice";
-import formStyles from "../../styles/form.module.css";
 
 import styles from "./settings-page.module.css";
-
-const defaultPosition: Position = {
-  name: "",
-  emoji: "",
-  colour: "",
-  parentId: undefined,
-  sortByGender: false,
-};
 
 interface PositionBlock {
   id: string;
@@ -39,13 +27,11 @@ const DraggableRowBlock = ({
   indexInPositions,
   onUpdate,
   onDelete,
-  onAddChild,
 }: {
   block: PositionBlock;
   indexInPositions: number;
   onUpdate: (index: number, field: keyof Position, value: Position[keyof Position]) => void;
   onDelete: (index: number) => void;
-  onAddChild: (parentName: string) => void;
 }) => {
   const dragControls = useDragControls();
 
@@ -62,7 +48,6 @@ const DraggableRowBlock = ({
         index={indexInPositions}
         onUpdate={onUpdate}
         onDelete={onDelete}
-        onAddChild={onAddChild}
         dragControls={dragControls}
       />
       {block.children.map((child, childIdx) => {
@@ -74,7 +59,6 @@ const DraggableRowBlock = ({
             index={actualIdx}
             onUpdate={onUpdate}
             onDelete={() => onDelete(actualIdx)}
-            onAddChild={onAddChild}
             isDragDisabled
           />
         );
@@ -88,7 +72,7 @@ const PositionManagement = () => {
   const { positions: reduxPositions, loading: positionsLoading } =
     useAppSelector((state) => state.positions);
   const [positions, setPositions] = useState<Position[]>(reduxPositions);
-  const [newPos, setNewPos] = useState<Position>(defaultPosition);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [status, setStatus] = useState("idle");
 
   const hasChanges = useMemo(() => {
@@ -166,17 +150,28 @@ const PositionManagement = () => {
     });
   };
 
-  const addPosition = () => {
-    if (!newPos.name.trim() || !newPos.emoji.trim()) {
-      dispatch(showAlert({
-        title: "Missing Information",
-        message: "Please provide both an emoji and a name.",
-        showCancel: false
-      }));
-      return;
+  const addPosition = (newPos: Position) => {
+    if (newPos.parentId) {
+      setPositions((prev) => {
+        const parentIndex = prev.findIndex(p => p.name === newPos.parentId);
+        if (parentIndex === -1) return [...prev, newPos];
+        
+        let insertIndex = parentIndex;
+        while (
+          insertIndex + 1 < prev.length &&
+          prev[insertIndex + 1].parentId === newPos.parentId
+        ) {
+          insertIndex++;
+        }
+        return [
+          ...prev.slice(0, insertIndex + 1),
+          newPos,
+          ...prev.slice(insertIndex + 1)
+        ];
+      });
+    } else {
+      setPositions([...positions, newPos]);
     }
-    setPositions([...positions, newPos]);
-    setNewPos(defaultPosition);
   };
 
   const deletePosition = (index: number) => {
@@ -227,35 +222,13 @@ const PositionManagement = () => {
     }
   };
 
-  const addChildPosition = (parentName: string) => {
-    setPositions((prevPositions) => {
-      const newChild = { ...defaultPosition, parentId: parentName };
-      const parentIndex = prevPositions.findIndex((p) => p.name === parentName);
-
-      if (parentIndex === -1) {
-        return [...prevPositions, newChild];
-      }
-
-      let insertIndex = parentIndex;
-      while (
-        insertIndex + 1 < prevPositions.length &&
-        prevPositions[insertIndex + 1].parentId === parentName
-      ) {
-        insertIndex++;
-      }
-
-      const updated = [
-        ...prevPositions.slice(0, insertIndex + 1),
-        newChild,
-        ...prevPositions.slice(insertIndex + 1),
-      ];
-      return updated;
-    });
-  };
-
   const handleCancel = () => {
     setPositions(reduxPositions);
   };
+
+  const availableParents = useMemo(() => {
+    return positions.filter(p => !p.parentId);
+  }, [positions]);
 
   if (positionsLoading) {
     return <Spinner />;
@@ -275,7 +248,6 @@ const PositionManagement = () => {
           { text: "Colour", minWidth: 100, textAlign: "center" },
           { text: "Sort by Gender", width: 100, textAlign: "center" },
           { text: "Custom Headings", width: 100, textAlign: "center" },
-          { text: "Add Child", width: 80, textAlign: "center" },
           { text: "Delete", width: 60, textAlign: "center" },
         ]}
         tableAs={Reorder.Group}
@@ -299,92 +271,28 @@ const PositionManagement = () => {
                   indexInPositions={parentIdx}
                   onUpdate={handleUpdate}
                   onDelete={deletePosition}
-                  onAddChild={addChildPosition}
                 />
               );
             })}
-            <tbody>
-              <tr className="pos-row-new">
-                <SettingsTableAnyCell isSticky>
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "8px",
-                      width: "100%",
-                    }}
-                  >
-                    <input
-                      name={`new-name`}
-                      className={formStyles.formInput}
-                      value={newPos.name}
-                      placeholder="Position Name"
-                      onChange={(e) =>
-                        setNewPos({ ...newPos, name: e.target.value })
-                      }
-                      style={{ width: "100%" }}
-                    />
-                  </div>
-                </SettingsTableAnyCell>
-                <SettingsTableAnyCell>
-                  <input
-                    name={`new-emoji`}
-                    className={formStyles.formInput}
-                    value={newPos.emoji}
-                    placeholder="😎"
-                    onChange={(e) =>
-                      setNewPos({ ...newPos, emoji: e.target.value })
-                    }
-                  />
-                </SettingsTableAnyCell>
-                <SettingsTableColourInputCell
-                  name={`new-colour`}
-                  value={newPos.colour}
-                  placeholder="#FFFFFF"
-                  onChange={(e) =>
-                    setNewPos({ ...newPos, colour: e.target.value })
-                  }
-                />
-                <SettingsTableAnyCell textAlign="center">
-                  <Toggle
-                    isOn={!!newPos.sortByGender}
-                    onToggle={(isOn) =>
-                      setNewPos({ ...newPos, sortByGender: isOn })
-                    }
-                    disabled={newPos.isCustom}
-                  />
-                </SettingsTableAnyCell>
-                <SettingsTableAnyCell textAlign="center">
-                  <Toggle
-                    isOn={!!newPos.isCustom}
-                    onToggle={(isOn) => {
-                      const updates: Partial<Position> = { isCustom: isOn };
-                      if (isOn) updates.sortByGender = false;
-                      setNewPos({ ...newPos, ...updates });
-                    }}
-                  />
-                </SettingsTableAnyCell>
-                <SettingsTableAnyCell textAlign="center">
-                  <Button
-                    variant="primary"
-                    size="small"
-                    onClick={addPosition}
-                    disabled={!newPos.name.trim() || !newPos.emoji.trim()}
-                  >
-                    <Plus size={16} style={{ marginRight: "6px" }} />
-                    Add
-                  </Button>
-                </SettingsTableAnyCell>
-                <SettingsTableAnyCell textAlign="center">
-                  {""}
-                </SettingsTableAnyCell>
-              </tr>
-            </tbody>
           </>
         }
       >
         {null}
       </SettingsTable>
+
+      <div style={{ display: "flex", justifyContent: "flex-end" }}>
+        <Button variant="primary" onClick={() => setIsModalOpen(true)}>
+          <Plus size={18} style={{ marginRight: "8px" }} />
+          New Position
+        </Button>
+      </div>
+
+      <NewPositionModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onAdd={addPosition}
+        availableParents={availableParents}
+      />
 
       {hasChanges && (
         <SaveFooter

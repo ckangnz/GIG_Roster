@@ -1,0 +1,54 @@
+.settingsGroup {
+  background-color: var(--background-body);
+  border: 1px solid var(--border-color-table);
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: all 0.2s ease;
+}
+
+[data-theme="light"] .settingsGroup {
+  background-color: var(--neutral-50);
+  border-color: var(--neutral-200);
+}
+
+.settingsGroupTitle {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.settingsGroupDescription {
+  font-size: 0.75rem;
+  color: var(--color-text-dim);
+  margin-top: -8px;
+  line-height: 1.4;
+}
+
+.settingsRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.settingsRowContent {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.settingsRowLabel {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.settingsRowDescription {
+  font-size: 0.75rem;
+  color: var(--color-text-dim);
+}

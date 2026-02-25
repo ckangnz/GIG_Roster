@@ -19,6 +19,65 @@
   min-width: 0;
   width: 100%;
   height: 100%;
+  gap: 20px;
+}
+
+.addNewSection {
+  background: var(--background-card);
+  border: 1px solid var(--border-color-secondary);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.addNewTitle {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.addNewGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-end;
+}
+
+.addNewField {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-width: 120px;
+}
+
+.addNewField label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-dim);
+}
+
+.addNewActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+@media (max-width: 600px) {
+  .addNewGrid {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .addNewField {
+    width: 100%;
+  }
 }
 
 /* Tablet and Desktop Styles */
