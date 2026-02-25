@@ -147,9 +147,32 @@ const AllRosterTable = () => {
 
       if (assignedEntries.length === 0) return null;
 
+      const pos = allPositions.find((p) => p.name === positionName);
+
+      // Sort assigned entries
+      const sortedAssignedEntries = [...assignedEntries].sort((a, b) => {
+        const userA = filteredAllTeamUsers.find((u) => u.email === a[0]);
+        const userB = filteredAllTeamUsers.find((u) => u.email === b[0]);
+        const nameA = userA?.name || a[0];
+        const nameB = userB?.name || b[0];
+
+        if (pos?.sortByGender) {
+          const genderA = userA?.gender || "";
+          const genderB = userB?.gender || "";
+
+          if (genderA !== genderB) {
+            if (genderA === "Male") return -1;
+            if (genderB === "Male") return 1;
+            return genderA.localeCompare(genderB);
+          }
+        }
+
+        return nameA.localeCompare(nameB);
+      });
+
       return (
         <div style={{ fontSize: "0.75rem" }}>
-          {assignedEntries.map(([id], idx) => {
+          {sortedAssignedEntries.map(([id], idx) => {
             const user = filteredAllTeamUsers.find((u) => u.email === id);
             const isMe = id === userData?.email;
             const displayName = user ? user.name : id;
@@ -173,7 +196,7 @@ const AllRosterTable = () => {
                     isHighlighted={isHighlighted}
                   />
                 </span>
-                {idx < assignedEntries.length - 1 ? ", " : ""}
+                {idx < sortedAssignedEntries.length - 1 ? ", " : ""}
               </span>
             );
           })}
@@ -187,6 +210,7 @@ const AllRosterTable = () => {
       userData,
       dispatch,
       highlightedUserId,
+      allPositions,
     ],
   );
 
