@@ -32,17 +32,28 @@ const GeneralRosterTable = () => {
     const list = users.filter(
       (u) => u.email && !hiddenUserList.includes(u.email) && u.isActive,
     );
-    if (currentPosition?.sortByGender) {
-      return list.sort((a, b) => {
-        if (a.gender === b.gender)
-          return (a.name || "").localeCompare(b.name || "");
-        if (a.gender === "Male") return -1;
-        if (b.gender === "Male") return 1;
-        return (a.gender || "").localeCompare(b.gender || "");
-      });
-    }
-    return list;
-  }, [users, currentPosition, hiddenUserList]);
+
+    // Sort function that puts current user first
+    const sortFn = (a: (typeof list)[0], b: (typeof list)[0]) => {
+      const isMeA = a.email === userData?.email;
+      const isMeB = b.email === userData?.email;
+
+      if (isMeA) return -1;
+      if (isMeB) return 1;
+
+      if (currentPosition?.sortByGender) {
+        if (a.gender !== b.gender) {
+          if (a.gender === "Male") return -1;
+          if (b.gender === "Male") return 1;
+          return (a.gender || "").localeCompare(b.gender || "");
+        }
+      }
+
+      return (a.name || "").localeCompare(b.name || "");
+    };
+
+    return [...list].sort(sortFn);
+  }, [users, currentPosition, hiddenUserList, userData]);
 
   const genderDividerIndex = useMemo(() => {
     if (!currentPosition?.sortByGender || sortedUsers.length === 0) return -1;

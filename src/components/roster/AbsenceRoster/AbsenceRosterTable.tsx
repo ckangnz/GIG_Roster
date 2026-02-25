@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useMemo, useCallback } from "react";
 
 import { useRosterBaseLogic } from "../../../hooks/useRosterBaseLogic";
 import RosterTable from "../RosterTable";
@@ -17,18 +17,29 @@ const AbsenceRosterTable = () => {
     closestNextDate,
     handleAbsenceClick,
     handleAbsenceReasonChange,
+    userData,
   } = logic;
+
+  const sortedAllTeamUsers = useMemo(() => {
+    return [...allTeamUsers].sort((a, b) => {
+      const isMeA = a.email === userData?.email;
+      const isMeB = b.email === userData?.email;
+      if (isMeA) return -1;
+      if (isMeB) return 1;
+      return (a.name || "").localeCompare(b.name || "");
+    });
+  }, [allTeamUsers, userData]);
 
   const handleKeyboardAbsenceClick = useCallback((row: number, col: number) => {
     const dateString = rosterDates[row];
-    const user = allTeamUsers[col];
+    const user = sortedAllTeamUsers[col];
     if (dateString && user?.email) {
       handleAbsenceClick(dateString, user.email, row, col);
     }
-  }, [rosterDates, allTeamUsers, handleAbsenceClick]);
+  }, [rosterDates, sortedAllTeamUsers, handleAbsenceClick]);
 
   const renderHeader = () => (
-    <AbsenceRosterHeader allTeamUsers={allTeamUsers} showPeek={true} />
+    <AbsenceRosterHeader allTeamUsers={sortedAllTeamUsers} showPeek={true} />
   );
 
   return (
@@ -39,7 +50,7 @@ const AbsenceRosterTable = () => {
       hiddenUserList={hiddenUserList}
       renderHeader={renderHeader}
       onLoadNextYear={logic.handleLoadNextYear}
-      colCount={allTeamUsers.length}
+      colCount={sortedAllTeamUsers.length}
       onCellClick={handleKeyboardAbsenceClick}
       hasPastDates={hasPastDates}
     >
@@ -53,7 +64,7 @@ const AbsenceRosterTable = () => {
           onDateClick={logic.handleDateClick}
           focusedCell={logic.focusedCell}
           setFocusedCell={logic.setFocusedCell}
-          allTeamUsers={allTeamUsers}
+          allTeamUsers={sortedAllTeamUsers}
           handleAbsenceClick={handleAbsenceClick}
           handleAbsenceReasonChange={handleAbsenceReasonChange}
           isUserAbsent={logic.isUserAbsent}

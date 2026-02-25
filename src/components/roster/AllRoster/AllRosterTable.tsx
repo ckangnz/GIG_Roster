@@ -47,6 +47,15 @@ const AllRosterTable = () => {
       gender: u.gender,
     }));
 
+    // Sort userCols to put "Me" first, then alphabetical
+    userCols.sort((a, b) => {
+      const isMeA = a.id === userData?.email;
+      const isMeB = b.id === userData?.email;
+      if (isMeA) return -1;
+      if (isMeB) return 1;
+      return a.name.localeCompare(b.name);
+    });
+
     if (rosterAllViewMode === "user" && filterUserId) {
       userCols = userCols.filter((col) => col.id === filterUserId);
     }
@@ -72,6 +81,7 @@ const AllRosterTable = () => {
     allPositions,
     filterUserId,
     rosterAllViewMode,
+    userData,
   ]);
 
   const getAssignmentsForIdentifier = useCallback(
