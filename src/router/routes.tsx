@@ -40,7 +40,7 @@ export const routes: RouteObject[] = [
             element: <RosterPage />,
           },
           {
-            path: "thoughts",
+            path: "thoughts/:teamName?",
             element: <ThoughtsPage />,
           },
           {

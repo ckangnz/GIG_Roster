@@ -29,6 +29,17 @@
   text-align: center;
 }
 
+.selectedTeamBadge {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  background-color: var(--background-primary-subtle);
+  padding: 4px 12px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
 .teamSwitcher {
   width: 100%;
   max-width: 300px;

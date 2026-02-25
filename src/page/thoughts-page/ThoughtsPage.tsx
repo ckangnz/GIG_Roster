@@ -2,11 +2,12 @@ import { useState, useMemo, useEffect, useCallback } from "react";
 
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { Plus, Trash2, Edit2 } from "lucide-react";
+import { useNavigate, useParams } from "react-router-dom";
 
 import ThoughtWheel from "./ThoughtWheel";
 import ActionSheet from "../../components/common/ActionSheet";
 import Button from "../../components/common/Button";
-import { SelectField, TextAreaField } from "../../components/common/InputField";
+import { TextAreaField } from "../../components/common/InputField";
 import Spinner from "../../components/common/Spinner";
 import { db } from "../../firebase";
 import { useAppSelector, useAppDispatch } from "../../hooks/redux";
@@ -38,14 +39,14 @@ const formatRelativeTime = (timestamp: number) => {
 
 const ThoughtsPage = () => {
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  const { teamName } = useParams();
   const { userData, firebaseUser } = useAppSelector((state) => state.auth);
   const { loading: teamsLoading } = useAppSelector((state) => state.teams);
   const { allUsers } = useAppSelector((state) => state.userManagement);
   const { thoughts } = useAppSelector((state) => state.thoughts);
 
-  const [selectedTeam, setSelectedTeam] = useState<string>(
-    userData?.teams?.[0] || ""
-  );
+  const selectedTeam = teamName || userData?.teams?.[0] || "";
   const [focusedUser, setFocusedUser] = useState<AppUser | null>(null);
   
   // UI State
@@ -55,6 +56,13 @@ const ThoughtsPage = () => {
   const [inputText, setInputText] = useState("");
 
   const [likerList, setLikerList] = useState<{name: string, time: string}[] | null>(null);
+
+  // Auto-navigate to first team if none in URL
+  useEffect(() => {
+    if (!teamName && userData?.teams?.[0]) {
+      navigate(`/app/thoughts/${userData.teams[0]}`, { replace: true });
+    }
+  }, [teamName, userData, navigate]);
 
   const focusedThoughtId = focusedUser ? `${focusedUser.id}_${selectedTeam}` : "";
   const focusedThought = thoughts[focusedThoughtId];
@@ -208,16 +216,6 @@ const ThoughtsPage = () => {
     setLikerList(list.map(l => ({ name: l.name, time: l.time })));
   }, [allUsers]);
 
-  // Sync selectedTeam if it's empty but userData exists
-  useEffect(() => {
-    if (userData?.teams?.length && !selectedTeam) {
-      const timer = setTimeout(() => {
-        setSelectedTeam(userData.teams[0]);
-      }, 0);
-      return () => clearTimeout(timer);
-    }
-  }, [userData, selectedTeam]);
-
   // Real-time thoughts listener
   useEffect(() => {
     if (!selectedTeam) return;
@@ -246,18 +244,9 @@ const ThoughtsPage = () => {
       <div className={styles.container}>
         <div className={styles.header}>
           <h1 className={styles.pageTitle}>Team Thoughts</h1>
-          {userData?.teams && userData.teams.length > 1 && (
-            <div className={styles.teamSwitcher}>
-              <SelectField
-                value={selectedTeam}
-                onChange={(e) => setSelectedTeam(e.target.value)}
-              >
-                {userData.teams.map((t) => (
-                  <option key={t} value={t}>
-                    {t}
-                  </option>
-                ))}
-              </SelectField>
+          {selectedTeam && (
+            <div className={styles.selectedTeamBadge}>
+              {selectedTeam}
             </div>
           )}
         </div>

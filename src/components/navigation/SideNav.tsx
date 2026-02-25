@@ -307,29 +307,32 @@ const SideNav = () => {
             })}
 
           {activeTab === AppTab.THOUGHTS &&
-            BOTTOM_NAV_ITEMS.filter((item) => item.id === AppTab.THOUGHTS).map(
-              (item) => {
-                const Icon = item.icon;
-                return (
-                  <button
-                    key={item.id}
-                    className={`${styles.sideNavItem} ${styles.sideNavItemActive}`}
-                    onClick={() => {
-                      handleNavItemClick(`/app/${item.id}`);
-                      dispatch(setMobileSidebarOpen(false));
-                    }}
-                  >
-                    <span className={styles.sideEmoji}>
-                      <Icon size={18} />
-                    </span>
-                    <span className={styles.navItemLabel}>
-                      {shouldShowLabels && item.label}
-                    </span>
-                    {renderLocationIndicatorsByUrl(`/app/${item.id}`)}
-                  </button>
-                );
-              },
-            )}
+            userData?.teams?.map((teamName) => {
+              const team = allTeams.find((t) => t.name === teamName);
+              if (!team) return null;
+
+              const hasOneTeam = userData.teams.length === 1;
+              const isActive = activeTeamName === team.name;
+
+              return (
+                <button
+                  key={team.name}
+                  className={`${styles.sideNavItem} ${hasOneTeam ? "" : styles.sideNavItemSub} ${
+                    isActive ? styles.sideNavItemActive : ""
+                  }`}
+                  onClick={() => {
+                    handleNavItemClick(`/app/thoughts/${team.name}`);
+                    dispatch(setMobileSidebarOpen(false));
+                  }}
+                >
+                  <span className={styles.sideEmoji}>{team.emoji}</span>
+                  <span className={styles.navItemLabel}>
+                    {shouldShowLabels && team.name}
+                  </span>
+                  {renderLocationIndicatorsByUrl(`/app/thoughts/${team.name}`)}
+                </button>
+              );
+            })}
 
           {activeTab === AppTab.SETTINGS &&
             SETTINGS_NAV_ITEMS.filter((item) => !item.adminOnly).map((item) => {
