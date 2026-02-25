@@ -169,9 +169,10 @@
   color: var(--color-text-primary);
 }
 
-.likerEmail {
+.likerTime {
   font-size: 0.8rem;
   color: var(--color-text-dim);
+  font-weight: 500;
 }
 
 @media (min-width: 768px) {

@@ -23,6 +23,19 @@ import { showAlert } from "../../store/slices/uiSlice";
 
 import styles from "./thoughts-page.module.css";
 
+const formatRelativeTime = (timestamp: number) => {
+  const diff = Date.now() - timestamp;
+  const seconds = Math.floor(diff / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+
+  if (seconds < 60) return "just now";
+  if (minutes < 60) return `${minutes}m ago`;
+  if (hours < 24) return `${hours}h ago`;
+  return `${days}d ago`;
+};
+
 const ThoughtsPage = () => {
   const dispatch = useAppDispatch();
   const { userData, firebaseUser } = useAppSelector((state) => state.auth);
@@ -41,7 +54,7 @@ const ThoughtsPage = () => {
   const [editingEntryId, setEditingEntryId] = useState<string | null>(null);
   const [inputText, setInputText] = useState("");
 
-  const [likerList, setLikerList] = useState<{name: string, email: string}[] | null>(null);
+  const [likerList, setLikerList] = useState<{name: string, time: string}[] | null>(null);
 
   const focusedThoughtId = focusedUser ? `${focusedUser.id}_${selectedTeam}` : "";
   const focusedThought = thoughts[focusedThoughtId];
@@ -182,15 +195,17 @@ const ThoughtsPage = () => {
   }, [firebaseUser, focusedThought, dispatch]);
 
   const handleShowLikers = useCallback((hearts: Record<string, number>) => {
-    const uids = Object.keys(hearts);
-    const list = uids.map(uid => {
+    const list = Object.entries(hearts).map(([uid, timestamp]) => {
       const user = allUsers.find(u => u.id === uid);
       return {
         name: user?.name || "Unknown User",
-        email: user?.email || ""
+        time: formatRelativeTime(timestamp),
+        timestamp // Keep for sorting
       };
     });
-    setLikerList(list);
+    // Sort by most recent
+    list.sort((a, b) => b.timestamp - a.timestamp);
+    setLikerList(list.map(l => ({ name: l.name, time: l.time })));
   }, [allUsers]);
 
   // Sync selectedTeam if it's empty but userData exists
@@ -380,7 +395,7 @@ const ThoughtsPage = () => {
           {likerList?.map((user, idx) => (
             <div key={idx} className={styles.likerItem}>
               <span className={styles.likerName}>{user.name}</span>
-              <span className={styles.likerEmail}>{user.email}</span>
+              <span className={styles.likerTime}>{user.time}</span>
             </div>
           ))}
           {likerList?.length === 0 && <p className={styles.emptyThoughts}>No likes yet.</p>}
