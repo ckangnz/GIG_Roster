@@ -12,11 +12,12 @@ import { CopyIcon, CheckCircle2, CalendarPlus } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 
 import ActionSheet from "../../components/common/ActionSheet";
+import ExpiryTimer from "../../components/common/ExpiryTimer";
 import NameTag from "../../components/common/NameTag";
 import Spinner from "../../components/common/Spinner";
 import { db } from "../../firebase";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
-import { Weekday, AppUser, getTodayKey, RecurringEvent } from "../../model/model";
+import { Weekday, AppUser, getTodayKey, RecurringEvent, Team } from "../../model/model";
 import {
   applyOptimisticEventName,
   syncEventNameRemote,
@@ -79,6 +80,28 @@ const DashboardPage = () => {
     return () => observer.disconnect();
   }, []);
 
+  const getTeamEndTime = useCallback((team: Team, dateStr: string) => {
+    const dateObj = new Date(dateStr);
+    const dayName = new Intl.DateTimeFormat("en-US", { weekday: "long" }).format(
+      dateObj,
+    ) as Weekday;
+    return team.dayEndTimes?.[dayName] || "23:59";
+  }, []);
+
+  const isTeamExpired = useCallback((team: Team, dateStr: string) => {
+    const todayKey = getTodayKey();
+    if (dateStr !== todayKey) return false;
+
+    const endTimeStr = getTeamEndTime(team, dateStr);
+    const [endH, endM] = endTimeStr.split(":").map(Number);
+    
+    const now = new Date();
+    const nowH = now.getHours();
+    const nowM = now.getMinutes();
+
+    return nowH > endH || (nowH === endH && nowM >= endM);
+  }, [getTeamEndTime]);
+
   const rosterDates = useMemo(() => {
     const todayKey = getTodayKey();
     if (!userData?.teams || allTeams.length === 0) return [];
@@ -105,13 +128,16 @@ const DashboardPage = () => {
       if (!entry) return false;
 
       return userTeams.some((team) => {
+        // Check if this specific team has expired if it's today
+        if (isTeamExpired(team, dateKey)) return false;
+
         const teamAssignments = entry.teams?.[team.name] || {};
         return Object.values(teamAssignments).some(
           (posList) => Array.isArray(posList) && posList.length > 0,
         );
       });
     });
-  }, [userData, allTeams, entries, targetDate]);
+  }, [userData, allTeams, entries, targetDate, isTeamExpired]);
 
   // Handle initialization and programmatic scrolling
   useEffect(() => {
@@ -245,13 +271,15 @@ const DashboardPage = () => {
           hasAssignments: totalAssignedInTeam > 0,
           recurringEvents: team.recurringEvents || [],
           myPositionName,
+          isExpired: isTeamExpired(team, dateKey),
+          endTimeStr: dateKey === getTodayKey() ? getTeamEndTime(team, dateKey) : "",
         };
       });
 
-      const filtered = data.filter((t) => t.hasAssignments);
+      const filtered = data.filter((t) => t.hasAssignments && !t.isExpired);
       return filtered.length > 0 ? filtered : null;
     },
-    [entries, userData, allTeams, allPositions, teamUsers],
+    [entries, userData, allTeams, allPositions, teamUsers, isTeamExpired, getTeamEndTime],
   );
 
   const handleCalendarAction = (
@@ -420,6 +448,12 @@ const DashboardPage = () => {
                   <span className={styles.teamCardName}>
                     {teamData.teamName}
                   </span>
+                  {teamData.endTimeStr && (
+                    <ExpiryTimer 
+                      endTimeStr={teamData.endTimeStr} 
+                      className={styles.dashboardExpiryTimer}
+                    />
+                  )}
                 </h3>
                 {!isPeek && (
                                       <div

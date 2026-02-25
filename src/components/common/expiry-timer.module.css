@@ -1,0 +1,21 @@
+.expiryTimer {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--surface-error);
+  color: var(--text-error);
+  font-size: 0.6rem;
+  font-weight: 800;
+  padding: 1px 6px;
+  border-radius: 4px;
+  vertical-align: middle;
+  animation: pulse 2s infinite;
+  border: 1px solid var(--border-color-delete);
+  white-space: nowrap;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.6; }
+  100% { opacity: 1; }
+}
