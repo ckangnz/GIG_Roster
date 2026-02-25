@@ -28,8 +28,8 @@
   grid-template-areas: 
     "handle label label delete"
     "handle day day day"
-    "handle start end end";
-  grid-template-columns: auto 1fr 1fr auto;
+    "handle start start end end";
+  grid-template-columns: 32px 1fr 1fr 32px;
   gap: 12px;
   padding: 16px 12px;
   border-radius: 16px;
@@ -37,6 +37,23 @@
   border: 1px solid var(--border-color-secondary);
   position: relative;
   align-items: start;
+}
+
+@media (max-width: 440px) {
+  .eventItem {
+    grid-template-areas: 
+      "handle label delete"
+      "handle day day"
+      "handle start start"
+      "handle end end";
+    grid-template-columns: 32px 1fr auto;
+    padding: 12px 8px;
+    gap: 8px;
+  }
+  
+  .deleteBtn {
+    margin-top: 12px;
+  }
 }
 
 .dragHandle {
@@ -50,6 +67,10 @@
   align-self: stretch;
   opacity: 0.5;
   touch-action: none;
+}
+
+.eventInputLabel, .eventInputDay, .eventInputStart, .eventInputEnd {
+  min-width: 0;
 }
 
 .eventInputLabel {
@@ -75,7 +96,7 @@
 
 .preferredDaysGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   gap: 12px;
 }
 
@@ -88,6 +109,7 @@
   border-radius: 12px;
   border: 1px solid var(--border-color-table);
   transition: all 0.2s ease;
+  overflow: hidden;
 }
 
 .preferredDayItemActive {

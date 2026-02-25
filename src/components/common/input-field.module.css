@@ -3,6 +3,8 @@
   flex-direction: column;
   gap: 4px;
   width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .label {
@@ -31,8 +33,9 @@
 
 /* Specific fix for time inputs on mobile */
 .input[type="time"] {
-  display: flex;
-  align-items: center;
+  min-width: 0;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 .input:focus {
