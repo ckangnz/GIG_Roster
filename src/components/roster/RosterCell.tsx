@@ -169,12 +169,14 @@ const RosterCell = memo(({
         onFocus={onFocus}
       >
         {renderRemoteCursors()}
-        {absent && isFocused && (
-          <div className={`${styles.reasonPopover} ${rowIndex === 0 ? styles.popoverBottom : ""}`}>
-            {absenceReason || <span className={styles.noReason}>No reason provided</span>}
-          </div>
-        )}
-        {absent ? <span title={absenceReason}>❌</span> : content}
+        <div className={styles.cellContent}>
+          {absent && isFocused && (
+            <div className={`${styles.reasonPopover} ${rowIndex === 0 ? styles.popoverBottom : ""}`}>
+              {absenceReason || <span className={styles.noReason}>No reason provided</span>}
+            </div>
+          )}
+          {absent ? <span title={absenceReason}>❌</span> : content}
+        </div>
       </td>
     );
   }

@@ -209,7 +209,7 @@ const RosterTable = ({
                     textAlign: "left",
                     paddingLeft: "12px",
                     fontSize: "0.85rem",
-                    color: "var(--color-link)",
+                    color: "var(--color-primary)",
                     fontWeight: "500",
                     cursor: "pointer",
                   }}

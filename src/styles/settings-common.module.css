@@ -48,32 +48,34 @@
   transition: all 0.2s ease;
   outline: none;
   box-sizing: border-box;
+  font-weight: 600;
 }
 
 .summaryButton:hover {
-  background: var(--background-primary-subtle);
-  border-color: var(--color-link);
+  background: var(--background-hover);
+  border-color: var(--color-primary);
 }
 
 .summaryPrimary {
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   margin-right: 4px;
   display: flex;
   align-items: center;
   gap: 4px;
-  color: var(--color-text-dim);
+  color: var(--color-text-primary);
+  font-weight: 700;
 }
 
 .summarySeparator {
   color: var(--color-text-dim);
   margin: 0 8px;
   font-size: 0.8rem;
-  opacity: 0.5;
+  opacity: 0.7;
 }
 
 .summarySecondary {
   font-size: 0.75rem;
-  color: var(--color-text-dim);
+  color: var(--color-text-secondary);
 }
 
 .summaryEmoji {

@@ -15,17 +15,17 @@
   color: var(--color-text-dim);
   width: 1%;
   font-variant-numeric: tabular-nums;
+  transition: all 0.2s ease;
 }
 
 .dateCell.clickable {
   cursor: pointer;
-  transition: all 0.2s;
   color: var(--color-text-primary);
   font-weight: 600;
 }
 
 .dateCell.clickable:hover {
-  background-color: var(--background-primary-subtle);
+  background-color: var(--background-hover) !important;
   text-decoration: underline;
 }
 
@@ -40,23 +40,23 @@
 .specialEventDot {
   width: 8px;
   height: 8px;
-  background-color: var(--color-warning-light);
+  background-color: var(--color-secondary);
   border-radius: 50%;
   display: inline-block;
   margin-right: 8px;
   flex-shrink: 0;
-  box-shadow: 0 0 4px #ff9800;
+  box-shadow: 0 0 4px var(--color-secondary);
 }
 
 .rosterTodayDot {
   width: 8px;
   height: 8px;
-  background-color: var(--color-link);
+  background-color: var(--color-primary);
   border-radius: 50%;
   display: inline-block;
   margin-right: 8px;
   flex-shrink: 0;
-  box-shadow: 0 0 4px #ff9800;
+  box-shadow: 0 0 4px var(--color-primary);
 }
 
 .pastDate {
@@ -72,9 +72,10 @@
 }
 
 .pastDate td:not(.stickyCol) {
-  background-color: var(--background-body);
+  background-color: transparent;
 }
 
+/* Today & Closest Next Date Row - Using Primary Tints */
 .closestNextDateRow,
 .todayDate {
   background-color: var(--background-primary-subtle);
@@ -83,25 +84,18 @@
 .closestNextDateRow .stickyCol,
 .todayDate .stickyCol {
   background-color: var(--background-primary-subtle);
-  color: var(--color-link);
+  color: var(--color-primary);
   font-weight: bold;
 }
 
-.closestNextDateRow td:not(.peekCell),
-.todayDate td:not(.peekCell) {
-  color: var(--color-link) !important;
-  border-bottom: 1px solid var(--color-link);
-  border-top: 1px solid var(--color-link);
+.closestNextDateRow td:not(:global(.peekCell)),
+.todayDate td:not(:global(.peekCell)) {
+  color: var(--color-primary) !important;
+  border-bottom: 3px solid var(--color-primary) !important;
 }
 
 .closestNextDateRow {
   position: relative;
-  background-color: var(--background-primary-subtle);
-}
-
-.rosterCell {
-  vertical-align: middle;
-  min-width: 80px;
 }
 
 @media (min-width: 768px) {
@@ -116,9 +110,5 @@
   .specialEventDot {
     width: 8px;
     height: 8px;
-  }
-
-  .rosterCell {
-    min-width: 100px;
   }
 }

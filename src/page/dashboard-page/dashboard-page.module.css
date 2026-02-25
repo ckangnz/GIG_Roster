@@ -79,7 +79,7 @@
 }
 
 .dashboardEventNameInputHasEvent {
-  color: #ff9800;
+  color: var(--color-secondary);
   font-style: normal;
 }
 
@@ -264,8 +264,8 @@
 .meTag {
   display: inline-flex;
   align-items: center;
-  background-color: #e0dbff;
-  color: #5c4eb1;
+  background-color: var(--background-primary-subtle);
+  color: var(--color-primary);
   font-size: 0.6rem;
   font-weight: 800;
   padding: 1px 5px;
@@ -274,13 +274,13 @@
   vertical-align: middle;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  border: 1px solid #c8bfff;
+  border: 1px solid var(--border-color-primary);
 }
 
 [data-theme='dark'] .meTag {
-  background-color: #3d3473;
-  color: #d1c9ff;
-  border-color: #4f4494;
+  background-color: var(--background-primary-subtle);
+  color: var(--color-primary);
+  border-color: var(--border-color-primary);
 }
 
 .carouselPagination {

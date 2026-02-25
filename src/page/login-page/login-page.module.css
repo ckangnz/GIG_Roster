@@ -55,15 +55,15 @@
 }
 
 .google {
-  background-color: #ffffff;
-  color: #000000;
-  border: 1px solid #ddd;
+  background-color: var(--neutral-50);
+  color: var(--neutral-950);
+  border: 1px solid var(--neutral-200);
 }
 
 .apple {
-  background-color: #000000;
-  color: #ffffff;
-  border: 1px solid #333;
+  background-color: var(--neutral-950);
+  color: var(--neutral-50);
+  border: 1px solid var(--neutral-800);
 }
 
 .appleIcon {

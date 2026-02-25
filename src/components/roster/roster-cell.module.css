@@ -1,21 +1,91 @@
 .rosterCell {
   vertical-align: middle;
   min-width: 80px;
-  position: relative; /* Base for remote cursors */
+  position: relative;
+  outline: none !important;
+  transition: background-color 0.15s ease;
+  border-right: 1px solid var(--border-color-secondary);
 }
 
-.currentTeamContainer {
+.rosterCell:focus,
+.rosterCell:focus-visible {
+  outline: none !important;
+}
+
+.cellContent {
+  width: 100%;
+  height: 100%;
   display: flex;
   justify-content: center;
-  gap: 4px;
-  flex-wrap: wrap;
-  width: 100%;
+  align-items: center;
+}
+
+/* Default Clickable Cell */
+.clickable {
+  cursor: pointer;
+}
+
+.clickable:hover {
+  background-color: var(--background-hover);
+}
+
+/* Disabled/Occupied Cell */
+.disabled {
+  background-color: var(--background-occupied);
+  cursor: not-allowed;
+}
+
+.disabled .cellContent {
+  opacity: 0.35;
+}
+
+/* Upcoming Assignment Cell - Primary Highlight */
+.highlightedCell {
+  background-color: var(--background-primary-subtle) !important;
+  font-weight: 600;
+}
+
+.highlightedCell.clickable:hover {
+  background-color: rgba(94, 92, 230, 0.3) !important;
+}
+
+/* Focused State - Primary Border */
+.focused {
+  box-shadow: inset 0 0 0 2px var(--color-primary);
+  background-color: var(--background-primary-subtle);
+  position: relative;
+  z-index: 10;
+}
+
+/* Selected User Highlighting - Secondary Theme */
+.highlightedUserName {
+  color: var(--color-secondary) !important;
+  font-weight: bold !important;
+}
+
+.cellWithHighlightedUser {
+  background-color: var(--background-secondary-subtle) !important;
+}
+
+.cellWithHighlightedUser.clickable:hover {
+  background-color: rgba(100, 210, 255, 0.25) !important;
+}
+
+/* Absence State */
+.absentStrike {
+  opacity: 1;
+  background-color: rgba(255, 69, 58, 0.12) !important;
+  position: relative;
+}
+
+[data-theme="light"] .absentStrike {
+  background-color: var(--color-delete-dark) !important;
 }
 
 .otherTeamsIndicator {
   position: absolute;
-  top: 8px;
-  right: 8px;
+  top: 4px;
+  right: 4px;
   display: flex;
   gap: 2px;
   line-height: 1;
@@ -25,51 +95,6 @@
 
 .otherTeamEmoji {
   font-size: 0.7rem;
-}
-
-.clickable {
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.clickable:hover {
-  background-color: var(--background-primary-subtle);
-}
-
-.disabled {
-  background-color: var(--background-body);
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.focused {
-  outline: 2px solid var(--color-link);
-  outline-offset: -2px;
-  background-color: var(--background-primary-subtle);
-  position: relative;
-}
-
-.highlightedUser.focused {
-  outline-color: #ff9800 !important;
-}
-
-.highlightedCell {
-  background-color: var(--background-primary-subtle) !important;
-}
-
-.highlightedUserName {
-  color: #ff9800 !important;
-  font-weight: bold !important;
-}
-
-.cellWithHighlightedUser {
-  background-color: rgba(255, 152, 0, 0.08) !important;
-}
-
-.absentStrike {
-  opacity: 1;
-  background-color: var(--color-delete-dark) !important;
-  position: relative;
 }
 
 /* Remote Cursor Styles */
@@ -110,7 +135,7 @@
   padding: 8px 12px;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  z-index: 200; /* Extremely high to clear all headers */
+  z-index: 200;
   white-space: nowrap;
   pointer-events: none;
   font-size: 0.8rem;
@@ -124,50 +149,19 @@
   animation: popInBottom 0.2s ease-out;
 }
 
-.reasonPopover::after {
-  content: "";
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  border-width: 6px;
-  border-style: solid;
-  border-color: var(--border-color-secondary) transparent transparent
-    transparent;
-}
-
-.reasonPopover.popoverBottom::after {
-  top: auto;
-  bottom: 100%;
-  border-color: transparent transparent var(--border-color-secondary)
-    transparent;
-}
-
 .noReason {
   font-style: italic;
   opacity: 0.6;
 }
 
 @keyframes popIn {
-  from {
-    opacity: 0;
-    transform: translate(-50%, 4px);
-  }
-  to {
-    opacity: 1;
-    transform: translate(-50%, 0);
-  }
+  from { opacity: 0; transform: translate(-50%, 4px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
 }
 
 @keyframes popInBottom {
-  from {
-    opacity: 0;
-    transform: translate(-50%, -4px);
-  }
-  to {
-    opacity: 1;
-    transform: translate(-50%, 0);
-  }
+  from { opacity: 0; transform: translate(-50%, -4px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
 }
 
 @media (min-width: 768px) {

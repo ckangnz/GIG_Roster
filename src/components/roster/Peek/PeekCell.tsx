@@ -16,12 +16,12 @@ export const PeekCell = memo(({ dateString }: PeekCellProps) => {
   const { allTeamUsers } = useAppSelector((state) => state.rosterView);
   const { entries } = useAppSelector((state) => state.roster);
 
-  if (!peekPositionName || !teamName) return <td className={styles.peekCell} />;
+  if (!peekPositionName || !teamName) return <td className={`${styles.peekCell} peekCell`} />;
 
   const dateKey = dateString.split("T")[0];
   const entry = entries[dateKey];
   if (!entry || !entry.teams[teamName])
-    return <td className={styles.peekCell} />;
+    return <td className={`${styles.peekCell} peekCell`} />;
 
   const assignedUsers = Object.entries(entry.teams[teamName])
     .filter(
@@ -34,7 +34,7 @@ export const PeekCell = memo(({ dateString }: PeekCellProps) => {
     });
 
   return (
-    <td className={`${styles.peekCell} ${styles.stickyRight}`}>
+    <td className={`${styles.peekCell} ${styles.stickyRight} peekCell`}>
       <div className={styles.peekContent}>
         {assignedUsers.map((name, idx) => (
           <span key={name} className={styles.peekName}>

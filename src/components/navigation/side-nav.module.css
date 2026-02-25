@@ -107,8 +107,8 @@
 }
 
 .sideNavItem:hover {
-  background-color: var(--background-button-secondary);
-  color: var(--color-text-primary);
+  background-color: var(--active-bg, var(--background-hover));
+  color: var(--active-color, var(--color-text-primary));
 }
 
 .sideNavItemActive {

@@ -49,7 +49,7 @@
 .pill.pillDisabled {
   opacity: 0.5;
   filter: grayscale(1);
-  border: 1px solid #333;
+  border: 1px solid var(--border-color-secondary);
 }
 
 .pill.pillActive {
