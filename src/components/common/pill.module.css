@@ -50,17 +50,13 @@
 @media (hover: hover) {
   .pill:hover:not(.pillDisabled) {
     transform: translateY(-1px);
-    border-color: var(--color-primary);
-    color: var(--color-primary);
+    border-color: var(--pill-colour);
+    color: var(--pill-colour);
   }
 
   .pill.pillActive:hover:not(.pillDisabled) {
     filter: brightness(1.1);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  }
-  
-  /* Solid hover for active custom colors */
-  .pill.pillActive[style*="--pill-colour"]:hover:not(.pillDisabled) {
     background-color: var(--pill-colour);
     color: #ffffff;
   }
