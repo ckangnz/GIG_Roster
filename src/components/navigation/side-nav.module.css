@@ -215,7 +215,7 @@
 }
 
 .sidebarFooter {
-  display: flex;
+  display: none;
   border-top: 1px solid var(--border-color-secondary);
   padding: 1rem 2rem;
   padding-bottom: max(1rem, constant(safe-area-inset-bottom));
@@ -260,6 +260,10 @@
   /* Collapsed state overrides */
   .sidebarCollapsed {
     width: 64px;
+  }
+
+  .sidebarFooter {
+    display: flex;
   }
 
   .sidebarCollapsed .sidebarFooter {
