@@ -100,6 +100,10 @@ const SideNav = () => {
     );
     const tabLabel = currentTabInfo ? currentTabInfo.label : "GIG ROSTER";
 
+    if (activeTab === AppTab.THOUGHTS && activeTeamName) {
+      return `${tabLabel} • ${activeTeamName}`;
+    }
+
     if (activeTeamName && activeSideItem) {
       return `${activeTeamName} • ${activeSideItem}`;
     }
