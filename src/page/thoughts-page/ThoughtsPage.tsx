@@ -327,6 +327,7 @@ const ThoughtsPage = () => {
             <ThoughtWheel
               users={teamUsers}
               currentUserEmail={userData?.email || null}
+              currentUserId={firebaseUser?.uid}
               thoughts={thoughts}
               selectedTeam={selectedTeam}
               onUserFocus={setFocusedUser}

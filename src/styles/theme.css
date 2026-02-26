@@ -112,16 +112,16 @@
   --color-text-dim: #3a3a3c;
   --color-text-faded: #48484a;
   
-  --color-primary: #4a49d1; /* Darker Indigo for Light contrast */
-  --color-link: #0056b3;
-  --color-link-hover: #003d80;
+  --color-primary: #007aff; /* iOS Blue */
+  --color-link: #007aff;
+  --color-link-hover: #0056b3;
 
-  --color-secondary: #006680; /* Darker Teal for Light contrast */
+  --color-secondary: #ff9500; /* iOS Orange */
 
-  --color-error: #cc2d24;
-  --color-success-light: #28a745;
-  --color-warning-light: #e67e00;
-  --color-delete: #cc2d24;
+  --color-error: #ff3b30; /* iOS Red */
+  --color-success-light: #34c759;
+  --color-warning-light: #ff9500;
+  --color-delete: #ff3b30;
   --color-delete-dark: #fff1f2;
   --color-on-error: #ffffff;
   --color-controls: #636366;
@@ -131,9 +131,9 @@
   --background-sidebar: #ffffff;
   --background-card: #ffffff;
   
-  --background-button-primary: #4a49d1;
-  --background-button-primary-hover: #3b3abd;
-  --background-primary-subtle: #d6d9ff; /* Much more visible light indigo */
+  --background-button-primary: #007aff;
+  --background-button-primary-hover: #0062d1;
+  --background-primary-subtle: rgba(0, 122, 255, 0.1);
   
   --background-button-secondary: #e5e5ea;
   --background-button-secondary-hover: #d1d1d6;
@@ -142,14 +142,14 @@
   --background-table-header: #f2f2f7;
   --background-mobile-header: #ffffff;
   --background-bottom-nav: #ffffff;
-  --background-new-row: #f0f0ff;
+  --background-new-row: #f0f7ff;
   
-  --background-secondary-subtle: #c7f3ff; /* Much more visible cyan */
+  --background-secondary-subtle: rgba(255, 149, 0, 0.1);
   --background-pill-active: #d1d1d6;
   --background-occupied: #e5e5ea;
   --background-hover: rgba(0, 0, 0, 0.04);
   
-  --border-color-primary: #4a49d1;
+  --border-color-primary: #007aff;
   --border-color-secondary: #c7c7cc;
   --border-color-input: #aeaeb2;
   --border-color-table: #d1d1d6;
@@ -170,8 +170,8 @@
   --pill-error-text: #b91c1c;
   --pill-warning-bg: #fff4d6;
   --pill-warning-text: #92400e;
-  --pill-primary-bg: #f2f2ff;
-  --pill-primary-text: #4a49d1;
-  --pill-secondary-bg: #e0f7fa;
-  --pill-secondary-text: #006680;
+  --pill-primary-bg: rgba(0, 122, 255, 0.1);
+  --pill-primary-text: #007aff;
+  --pill-secondary-bg: rgba(255, 149, 0, 0.1);
+  --pill-secondary-text: #ff9500;
 }

@@ -20,6 +20,7 @@ const THOUGHT_EXPIRATION_MS = 7 * 24 * 60 * 60 * 1000;
 interface ThoughtWheelProps {
   users: AppUser[];
   currentUserEmail: string | null;
+  currentUserId?: string;
   thoughts: Record<string, Thought>;
   selectedTeam: string;
   onUserFocus: (user: AppUser) => void;
@@ -30,6 +31,7 @@ interface ThoughtWheelProps {
 const ThoughtWheel = ({
   users,
   currentUserEmail,
+  currentUserId,
   thoughts,
   selectedTeam,
   onUserFocus,
@@ -172,6 +174,7 @@ const ThoughtWheel = ({
   const getBubbleOffset = (index: number, total: number) => {
     if (total === 1) return { x: 0, y: 0 };
 
+    const isMobile = windowWidth < 768;
     const horizontalMargin = isMobile ? 40 : 150;
     const maxAvailableWidth = windowWidth - horizontalMargin;
 
@@ -321,6 +324,7 @@ const ThoughtWheel = ({
                               entry={entry}
                               onHeart={onHeart}
                               isExpanded={isExpanded}
+                              currentUserId={currentUserId}
                               onToggleExpand={() =>
                                 setExpandedEntryId(isExpanded ? null : entry.id)
                               }

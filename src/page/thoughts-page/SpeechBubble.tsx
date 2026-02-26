@@ -12,6 +12,7 @@ interface SpeechBubbleProps {
   entry: ThoughtEntry;
   onHeart: (entryId: string) => void;
   isExpanded: boolean;
+  currentUserId?: string;
   onToggleExpand: () => void;
   onShowLikers: (hearts: Record<string, number>) => void;
   onDragStart?: () => void;
@@ -22,6 +23,7 @@ const SpeechBubble = ({
   entry,
   onHeart,
   isExpanded,
+  currentUserId,
   onToggleExpand,
   onShowLikers,
   onDragStart,
@@ -90,6 +92,7 @@ const SpeechBubble = ({
   );
 
   const heartCount = entry.hearts ? Object.keys(entry.hearts).length : 0;
+  const isLikedByMe = currentUserId && entry.hearts && !!entry.hearts[currentUserId];
 
   return (
     <div
@@ -166,7 +169,11 @@ const SpeechBubble = ({
                 className={styles.heartOverlayInside}
                 onClick={handleHeartClick}
               >
-                <Heart size={10} fill="#ff4757" stroke="none" />
+                <Heart 
+                  size={10} 
+                  fill={isLikedByMe ? "#ff4757" : "transparent"} 
+                  stroke={isLikedByMe ? "#ff4757" : "var(--color-text-dim)"} 
+                />
                 <span style={{ marginLeft: 3, fontWeight: 800 }}>
                   {heartCount}
                 </span>

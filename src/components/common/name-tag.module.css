@@ -11,14 +11,14 @@
   display: inline-flex;
   align-items: center;
   /* Premium Vibrant Look for Light Theme */
-  background-color: #5856d6;
+  background-color: var(--color-primary);
   background: linear-gradient(
     90deg,
-    #5856d6 0%,
-    #5856d6 35%,
+    var(--color-primary) 0%,
+    var(--color-primary) 35%,
     rgba(255, 255, 255, 0.7) 50%,
-    #5856d6 65%,
-    #5856d6 100%
+    var(--color-primary) 65%,
+    var(--color-primary) 100%
   );
   background-size: 200% 100%;
   animation: shimmer 3s infinite linear;
@@ -31,7 +31,7 @@
   vertical-align: text-top;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  border: 1px solid #4a49d1;
+  border: 1px solid var(--color-primary);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
@@ -41,7 +41,7 @@
     90deg,
     var(--background-primary-subtle) 0%,
     var(--background-primary-subtle) 35%,
-    #7d7aff 50%,
+    var(--color-primary) 50%,
     var(--background-primary-subtle) 65%,
     var(--background-primary-subtle) 100%
   );

@@ -94,7 +94,7 @@ th.stickyCol {
 }
 
 .isFiltered:hover {
-  opacity: 0.8;
+  background-color: color-mix(in srgb, var(--color-secondary) 35%, var(--background-table-header)) !important;
 }
 
 @media (min-width: 768px) {
