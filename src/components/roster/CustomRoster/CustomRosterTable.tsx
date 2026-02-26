@@ -1,5 +1,8 @@
 import { useMemo, useCallback } from "react";
 
+import { motion } from "framer-motion";
+
+
 import { useRosterBaseLogic } from "../../../hooks/useRosterBaseLogic";
 import { updatePositionCustomLabels } from "../../../store/slices/positionsSlice";
 import RosterTable from "../RosterTable";
@@ -101,7 +104,20 @@ const CustomRosterTable = () => {
       const entry = entries[dateString];
       if (!entry || !teamName) return "";
       const assignments = entry.teams[teamName]?.[label] || [];
-      return assignments.length > 0 ? currentPosition?.emoji || "✅" : "";
+      
+      if (assignments.length === 0) return "";
+
+      return (
+        <motion.span
+          key="assigned"
+          initial={{ scale: 0, rotate: -20 }}
+          animate={{ scale: 1, rotate: 0 }}
+          transition={{ type: "spring", stiffness: 450, damping: 12 }}
+          style={{ display: "inline-block" }}
+        >
+          {currentPosition?.emoji || "✅"}
+        </motion.span>
+      );
     },
     [entries, teamName, currentPosition],
   );

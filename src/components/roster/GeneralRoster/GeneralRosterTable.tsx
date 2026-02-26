@@ -1,5 +1,8 @@
 import { useMemo, useCallback } from "react";
 
+import { motion } from "framer-motion";
+
+
 import { useRosterBaseLogic } from "../../../hooks/useRosterBaseLogic";
 import RosterTable from "../RosterTable";
 import { GeneralRosterHeader } from "./GeneralRosterHeader";
@@ -117,18 +120,23 @@ const GeneralRosterTable = () => {
 
       return (
         <>
-          {currentTeamAssignments.length > 0 && (
-            <div className={cellStyles.currentTeamContainer}>
-              {currentTeamAssignments.map((posName) => {
-                const pos = allPositions.find((p) => p.name === posName);
-                return (
-                  <span key={posName} title={`${teamName}: ${posName}`}>
-                    {pos?.emoji || "❓"}
-                  </span>
-                );
-              })}
-            </div>
-          )}
+          <div className={cellStyles.currentTeamContainer}>
+            {currentTeamAssignments.map((posName) => {
+              const pos = allPositions.find((p) => p.name === posName);
+              return (
+                <motion.span
+                  key={posName}
+                  initial={{ scale: 0, rotate: -45 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 15 }}
+                  title={`${teamName}: ${posName}`}
+                  className={cellStyles.currentTeamEmoji}
+                >
+                  {pos?.emoji || "❓"}
+                </motion.span>
+              );
+            })}
+          </div>
           {otherTeamsAssignments.length > 0 && (
             <div className={cellStyles.otherTeamsIndicator}>
               {otherTeamsAssignments.map((ota) =>

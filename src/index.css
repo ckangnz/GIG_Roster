@@ -49,3 +49,8 @@ a {
 body {
   margin: 0;
 }
+
+/* PWA - Disable gray tap highlight on mobile */
+* {
+  -webkit-tap-highlight-color: transparent;
+}

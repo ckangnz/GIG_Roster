@@ -9,7 +9,9 @@ import {
   AppTab,
   SETTINGS_NAV_ITEMS,
 } from "../../constants/navigation";
+import { resolvePresenceColor } from "../../hooks/presenceUtils";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
+import { useTheme } from "../../hooks/useThemeHook";
 import { fetchPositions } from "../../store/slices/positionsSlice";
 import { fetchTeams } from "../../store/slices/teamsSlice";
 import {
@@ -48,6 +50,8 @@ const SideNav = () => {
     (state) => state.positions,
   );
   const { onlineUsers } = useAppSelector((state) => state.presence);
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
 
   // Track window width to force labels on mobile
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
@@ -153,7 +157,7 @@ const SideNav = () => {
           <span
             key={u.uid}
             className={styles.locationDot}
-            style={{ backgroundColor: u.color }}
+            style={{ backgroundColor: resolvePresenceColor(u.colorIndex, u.color, isDark) }}
             title={`${u.name} is in ${u.focus?.viewName || teamName}`}
           />
         ))}
@@ -172,7 +176,7 @@ const SideNav = () => {
           <span
             key={u.uid}
             className={styles.locationDot}
-            style={{ backgroundColor: u.color }}
+            style={{ backgroundColor: resolvePresenceColor(u.colorIndex, u.color, isDark) }}
             title={`${u.name} is on this page`}
           />
         ))}

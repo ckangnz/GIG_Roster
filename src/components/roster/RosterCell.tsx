@@ -3,8 +3,10 @@ import { ReactNode, memo, useEffect, useRef, useMemo } from "react";
 import { X } from "lucide-react";
 import { useParams } from "react-router-dom";
 
+import { resolvePresenceColor } from "../../hooks/presenceUtils";
 import { useAppSelector } from "../../hooks/redux";
 import { currentSessionId } from "../../hooks/usePresence";
+import { useTheme } from "../../hooks/useThemeHook";
 
 import absenceStyles from "./AbsenceRoster/absence-roster.module.css";
 import styles from "./roster-cell.module.css";
@@ -50,6 +52,8 @@ const RosterCell = memo(({
   const { teamName } = useParams();
   const { onlineUsers } = useAppSelector(state => state.presence);
   const { firebaseUser } = useAppSelector(state => state.auth);
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
 
   useEffect(() => {
     if (isFocused && cellRef.current) {
@@ -83,20 +87,23 @@ const RosterCell = memo(({
   const renderRemoteCursors = () => {
     if (remoteCursors.length === 0) return null;
     
-    return remoteCursors.map((u, idx) => (
-      <div 
-        key={u.uid} 
-        className={styles.remoteCursorBorder} 
-        style={{ 
-          borderColor: u.color,
-          transform: `translate(${idx * 2}px, ${idx * 2}px)` 
-        }}
-      >
-        <div className={styles.remoteCursorBadge} style={{ backgroundColor: u.color }}>
-          {u.name}
+    return remoteCursors.map((u, idx) => {
+      const userColor = resolvePresenceColor(u.colorIndex, u.color, isDark);
+      return (
+        <div 
+          key={u.uid} 
+          className={styles.remoteCursorBorder} 
+          style={{ 
+            borderColor: userColor,
+            transform: `translate(${idx * 2}px, ${idx * 2}px)` 
+          }}
+        >
+          <div className={styles.remoteCursorBadge} style={{ backgroundColor: userColor }}>
+            {u.name}
+          </div>
         </div>
-      </div>
-    ));
+      );
+    });
   };
 
   if (type === "all-user") {

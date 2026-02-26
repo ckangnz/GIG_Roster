@@ -1,5 +1,8 @@
 import { useMemo, useCallback } from "react";
 
+import { motion } from "framer-motion";
+
+
 import { useRosterBaseLogic } from "../../../hooks/useRosterBaseLogic";
 import NameTag from "../../common/NameTag";
 import RosterTable from "../RosterTable";
@@ -125,17 +128,20 @@ const AllRosterTable = () => {
           {userAssignments.map((posName) => {
             const pos = allPositions.find((p) => p.name === posName);
             return (
-              <span
+              <motion.span
                 key={posName}
+                initial={{ scale: 0, y: 5 }}
+                animate={{ scale: 1, y: 0 }}
+                transition={{ type: "spring", stiffness: 300, damping: 15 }}
                 onClick={(e) => {
                   e.stopPropagation();
                   navigate(`/app/roster/${teamName}/${posName}`);
                 }}
                 title={posName}
-                style={{ cursor: "pointer" }}
+                style={{ cursor: "pointer", display: "inline-block" }}
               >
                 {pos?.emoji || "❓"}
-              </span>
+              </motion.span>
             );
           })}
         </div>

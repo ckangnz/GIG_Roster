@@ -20,6 +20,18 @@
   align-items: center;
 }
 
+.currentTeamContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.currentTeamEmoji {
+  display: inline-block;
+}
+
 /* Default Clickable Cell */
 .clickable {
   cursor: pointer;

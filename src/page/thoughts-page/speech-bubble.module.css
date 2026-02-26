@@ -30,6 +30,7 @@
   min-height: 60px;
   box-sizing: border-box;
   touch-action: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .bubble:hover {

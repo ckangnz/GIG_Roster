@@ -8,6 +8,7 @@
   overflow: visible;
   touch-action: none;
   z-index: 1;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .wheelWrapper {
@@ -37,6 +38,7 @@
   cursor: pointer;
   user-select: none;
   z-index: 5;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .userName {

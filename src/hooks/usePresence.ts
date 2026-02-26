@@ -36,9 +36,37 @@ export interface PresenceUser {
   email: string;
   lastSeen: number; 
   color: string;
+  colorIndex?: number;
   focus?: PresenceFocus | null;
   location?: string;
 }
+
+/**
+ * Theme-aware colors for online users.
+ * Each entry is a pair: [LightModeColor, DarkModeColor]
+ */
+export const PRESENCE_COLORS = [
+  ["#FF3B30", "#FF453A"], // Red
+  ["#FF9500", "#FF9F0A"], // Orange
+  ["#FFCC00", "#FFD60A"], // Yellow
+  ["#34C759", "#32D74B"], // Green
+  ["#00C7BE", "#64D2FF"], // Teal/Cyan
+  ["#007AFF", "#0A84FF"], // Blue
+  ["#5856D6", "#5E5CE6"], // Indigo
+  ["#AF52DE", "#BF5AF2"], // Purple
+  ["#FF2D55", "#FF375F"], // Pink
+  ["#A2845E", "#AC8E68"], // Brown
+  ["#555555", "#8E8E93"], // Gray
+  ["#0040DD", "#409CFF"], // Deep Blue
+  ["#107C10", "#28CD41"], // Deep Green
+  ["#D83B01", "#FF5722"], // Deep Orange
+  ["#A4262C", "#FF5252"], // Deep Red
+  ["#0078D4", "#2196F3"], // Bright Blue
+  ["#498205", "#8BC34A"], // Lime
+  ["#8764B8", "#B388FF"], // Lavender
+  ["#00B7C3", "#00E5FF"], // Turquoise
+  ["#E3008C", "#F06292"]  // Magenta
+];
 
 const getSessionId = () => {
   try {
@@ -54,29 +82,24 @@ const getSessionId = () => {
   }
 };
 
-const getSessionColor = () => {
+const getSessionColorIndex = () => {
   try {
-    const key = 'gig_roster_session_color';
-    let color = sessionStorage.getItem(key);
-    if (!color) {
-      const PRETTY_COLORS = [
-        "#FF6B6B", "#4ECDC4", "#45B7D1", "#FFA07A", "#98D8C8", 
-        "#F78FB3", "#BB8FCE", "#82E0AA", "#F1948A", "#85C1E9", 
-        "#76D7C4", "#F8C471", "#C39BD3", "#7FB3D5", "#7DCEA0", 
-        "#F0B27A", "#5DADE2", "#D7BDE2", "#A9CCE3", "#A3E4D7"
-      ];
-      const randomIndex = Math.floor(Math.random() * PRETTY_COLORS.length);
-      color = PRETTY_COLORS[randomIndex];
-      sessionStorage.setItem(key, color);
+    const key = 'gig_roster_session_color_index';
+    let indexStr = sessionStorage.getItem(key);
+    if (indexStr === null) {
+      const randomIndex = Math.floor(Math.random() * PRESENCE_COLORS.length);
+      indexStr = String(randomIndex);
+      sessionStorage.setItem(key, indexStr);
     }
-    return color;
+    return parseInt(indexStr, 10);
   } catch {
-    return "#FF6B6B";
+    return 0;
   }
 };
 
 export const currentSessionId = getSessionId();
-const sessionColor = getSessionColor();
+const sessionColorIndex = getSessionColorIndex();
+const sessionColor = PRESENCE_COLORS[sessionColorIndex][0];
 
 const HEARTBEAT_INTERVAL = 60000;
 const PRESENCE_THRESHOLD = 90000;
@@ -173,6 +196,7 @@ export const useTrackPresence = (firebaseUser: User | null, userData: AppUser | 
           name: userData.name || firebaseUser.displayName || "Anonymous",
           email: userData.email,
           color: sessionColor,
+          colorIndex: sessionColorIndex,
           lastSeen: serverTimestamp(),
           focus: focusData,
           location: location.pathname,
@@ -256,6 +280,7 @@ export const usePresenceListener = () => {
             name: String(data.name),
             email: String(data.email || ""),
             color: String(data.color || "#5c4eb1"),
+            colorIndex: typeof data.colorIndex === 'number' ? data.colorIndex : undefined,
             lastSeen: lastSeenMillis,
             focus: data.focus || null,
             location: data.location || "",

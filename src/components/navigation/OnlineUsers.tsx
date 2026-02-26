@@ -3,8 +3,10 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { SETTINGS_NAV_ITEMS } from "../../constants/navigation";
+import { resolvePresenceColor } from "../../hooks/presenceUtils";
 import { useAppSelector } from "../../hooks/redux";
 import { useOnlineUsers, currentSessionId } from "../../hooks/usePresence";
+import { useTheme } from "../../hooks/useThemeHook";
 import NameTag from "../common/NameTag";
 
 import styles from "./online-users.module.css";
@@ -21,6 +23,8 @@ const OnlineUsers = ({
   const navigate = useNavigate();
   const onlineUsers = useOnlineUsers();
   const { firebaseUser, userData } = useAppSelector((state) => state.auth);
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
   const currentSessionDocId = firebaseUser
     ? `${firebaseUser.uid}_${currentSessionId}`
     : null;
@@ -119,7 +123,10 @@ const OnlineUsers = ({
             key={user.uid}
             className={styles.avatarCircle}
             title={user.name || "Unknown User"}
-            style={{ backgroundColor: user.color, borderColor: "white" }}
+            style={{ 
+              backgroundColor: resolvePresenceColor(user.colorIndex, user.color, isDark), 
+              borderColor: "white" 
+            }}
           >
             {getInitials(user.name)}
           </div>
@@ -148,7 +155,7 @@ const OnlineUsers = ({
                 >
                   <div
                     className={styles.userAvatarSmall}
-                    style={{ backgroundColor: user.color }}
+                    style={{ backgroundColor: resolvePresenceColor(user.colorIndex, user.color, isDark) }}
                   >
                     {getInitials(user.name)}
                   </div>
