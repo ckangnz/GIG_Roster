@@ -69,19 +69,6 @@
   opacity: 1;
 }
 
-.centerIndicator {
-  position: absolute;
-  top: 80%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 4px;
-  height: 4px;
-  background-color: var(--color-link);
-  z-index: 10;
-  opacity: 0.3;
-  border-radius: 50%;
-}
-
 @media (min-width: 768px) {
   .userName {
     font-size: 1rem;

@@ -228,7 +228,6 @@ const ThoughtWheel = ({
       animate={{ zIndex: (activeDragId || expandedEntryId || hoveredEntryId) ? 200 : 1 }}
       style={{ "--wheel-radius": `${radius}px` } as React.CSSProperties}
     >
-      <div className={styles.centerIndicator} />
       <div className={styles.wheelWrapper}>
         <motion.div className={styles.wheel} style={{ rotate: rotation }}>
           {users.map((user, index) => {
