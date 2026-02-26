@@ -69,7 +69,7 @@
   --color-on-error: #ffffff;
   --color-controls: var(--neutral-400);
   --color-male: #0a84ff;
-  --color-female: #ff375f;
+  --color-female: #ff66cc;
 
   --background-body: #000000;
   --background-app-shell: #000000;
@@ -128,7 +128,7 @@
   --color-on-error: #ffffff;
   --color-controls: #636366;
   --color-male: #007aff;
-  --color-female: #ff2d55;
+  --color-female: #ff4f9a;
 
   --background-body: #ffffff;
   --background-app-shell: #f2f2f7;

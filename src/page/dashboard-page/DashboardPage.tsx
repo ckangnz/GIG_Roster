@@ -217,7 +217,7 @@ const DashboardPage = () => {
         const positionGroups: {
           posName: string;
           emoji: string;
-          assignedUsers: { name: string; isMe: boolean }[];
+          assignedUsers: { name: string; isMe: boolean; gender?: string | null }[];
         }[] = [];
         const teamPositionNames = team.positions.map((p) => p.name);
 
@@ -234,7 +234,7 @@ const DashboardPage = () => {
               if (user) {
                 assignedUsers.push(user);
               } else {
-                assignedUsers.push({ email, name: email } as AppUser);
+                assignedUsers.push({ email, name: email, gender: "" } as AppUser);
               }
               totalAssignedInTeam++;
               if (email === userData.email) {
@@ -260,6 +260,7 @@ const DashboardPage = () => {
             assignedUsers: sortedAssignedUsers.map((u) => ({
               name: u.name || u.email || "Unknown",
               isMe: u.email === userData.email,
+              gender: u.gender,
             })),
           });
         });
@@ -312,7 +313,7 @@ const DashboardPage = () => {
     positions: {
       posName: string;
       emoji: string;
-      assignedUsers: { name: string; isMe: boolean }[];
+      assignedUsers: { name: string; isMe: boolean; gender?: string | null }[];
     }[],
     eventName?: string,
   ) => {
@@ -528,6 +529,7 @@ const DashboardPage = () => {
                               <NameTag
                                 displayName={user.name}
                                 isMe={user.isMe}
+                                gender={user.gender}
                               />
                               {idx < group.assignedUsers.length - 1 ? ", " : ""}
                             </Fragment>

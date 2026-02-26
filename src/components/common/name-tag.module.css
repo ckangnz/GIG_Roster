@@ -8,17 +8,21 @@
 }
 
 .meTag {
+  --tag-color: var(--color-primary);
+  --tag-bg: var(--tag-color);
+  --tag-shimmer: rgba(255, 255, 255, 0.7);
+  
   display: inline-flex;
   align-items: center;
   /* Premium Vibrant Look for Light Theme */
-  background-color: var(--color-primary);
+  background-color: var(--tag-bg);
   background: linear-gradient(
     90deg,
-    var(--color-primary) 0%,
-    var(--color-primary) 35%,
-    rgba(255, 255, 255, 0.7) 50%,
-    var(--color-primary) 65%,
-    var(--color-primary) 100%
+    var(--tag-bg) 0%,
+    var(--tag-bg) 35%,
+    var(--tag-shimmer) 50%,
+    var(--tag-bg) 65%,
+    var(--tag-bg) 100%
   );
   background-size: 200% 100%;
   animation: shimmer 3s infinite linear;
@@ -31,24 +35,29 @@
   vertical-align: text-top;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  border: 1px solid var(--color-primary);
+  border: 1px solid var(--tag-color);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
+.meTagFemale {
+  --tag-color: var(--color-female);
+  --tag-bg: var(--color-female);
+}
+
 [data-theme="dark"] .meTag {
-  background-color: var(--background-primary-subtle);
-  background: linear-gradient(
-    90deg,
-    var(--background-primary-subtle) 0%,
-    var(--background-primary-subtle) 35%,
-    var(--color-primary) 50%,
-    var(--background-primary-subtle) 65%,
-    var(--background-primary-subtle) 100%
-  );
-  background-size: 200% 100%;
+  --tag-bg: var(--background-primary-subtle);
+  --tag-shimmer: var(--color-primary);
   color: var(--color-primary);
   border-color: var(--border-color-primary);
   box-shadow: none;
+}
+
+[data-theme="dark"] .meTagFemale {
+  --tag-color: var(--color-female);
+  --tag-bg: color-mix(in srgb, var(--color-female) 25%, transparent);
+  --tag-shimmer: var(--color-female);
+  color: var(--color-female);
+  border-color: var(--color-female);
 }
 
 .isMe {

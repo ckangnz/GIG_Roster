@@ -112,7 +112,7 @@ const CustomRosterTable = () => {
           key="assigned"
           initial={{ scale: 0, rotate: -20 }}
           animate={{ scale: 1, rotate: 0 }}
-          transition={{ type: "spring", stiffness: 450, damping: 12 }}
+          transition={{ type: "spring", stiffness: 260, damping: 20 }}
           style={{ display: "inline-block" }}
         >
           {currentPosition?.emoji || "✅"}

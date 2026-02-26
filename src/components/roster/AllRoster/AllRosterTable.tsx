@@ -130,9 +130,9 @@ const AllRosterTable = () => {
             return (
               <motion.span
                 key={posName}
-                initial={{ scale: 0, y: 5 }}
-                animate={{ scale: 1, y: 0 }}
-                transition={{ type: "spring", stiffness: 300, damping: 15 }}
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: "spring", stiffness: 260, damping: 20 }}
                 onClick={(e) => {
                   e.stopPropagation();
                   navigate(`/app/roster/${teamName}/${posName}`);
@@ -210,6 +210,7 @@ const AllRosterTable = () => {
                     displayName={displayName}
                     isMe={isMe}
                     isHighlighted={isHighlighted}
+                    gender={user?.gender}
                   />
                 </span>
                 {idx < sortedAssignedEntries.length - 1 ? ", " : ""}

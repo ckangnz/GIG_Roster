@@ -13,7 +13,7 @@ interface GeneralRosterHeaderProps {
   genderDividerIndex: number;
   assignedOnClosestDate: string[];
   currentPosition?: Position;
-  userData: { email?: string | null } | null;
+  userData: { email?: string | null; gender?: string | null } | null;
   onToggleVisibility: (email: string) => void;
   showPeek?: boolean;
 }
@@ -44,7 +44,11 @@ export const GeneralRosterHeader = memo(
                 onClick={() => user.email && onToggleVisibility(user.email)}
                 title="Click to hide member"
               >
-                <NameTag displayName={user.name} isMe={isMe} />
+                <NameTag 
+                  displayName={user.name} 
+                  isMe={isMe} 
+                  gender={isMe ? userData?.gender : user.gender} 
+                />
                 {currentPosition?.sortByGender && (
                   <span className={generalStyles.genderLabel}>
                     (

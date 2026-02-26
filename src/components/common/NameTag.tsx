@@ -6,9 +6,12 @@ interface NameTagProps {
   displayName: string | null;
   isMe: boolean;
   isHighlighted?: boolean;
+  gender?: string | null;
 }
 
-const NameTag = ({ displayName, isMe, isHighlighted }: NameTagProps) => {
+const NameTag = ({ displayName, isMe, isHighlighted, gender }: NameTagProps) => {
+  const isFemale = gender === "Female";
+
   return (
     <Fragment>
       <span
@@ -16,7 +19,11 @@ const NameTag = ({ displayName, isMe, isHighlighted }: NameTagProps) => {
       >
         {displayName}
       </span>
-      {isMe && <span className={styles.meTag}>Me</span>}
+      {isMe && (
+        <span className={`${styles.meTag} ${isFemale ? styles.meTagFemale : ""}`}>
+          Me
+        </span>
+      )}
     </Fragment>
   );
 };

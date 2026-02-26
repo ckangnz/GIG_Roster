@@ -163,6 +163,7 @@ const OnlineUsers = ({
                     <NameTag
                       displayName={user.name || "Unknown User"}
                       isMe={isMe}
+                      gender={isMe ? userData?.gender : null}
                     />
                   </span>
                   <div className={styles.pulse} />
