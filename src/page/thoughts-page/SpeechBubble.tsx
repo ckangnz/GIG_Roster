@@ -2,6 +2,7 @@ import { useState, useCallback, useRef, useEffect } from "react";
 
 import { Heart } from "lucide-react";
 
+import { ThoughtExpiry } from "./ThoughtExpiry";
 import { ThoughtEntry } from "../../model/model";
 
 import styles from "./speech-bubble.module.css";
@@ -87,10 +88,28 @@ const SpeechBubble = ({ entry, onHeart, isExpanded, onToggleExpand, onShowLikers
           <div className={styles.readMore}>... read more</div>
         )}
 
-        {heartCount > 0 && (
-          <div className={styles.heartOverlayInside} onClick={handleHeartClick}>
-            <Heart size={10} fill="#ff4757" stroke="none" />
-            <span style={{ marginLeft: 3, fontWeight: 800 }}>{heartCount}</span>
+        {(isExpanded || heartCount > 0) && (
+          <div className={styles.bubbleFooter}>
+            {isExpanded ? (
+              <ThoughtExpiry
+                updatedAt={entry.updatedAt}
+                className={styles.expandedExpiry}
+              />
+            ) : (
+              <div />
+            )}
+
+            {heartCount > 0 && (
+              <div
+                className={styles.heartOverlayInside}
+                onClick={handleHeartClick}
+              >
+                <Heart size={10} fill="#ff4757" stroke="none" />
+                <span style={{ marginLeft: 3, fontWeight: 800 }}>
+                  {heartCount}
+                </span>
+              </div>
+            )}
           </div>
         )}
       </div>

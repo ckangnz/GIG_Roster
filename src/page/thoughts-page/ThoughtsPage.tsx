@@ -4,6 +4,7 @@ import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { Plus, Trash2, Edit2 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 
+import { ThoughtExpiry } from "./ThoughtExpiry";
 import ThoughtWheel from "./ThoughtWheel";
 import ActionSheet from "../../components/common/ActionSheet";
 import Button from "../../components/common/Button";
@@ -331,7 +332,7 @@ const ThoughtsPage = () => {
           <div className={styles.instructions}>
             <span>Share what's on your mind</span>
             <span>Tap to read • Double-tap to love</span>
-            <span>Clear to start fresh</span>
+            <span style={{ color: "var(--color-text-dim)", fontSize: "0.7rem" }}>Thoughts expire 7 days after an update</span>
           </div>
         </div>
 
@@ -368,7 +369,13 @@ const ThoughtsPage = () => {
         <div className={styles.managementList}>
           {targetThought?.entries?.map((entry) => (
             <div key={entry.id} className={styles.managementItem}>
-              <div className={styles.entryText}>{entry.text}</div>
+              <div className={styles.entryContent}>
+                <div className={styles.entryText}>{entry.text}</div>
+                <ThoughtExpiry
+                  updatedAt={entry.updatedAt}
+                  className={styles.expiryLabel}
+                />
+              </div>
               <div className={styles.entryActions}>
                 <Button
                   variant="secondary"

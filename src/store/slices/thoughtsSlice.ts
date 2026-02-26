@@ -23,27 +23,38 @@ const initialState: ThoughtsState = {
   error: null,
 };
 
+const THOUGHT_EXPIRATION_MS = 7 * 24 * 60 * 60 * 1000;
+
 /**
  * Normalizes a Thought object to ensure it has an entries array,
- * handling legacy 'text' and 'hearts' fields.
+ * handling legacy 'text' and 'hearts' fields, and filtering out expired entries.
  */
 export const normalizeThought = (thought: Thought): Thought => {
+  const now = Date.now();
+  let entries: ThoughtEntry[] = [];
+
   if (thought.entries && Array.isArray(thought.entries)) {
-    return thought;
+    // Filter out entries older than 1 week
+    entries = thought.entries.filter((e) => now - e.updatedAt < THOUGHT_EXPIRATION_MS);
+  } else if (thought.text) {
+    // Legacy support: check if legacy thought is expired
+    if (now - (thought.updatedAt || 0) < THOUGHT_EXPIRATION_MS) {
+      entries.push({
+        id: "legacy",
+        text: thought.text,
+        hearts: thought.hearts || {},
+        updatedAt: thought.updatedAt,
+      });
+    }
   }
 
-  const entries: ThoughtEntry[] = [];
-  if (thought.text) {
-    entries.push({
-      id: "legacy",
-      text: thought.text,
-      hearts: thought.hearts || {},
-      updatedAt: thought.updatedAt,
-    });
-  }
+  // Create a clean copy without legacy fields
+  const { text, hearts, ...cleanThought } = thought;
+  void text; // Explicitly ignoring
+  void hearts;
 
   return {
-    ...thought,
+    ...cleanThought,
     entries,
   };
 };
@@ -137,7 +148,11 @@ const thoughtsSlice = createSlice({
     setThoughts(state, action: PayloadAction<Record<string, Thought>>) {
       const normalized: Record<string, Thought> = {};
       Object.entries(action.payload).forEach(([id, thought]) => {
-        normalized[id] = normalizeThought(thought);
+        const n = normalizeThought(thought);
+        // Only include thoughts that still have active entries
+        if (n.entries && n.entries.length > 0) {
+          normalized[id] = n;
+        }
       });
       state.thoughts = normalized;
       state.loading = false;
