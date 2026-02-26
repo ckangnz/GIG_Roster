@@ -123,9 +123,10 @@ const SpeechBubble = ({
         } : { cursor: "default" }}
         whileTap={!isExpanded ? { 
           scale: 1.05,
+          cursor: "grabbing",
           borderColor: "var(--color-link)",
           boxShadow: "0 15px 35px rgba(0, 0, 0, 0.12)"
-        } : {}}
+        } : { cursor: "default" }}
         whileDrag={{ 
           scale: 1.1, 
           cursor: "grabbing",

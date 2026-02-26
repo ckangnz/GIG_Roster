@@ -7,7 +7,7 @@
   align-items: center;
   overflow: visible;
   touch-action: none;
-  z-index: 20;
+  z-index: 1;
 }
 
 .wheelWrapper {

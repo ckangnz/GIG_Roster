@@ -42,6 +42,7 @@ const ThoughtWheel = ({
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [expandedEntryId, setExpandedEntryId] = useState<string | null>(null);
   const [activeDragId, setActiveDragId] = useState<string | null>(null);
+  const [hoveredEntryId, setHoveredEntryId] = useState<string | null>(null);
   const [, setTick] = useState(0);
 
   const isMobile = windowWidth < 768;
@@ -224,6 +225,7 @@ const ThoughtWheel = ({
       dragElastic={0}
       onDrag={handleDrag}
       onDragEnd={handleDragEnd}
+      animate={{ zIndex: (activeDragId || expandedEntryId || hoveredEntryId) ? 200 : 1 }}
       style={{ "--wheel-radius": `${radius}px` } as React.CSSProperties}
     >
       <div className={styles.centerIndicator} />
@@ -242,6 +244,7 @@ const ThoughtWheel = ({
 
             const userThought = thoughts[`${user.id}_${selectedTeam}`];
             const isDraggingThisUser = userThought?.entries?.some(e => e.id === activeDragId);
+            const isHoveringThisUser = userThought?.entries?.some(e => e.id === hoveredEntryId);
 
             // Real-time expiration check
             // eslint-disable-next-line react-hooks/purity
@@ -261,7 +264,7 @@ const ThoughtWheel = ({
                   left: `calc(50% + ${x}px)`,
                   top: `calc(50% + ${y}px)`,
                   transform: `translate(-50%, -50%)`,
-                  zIndex: isDraggingThisUser ? 200 : (index === focusedIndex ? 100 : 5),
+                  zIndex: (isDraggingThisUser || isHoveringThisUser) ? 300 : (index === focusedIndex ? 100 : 5),
                 }}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -280,11 +283,27 @@ const ThoughtWheel = ({
 
                         const targetVh = isMobile ? "30vh" : "55vh";
 
-                        return (
-                          <motion.div
-                            key={entry.id}
-                            whileHover={!isExpanded ? { zIndex: 2000 } : {}}
-                            initial={{
+                                                  return (
+
+                                                    <motion.div
+
+                                                      key={entry.id}
+
+                                                      onMouseEnter={() => !isMobile && setHoveredEntryId(entry.id)}
+
+                                                      onMouseLeave={() => !isMobile && setHoveredEntryId(null)}
+
+                                                                                  whileHover={!isExpanded ? { zIndex: 2000 } : {}}
+
+                                                                                  whileTap={!isExpanded ? { zIndex: 2000 } : {}}
+
+                                                                                  whileDrag={!isExpanded ? { zIndex: 2000 } : {}}
+
+                                                      
+
+                                                      initial={{
+
+                        
                               opacity: 0,
                               scale: 0.5,
                               x: "-50%",
