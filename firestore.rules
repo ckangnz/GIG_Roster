@@ -1,0 +1,59 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // --- HELPER FUNCTIONS ---
+    function isSignedIn() { return request.auth != null; }
+    function isAdmin() { return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true; }
+    function isApproved() { return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isApproved == true; }
+    function isOwner(userId) { return request.auth.uid == userId; }
+
+    // --- RULES ---
+
+    match /users/{userId} {
+      allow read: if isSignedIn();
+
+      // Only Admins can approve others or grant Admin status.
+      // Users can only edit their own basic profile info (Name, Gender, teams, etc.)
+      // but are blocked from changing their own permission flags.
+      allow write: if isSignedIn() && (
+        isAdmin() ||
+        (isOwner(userId) &&
+         !request.resource.data.diff(resource.data).affectedKeys().hasAny(['isAdmin', 'isApproved']))
+      );
+    }
+
+    match /metadata/{document} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && isAdmin();
+    }
+
+    match /roster/{date} {
+      // Access limited to approved members.
+      // Per requirements: All approved members can edit the roster to facilitate manual swapping.
+      allow read, write: if isSignedIn() && isApproved();
+    }
+
+    match /thoughts/{thoughtId} {
+      allow read: if isSignedIn();
+
+      allow create: if isSignedIn() && (
+        request.resource.data.userUid == request.auth.uid || isAdmin()
+      );
+
+      allow update, delete: if isSignedIn() && (
+        resource.data.userUid == request.auth.uid ||
+        isAdmin() ||
+        // Atomic Likes: Only allow updating 'hearts' if the user is only touching their own UID key.
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['hearts', 'updatedAt']) &&
+         request.resource.data.hearts.diff(resource.data.hearts).affectedKeys().hasOnly([request.auth.uid]))
+      );
+    }
+
+    match /presence/{docId} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn() && request.resource.data.userUid == request.auth.uid;
+      allow delete: if isSignedIn() && resource.data.userUid == request.auth.uid;
+    }
+  }
+}
