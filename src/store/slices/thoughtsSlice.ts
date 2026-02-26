@@ -26,31 +26,66 @@ const initialState: ThoughtsState = {
 const THOUGHT_EXPIRATION_MS = 7 * 24 * 60 * 60 * 1000;
 
 /**
- * Normalizes a Thought object to ensure it has an entries array,
- * handling legacy 'text' and 'hearts' fields, and filtering out expired entries.
+ * Safely converts any potential timestamp format to a numeric millisecond value.
+ */
+interface FirebaseTimestamp {
+  toMillis: () => number;
+  seconds: number;
+}
+
+const ensureTimestamp = (ts: unknown): number => {
+  if (!ts) return 0;
+  if (typeof ts === "number") return ts;
+  if (typeof ts === "object" && ts !== null) {
+    const fts = ts as Partial<FirebaseTimestamp>;
+    if (typeof fts.toMillis === "function") return fts.toMillis();
+    if (typeof fts.seconds === "number") return fts.seconds * 1000;
+  }
+  if (typeof ts === "string" || ts instanceof Date) {
+    const parsed = new Date(ts as string | Date).getTime();
+    return isNaN(parsed) ? 0 : parsed;
+  }
+  return 0;
+};
+
+/**
+ * LEGACY REMOVAL GUIDE (Post-March 2026):
+ * Once all thoughts have migrated to the 'entries' format (which happens 
+ * automatically within 1 week of user activity):
+ * 
+ * 1. In normalizeThought: Remove the 'else if (thought.text)' block.
+ * 2. In normalizeThought: Simplify to: return { ...thought, entries: thought.entries || [] };
+ * 3. In syncThoughtEntriesRemote: Remove the 'text: deleteField()' and 'hearts: deleteField()' lines.
+ * 4. In model.ts: Remove 'text' and 'hearts' from the Thought interface.
  */
 export const normalizeThought = (thought: Thought): Thought => {
   const now = Date.now();
   let entries: ThoughtEntry[] = [];
 
   if (thought.entries && Array.isArray(thought.entries)) {
-    // Filter out entries older than 1 week
-    entries = thought.entries.filter((e) => now - e.updatedAt < THOUGHT_EXPIRATION_MS);
+    entries = thought.entries.map((e) => {
+      const updatedAt = ensureTimestamp(e.updatedAt);
+      return {
+        ...e,
+        updatedAt,
+        isExpired: now - updatedAt >= THOUGHT_EXPIRATION_MS,
+      };
+    });
   } else if (thought.text) {
-    // Legacy support: check if legacy thought is expired
-    if (now - (thought.updatedAt || 0) < THOUGHT_EXPIRATION_MS) {
-      entries.push({
-        id: "legacy",
-        text: thought.text,
-        hearts: thought.hearts || {},
-        updatedAt: thought.updatedAt,
-      });
-    }
+    // Legacy support
+    const legacyUpdatedAt = ensureTimestamp(thought.updatedAt);
+    entries.push({
+      id: "legacy",
+      text: thought.text,
+      hearts: thought.hearts || {},
+      updatedAt: legacyUpdatedAt,
+      isExpired: now - legacyUpdatedAt >= THOUGHT_EXPIRATION_MS,
+    });
   }
 
   // Create a clean copy without legacy fields
   const { text, hearts, ...cleanThought } = thought;
-  void text; // Explicitly ignoring
+  void text;
   void hearts;
 
   return {
@@ -75,6 +110,13 @@ export const syncThoughtEntriesRemote = createAsyncThunk(
 
     try {
       const docRef = doc(db, "thoughts", id);
+      
+      // Strip isExpired for Firebase
+      const cleanEntries = entries.map(({ isExpired, ...rest }) => {
+        void isExpired;
+        return rest;
+      });
+
       await setDoc(
         docRef,
         {
@@ -82,9 +124,9 @@ export const syncThoughtEntriesRemote = createAsyncThunk(
           userUid,
           teamName,
           userName,
-          entries,
+          entries: cleanEntries,
           updatedAt: serverTimestamp(),
-          // Clear legacy fields when updating to new format
+          // LEGACY REMOVAL: Remove these two lines after March 2026
           text: deleteField(),
           hearts: deleteField(),
         },
@@ -128,8 +170,14 @@ export const syncHeartEntryRemote = createAsyncThunk(
     const { thoughtId, updatedEntries } = payload;
     try {
       const docRef = doc(db, "thoughts", thoughtId);
+      
+      const cleanEntries = updatedEntries.map(({ isExpired, ...rest }) => {
+        void isExpired;
+        return rest;
+      });
+
       await updateDoc(docRef, {
-        entries: updatedEntries,
+        entries: cleanEntries,
         updatedAt: serverTimestamp(),
       });
       return { thoughtId };
@@ -148,11 +196,7 @@ const thoughtsSlice = createSlice({
     setThoughts(state, action: PayloadAction<Record<string, Thought>>) {
       const normalized: Record<string, Thought> = {};
       Object.entries(action.payload).forEach(([id, thought]) => {
-        const n = normalizeThought(thought);
-        // Only include thoughts that still have active entries
-        if (n.entries && n.entries.length > 0) {
-          normalized[id] = n;
-        }
+        normalized[id] = normalizeThought(thought);
       });
       state.thoughts = normalized;
       state.loading = false;

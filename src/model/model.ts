@@ -59,6 +59,7 @@ export interface ThoughtEntry {
   text: string;
   hearts: Record<string, number>; // userUid -> lastHeartTimestamp
   updatedAt: number;
+  isExpired?: boolean;
 }
 
 export interface Thought {
@@ -68,7 +69,11 @@ export interface Thought {
   teamName: string;
   entries?: ThoughtEntry[]; // NEW
   updatedAt: number;
-  // Legacy fields for backward compatibility
+  
+  /** 
+   * LEGACY SUPPORT - To be removed after March 2026 
+   * Migration logic is in thoughtsSlice.ts -> normalizeThought
+   */
   text?: string;
   hearts?: Record<string, number>;
 }

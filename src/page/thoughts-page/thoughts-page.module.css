@@ -126,6 +126,22 @@
   border: 1px solid var(--border-color-secondary);
   border-radius: 12px;
   gap: 12px;
+  transition: opacity 0.2s ease;
+}
+
+.managementItemExpired {
+  opacity: 0.6;
+  border-style: dashed;
+}
+
+.expiredBadge {
+  font-size: 0.6rem;
+  background: var(--surface-warning);
+  color: var(--text-warning);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-weight: 800;
+  text-transform: uppercase;
 }
 
 .entryContent {

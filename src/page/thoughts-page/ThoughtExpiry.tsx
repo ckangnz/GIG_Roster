@@ -18,6 +18,8 @@ export const ThoughtExpiry = ({ updatedAt, className }: ThoughtExpiryProps) => {
   }, []);
 
   const expiryText = useMemo(() => {
+    if (!updatedAt || isNaN(updatedAt)) return "Expired";
+
     const expiryTime = updatedAt + THOUGHT_EXPIRATION_MS;
     const diff = expiryTime - now;
 

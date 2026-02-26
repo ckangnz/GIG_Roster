@@ -332,7 +332,7 @@ const ThoughtsPage = () => {
           <div className={styles.instructions}>
             <span>Share what's on your mind</span>
             <span>Tap to read • Double-tap to love</span>
-            <span style={{ color: "var(--color-text-dim)", fontSize: "0.7rem" }}>Thoughts expire 7 days after an update</span>
+            <span style={{ color: "var(--color-text-dim)", fontSize: "0.7rem" }}>Thoughts expire in 7 days • Revive anytime</span>
           </div>
         </div>
 
@@ -368,13 +368,21 @@ const ThoughtsPage = () => {
       >
         <div className={styles.managementList}>
           {targetThought?.entries?.map((entry) => (
-            <div key={entry.id} className={styles.managementItem}>
+            <div 
+              key={entry.id} 
+              className={`${styles.managementItem} ${entry.isExpired ? styles.managementItemExpired : ""}`}
+            >
               <div className={styles.entryContent}>
                 <div className={styles.entryText}>{entry.text}</div>
-                <ThoughtExpiry
-                  updatedAt={entry.updatedAt}
-                  className={styles.expiryLabel}
-                />
+                <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                  <ThoughtExpiry
+                    updatedAt={entry.updatedAt}
+                    className={styles.expiryLabel}
+                  />
+                  {entry.isExpired && (
+                    <span className={styles.expiredBadge}>Need revival</span>
+                  )}
+                </div>
               </div>
               <div className={styles.entryActions}>
                 <Button

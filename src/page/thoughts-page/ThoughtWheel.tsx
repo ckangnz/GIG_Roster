@@ -15,6 +15,8 @@ import { AppUser, Thought, ThoughtEntry } from "../../model/model";
 
 import styles from "./thought-wheel.module.css";
 
+const THOUGHT_EXPIRATION_MS = 7 * 24 * 60 * 60 * 1000;
+
 interface ThoughtWheelProps {
   users: AppUser[];
   currentUserEmail: string | null;
@@ -39,6 +41,13 @@ const ThoughtWheel = ({
   const [radius, setRadius] = useState(window.innerWidth < 768 ? 250 : 500);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [expandedEntryId, setExpandedEntryId] = useState<string | null>(null);
+  const [, setTick] = useState(0);
+
+  // Force re-render periodically to catch real-time expirations
+  useEffect(() => {
+    const timer = setInterval(() => setTick(t => t + 1), 30000);
+    return () => clearInterval(timer);
+  }, []);
 
   const rotation = useMotionValue(0);
   const counterRotation = useTransform(rotation, (value) => -value);
@@ -229,6 +238,14 @@ const ThoughtWheel = ({
             const isVisible = angularDistanceFromCenter < 10;
 
             const userThought = thoughts[`${user.id}_${selectedTeam}`];
+            
+            // Real-time expiration check
+            // eslint-disable-next-line react-hooks/purity
+            const now = Date.now();
+            const activeEntries = userThought?.entries?.filter(e => {
+              const isExpired = e.isExpired || (now - e.updatedAt >= THOUGHT_EXPIRATION_MS);
+              return !isExpired;
+            }) || [];
 
             return (
               <div
@@ -247,11 +264,11 @@ const ThoughtWheel = ({
                 <motion.div style={{ rotate: counterRotation }}>
                   <AnimatePresence>
                     {isVisible &&
-                      userThought?.entries?.map(
+                      activeEntries.map(
                         (entry: ThoughtEntry, idx: number) => {
                           const offset = getBubbleOffset(
                             idx,
-                            userThought.entries!.length,
+                            activeEntries.length,
                           );
                           const isExpanded = expandedEntryId === entry.id;
 
@@ -315,7 +332,7 @@ const ThoughtWheel = ({
                   </AnimatePresence>
                   <div className={styles.userName}>
                     {user.name}
-                    {userThought?.entries?.length && index !== focusedIndex && (
+                    {activeEntries.length > 0 && index !== focusedIndex && (
                       <span className={styles.hasThoughtDot} />
                     )}
                   </div>
