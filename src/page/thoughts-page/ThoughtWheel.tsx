@@ -41,11 +41,14 @@ const ThoughtWheel = ({
   const [radius, setRadius] = useState(window.innerWidth < 768 ? 250 : 500);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [expandedEntryId, setExpandedEntryId] = useState<string | null>(null);
+  const [activeDragId, setActiveDragId] = useState<string | null>(null);
   const [, setTick] = useState(0);
+
+  const isMobile = windowWidth < 768;
 
   // Force re-render periodically to catch real-time expirations
   useEffect(() => {
-    const timer = setInterval(() => setTick(t => t + 1), 30000);
+    const timer = setInterval(() => setTick((t) => t + 1), 30000);
     return () => clearInterval(timer);
   }, []);
 
@@ -238,14 +241,17 @@ const ThoughtWheel = ({
             const isVisible = angularDistanceFromCenter < 10;
 
             const userThought = thoughts[`${user.id}_${selectedTeam}`];
-            
+            const isDraggingThisUser = userThought?.entries?.some(e => e.id === activeDragId);
+
             // Real-time expiration check
             // eslint-disable-next-line react-hooks/purity
             const now = Date.now();
-            const activeEntries = userThought?.entries?.filter(e => {
-              const isExpired = e.isExpired || (now - e.updatedAt >= THOUGHT_EXPIRATION_MS);
-              return !isExpired;
-            }) || [];
+            const activeEntries =
+              userThought?.entries?.filter((e) => {
+                const isExpired =
+                  e.isExpired || now - e.updatedAt >= THOUGHT_EXPIRATION_MS;
+                return !isExpired;
+              }) || [];
 
             return (
               <div
@@ -255,6 +261,7 @@ const ThoughtWheel = ({
                   left: `calc(50% + ${x}px)`,
                   top: `calc(50% + ${y}px)`,
                   transform: `translate(-50%, -50%)`,
+                  zIndex: isDraggingThisUser ? 200 : (index === focusedIndex ? 100 : 5),
                 }}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -264,71 +271,70 @@ const ThoughtWheel = ({
                 <motion.div style={{ rotate: counterRotation }}>
                   <AnimatePresence>
                     {isVisible &&
-                      activeEntries.map(
-                        (entry: ThoughtEntry, idx: number) => {
-                          const offset = getBubbleOffset(
-                            idx,
-                            activeEntries.length,
-                          );
-                          const isExpanded = expandedEntryId === entry.id;
+                      activeEntries.map((entry: ThoughtEntry, idx: number) => {
+                        const offset = getBubbleOffset(
+                          idx,
+                          activeEntries.length,
+                        );
+                        const isExpanded = expandedEntryId === entry.id;
 
-                          const isMobile = windowWidth < 768;
-                          // Move to a higher anchor on desktop (subtracting more vh)
-                          const targetVh = isMobile ? "30vh" : "55vh";
+                        const targetVh = isMobile ? "30vh" : "55vh";
 
-                          return (
-                            <motion.div
-                              key={entry.id}
-                              initial={{
-                                opacity: 0,
-                                scale: 0.5,
-                                x: "-50%",
-                                y: 50,
-                              }}
-                              animate={{
-                                opacity: 1,
-                                scale: 1,
-                                x: isExpanded
-                                  ? "-50%"
-                                  : `calc(-50% + ${offset.x}px)`,
-                                y: isExpanded
-                                  ? `calc(${radius}px - ${targetVh} + 50%)`
-                                  : offset.y,
-                              }}
-                              exit={{
-                                opacity: 0,
-                                scale: 0.5,
-                                x: "-50%",
-                                y: 50,
-                              }}
-                              transition={{
-                                type: "spring",
-                                stiffness: 100,
-                                damping: 20,
-                                delay: idx * 0.05,
-                              }}
-                              style={{
-                                position: "absolute",
-                                bottom: "100%",
-                                left: "50%",
-                                zIndex: isExpanded ? 1000 : 10 + idx,
-                              }}
-                            >
-                              <SpeechBubble
-                                entry={entry}
-                                onHeart={onHeart}
-                                isExpanded={isExpanded}
-                                onToggleExpand={() =>
-                                  setExpandedEntryId(
-                                    isExpanded ? null : entry.id,
-                                  )
-                                }
-                                onShowLikers={onShowLikers}
-                              />
-                            </motion.div>
-                          );
-                        },
-                      )}
+                        return (
+                          <motion.div
+                            key={entry.id}
+                            whileHover={!isExpanded ? { zIndex: 2000 } : {}}
+                            initial={{
+                              opacity: 0,
+                              scale: 0.5,
+                              x: "-50%",
+                              y: 50,
+                            }}
+                            animate={{
+                              opacity: 1,
+                              scale: 1,
+                              x: isExpanded
+                                ? "-50%"
+                                : `calc(-50% + ${offset.x}px)`,
+                              y: isExpanded
+                                ? `calc(${radius}px - ${targetVh} + 50%)`
+                                : offset.y,
+                              zIndex: isExpanded 
+                                ? 3000 
+                                : (activeDragId === entry.id ? 2000 : 100 + idx),
+                            }}
+                            exit={{
+                              opacity: 0,
+                              scale: 0.5,
+                              x: "-50%",
+                              y: 50,
+                            }}
+                            transition={{
+                              type: "spring",
+                              stiffness: 100,
+                              damping: 20,
+                              delay: isExpanded ? idx * 0.05 : 0,
+                            }}
+                            style={{
+                              position: "absolute",
+                              bottom: "100%",
+                              left: "50%",
+                            }}
+                          >
+                            <SpeechBubble
+                              entry={entry}
+                              onHeart={onHeart}
+                              isExpanded={isExpanded}
+                              onToggleExpand={() =>
+                                setExpandedEntryId(isExpanded ? null : entry.id)
+                              }
+                              onShowLikers={onShowLikers}
+                              onDragStart={() => setActiveDragId(entry.id)}
+                              onDragEnd={() => setActiveDragId(null)}
+                            />
+                          </motion.div>
+                        );
+                      })}
                   </AnimatePresence>
                   <div className={styles.userName}>
                     {user.name}
