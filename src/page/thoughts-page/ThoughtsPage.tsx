@@ -60,6 +60,7 @@ const ThoughtsPage = () => {
 
   const selectedTeam = teamName || userData?.teams?.[0] || "";
   const [focusedUser, setFocusedUser] = useState<AppUser | null>(null);
+  const [managementUser, setManagementUser] = useState<AppUser | null>(null);
 
   // UI State
   const [isManagementOpen, setIsManagementOpen] = useState(false);
@@ -83,12 +84,20 @@ const ThoughtsPage = () => {
     : "";
   const focusedThought = thoughts[focusedThoughtId];
 
-  const isMyProfileFocused = focusedUser?.id === firebaseUser?.uid;
-  const targetThought = isMyProfileFocused
-    ? thoughts[`${firebaseUser?.uid}_${selectedTeam}`]
-    : focusedThought;
+  const myThoughtId = firebaseUser ? `${firebaseUser.uid}_${selectedTeam}` : "";
+  const myThought = thoughts[myThoughtId];
+
+  const targetThought = managementUser
+    ? thoughts[`${managementUser.id}_${selectedTeam}`]
+    : null;
 
   const handleOpenManagement = () => {
+    if (userData?.isAdmin) {
+      setManagementUser(focusedUser);
+    } else {
+      const me = allUsers.find((u) => u.id === firebaseUser?.uid);
+      setManagementUser(me || null);
+    }
     setIsManagementOpen(true);
   };
 
@@ -115,7 +124,7 @@ const ThoughtsPage = () => {
   };
 
   const handleSaveThought = () => {
-    if (!selectedTeam || !inputText.trim() || !focusedUser) return;
+    if (!selectedTeam || !inputText.trim() || !managementUser) return;
 
     const sanitizedText = inputText.trim().replace(/<[^>]*>?/gm, "");
     const currentEntries = [...(targetThought?.entries || [])];
@@ -151,11 +160,9 @@ const ThoughtsPage = () => {
     }
 
     const payload = {
-      userUid: isMyProfileFocused ? firebaseUser!.uid : focusedUser.id!,
+      userUid: managementUser.id!,
       teamName: selectedTeam,
-      userName: isMyProfileFocused
-        ? userData?.name || "Anonymous"
-        : focusedUser.name || "Anonymous",
+      userName: managementUser.name || "Anonymous",
       entries: currentEntries,
     };
 
@@ -169,7 +176,7 @@ const ThoughtsPage = () => {
   };
 
   const handleClearEntry = (entryId: string) => {
-    if (!targetThought || !focusedUser) return;
+    if (!targetThought || !managementUser) return;
 
     dispatch(
       showAlert({
@@ -301,6 +308,9 @@ const ThoughtsPage = () => {
 
   if (teamsLoading) return <Spinner />;
 
+  const isMyProfileFocused = focusedUser?.id === firebaseUser?.uid;
+  const showAdminControls = userData?.isAdmin && !isMyProfileFocused;
+
   const displayTitle = selectedTeam
     ? `Thoughts • ${selectedTeam}`
     : "Team Thoughts";
@@ -340,15 +350,13 @@ const ThoughtsPage = () => {
           <Button
             onClick={handleOpenManagement}
             className={styles.shareBtn}
-            variant={
-              !isMyProfileFocused && userData?.isAdmin ? "secondary" : "primary"
-            }
+            variant={showAdminControls ? "secondary" : "primary"}
           >
-            {!isMyProfileFocused && userData?.isAdmin
+            {showAdminControls
               ? focusedThought
                 ? `Moderate ${focusedUser?.name}'s thoughts`
                 : `Share for ${focusedUser?.name}`
-              : targetThought?.entries?.length
+              : myThought?.entries?.length
                 ? "Manage my thoughts"
                 : "Share a thought"}
           </Button>
@@ -361,9 +369,9 @@ const ThoughtsPage = () => {
         isOpen={isManagementOpen}
         onClose={() => setIsManagementOpen(false)}
         title={
-          isMyProfileFocused
+          managementUser?.id === firebaseUser?.uid
             ? "My Thoughts"
-            : `Acting on behalf of ${focusedUser?.name}`
+            : `Acting on behalf of ${managementUser?.name}`
         }
       >
         <div className={styles.managementList}>
@@ -406,7 +414,7 @@ const ThoughtsPage = () => {
           ))}
 
           {(targetThought?.entries?.length || 0) < 5 &&
-            (isMyProfileFocused || userData?.isAdmin) && (
+            (managementUser?.id === firebaseUser?.uid || userData?.isAdmin) && (
               <Button
                 onClick={() => handleOpenEditor(null)}
                 className={styles.addEntryBtn}
