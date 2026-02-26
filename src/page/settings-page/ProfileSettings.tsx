@@ -172,17 +172,26 @@ const ProfileSettings = ({ className }: { className?: string }) => {
         </PillGroup>
       </div>
 
-      <TeamPositionEditor
-        selectedTeams={formState.teams}
-        teamPositions={formState.teamPositions}
-        onToggleTeam={toggleTeam}
-        onTogglePosition={toggleTeamPosition}
-        onReorderTeams={(newOrder) =>
-          setFormState((prev) => ({ ...prev, teams: newOrder }))
-        }
-        availableTeams={availableTeams}
-        globalPositions={globalPositions}
-      />
+      {userData.isApproved ? (
+        <TeamPositionEditor
+          selectedTeams={formState.teams}
+          teamPositions={formState.teamPositions}
+          onToggleTeam={toggleTeam}
+          onTogglePosition={toggleTeamPosition}
+          onReorderTeams={(newOrder) =>
+            setFormState((prev) => ({ ...prev, teams: newOrder }))
+          }
+          availableTeams={availableTeams}
+          globalPositions={globalPositions}
+        />
+      ) : (
+        <div className={styles.approvalNotice}>
+          <p>
+            Your account is pending approval. Once approved by an administrator, 
+            you will be able to select your teams and positions.
+          </p>
+        </div>
+      )}
 
       <div className={formStyles.formGroup} style={{ marginTop: "24px" }}>
         <label>Availability Status</label>
