@@ -68,6 +68,8 @@
   --color-delete-dark: rgba(255, 69, 58, 0.15);
   --color-on-error: #ffffff;
   --color-controls: var(--neutral-400);
+  --color-male: #0a84ff;
+  --color-female: #ff375f;
 
   --background-body: #000000;
   --background-app-shell: #000000;
@@ -125,6 +127,8 @@
   --color-delete-dark: #fff1f2;
   --color-on-error: #ffffff;
   --color-controls: #636366;
+  --color-male: #007aff;
+  --color-female: #ff2d55;
 
   --background-body: #ffffff;
   --background-app-shell: #f2f2f7;
