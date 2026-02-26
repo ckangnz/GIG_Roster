@@ -33,6 +33,15 @@ const MainLayout = () => {
 
   const { userData } = useAppSelector((state) => state.auth);
 
+  // Dynamic Gender Theme Sync
+  useEffect(() => {
+    if (userData?.gender) {
+      document.documentElement.setAttribute("data-gender", userData.gender);
+    } else {
+      document.documentElement.removeAttribute("data-gender");
+    }
+  }, [userData?.gender]);
+
   // Initialize all real-time app listeners (Presence, Roster, Profile, Metadata)
   useAppListeners();
 

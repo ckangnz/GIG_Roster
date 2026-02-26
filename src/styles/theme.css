@@ -106,6 +106,46 @@
   --field-height: 38px;
 }
 
+/* --- FEMININE THEME OVERRIDES --- */
+
+/* Dark Theme - Feminine (Rose & Purple) */
+[data-gender="Female"] {
+  --primary-400: #ff66cc; /* iOS Rose (Badge color) */
+  --primary-500: #ff4f9a;
+  --primary-600: #e0284b;
+
+  --secondary-400: #bf5af2; /* iOS Purple */
+  --secondary-500: #af52de;
+  --secondary-600: #8e44ad;
+
+  --pill-primary-bg: rgba(255, 102, 204, 0.15);
+  --pill-primary-text: #ff66cc;
+  --pill-secondary-bg: rgba(175, 82, 222, 0.15);
+  --pill-secondary-text: #bf5af2;
+
+  --background-primary-subtle: rgba(255, 102, 204, 0.28);
+  --background-secondary-subtle: rgba(175, 82, 222, 0.22);
+}
+
+/* Light Theme - Feminine (Rose & Purple) */
+[data-theme="light"][data-gender="Female"] {
+  --color-primary: #ff4f9a; /* iOS Rose (Badge color) */
+  --color-link: #ff4f9a;
+  --color-link-hover: #ff2d55;
+
+  --color-secondary: #af52de; /* iOS Purple */
+
+  --background-primary-subtle: rgba(255, 79, 154, 0.1);
+  --background-secondary-subtle: rgba(175, 82, 222, 0.1);
+
+  --border-color-primary: #ff4f9a;
+
+  --pill-primary-bg: rgba(255, 79, 154, 0.1);
+  --pill-primary-text: #ff4f9a;
+  --pill-secondary-bg: rgba(175, 82, 222, 0.1);
+  --pill-secondary-text: #af52de;
+}
+
 [data-theme="light"] {
   /* High Contrast Light Theme */
   --color-text-primary: #000000;
