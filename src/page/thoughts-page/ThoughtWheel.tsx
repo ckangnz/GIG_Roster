@@ -172,7 +172,6 @@ const ThoughtWheel = ({
   const getBubbleOffset = (index: number, total: number) => {
     if (total === 1) return { x: 0, y: 0 };
 
-    const isMobile = windowWidth < 768;
     const horizontalMargin = isMobile ? 40 : 150;
     const maxAvailableWidth = windowWidth - horizontalMargin;
 
@@ -225,7 +224,7 @@ const ThoughtWheel = ({
       dragElastic={0}
       onDrag={handleDrag}
       onDragEnd={handleDragEnd}
-      animate={{ zIndex: (activeDragId || expandedEntryId || hoveredEntryId) ? 200 : 1 }}
+      animate={{ zIndex: activeDragId || expandedEntryId || hoveredEntryId ? 200 : 1 }}
       style={{ "--wheel-radius": `${radius}px` } as React.CSSProperties}
     >
       <div className={styles.wheelWrapper}>
@@ -279,30 +278,14 @@ const ThoughtWheel = ({
                           activeEntries.length,
                         );
                         const isExpanded = expandedEntryId === entry.id;
-
                         const targetVh = isMobile ? "30vh" : "55vh";
 
-                                                  return (
-
-                                                    <motion.div
-
-                                                      key={entry.id}
-
-                                                      onMouseEnter={() => !isMobile && setHoveredEntryId(entry.id)}
-
-                                                      onMouseLeave={() => !isMobile && setHoveredEntryId(null)}
-
-                                                                                  whileHover={!isExpanded ? { zIndex: 2000 } : {}}
-
-                                                                                  whileTap={!isExpanded ? { zIndex: 2000 } : {}}
-
-                                                                                  whileDrag={!isExpanded ? { zIndex: 2000 } : {}}
-
-                                                      
-
-                                                      initial={{
-
-                        
+                        return (
+                          <motion.div
+                            key={entry.id}
+                            onMouseEnter={() => !isMobile && setHoveredEntryId(entry.id)}
+                            onMouseLeave={() => !isMobile && setHoveredEntryId(null)}
+                            initial={{
                               opacity: 0,
                               scale: 0.5,
                               x: "-50%",
@@ -311,15 +294,9 @@ const ThoughtWheel = ({
                             animate={{
                               opacity: 1,
                               scale: 1,
-                              x: isExpanded
-                                ? "-50%"
-                                : `calc(-50% + ${offset.x}px)`,
-                              y: isExpanded
-                                ? `calc(${radius}px - ${targetVh} + 50%)`
-                                : offset.y,
-                              zIndex: isExpanded 
-                                ? 3000 
-                                : (activeDragId === entry.id ? 2000 : 100 + idx),
+                              x: isExpanded ? "-50%" : `calc(-50% + ${offset.x}px)`,
+                              y: isExpanded ? `calc(${radius}px - ${targetVh} + 50%)` : offset.y,
+                              zIndex: isExpanded ? 3000 : (activeDragId === entry.id || hoveredEntryId === entry.id ? 2000 : 100 + idx),
                             }}
                             exit={{
                               opacity: 0,
@@ -328,10 +305,11 @@ const ThoughtWheel = ({
                               y: 50,
                             }}
                             transition={{
-                              type: "spring",
-                              stiffness: 100,
-                              damping: 20,
-                              delay: isExpanded ? idx * 0.05 : 0,
+                              x: { type: "spring", stiffness: 150, damping: 30 },
+                              y: { type: "spring", stiffness: 150, damping: 30 },
+                              zIndex: { duration: 0 },
+                              opacity: { duration: 0.2 },
+                              scale: { duration: 0.2 }
                             }}
                             style={{
                               position: "absolute",
