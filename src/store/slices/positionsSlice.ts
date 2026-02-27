@@ -63,25 +63,27 @@ const positionsSlice = createSlice({
   reducers: {
 
         updatePositionCustomLabels: (
-
           state,
-
           action: PayloadAction<{ positionName: string; labels: string[] }>,
-
         ) => {
-
           const { positionName, labels } = action.payload;
-
           const pos = state.positions.find((p) => p.name === positionName);
-
           if (pos) {
-
             pos.customLabels = labels;
-
             state.isDirty = true;
-
           }
+        },
 
+        updatePositionCustomLabelsById: (
+          state,
+          action: PayloadAction<{ positionId: string; labels: string[] }>,
+        ) => {
+          const { positionId, labels } = action.payload;
+          const pos = state.positions.find((p) => p.id === positionId);
+          if (pos) {
+            pos.customLabels = labels;
+            state.isDirty = true;
+          }
         },
 
         resetPositionsDirty: (state) => {

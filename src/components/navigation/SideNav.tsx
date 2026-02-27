@@ -274,7 +274,8 @@ const SideNav = () => {
                       </button>
                       {team.positions
                         ?.filter((pos) => !pos.parentId)
-                        ?.map((pos) => {
+                        ?.map((p) => {
+                          const pos = allPositions.find(ap => ap.id === p.id || ap.name === p.name) || p;
                           const isActive =
                             activeSideItem === pos.id &&
                             activeTeamName === team.id;
