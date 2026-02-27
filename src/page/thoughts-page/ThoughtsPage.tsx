@@ -82,7 +82,7 @@ const ThoughtsPage = () => {
     if (!teamNameFromUrl && userData?.teams?.[0]) {
       const firstTeam = allTeams.find(t => t.id === userData.teams[0] || t.name === userData.teams[0]);
       if (firstTeam) {
-        navigate(`/app/thoughts/${firstTeam.name}`, { replace: true });
+        navigate(`/app/thoughts/${firstTeam.id}`, { replace: true });
       }
     }
   }, [teamNameFromUrl, userData, navigate, allTeams]);
