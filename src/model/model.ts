@@ -33,7 +33,7 @@ export interface Team {
   id: string;
   name: string;
   emoji: string;
-  positions: Position[];
+  positions: string[]; // Store IDs only for proper relational mapping
   preferredDays: Weekday[];
   dayEndTimes?: Partial<Record<Weekday, string>>;
   maxConflict: number;

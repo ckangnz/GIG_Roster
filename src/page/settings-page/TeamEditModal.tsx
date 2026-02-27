@@ -160,10 +160,10 @@ const TeamEditModal = ({
             {availablePositions
               ?.filter((pos) => !pos.parentId)
               ?.map((pos) => {
-                const isActive = team.positions?.some((p) => p.name === pos.name);
+                const isActive = team.positions?.some((pId) => pId === pos.id || pId === pos.name);
                 return (
                   <Pill
-                    key={pos.name}
+                    key={pos.id}
                     colour={pos.colour}
                     isActive={isActive}
                     onClick={() => onTogglePosition(pos)}

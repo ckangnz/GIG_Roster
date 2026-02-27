@@ -13,7 +13,8 @@ interface AllRosterHeaderProps {
   rosterAllViewMode: "user" | "position";
   allViewColumns: { id: string; name: string; isUser: boolean; gender?: string | null }[];
   userData: { email?: string | null; gender?: string | null } | null;
-  currentTeamData: { positions: Position[] } | null;
+  currentTeamData: { positions: string[] } | null;
+  allPositions: Position[];
   teamName?: string;
   navigate: (path: string) => void;
 }
@@ -24,6 +25,7 @@ export const AllRosterHeader = memo(
     allViewColumns,
     userData,
     currentTeamData,
+    allPositions,
     teamName,
     navigate,
   }: AllRosterHeaderProps) => {
@@ -67,20 +69,23 @@ export const AllRosterHeader = memo(
                 </th>
               );
             })
-          : (currentTeamData?.positions || []).map((pos) => (
-              <th
-                key={pos.name}
-                className={`${styles.rosterTableHeaderCell} ${allStyles.clickableHeader}`}
-                onClick={() => handlePositionHeaderClick(pos.name)}
-              >
-                <div className={allStyles.allViewPositionHeader}>
-                  <span>{pos.emoji}</span>
-                  <span className={allStyles.allViewPositionName}>
-                    {pos.name}
-                  </span>
-                </div>
-              </th>
-            ))}
+          : (currentTeamData?.positions || []).map((posId) => {
+              const pos = allPositions.find(p => p.id === posId || p.name === posId);
+              return (
+                <th
+                  key={posId}
+                  className={`${styles.rosterTableHeaderCell} ${allStyles.clickableHeader}`}
+                  onClick={() => handlePositionHeaderClick(pos?.id || posId)}
+                >
+                  <div className={allStyles.allViewPositionHeader}>
+                    <span>{pos?.emoji || '❓'}</span>
+                    <span className={allStyles.allViewPositionName}>
+                      {pos?.name || posId}
+                    </span>
+                  </div>
+                </th>
+              );
+            })}
       </RosterHeader>
     );
   },

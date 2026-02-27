@@ -141,12 +141,12 @@ const ProfileSettings = ({
     });
   };
 
-  const toggleTeamPosition = (teamName: string, posName: string) => {
+  const toggleTeamPosition = (teamName: string, posId: string) => {
     setFormState((prev) => {
       const current = prev.teamPositions[teamName] || [];
-      const updated = current.includes(posName)
-        ? current.filter((p) => p !== posName)
-        : [...current, posName];
+      const updated = current.includes(posId)
+        ? current.filter((id) => id !== posId)
+        : [...current, posId];
       return {
         ...prev,
         teamPositions: { ...prev.teamPositions, [teamName]: updated },

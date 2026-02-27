@@ -107,7 +107,7 @@ const DashboardPage = () => {
     const todayKey = getTodayKey();
     if (!userData?.teams || allTeams.length === 0) return [];
 
-    const userTeams = allTeams.filter((t) => userData.teams.includes(t.name));
+    const userTeams = allTeams.filter((t) => userData.teams.includes(t.id) || userData.teams.includes(t.name));
     const dateSet = new Set<string>();
 
     userTeams.forEach((team) => {
@@ -132,7 +132,7 @@ const DashboardPage = () => {
         // Check if this specific team has expired if it's today
         if (isTeamExpired(team, dateKey)) return false;
 
-        const teamAssignments = entry.teams?.[team.name] || {};
+        const teamAssignments = entry.teams?.[team.id] || {};
         return Object.values(teamAssignments).some(
           (posList) => Array.isArray(posList) && posList.length > 0,
         );
@@ -205,32 +205,35 @@ const DashboardPage = () => {
       const entry = entries[dateKey];
 
       const userTeams = allTeams
-        .filter((t) => userData.teams.includes(t.name))
+        .filter((t) => userData.teams.includes(t.id) || userData.teams.includes(t.name))
         .sort((a, b) => {
-          const indexA = userData.teams.indexOf(a.name);
-          const indexB = userData.teams.indexOf(b.name);
+          const indexA = userData.teams.findIndex(id => id === a.id || id === a.name);
+          const indexB = userData.teams.findIndex(id => id === b.id || id === b.name);
           return indexA - indexB;
         });
 
       const data = userTeams.map((team) => {
-        const teamAssignments = entry?.teams?.[team.name] || {};
+        const teamAssignments = entry?.teams?.[team.id] || {};
 
         const positionGroups: {
+          posId: string;
           posName: string;
           emoji: string;
           assignedUsers: { name: string; isMe: boolean; gender?: string | null }[];
         }[] = [];
-        const teamPositionNames = team.positions.map((p) => p.name);
+        const teamPositionIds = team.positions || [];
 
         let totalAssignedInTeam = 0;
         let myPositionName = "";
 
-        teamPositionNames.forEach((posName) => {
-          const posInfo = allPositions.find((p) => p.name === posName);
+        teamPositionIds.forEach((posId) => {
+          const posInfo = allPositions.find((p) => p.id === posId || p.name === posId);
+          if (!posInfo) return;
+
           const assignedUsers: AppUser[] = [];
 
           Object.entries(teamAssignments).forEach(([email, posList]) => {
-            if (Array.isArray(posList) && posList.includes(posName)) {
+            if (Array.isArray(posList) && (posList.includes(posInfo.id) || posList.includes(posInfo.name))) {
               const user = teamUsers.find((u) => u.email === email);
               if (user) {
                 assignedUsers.push(user);
@@ -239,7 +242,7 @@ const DashboardPage = () => {
               }
               totalAssignedInTeam++;
               if (email === userData.email) {
-                myPositionName = posName;
+                myPositionName = posInfo.name;
               }
             }
           });
@@ -256,7 +259,8 @@ const DashboardPage = () => {
           });
 
           positionGroups.push({
-            posName,
+            posId: posInfo.id,
+            posName: posInfo.name,
             emoji: posInfo?.emoji || "❓",
             assignedUsers: sortedAssignedUsers.map((u) => ({
               name: u.name || u.email || "Unknown",
@@ -267,6 +271,7 @@ const DashboardPage = () => {
         });
 
         return {
+          teamId: team.id,
           teamName: team.name,
           teamEmoji: team.emoji,
           positions: positionGroups,

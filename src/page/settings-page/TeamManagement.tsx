@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 
 import { Reorder } from "framer-motion";
 import { Plus } from "lucide-react";
@@ -31,9 +31,10 @@ const TeamManagement = () => {
   const hasChanges = useMemo(() => {
     const normalize = (list: Team[]) =>
       list.map((t) => ({
+        id: t.id,
         name: t.name || "",
         emoji: t.emoji || "",
-        positions: (t.positions || []).map((p) => p.name).sort(),
+        positions: [...(t.positions || [])].sort(),
         preferredDays: [...(t.preferredDays || [])].sort(),
         maxConflict: t.maxConflict || 1,
         allowAbsence: t.allowAbsence !== false,
@@ -54,31 +55,32 @@ const TeamManagement = () => {
     setTeams(reduxTeams);
   }, [reduxTeams]);
 
-  const handleUpdate = (
+  const handleUpdate = useCallback((
     index: number,
     field: keyof Team,
     value: Team[keyof Team],
   ) => {
-    const updated = [...teams];
-    updated[index] = { ...updated[index], [field]: value };
-    setTeams(updated);
-  };
+    setTeams(prev => {
+      const updated = [...prev];
+      updated[index] = { ...updated[index], [field]: value };
+      return updated;
+    });
+  }, []);
 
-  const togglePosition = (teamIndex: number, pos: Position) => {
-    const updatedTeams = teams.map((team, index) => {
+  const togglePosition = useCallback((teamIndex: number, pos: Position) => {
+    setTeams(prev => prev.map((team, index) => {
       if (index !== teamIndex) return team;
 
-      const currentPositions = team.positions || [];
-      const newPositions = currentPositions.find((p) => p.name === pos.name)
-        ? currentPositions.filter((p) => p.name !== pos.name)
-        : [...currentPositions, pos];
-      return { ...team, positions: newPositions };
-    });
-    setTeams(updatedTeams);
-  };
+      const currentPositionIds = team.positions || [];
+      const newPositionIds = currentPositionIds.includes(pos.id)
+        ? currentPositionIds.filter((id) => id !== pos.id)
+        : [...currentPositionIds, pos.id];
+      return { ...team, positions: newPositionIds };
+    }));
+  }, []);
 
-  const toggleDay = (teamIndex: number, day: Weekday) => {
-    const updatedTeams = teams.map((team, index) => {
+  const toggleDay = useCallback((teamIndex: number, day: Weekday) => {
+    setTeams(prev => prev.map((team, index) => {
       if (index !== teamIndex) return team;
 
       const currentDays = team.preferredDays || [];
@@ -86,33 +88,35 @@ const TeamManagement = () => {
         ? currentDays.filter((d) => d !== day)
         : [...currentDays, day];
       return { ...team, preferredDays: newDays };
-    });
-    setTeams(updatedTeams);
-  };
+    }));
+  }, []);
 
-  const toggleAllowAbsence = (teamIndex: number, allow: boolean) => {
-    const updatedTeams = teams.map((team, index) => {
+  const toggleAllowAbsence = useCallback((teamIndex: number, allow: boolean) => {
+    setTeams(prev => prev.map((team, index) => {
       if (index !== teamIndex) return team;
       return { ...team, allowAbsence: allow };
+    }));
+  }, []);
+
+  const handleUpdateEvents = useCallback((index: number, events: RecurringEvent[]) => {
+    setTeams(prev => {
+      const updated = [...prev];
+      updated[index] = { ...updated[index], recurringEvents: events };
+      return updated;
     });
-    setTeams(updatedTeams);
-  };
+  }, []);
 
-  const handleUpdateEvents = (index: number, events: RecurringEvent[]) => {
-    const updated = [...teams];
-    updated[index] = { ...updated[index], recurringEvents: events };
-    setTeams(updated);
-  };
-
-  const handleUpdateDayEndTime = (index: number, day: Weekday, time: string) => {
-    const updated = [...teams];
-    const currentEndTimes = updated[index].dayEndTimes || {};
-    updated[index] = { 
-      ...updated[index], 
-      dayEndTimes: { ...currentEndTimes, [day]: time } 
-    };
-    setTeams(updated);
-  };
+  const handleUpdateDayEndTime = useCallback((index: number, day: Weekday, time: string) => {
+    setTeams(prev => {
+      const updated = [...prev];
+      const currentEndTimes = updated[index].dayEndTimes || {};
+      updated[index] = { 
+        ...updated[index], 
+        dayEndTimes: { ...currentEndTimes, [day]: time } 
+      };
+      return updated;
+    });
+  }, []);
 
   const addTeam = (newTeam: Team) => {
     setTeams([...teams, newTeam]);
@@ -133,24 +137,15 @@ const TeamManagement = () => {
     setStatus("saving");
     try {
       const teamsToSave: Team[] = teams.map((t) => ({
-        id: t.id || t.name,
+        id: t.id,
         name: t.name || "",
         emoji: t.emoji || "",
         maxConflict: t.maxConflict || 1,
-        allowAbsence: t.allowAbsence !== false, // Default to true
+        allowAbsence: t.allowAbsence !== false,
         preferredDays: t.preferredDays || [],
         dayEndTimes: t.dayEndTimes || {},
         recurringEvents: t.recurringEvents || [],
-        positions: (t.positions || []).map((p) => ({
-          id: p.id || p.name,
-          name: p.name || "",
-          emoji: p.emoji || "",
-          colour: p.colour || "",
-          sortByGender: !!p.sortByGender,
-          isCustom: !!p.isCustom,
-          customLabels: p.customLabels || [],
-          ...(p.parentId ? { parentId: p.parentId } : {}),
-        })),
+        positions: t.positions || [],
       }));
       await dispatch(updateTeams(teamsToSave)).unwrap();
       setStatus("success");
@@ -230,13 +225,17 @@ const TeamManagement = () => {
         <SaveFooter
           label="Unsaved team changes"
           saveText="Save All Team Changes"
-          onSave={saveToFirebase}
+          onSave={handleSaveChanges}
           onCancel={handleCancel}
           isSaving={status === "saving"}
         />
       )}
     </div>
   );
+  
+  function handleSaveChanges() {
+    saveToFirebase();
+  }
 };
 
 export default TeamManagement;

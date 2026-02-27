@@ -20,14 +20,12 @@ const ReorderableTeamItem = ({
   teamName,
   team,
   allTopLevelPositions,
-  globalPositions,
   teamPositions,
   onTogglePosition,
 }: {
   teamName: string;
   team: Team;
   allTopLevelPositions: Position[];
-  globalPositions: Position[];
   teamPositions: Record<string, string[]>;
   onTogglePosition: (teamName: string, posName: string) => void;
 }) => {
@@ -66,13 +64,12 @@ const ReorderableTeamItem = ({
         {allTopLevelPositions.length > 0 ? (
           <PillGroup>
             {allTopLevelPositions.map((pos) => {
-              const gp = globalPositions.find((p) => p.name === pos.name);
-              const isCustom = !!gp?.isCustom;
-              const isSelected = selectedPositions.includes(pos.name);
+              const isCustom = !!pos.isCustom;
+              const isSelected = selectedPositions.includes(pos.id) || selectedPositions.includes(pos.name);
               return (
                 <Pill
-                  key={pos.name}
-                  onClick={() => onTogglePosition(teamName, pos.name)}
+                  key={pos.id}
+                  onClick={() => onTogglePosition(teamName, pos.id)}
                   isActive={isSelected}
                   isDisabled={isCustom}
                   colour={pos.colour}
@@ -114,11 +111,11 @@ const TeamPositionEditor = ({
         <label className={commonStyles.sectionLabel}>Teams</label>
         <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
           {availableTeams.map((team) => {
-            const isSelected = selectedTeams.includes(team.name);
+            const isSelected = selectedTeams.includes(team.id) || selectedTeams.includes(team.name);
             return (
               <Pill
-                key={team.name}
-                onClick={() => onToggleTeam(team.name)}
+                key={team.id}
+                onClick={() => onToggleTeam(team.id)}
                 isActive={isSelected}
               >
                 <span>{team.emoji}</span> {team.name}
@@ -150,8 +147,9 @@ const TeamPositionEditor = ({
               const team = availableTeams.find((t) => t.name === teamName);
               if (!team) return null;
 
-              const allTopLevelPositions =
-                team.positions?.filter((pos) => !pos.parentId) || [];
+              const allTopLevelPositions = (team.positions || [])
+                .map(id => globalPositions.find(gp => gp.id === id || gp.name === id))
+                .filter((p): p is Position => !!p && !p.parentId);
 
               return (
                 <ReorderableTeamItem
@@ -159,7 +157,6 @@ const TeamPositionEditor = ({
                   teamName={teamName}
                   team={team}
                   allTopLevelPositions={allTopLevelPositions}
-                  globalPositions={globalPositions}
                   teamPositions={teamPositions}
                   onTogglePosition={onTogglePosition}
                 />

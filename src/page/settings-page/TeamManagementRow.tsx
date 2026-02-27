@@ -48,11 +48,14 @@ const TeamManagementRow = ({
 
     const displayEmojis = team.positions
       .slice(0, 3)
-      .map((p) => (
-        <span key={p.name} className={styles.summaryEmoji}>
-          {p.emoji}
-        </span>
-      ));
+      .map((posId) => {
+        const pos = availablePositions.find(ap => ap.id === posId || ap.name === posId);
+        return (
+          <span key={posId} className={styles.summaryEmoji}>
+            {pos?.emoji || "❓"}
+          </span>
+        );
+      });
     const remainingCount = team.positions.length - 3;
 
     return (

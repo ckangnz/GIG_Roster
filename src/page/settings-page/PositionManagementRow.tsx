@@ -1,3 +1,5 @@
+import { memo } from "react";
+
 import { DragControls } from "framer-motion";
 import { CornerDownRight, Trash2, GripVertical } from "lucide-react";
 
@@ -23,7 +25,7 @@ interface PositionManagementRowProps {
   dragControls?: DragControls;
 }
 
-const PositionManagementRow = ({
+const PositionManagementRow = memo(({
   position,
   index,
   onUpdate,
@@ -109,6 +111,6 @@ const PositionManagementRow = ({
       </SettingsTableAnyCell>
     </tr>
   );
-};
+});
 
 export default PositionManagementRow;

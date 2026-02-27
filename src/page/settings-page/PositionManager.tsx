@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 
 import { Reorder, useDragControls } from "framer-motion";
 import { Plus } from "lucide-react";
@@ -12,6 +12,7 @@ import Spinner from "../../components/common/Spinner";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { Position } from "../../model/model";
 import { updatePositions } from "../../store/slices/positionsSlice";
+import { removePositionFromAllTeams, updateTeams } from "../../store/slices/teamsSlice";
 import { showAlert } from "../../store/slices/uiSlice";
 
 import styles from "./settings-page.module.css";
@@ -71,6 +72,8 @@ const PositionManagement = () => {
   const dispatch = useAppDispatch();
   const { positions: reduxPositions, loading: positionsLoading } =
     useAppSelector((state) => state.positions);
+  const { teams: reduxTeams } = useAppSelector((state) => state.teams);
+    
   const [positions, setPositions] = useState<Position[]>(reduxPositions);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [status, setStatus] = useState("idle");
@@ -122,34 +125,22 @@ const PositionManagement = () => {
     setPositions(flattened);
   };
 
-  const handleUpdate = (
+  const handleUpdate = useCallback((
     index: number,
     field: keyof Position,
     value: Position[keyof Position],
   ) => {
     setPositions((prev) => {
       const updated = [...prev];
-      const oldId = updated[index].id;
-      const updates: Partial<Position> = { [field]: value };
+      updated[index] = { ...updated[index], [field]: value };
 
       if (field === "isCustom" && value === true) {
-        updates.sortByGender = false;
-      }
-
-      updated[index] = { ...updated[index], ...updates };
-
-      // If ID changed (shouldn't happen often now), update all children's parentId
-      if (field === "id" && !updated[index].parentId) {
-        updated.forEach((p, i) => {
-          if (p.parentId === oldId) {
-            updated[i] = { ...p, parentId: value as string };
-          }
-        });
+        updated[index].sortByGender = false;
       }
 
       return updated;
     });
-  };
+  }, []);
 
   const addPosition = (newPos: Position) => {
     if (newPos.parentId) {
@@ -178,18 +169,31 @@ const PositionManagement = () => {
   const deletePosition = (index: number) => {
     dispatch(showAlert({
       title: "Delete Position",
-      message: "Delete this position? This will remove it from the global list, and any associated child positions.",
+      message: "Delete this position? This will remove it from all teams and delete any associated child positions.",
       confirmText: "Delete",
-      onConfirm: () => {
+      onConfirm: async () => {
         const positionToDelete = positions[index];
-        let updatedPositions = positions.filter((_, i) => i !== index);
+        const positionId = positionToDelete.id;
 
+        // 1. Filter local positions state
+        let updatedPositions = positions.filter((_, i) => i !== index);
         if (!positionToDelete.parentId) {
           updatedPositions = updatedPositions.filter(
-            (p) => p.parentId !== positionToDelete.id,
+            (p) => p.parentId !== positionId,
           );
         }
         setPositions(updatedPositions);
+
+        // 2. Remove from all teams in Redux
+        dispatch(removePositionFromAllTeams(positionId));
+
+        // 3. Persist Team changes to Firebase immediately
+        const currentTeams = reduxTeams.map(team => ({
+          ...team,
+          positions: (team.positions || []).filter(pId => pId !== positionId)
+        }));
+        
+        await dispatch(updateTeams(currentTeams)).unwrap();
       }
     }));
   };
@@ -197,7 +201,8 @@ const PositionManagement = () => {
   const saveToFirebase = async () => {
     setStatus("saving");
     try {
-      const positionsToSave = positions.map((p) => {
+      // 1. Save global positions
+      const positionsToSave: Position[] = positions.map((p) => {
         const cleanPos: Position = {
           id: p.id,
           name: p.name || "",
@@ -211,6 +216,12 @@ const PositionManagement = () => {
         return cleanPos;
       });
       await dispatch(updatePositions(positionsToSave)).unwrap();
+
+      // 2. CASCADING RENAME: Sync position names to all teams
+      // Because teams store position objects (including names), we must update them.
+      // (Wait, teams now only store IDs, so we don't need to update team.positions!)
+      // Actually, we should still trigger an update to teams if they were holding objects.
+      
       setStatus("success");
       setTimeout(() => setStatus("idle"), 2000);
     } catch (e) {

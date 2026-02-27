@@ -14,8 +14,8 @@ const GeneralRosterTable = () => {
   const logic = useRosterBaseLogic();
   const { hasPastDates } = useRosterHeaderLogic();
   const {
-    teamName,
-    activePosition,
+    teamId,
+    activePositionId,
     users,
     allPositions,
     rosterDates,
@@ -30,8 +30,8 @@ const GeneralRosterTable = () => {
   } = logic;
 
   const currentPosition = useMemo(
-    () => allPositions.find((p) => p.name === activePosition),
-    [allPositions, activePosition],
+    () => allPositions.find((p) => p.id === activePositionId),
+    [allPositions, activePositionId],
   );
 
   const sortedUsers = useMemo(() => {
@@ -70,23 +70,23 @@ const GeneralRosterTable = () => {
   }, [currentPosition, sortedUsers]);
 
   const assignedOnClosestDate = useMemo(() => {
-    if (!closestNextDate || !teamName || !activePosition) return [];
+    if (!closestNextDate || !teamId || !activePositionId) return [];
     const dateKey = closestNextDate.split("T")[0];
     const entry = entries[dateKey];
-    if (!entry || !entry.teams[teamName]) return [];
+    if (!entry || !entry.teams[teamId]) return [];
 
-    const children = allPositions.filter((p) => p.parentId === activePosition);
-    const positionGroupNames = [activePosition, ...children.map((c) => c.name)];
+    const children = allPositions.filter((p) => p.parentId === activePositionId);
+    const positionGroupIds = [activePositionId, ...children.map((c) => c.id)];
 
-    return Object.entries(entry.teams[teamName])
+    return Object.entries(entry.teams[teamId])
       .filter(([, positions]) =>
-        (positions as string[]).some((p) => positionGroupNames.includes(p)),
+        (positions as string[]).some((p) => positionGroupIds.includes(p)),
       )
       .map(([email]) => email);
   }, [
     closestNextDate,
-    teamName,
-    activePosition,
+    teamId,
+    activePositionId,
     entries,
     allPositions,
   ]);
@@ -102,14 +102,14 @@ const GeneralRosterTable = () => {
   const getCellContent = useCallback(
     (dateString: string, userEmail: string) => {
       const entry = entries[dateString];
-      if (!entry || !teamName) return "";
+      if (!entry || !teamId) return "";
 
-      const currentTeamAssignments = entry.teams[teamName]?.[userEmail] || [];
-      const otherTeamsAssignments: { team: string; positions: string[] }[] = [];
-      Object.entries(entry.teams).forEach(([tName, teamData]) => {
-        if (tName !== teamName && teamData[userEmail]) {
+      const currentTeamAssignments = entry.teams[teamId]?.[userEmail] || [];
+      const otherTeamsAssignments: { teamId: string; positions: string[] }[] = [];
+      Object.entries(entry.teams).forEach(([tId, teamData]) => {
+        if (tId !== teamId && teamData[userEmail]) {
           otherTeamsAssignments.push({
-            team: tName,
+            teamId: tId,
             positions: teamData[userEmail],
           });
         }
@@ -124,15 +124,16 @@ const GeneralRosterTable = () => {
       return (
         <>
           <div className={cellStyles.currentTeamContainer}>
-            {currentTeamAssignments.map((posName) => {
-              const pos = allPositions.find((p) => p.name === posName);
+            {currentTeamAssignments.map((posId) => {
+              const pos = allPositions.find((p) => p.id === posId || p.name === posId);
+              const team = allTeams.find(t => t.id === teamId);
               return (
                 <motion.span
-                  key={posName}
+                  key={posId}
                   initial={{ scale: 0, rotate: -30 }}
                   animate={{ scale: 1, rotate: 0 }}
                   transition={{ duration: 0.3, ease: "easeOut" }}
-                  title={`${teamName}: ${posName}`}
+                  title={`${team?.name || 'Team'}: ${pos?.name || posId}`}
                   className={cellStyles.currentTeamEmoji}
                 >
                   {pos?.emoji || "❓"}
@@ -143,12 +144,13 @@ const GeneralRosterTable = () => {
           {otherTeamsAssignments.length > 0 && (
             <div className={cellStyles.otherTeamsIndicator}>
               {otherTeamsAssignments.map((ota) =>
-                ota.positions.map((posName) => {
-                  const pos = allPositions.find((p) => p.name === posName);
+                ota.positions.map((posId) => {
+                  const pos = allPositions.find((p) => p.id === posId || p.name === posId);
+                  const oTeam = allTeams.find(t => t.id === ota.teamId);
                   return (
                     <span
-                      key={`${ota.team}-${posName}`}
-                      title={`${ota.team}: ${posName}`}
+                      key={`${ota.teamId}-${posId}`}
+                      title={`${oTeam?.name || 'Team'}: ${pos?.name || posId}`}
                       className={cellStyles.otherTeamEmoji}
                     >
                       {pos?.emoji || "❓"}
@@ -161,7 +163,7 @@ const GeneralRosterTable = () => {
         </>
       );
     },
-    [entries, teamName, allPositions],
+    [entries, teamId, allPositions, allTeams],
   );
 
   const renderHeader = () => (
@@ -210,8 +212,8 @@ const GeneralRosterTable = () => {
           getConflictStatus={getConflictStatus}
           userData={userData}
           allTeams={allTeams}
-          teamName={teamName || ""}
-          activePosition={activePosition || ""}
+          teamName={teamId || ""}
+          activePosition={activePositionId || ""}
           hasPositionCoverageRequest={hasPositionCoverageRequest}
         />
       ))}

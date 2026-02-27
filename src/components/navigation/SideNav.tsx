@@ -12,6 +12,7 @@ import {
 import { resolvePresenceColor } from "../../hooks/presenceUtils";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { useTheme } from "../../hooks/useThemeHook";
+import { Position } from "../../model/model";
 import { fetchPositions } from "../../store/slices/positionsSlice";
 import { fetchTeams } from "../../store/slices/teamsSlice";
 import {
@@ -273,9 +274,12 @@ const SideNav = () => {
                         {renderLocationIndicators(team.id, "All")}
                       </button>
                       {team.positions
-                        ?.filter((pos) => !pos.parentId)
-                        ?.map((p) => {
-                          const pos = allPositions.find(ap => ap.id === p.id || ap.name === p.name) || p;
+                        ?.map((posId) => {
+                          const pos = allPositions.find(p => p.id === posId || p.name === posId);
+                          return pos;
+                        })
+                        .filter((pos): pos is Position => !!pos && !pos.parentId)
+                        ?.map((pos) => {
                           const isActive =
                             activeSideItem === pos.id &&
                             activeTeamName === team.id;

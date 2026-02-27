@@ -16,7 +16,8 @@ interface AllRosterRowProps {
   closestNextDate?: string | null;
   rosterAllViewMode?: "user" | "position";
   allViewColumns: { id: string; name: string; isUser: boolean }[];
-  currentTeamData: { positions: Position[] } | null;
+  currentTeamData: { positions: string[] } | null;
+  allPositions: Position[];
   getAllViewUserCellContent: (
     dateString: string,
     userIdentifier: string,
@@ -49,6 +50,7 @@ export const AllRosterRow = memo(
     rosterAllViewMode,
     allViewColumns,
     currentTeamData,
+    allPositions,
     getAllViewUserCellContent,
     getAllViewPositionCellContent,
     getAssignmentsForIdentifier,
@@ -102,25 +104,28 @@ export const AllRosterRow = memo(
                 }}
               />
             ))
-          : (currentTeamData?.positions || []).map((pos, colIndex) => (
-              <RosterCell
-                key={pos.name}
-                type="all-position"
-                dateString={dateString}
-                rowIndex={rowIndex}
-                isFocused={
-                  focusedCell?.row === rowIndex &&
-                  focusedCell?.col === colIndex &&
-                  focusedCell?.table === "all"
-                }
-                onFocus={() =>
-                  setFocusedCell({ row: rowIndex, col: colIndex, table: "all" })
-                }
-                identifier={pos.name}
-                isHighlighted={isHighlightedCell(dateString, pos.name, 'position')}
-                content={getAllViewPositionCellContent(dateString, pos.name)}
-              />
-            ))}
+          : (currentTeamData?.positions || []).map((posId, colIndex) => {
+              const pos = allPositions.find(p => p.id === posId || p.name === posId);
+              return (
+                <RosterCell
+                  key={posId}
+                  type="all-position"
+                  dateString={dateString}
+                  rowIndex={rowIndex}
+                  isFocused={
+                    focusedCell?.row === rowIndex &&
+                    focusedCell?.col === colIndex &&
+                    focusedCell?.table === "all"
+                  }
+                  onFocus={() =>
+                    setFocusedCell({ row: rowIndex, col: colIndex, table: "all" })
+                  }
+                  identifier={pos?.id || posId}
+                  isHighlighted={isHighlightedCell(dateString, pos?.id || posId, 'position')}
+                  content={getAllViewPositionCellContent(dateString, pos?.id || posId)}
+                />
+              );
+            })}
       </RosterRow>
     );
   },

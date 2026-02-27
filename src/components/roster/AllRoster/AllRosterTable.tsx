@@ -20,7 +20,7 @@ const AllRosterTable = () => {
   const { hasPastDates } = useRosterHeaderLogic();
   const { filterUserId, highlightedUserId } = useAppSelector((state) => state.rosterView);
   const {
-    teamName,
+    teamId,
     allTeamUsers,
     currentTeamData,
     allPositions,
@@ -37,11 +37,11 @@ const AllRosterTable = () => {
   // Re-implementing view-specific logic
   const filteredAllTeamUsers = useMemo(() => {
     return allTeamUsers.filter((u) => {
-      if (!u.isActive || !teamName) return false;
-      const userTeamPositions = u.teamPositions?.[teamName] || [];
+      if (!u.isActive || !teamId) return false;
+      const userTeamPositions = u.teamPositions?.[teamId] || [];
       return userTeamPositions.length > 0;
     });
-  }, [allTeamUsers, teamName]);
+  }, [allTeamUsers, teamId]);
 
   const allViewColumns = useMemo(() => {
     let userCols = filteredAllTeamUsers.map((u) => ({
@@ -66,12 +66,12 @@ const AllRosterTable = () => {
 
     if (!currentTeamData) return userCols;
 
-    const teamPositionNames = currentTeamData.positions.map((p) => p.name);
+    const teamPositionIds = currentTeamData.positions || [];
 
     const customLabels = Array.from(
       new Set(
         allPositions
-          .filter((p) => teamPositionNames.includes(p.name) && p.isCustom)
+          .filter((p) => (teamPositionIds.includes(p.id) || teamPositionIds.includes(p.name)) && p.isCustom)
           .flatMap((p) => p.customLabels || [])
           .map((l) => l.trim())
           .filter((l) => l !== ""),
@@ -92,21 +92,21 @@ const AllRosterTable = () => {
     (dateString: string, identifier: string) => {
       const dateKey = dateString.split("T")[0];
       const entry = entries[dateKey];
-      if (!entry || !teamName || !entry.teams[teamName]) return [];
+      if (!entry || !teamId || !entry.teams[teamId]) return [];
 
-      let assignments = entry.teams[teamName][identifier] || [];
+      let assignments = entry.teams[teamId][identifier] || [];
       if (!Array.isArray(assignments) || assignments.length === 0) {
         const target = identifier.trim();
-        const matchingKey = Object.keys(entry.teams[teamName]).find(
+        const matchingKey = Object.keys(entry.teams[teamId]).find(
           (k) => k.trim() === target,
         );
         if (matchingKey) {
-          assignments = entry.teams[teamName][matchingKey];
+          assignments = entry.teams[teamId][matchingKey];
         }
       }
       return Array.isArray(assignments) ? assignments : [];
     },
-    [entries, teamName],
+    [entries, teamId],
   );
 
   const getAllViewUserCellContent = useCallback(
@@ -126,19 +126,19 @@ const AllRosterTable = () => {
             flexWrap: "wrap",
           }}
         >
-          {userAssignments.map((posName) => {
-            const pos = allPositions.find((p) => p.name === posName);
+          {userAssignments.map((posId) => {
+            const pos = allPositions.find((p) => p.id === posId || p.name === posId);
             return (
               <motion.span
-                key={posName}
+                key={posId}
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ type: "spring", stiffness: 260, damping: 20 }}
                 onClick={(e) => {
                   e.stopPropagation();
-                  navigate(`/app/roster/${teamName}/${posName}`);
+                  navigate(`/app/roster/${teamId}/${pos?.id || posId}`);
                 }}
-                title={posName}
+                title={pos?.name || posId}
                 style={{ cursor: "pointer", display: "inline-block" }}
               >
                 {pos?.emoji || "❓"}
@@ -148,23 +148,23 @@ const AllRosterTable = () => {
         </div>
       );
     },
-    [getAssignmentsForIdentifier, allPositions, navigate, teamName],
+    [getAssignmentsForIdentifier, allPositions, navigate, teamId],
   );
 
   const getAllViewPositionCellContent = useCallback(
-    (dateString: string, positionName: string) => {
+    (dateString: string, positionIdentifier: string) => {
       const dateKey = dateString.split("T")[0];
       const entry = entries[dateKey];
-      if (!entry || !teamName) return null;
+      if (!entry || !teamId) return null;
 
-      const assignedEntries = Object.entries(entry.teams[teamName] || {}).filter(
+      const assignedEntries = Object.entries(entry.teams[teamId] || {}).filter(
         ([, positions]) =>
-          Array.isArray(positions) && positions.includes(positionName),
+          Array.isArray(positions) && positions.includes(positionIdentifier),
       );
 
       if (assignedEntries.length === 0) return null;
 
-      const pos = allPositions.find((p) => p.name === positionName);
+      const pos = allPositions.find((p) => p.id === positionIdentifier || p.name === positionIdentifier);
 
       // Sort assigned entries
       const sortedAssignedEntries = [...assignedEntries].sort((a, b) => {
@@ -223,7 +223,7 @@ const AllRosterTable = () => {
     },
     [
       entries,
-      teamName,
+      teamId,
       filteredAllTeamUsers,
       userData,
       dispatch,
@@ -236,13 +236,13 @@ const AllRosterTable = () => {
     if (!highlightedUserId || !entries) return false;
     const dateKey = dateString.split('T')[0];
     const entry = entries[dateKey];
-    if (!entry || !teamName || !entry.teams[teamName]) return false;
+    if (!entry || !teamId || !entry.teams[teamId]) return false;
 
     if (type === 'user') {
       return identifier === highlightedUserId;
     } else {
       // position
-      const assignments = entry.teams[teamName][highlightedUserId] || [];
+      const assignments = entry.teams[teamId][highlightedUserId] || [];
       return assignments.includes(identifier);
     }
   };
@@ -254,10 +254,12 @@ const AllRosterTable = () => {
     if (dateString && column?.isUser && column.id) {
       const assignments = getAssignmentsForIdentifier(dateString, column.id);
       if (assignments.length > 0) {
-        navigate(`/app/roster/${teamName}/${assignments[0]}`);
+        const firstPosId = assignments[0];
+        const pos = allPositions.find(p => p.id === firstPosId || p.name === firstPosId);
+        navigate(`/app/roster/${teamId}/${pos?.id || firstPosId}`);
       }
     }
-  }, [rosterAllViewMode, rosterDates, allViewColumns, getAssignmentsForIdentifier, navigate, teamName]);
+  }, [rosterAllViewMode, rosterDates, allViewColumns, getAssignmentsForIdentifier, navigate, teamId, allPositions]);
 
   const renderHeader = () => (
     <AllRosterHeader
@@ -265,7 +267,8 @@ const AllRosterTable = () => {
       allViewColumns={allViewColumns}
       userData={userData}
       currentTeamData={currentTeamData}
-      teamName={teamName}
+      allPositions={allPositions}
+      teamName={teamId || ""}
       navigate={navigate}
     />
   );
@@ -300,11 +303,12 @@ const AllRosterTable = () => {
             rosterAllViewMode={rosterAllViewMode}
             allViewColumns={allViewColumns}
             currentTeamData={currentTeamData}
+            allPositions={allPositions}
             getAllViewUserCellContent={getAllViewUserCellContent}
             getAllViewPositionCellContent={getAllViewPositionCellContent}
             getAssignmentsForIdentifier={getAssignmentsForIdentifier}
             navigate={navigate}
-            teamName={teamName}
+            teamName={teamId || ""}
             isUserAbsent={logic.isUserAbsent}
             getAbsenceReason={logic.getAbsenceReason}
             isHighlightedCell={isHighlightedCell}

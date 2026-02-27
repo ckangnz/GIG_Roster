@@ -41,8 +41,8 @@ const UserManagementRow = ({
     }
 
     const teamEmojis = user.teams
-      .map((tName) => {
-        const team = availableTeams.find((t) => t.name === tName);
+      .map((tId) => {
+        const team = availableTeams.find((t) => t.id === tId || t.name === tId);
         return team?.emoji || "";
       })
       .filter(Boolean);
@@ -68,8 +68,8 @@ const UserManagementRow = ({
     if (!user.teamPositions) return 0;
     return Object.entries(user.teamPositions).reduce(
       (acc, [, posList]) => {
-        const nonCustomPosList = posList.filter(posName => {
-          const gp = globalPositions.find(p => p.name === posName);
+        const nonCustomPosList = posList.filter(posId => {
+          const gp = globalPositions.find(p => p.id === posId || p.name === posId);
           return !gp?.isCustom;
         });
         return acc + nonCustomPosList.length;
