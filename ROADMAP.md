@@ -45,6 +45,12 @@
 ## ⚙️ Phase 3: Advanced Logic & Configuration
 *Objective: Flexible rules for diverse team needs.*
 
+- [ ] **Custom Roster Enhancement**:
+    - **Unique IDs**: Generate UUIDs for "fake" users/groups in custom rosters (currently uses raw text).
+    - **Cleanup**: Ensure deleting a custom entry removes it from all dates.
+- [ ] **Mixed Roster Type**:
+    - **Hybrid Assignment**: Allow both real users (auth) and custom entries (fake users) in the same roster.
+    - **Merge Flow**: "Claim" or "Merge" feature to convert a custom entry into a real user profile (e.g., when "James" finally signs up).
 - [ ] **Configurable Absence Logic**: 
     - Toggle per Org/Team: "Auto-Approve Absence" vs "Require Admin Approval".
 - [ ] **Scalable "Thoughts" Engine**: 
