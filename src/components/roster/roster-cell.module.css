@@ -30,6 +30,7 @@
 
 .currentTeamEmoji {
   display: inline-block;
+  will-change: transform;
 }
 
 /* Default Clickable Cell */
