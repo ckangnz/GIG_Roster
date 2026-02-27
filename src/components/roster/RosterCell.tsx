@@ -4,6 +4,7 @@ import AbsenceCell from "./cells/AbsenceCell";
 import CustomLabelCell from "./cells/CustomLabelCell";
 import GlobalSummaryCell from "./cells/GlobalSummaryCell";
 import UserAssignmentCell from "./cells/UserAssignmentCell";
+import { AppUser, Team } from "../../model/model";
 
 interface RosterCellProps {
   type: "all-user" | "all-position" | "roster-custom" | "roster-user" | "absence";
@@ -24,6 +25,11 @@ interface RosterCellProps {
   handleAbsenceReasonChange?: (reason: string) => void;
   // Roster View
   disabled?: boolean;
+  userData?: AppUser | null;
+  allTeams?: Team[];
+  teamName?: string;
+  activePosition?: string;
+  hasOpenPositionRequest?: boolean;
 }
 
 /**
@@ -46,6 +52,11 @@ const RosterCell = memo(({
   onClick,
   handleAbsenceReasonChange,
   disabled = false,
+  userData,
+  allTeams,
+  teamName,
+  activePosition,
+  hasOpenPositionRequest = false,
 }: RosterCellProps) => {
   
   switch (type) {
@@ -65,6 +76,11 @@ const RosterCell = memo(({
           isAssignedOnClosestDate={isAssignedOnClosestDate}
           isHighlighted={isHighlighted}
           hasConflict={hasConflict}
+          userData={userData}
+          allTeams={allTeams}
+          teamName={teamName}
+          activePosition={activePosition}
+          hasOpenPositionRequest={hasOpenPositionRequest}
         />
       );
 

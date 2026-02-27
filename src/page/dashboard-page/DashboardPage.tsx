@@ -11,6 +11,7 @@ import { collection, query, where, getDocs } from "firebase/firestore";
 import { CopyIcon, CheckCircle2, CalendarPlus } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 
+import TeamNeeds from "./TeamNeeds";
 import ActionSheet from "../../components/common/ActionSheet";
 import ExpiryTimer from "../../components/common/ExpiryTimer";
 import NameTag from "../../components/common/NameTag";
@@ -599,6 +600,8 @@ const DashboardPage = () => {
           {currentDateIndex + 1} / {rosterDates.length}
         </div>
       </div>
+
+      <TeamNeeds />
 
       <ActionSheet
         isOpen={!!activeCalendarTeam}

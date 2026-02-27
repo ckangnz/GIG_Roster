@@ -1,67 +1,33 @@
-import { createSelector } from '@reduxjs/toolkit';
+import { createSelector } from "@reduxjs/toolkit";
 
-import { RootState } from '../index';
+import { CoverageRequest } from "../../model/model";
+import { RootState } from "../index";
 
-const selectRosterStateBase = (state: RootState) => state.roster;
+/**
+ * Selects all open coverage requests across all dates that the current user is qualified to fill.
+ */
+export const selectQualifiedCoverageRequests = createSelector(
+  [(state: RootState) => state.roster.entries, (state: RootState) => state.auth.userData],
+  (entries, userData) => {
+    if (!userData) return [];
 
-export const selectRosterEntries = createSelector(
-  [selectRosterStateBase],
-  (roster) => roster.entries,
-);
+    const userQualifiedPositions = userData.teamPositions || {};
+    const qualifiedRequests: { date: string; request: CoverageRequest; requestId: string }[] = [];
 
-export const selectRosterLoading = createSelector(
-  [selectRosterStateBase],
-  (roster) => roster.loading,
-);
+    Object.entries(entries).forEach(([date, entry]) => {
+      const requests = entry.coverageRequests || {};
+      Object.entries(requests).forEach(([reqId, req]) => {
+        if (req.status !== "open") return;
 
-export const selectRosterError = createSelector(
-  [selectRosterStateBase],
-  (roster) => roster.error,
-);
+        // Check if user is in this team and has this position
+        const teamPos = userQualifiedPositions[req.teamName] || [];
+        if (teamPos.includes(req.positionName)) {
+          qualifiedRequests.push({ date, request: req, requestId: reqId });
+        }
+      });
+    });
 
-export const selectRosterEntryById = (entryId: string) =>
-  createSelector([selectRosterEntries], (entries) => entries[entryId] || null);
-
-export const selectRosterEntriesList = createSelector([selectRosterEntries], (entries) =>
-  Object.values(entries),
-);
-
-export const selectRosterEntriesByDate = (date: string) =>
-  createSelector([selectRosterEntries], (entries) => entries[date] || null);
-
-export const selectRosterEntriesByTeam = (teamId: string) =>
-  createSelector([selectRosterEntriesList], (entries) =>
-    entries.filter((entry) => Object.keys(entry.teams).includes(teamId)),
-  );
-
-export const selectRosterEntriesByUser = (userEmail: string) =>
-  createSelector([selectRosterEntriesList], (entries) =>
-    entries.filter((entry) => {
-      return Object.values(entry.teams).some((team) =>
-        Object.values(team).some((positions) => positions.includes(userEmail)),
-      );
-    }),
-  );
-
-export const selectDateRange = (startDate: string, endDate: string) =>
-  createSelector([selectRosterEntriesList], (entries) =>
-    entries.filter((entry) => entry.date >= startDate && entry.date <= endDate),
-  );
-
-export const selectRosterStats = createSelector(
-  [selectRosterEntriesList],
-  (entries) => {
-    const totalEntries = entries.length;
-    const uniqueDates = new Set(entries.map((e) => e.date)).size;
-    const totalTeamAssignments = entries.reduce((sum, entry) => {
-      return sum + Object.keys(entry.teams).length;
-    }, 0);
-
-    return {
-      totalEntries,
-      uniqueDates,
-      totalTeamAssignments,
-      avgTeamsPerDate: totalEntries > 0 ? totalTeamAssignments / uniqueDates : 0,
-    };
-  },
+    // Sort by date ascending
+    return qualifiedRequests.sort((a, b) => a.date.localeCompare(b.date));
+  }
 );

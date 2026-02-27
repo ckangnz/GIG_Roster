@@ -1,7 +1,7 @@
 import { Fragment, memo } from "react";
 
 import { useAppSelector } from "../../../hooks/redux";
-import { AppUser, RosterEntry } from "../../../model/model";
+import { AppUser, RosterEntry, Team } from "../../../model/model";
 import cellStyles from "../roster-cell.module.css";
 import RosterCell from "../RosterCell";
 import RosterRow from "../RosterRow";
@@ -31,6 +31,11 @@ interface GeneralRosterRowProps {
   assignedOnClosestDate: string[];
   showPeek?: boolean;
   getConflictStatus: (dateString: string, userEmail: string) => { hasConflict: boolean };
+  userData: AppUser | null;
+  allTeams: Team[];
+  teamName: string;
+  activePosition: string;
+  hasPositionCoverageRequest: (dateString: string, tName: string, pName: string) => boolean;
 }
 
 export const GeneralRosterRow = memo(
@@ -52,6 +57,11 @@ export const GeneralRosterRow = memo(
       assignedOnClosestDate,
       showPeek,
       getConflictStatus,
+      userData,
+      allTeams,
+      teamName,
+      activePosition,
+      hasPositionCoverageRequest,
     }: GeneralRosterRowProps) => {
       const { highlightedUserId } = useAppSelector((state) => state.rosterView);
     
@@ -93,23 +103,35 @@ export const GeneralRosterRow = memo(
                   user.email &&
                   assignedOnClosestDate.includes(user.email)
                 )}
-                                                hasConflict={user.email ? getConflictStatus(dateString, user.email).hasConflict : false}
-                                                isHighlighted={user.email === highlightedUserId}
-                                                content={
-                                                                            user.email ? (
-                                              <div
-                                                className={
-                                                  user.email === highlightedUserId
-                                                    ? cellStyles.highlightedUserName
-                                                    : ""
-                                                }
-                                              >
-                                                {getCellContent(dateString, user.email)}
-                                              </div>
-                                            ) : null
-                                          }
-                            
-                            onClick={() => {
+                                                                hasConflict={user.email ? getConflictStatus(dateString, user.email).hasConflict : false}
+                                                                                isHighlighted={user.email === highlightedUserId}
+                                                                                                userData={userData}
+                                                                                                                allTeams={allTeams}
+                                                                                                                teamName={teamName}
+                                                                                                                activePosition={activePosition}
+                                                                                                                hasOpenPositionRequest={hasPositionCoverageRequest(dateString, teamName, activePosition)}
+                                                                                                                content={
+                                                                                                
+                                                                                                  user.email ? (
+                                                                                                    (() => {
+                                                                                                      const cellContent = getCellContent(dateString, user.email);
+                                                                                                      if (!cellContent) return null;
+                                                                                                      return (
+                                                                                                        <div
+                                                                                                          className={
+                                                                                                            user.email === highlightedUserId
+                                                                                                              ? cellStyles.highlightedUserName
+                                                                                                              : ""
+                                                                                                          }
+                                                                                                        >
+                                                                                                          {cellContent}
+                                                                                                        </div>
+                                                                                                      );
+                                                                                                    })()
+                                                                                                  ) : null
+                                                                                                }
+                                                                                                onClick={() => {
+                                                                                
                 
                   if (user.email && !isCellDisabled(dateString, user.email)) {
                     handleCellClick(dateString, user.email, rowIndex, colIndex);

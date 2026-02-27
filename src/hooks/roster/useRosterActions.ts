@@ -19,6 +19,8 @@ import {
   syncAssignmentRemote,
   syncAbsenceRemote,
   syncEventNameRemote,
+  applyOptimisticResolve,
+  resolveCoverageRequestRemote,
 } from "../../store/slices/rosterSlice";
 import { showAlert, setFocusedCell } from "../../store/slices/uiSlice";
 import { useAppDispatch } from "../redux";
@@ -153,6 +155,39 @@ export const useRosterActions = (
 
         dispatch(applyOptimisticAssignment(payload));
         dispatch(syncAssignmentRemote(payload));
+
+        // --- TEAM NEEDS INTEGRATION: RESOLVE ON ASSIGNMENT ---
+        if (nextPositionName && entry?.coverageRequests) {
+          // Identify the entire group Chris is filling (e.g. Vocal group)
+          const children = allPositions.filter(p => p.parentId === activePosition || p.parentId === nextPositionName);
+          const groupNames = [activePosition, nextPositionName, ...children.map(c => c.name)];
+
+          Object.entries(entry.coverageRequests).forEach(([reqId, req]) => {
+            if (req.status === "open" && req.teamName === teamName && groupNames.includes(req.positionName)) {
+              const resolvePayload = {
+                date: dateString,
+                requestId: reqId,
+                status: "resolved" as const,
+                resolvedByEmail: userData?.email || userEmail,
+              };
+              dispatch(applyOptimisticResolve(resolvePayload));
+              dispatch(resolveCoverageRequestRemote(resolvePayload));
+            }
+          });
+        }
+
+        // 2. Automatically clear Chris's absence if he's claiming his own slot
+        if (nextPositionName && entry?.absence?.[userEmail]) {
+          const absencePayload = {
+            date: dateString,
+            userIdentifier: userEmail,
+            isAbsent: false,
+            clearedTeams: [],
+            clearedPositions: {},
+          };
+          dispatch(applyOptimisticAbsence(absencePayload));
+          dispatch(syncAbsenceRemote(absencePayload));
+        }
       };
 
       if (!isMe && !isAdmin) {
@@ -193,6 +228,8 @@ export const useRosterActions = (
 
         const entry = entries[dateString];
         const clearedTeams: string[] = [];
+        const clearedPositions: Record<string, string[]> = {};
+        
         if (targetAbsence && entry) {
           Object.entries(entry.teams).forEach(([tName, teamAssignments]) => {
             const assignments = teamAssignments as TeamAssignments;
@@ -201,6 +238,7 @@ export const useRosterActions = (
               assignments[userEmail].length > 0
             ) {
               clearedTeams.push(tName);
+              clearedPositions[tName] = assignments[userEmail];
             }
           });
         }
@@ -210,10 +248,13 @@ export const useRosterActions = (
           userIdentifier: userEmail,
           isAbsent: targetAbsence,
           clearedTeams,
+          absentUserName: allTeamUsers.find(u => u.email === userEmail)?.name || userEmail,
+          clearedPositions,
         };
 
         if (targetAbsence && clearedTeams.length > 0) {
           const teamList = clearedTeams.join(", ");
+          const userName = allTeamUsers.find(u => u.email === userEmail)?.name || userEmail;
           dispatch(
             showAlert({
               title: "Clear Existing Assignments?",
@@ -225,6 +266,8 @@ export const useRosterActions = (
                     date: dateString,
                     userIdentifier: userEmail,
                     isAbsent: true,
+                    clearedPositions,
+                    userName,
                   }),
                 );
                 dispatch(syncAbsenceRemote(payload));
@@ -234,14 +277,34 @@ export const useRosterActions = (
           return;
         }
 
+        const userName = allTeamUsers.find(u => u.email === userEmail)?.name || userEmail;
         dispatch(
           applyOptimisticAbsence({
             date: dateString,
             userIdentifier: userEmail,
             isAbsent: targetAbsence,
+            clearedPositions: targetAbsence ? clearedPositions : undefined,
+            userName,
           }),
         );
         dispatch(syncAbsenceRemote(payload));
+
+        // --- TEAM NEEDS INTEGRATION: RESOLVE ON PRESENCE ---
+        // If the user is returning from absence, find and resolve any requests they created.
+        if (!targetAbsence && entry?.coverageRequests) {
+          Object.entries(entry.coverageRequests).forEach(([reqId, req]) => {
+            if (req.status === "open" && req.absentUserEmail === userEmail) {
+              const resolvePayload = {
+                date: dateString,
+                requestId: reqId,
+                status: "resolved" as const,
+                resolvedByEmail: userData?.email || userEmail,
+              };
+              dispatch(applyOptimisticResolve(resolvePayload));
+              dispatch(resolveCoverageRequestRemote(resolvePayload));
+            }
+          });
+        }
       };
 
       if (!isMe && !isAdmin) {
@@ -347,6 +410,18 @@ export const useRosterActions = (
     [entries, allTeams],
   );
 
+  const hasPositionCoverageRequest = useCallback(
+    (dateString: string, tName: string, pName: string) => {
+      const entry = entries[dateString];
+      if (!entry?.coverageRequests) return false;
+
+      return Object.values(entry.coverageRequests).some(
+        (req) => req.teamName === tName && req.positionName === pName && req.status === "open"
+      );
+    },
+    [entries]
+  );
+
   return {
     isUserAbsent,
     getAbsenceReason,
@@ -359,5 +434,6 @@ export const useRosterActions = (
     isCellDisabled,
     getPeekAssignedUsers,
     getConflictStatus,
+    hasPositionCoverageRequest,
   };
 };

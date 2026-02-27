@@ -23,8 +23,10 @@ const GeneralRosterTable = () => {
     entries,
     hiddenUserList,
     userData,
+    allTeams,
     handleCellClick,
     getConflictStatus,
+    hasPositionCoverageRequest,
   } = logic;
 
   const currentPosition = useMemo(
@@ -206,6 +208,11 @@ const GeneralRosterTable = () => {
           assignedOnClosestDate={assignedOnClosestDate}
           showPeek={true}
           getConflictStatus={getConflictStatus}
+          userData={userData}
+          allTeams={allTeams}
+          teamName={teamName || ""}
+          activePosition={activePosition || ""}
+          hasPositionCoverageRequest={hasPositionCoverageRequest}
         />
       ))}
     </RosterTable>

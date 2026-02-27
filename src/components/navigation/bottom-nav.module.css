@@ -49,6 +49,24 @@
   font-weight: 500;
 }
 
+.navBadge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 8px;
+  height: 8px;
+  background-color: var(--warning);
+  border-radius: 50%;
+  border: 1.5px solid var(--background-bottom-nav);
+  animation: badge-pulse 2s infinite;
+}
+
+@keyframes badge-pulse {
+  0% { transform: scale(0.9); opacity: 0.7; }
+  50% { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(0.9); opacity: 0.7; }
+}
+
 /* Tablet and Desktop - Floating on the bottom right */
 @media (min-width: 768px) {
   .bottomNavContainer {

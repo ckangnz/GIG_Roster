@@ -59,6 +59,19 @@
   box-shadow: 0 0 4px var(--color-primary);
 }
 
+.dateTextWarning {
+  color: var(--warning) !important;
+  font-weight: 700 !important;
+}
+
+.rowNeedsCoverage {
+  /* Placeholder for future row-wide styling */
+}
+
+.needsCoverage {
+  border-left: 4px solid var(--warning) !important;
+}
+
 .pastDate {
   opacity: 0.6;
 }

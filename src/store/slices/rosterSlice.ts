@@ -112,10 +112,12 @@ export const syncAbsenceRemote = createAsyncThunk(
       isAbsent: boolean;
       reason?: string;
       clearedTeams: string[]; 
+      absentUserName?: string;
+      clearedPositions?: Record<string, string[]>; // teamName -> positions[]
     },
     { rejectWithValue }
   ) => {
-    const { date, userIdentifier, isAbsent, reason, clearedTeams } = payload;
+    const { date, userIdentifier, isAbsent, reason, clearedTeams, absentUserName, clearedPositions } = payload;
 
     try {
       const docRef = doc(db, "roster", date);
@@ -124,9 +126,28 @@ export const syncAbsenceRemote = createAsyncThunk(
 
       if (isAbsent) {
         updates.push(new FieldPath("absence", userIdentifier), { reason: reason || "" });
+        
+        // Clear team assignments
         clearedTeams.forEach(tName => {
           updates.push(new FieldPath("teams", tName, userIdentifier), deleteField());
         });
+
+        // Create Coverage Requests for each cleared position
+        if (clearedPositions) {
+          Object.entries(clearedPositions).forEach(([tName, positions]) => {
+            positions.forEach(posName => {
+              const reqId = `${tName}_${posName}_${userIdentifier}`.replace(/\./g, '_');
+              updates.push(new FieldPath("coverageRequests", reqId), {
+                teamName: tName,
+                positionName: posName,
+                absentUserEmail: userIdentifier,
+                absentUserName: absentUserName || userIdentifier,
+                requestedAt: Date.now(),
+                status: "open"
+              });
+            });
+          });
+        }
       } else {
         updates.push(new FieldPath("absence", userIdentifier), deleteField());
       }
@@ -180,6 +201,32 @@ export const syncEventNameRemote = createAsyncThunk(
   }
 );
 
+export const resolveCoverageRequestRemote = createAsyncThunk(
+  "roster/resolveCoverageRequest",
+  async (
+    payload: {
+      date: string;
+      requestId: string;
+      status: "resolved" | "dismissed";
+      resolvedByEmail?: string;
+    },
+    { rejectWithValue }
+  ) => {
+    const { date, requestId, status, resolvedByEmail } = payload;
+    try {
+      const docRef = doc(db, "roster", date);
+      await updateDoc(docRef, {
+        [`coverageRequests.${requestId}.status`]: status,
+        [`coverageRequests.${requestId}.resolvedByEmail`]: resolvedByEmail || null,
+        updatedAt: serverTimestamp(),
+      });
+      return { date, requestId, status, resolvedByEmail };
+    } catch (error: unknown) {
+      return rejectWithValue(error instanceof Error ? error.message : "Resolution failed");
+    }
+  }
+);
+
 const rosterSlice = createSlice({
   name: "roster",
   initialState,
@@ -220,8 +267,10 @@ const rosterSlice = createSlice({
       userIdentifier: string;
       isAbsent: boolean;
       reason?: string;
+      clearedPositions?: Record<string, string[]>;
+      userName?: string;
     }>) {
-      const { date, userIdentifier, isAbsent, reason } = action.payload;
+      const { date, userIdentifier, isAbsent, reason, clearedPositions, userName } = action.payload;
       if (!state.entries[date]) {
         state.entries[date] = { id: date, date, teams: {}, absence: {} };
       }
@@ -231,6 +280,24 @@ const rosterSlice = createSlice({
         Object.keys(entry.teams).forEach(tName => {
           delete entry.teams[tName][userIdentifier];
         });
+
+        // Optimistically create coverage requests
+        if (clearedPositions) {
+          if (!entry.coverageRequests) entry.coverageRequests = {};
+          Object.entries(clearedPositions).forEach(([tName, positions]) => {
+            positions.forEach(posName => {
+              const reqId = `${tName}_${posName}_${userIdentifier}`.replace(/\./g, '_');
+              entry.coverageRequests![reqId] = {
+                teamName: tName,
+                positionName: posName,
+                absentUserEmail: userIdentifier,
+                absentUserName: userName || userIdentifier,
+                requestedAt: Date.now(),
+                status: "open"
+              };
+            });
+          });
+        }
       } else {
         delete entry.absence[userIdentifier];
       }
@@ -241,6 +308,19 @@ const rosterSlice = createSlice({
         state.entries[date] = { id: date, date, teams: {}, absence: {} };
       }
       state.entries[date].eventName = eventName;
+    },
+    applyOptimisticResolve(state, action: PayloadAction<{
+      date: string;
+      requestId: string;
+      status: "resolved" | "dismissed";
+      resolvedByEmail?: string;
+    }>) {
+      const { date, requestId, status, resolvedByEmail } = action.payload;
+      const entry = state.entries[date];
+      if (entry?.coverageRequests?.[requestId]) {
+        entry.coverageRequests[requestId].status = status;
+        entry.coverageRequests[requestId].resolvedByEmail = resolvedByEmail;
+      }
     }
   },
   extraReducers: (builder) => {
@@ -286,6 +366,14 @@ const rosterSlice = createSlice({
       .addCase(syncEventNameRemote.rejected, (state, action) => {
         state.error = action.payload as string;
         state.syncing[action.meta.arg.date] = false;
+      })
+      .addCase(resolveCoverageRequestRemote.fulfilled, (state, action) => {
+        const { date, requestId, status, resolvedByEmail } = action.payload;
+        const entry = state.entries[date];
+        if (entry?.coverageRequests?.[requestId]) {
+          entry.coverageRequests[requestId].status = status;
+          entry.coverageRequests[requestId].resolvedByEmail = resolvedByEmail;
+        }
       });
   },
 });
@@ -297,5 +385,6 @@ export const {
   applyOptimisticAssignment,
   applyOptimisticAbsence,
   applyOptimisticEventName,
+  applyOptimisticResolve,
 } = rosterSlice.actions;
 export const rosterReducer = rosterSlice.reducer;

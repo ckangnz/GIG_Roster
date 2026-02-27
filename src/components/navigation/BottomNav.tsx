@@ -2,6 +2,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 
 import { BOTTOM_NAV_ITEMS, AppTab } from "../../constants/navigation";
 import { useAppSelector } from "../../hooks/redux";
+import { selectQualifiedCoverageRequests } from "../../store/selectors/rosterSelectors";
 
 import styles from "./bottom-nav.module.css";
 
@@ -9,6 +10,8 @@ const BottomNav = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { lastVisitedPaths } = useAppSelector((state) => state.ui);
+  const qualifiedRequests = useAppSelector(selectQualifiedCoverageRequests);
+  const hasNeeds = qualifiedRequests.length > 0;
 
   const activeTab = location.pathname.includes("/settings")
     ? AppTab.SETTINGS
@@ -40,6 +43,8 @@ const BottomNav = () => {
       <div className={styles.bottomNav}>
         {BOTTOM_NAV_ITEMS.map((item) => {
           const Icon = item.icon;
+          const showBadge = item.id === AppTab.DASHBOARD && hasNeeds;
+
           return (
             <button
               key={item.id}
@@ -48,7 +53,10 @@ const BottomNav = () => {
               }`}
               onClick={() => handleTabChange(item.id)}
             >
-              <Icon size={20} />
+              <div style={{ position: "relative", display: "flex" }}>
+                <Icon size={20} />
+                {showBadge && <div className={styles.navBadge} />}
+              </div>
               <span>{item.label}</span>
             </button>
           );

@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useRef, useEffect } from "react";
 
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { getTodayKey, RosterEntry, TeamAssignments } from "../../model/model";
 import { 
@@ -23,6 +23,7 @@ export const useRosterUI = (
 ) => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   
   const { hiddenUsers, rosterAllViewMode, peekPositionName, focusedCell } = useAppSelector(
     (state) => state.ui,
@@ -44,6 +45,17 @@ export const useRosterUI = (
   const internalSetFocusedCell = useCallback((cell: FocusedCell | null) => {
     dispatch(setFocusedCell(cell));
   }, [dispatch]);
+
+  // Auto-focus logic for linked dates
+  useEffect(() => {
+    const targetDate = searchParams.get("date");
+    if (targetDate && rosterDates.length > 0 && !focusedCell) {
+      const rowIndex = rosterDates.indexOf(targetDate);
+      if (rowIndex !== -1) {
+        dispatch(setFocusedCell({ row: rowIndex, col: 0, table: "roster" }));
+      }
+    }
+  }, [searchParams, rosterDates, dispatch, focusedCell]);
 
   // Visibility Handling
   const handleToggleVisibility = useCallback((userEmail: string) => {

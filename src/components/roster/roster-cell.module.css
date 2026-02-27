@@ -121,6 +121,38 @@
   z-index: 5;
 }
 
+.claimButtonContainer {
+  opacity: 0;
+  transition: opacity 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rosterCell:hover .claimButtonContainer,
+.permanentClaim {
+  opacity: 1;
+}
+
+.claimText {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: var(--color-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: var(--background-primary-subtle);
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid var(--color-primary);
+}
+
+/* On mobile, show it always but slightly faded if not hovered */
+@media (max-width: 768px) {
+  .claimButtonContainer {
+    opacity: 0.8;
+  }
+}
+
 /* Remote Cursor Styles */
 .remoteCursorBorder {
   position: absolute;

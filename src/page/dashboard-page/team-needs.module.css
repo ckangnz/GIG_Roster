@@ -1,0 +1,151 @@
+.fab {
+  position: fixed;
+  bottom: calc(90px + env(safe-area-inset-bottom, 0px));
+  right: 20px;
+  width: 56px;
+  height: 56px;
+  background: var(--background-card);
+  border: 1px solid var(--border-color-secondary);
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.fab:active {
+  transform: scale(0.92);
+  background: var(--background-hover);
+}
+
+.pulseIcon {
+  width: 10px;
+  height: 10px;
+  background-color: var(--warning);
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+  margin-bottom: 2px;
+}
+
+@keyframes pulse {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 159, 10, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(255, 159, 10, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 159, 10, 0); }
+}
+
+.fabCount {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: var(--color-female);
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 800;
+  min-width: 20px;
+  height: 20px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 6px;
+  border: 2px solid var(--background-body);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.fabLabel {
+  font-size: 0.55rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--color-text-primary);
+  letter-spacing: 0.5px;
+}
+
+.sheetContent {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-bottom: 2rem;
+}
+
+.card {
+  background: var(--background-app-shell);
+  border: 1px solid var(--border-color-secondary);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+}
+
+.clickableHeader {
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.clickableHeader:hover {
+  opacity: 0.7;
+}
+
+.dateInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.date {
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.teamPos {
+  font-size: 0.8rem;
+  color: var(--color-text-dim);
+}
+
+.absentInfo {
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+}
+
+.absentName {
+  font-weight: 600;
+  color: var(--color-female);
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.claimBtn {
+  flex: 1;
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.dismissBtn {
+  background: var(--background-button-secondary);
+  color: var(--color-text-secondary);
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}

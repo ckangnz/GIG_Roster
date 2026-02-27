@@ -80,12 +80,23 @@ export interface Thought {
 
 export type TeamAssignments = Record<string, string[]>; // userEmail/uid -> positionNames[]
 
+export interface CoverageRequest {
+  teamName: string;
+  positionName: string;
+  absentUserEmail: string;
+  absentUserName?: string;
+  requestedAt: number;
+  status: "open" | "resolved" | "dismissed";
+  resolvedByEmail?: string;
+}
+
 export interface RosterEntry {
   id: string; // Document ID (usually date)
   date: string; // YYYY-MM-DD
   eventName?: string; // Special occasion name
   teams: Record<string, TeamAssignments>; // teamName -> { userIdentifier -> positions[] }
   absence: Record<string, Absence>; // userIdentifier -> { reason }
+  coverageRequests?: Record<string, CoverageRequest>; // key: teamName_positionName_userEmail
   updatedAt?: number;
 }
 
