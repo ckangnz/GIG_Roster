@@ -8,7 +8,7 @@ This roadmap outlines the planned improvements, refactorings, and feature expans
 High-priority technical debt and security infrastructure.
 
 - [x] **Firestore Security Rules**: Implement robust `firestore.rules` to restrict data access (e.g., users can only edit their own profile, only admins can manage teams).
-- [ ] **Decompose `RosterCell.tsx`**: Refactor into a strategy pattern (e.g., `StandardCell`, `AbsenceCell`, `SummaryCell`) to reduce complexity.
+- [x] **Decompose `RosterCell.tsx`**: Refactor into a strategy pattern (e.g., `StandardCell`, `AbsenceCell`, `SummaryCell`) to reduce complexity.
 - [ ] **Split `useRosterBaseLogic.ts`**: Break the "God Hook" into smaller, focused hooks:
     - `useRosterData` (Data fetching/subscriptions)
     - `useRosterActions` (State updates/saving)

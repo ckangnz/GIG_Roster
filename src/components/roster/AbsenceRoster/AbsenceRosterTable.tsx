@@ -39,7 +39,11 @@ const AbsenceRosterTable = () => {
   }, [rosterDates, sortedAllTeamUsers, handleAbsenceClick]);
 
   const renderHeader = () => (
-    <AbsenceRosterHeader allTeamUsers={sortedAllTeamUsers} showPeek={true} />
+    <AbsenceRosterHeader 
+      allTeamUsers={sortedAllTeamUsers} 
+      userData={userData}
+      showPeek={true} 
+    />
   );
 
   return (
