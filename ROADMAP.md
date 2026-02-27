@@ -19,8 +19,8 @@
 *Objective: Stabilize the data model before multi-tenancy complicates it.*
 
 - [x] **ID-Based Infrastructure**: Updated models, hooks, and slices to support stable IDs.
-- [ ] **Data Migration**: Run script/manual save to populate `id` fields in production metadata.
-- [ ] **Legacy Cleanup**: Remove name-as-ID fallback logic once migration is verified.
+- [x] **Data Migration**: Run script/manual save to populate `id` fields in production metadata.
+- [x] **Legacy Cleanup**: Remove name-as-ID fallback logic once migration is verified.
 - [ ] **Granular Time Roster**: Refactor Roster model to support sub-day shifts (e.g., 15-min intervals) alongside date-based entries.
 
 ---

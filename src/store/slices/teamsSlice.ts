@@ -2,7 +2,7 @@ import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 
 import { db } from "../../firebase";
-import { Team, Position } from "../../model/model";
+import { Team } from "../../model/model";
 
 interface TeamsState {
   teams: Team[];
@@ -29,12 +29,7 @@ export const fetchTeams = createAsyncThunk(
         const teamsList = Array.isArray(data.list)
           ? data.list.map((teamData: Team) => ({
               ...teamData,
-              id: teamData.id || teamData.name, // Ensure ID
               maxConflict: teamData.maxConflict || 1,
-              positions: (teamData.positions || []).map((p: Position) => ({
-                ...p,
-                id: p.id || p.name // Ensure ID
-              }))
             }))
           : [];
         return teamsList;

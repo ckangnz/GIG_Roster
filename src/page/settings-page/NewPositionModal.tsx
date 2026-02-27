@@ -42,7 +42,7 @@ const NewPositionModal = ({ isOpen, onClose, onAdd, availableParents }: NewPosit
     
     const positionToAdd: Position = {
       ...newPos,
-      id: newPos.name.trim(),
+      id: crypto.randomUUID(),
       parentId: isChild ? newPos.parentId : undefined
     };
     

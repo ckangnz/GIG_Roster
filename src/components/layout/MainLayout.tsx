@@ -141,23 +141,29 @@ const MainLayout = () => {
     lastVisitedPaths,
   ]);
 
+  const { positions: allPositions } = useAppSelector((state) => state.positions);
+
   const getHeaderTitle = () => {
     const currentTabInfo = BOTTOM_NAV_ITEMS.find(
       (item) => item.id === activeTab,
     );
     const tabLabel = currentTabInfo ? currentTabInfo.label : "GIG ROSTER";
 
-    if (activeTab === AppTab.THOUGHTS && activeTeamName) {
-      return `${tabLabel} • ${activeTeamName}`;
+    // Resolve display names from IDs/Identifiers
+    const resolvedTeamName = allTeams.find(t => t.id === activeTeamName || t.name === activeTeamName)?.name || activeTeamName;
+    const resolvedSideItem = allPositions.find(p => p.id === activeSideItem || p.name === activeSideItem)?.name || activeSideItem;
+
+    if (activeTab === AppTab.THOUGHTS && resolvedTeamName) {
+      return `${tabLabel} • ${resolvedTeamName}`;
     }
 
-    if (activeTeamName && activeSideItem) {
-      return `${activeTeamName} • ${activeSideItem}`;
+    if (resolvedTeamName && resolvedSideItem) {
+      return `${resolvedTeamName} • ${resolvedSideItem}`;
     }
-    if (activeTeamName) {
-      return activeTeamName;
+    if (resolvedTeamName) {
+      return resolvedTeamName;
     }
-    return activeSideItem ? `${tabLabel} • ${activeSideItem}` : tabLabel;
+    return resolvedSideItem ? `${tabLabel} • ${resolvedSideItem}` : tabLabel;
   };
 
   return (

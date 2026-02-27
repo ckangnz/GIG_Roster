@@ -46,7 +46,7 @@ const SideNav = () => {
     fetched: teamsFetched,
     loading: teamsLoading,
   } = useAppSelector((state) => state.teams);
-  const { fetched: positionsFetched } = useAppSelector(
+  const { positions: allPositions, fetched: positionsFetched } = useAppSelector(
     (state) => state.positions,
   );
   const { onlineUsers } = useAppSelector((state) => state.presence);
@@ -129,17 +129,20 @@ const SideNav = () => {
     );
     const tabLabel = currentTabInfo ? currentTabInfo.label : "GIG ROSTER";
 
-    if (activeTab === AppTab.THOUGHTS && activeTeamName) {
-      return `${tabLabel} • ${activeTeamName}`;
+    const resolvedTeamName = allTeams.find(t => t.id === activeTeamName || t.name === activeTeamName)?.name || activeTeamName;
+    const resolvedSideItem = allPositions.find(p => p.id === activeSideItem || p.name === activeSideItem)?.name || activeSideItem;
+
+    if (activeTab === AppTab.THOUGHTS && resolvedTeamName) {
+      return `${tabLabel} • ${resolvedTeamName}`;
     }
 
-    if (activeTeamName && activeSideItem) {
-      return `${activeTeamName} • ${activeSideItem}`;
+    if (resolvedTeamName && resolvedSideItem) {
+      return `${resolvedTeamName} • ${resolvedSideItem}`;
     }
-    if (activeTeamName) {
-      return activeTeamName;
+    if (resolvedTeamName) {
+      return resolvedTeamName;
     }
-    return activeSideItem ? `${tabLabel} • ${activeSideItem}` : tabLabel;
+    return resolvedSideItem ? `${tabLabel} • ${resolvedSideItem}` : tabLabel;
   };
 
   const renderLocationIndicators = (teamName: string, viewName?: string) => {
@@ -222,23 +225,23 @@ const SideNav = () => {
           )}
 
           {activeTab === AppTab.ROSTER &&
-            userData?.teams?.map((teamName) => {
-              const team = allTeams.find((t) => t.name === teamName);
+            userData?.teams?.map((teamIdentifier) => {
+              const team = allTeams.find((t) => t.id === teamIdentifier || t.name === teamIdentifier);
               if (!team) return null;
 
               const hasOneTeam = userData.teams.length === 1;
               const isTeamExpanded =
-                hasOneTeam || expandedTeams.includes(team.name);
+                hasOneTeam || expandedTeams.includes(team.id);
 
               return (
-                <div key={team.name}>
+                <div key={team.id}>
                   {!hasOneTeam && (
                     <div
                       className={`${styles.sidenavMenuSubheading} ${styles.sidenavMenuSubheadingClickable}`}
                       style={{ cursor: "pointer" }}
                       onClick={() => {
-                        handleToggleTeamExpansion(team.name);
-                        handleNavItemClick(`/app/roster/${team.name}/All`);
+                        handleToggleTeamExpansion(team.id);
+                        handleNavItemClick(`/app/roster/${team.id}/All`);
                       }}
                     >
                       <div className={styles.teamHeadingContent}>
@@ -254,12 +257,12 @@ const SideNav = () => {
                       <button
                         className={`${styles.sideNavItem} ${styles.sideNavItemSub} ${
                           activeSideItem === "All" &&
-                          activeTeamName === team.name
+                          activeTeamName === team.id
                             ? styles.sideNavItemActive
                             : ""
                         }`}
                         onClick={() => {
-                          handleNavItemClick(`/app/roster/${team.name}/All`);
+                          handleNavItemClick(`/app/roster/${team.id}/All`);
                           dispatch(setMobileSidebarOpen(false));
                         }}
                       >
@@ -267,23 +270,23 @@ const SideNav = () => {
                         <span className={styles.navItemLabel}>
                           {shouldShowLabels && "All"}
                         </span>
-                        {renderLocationIndicators(team.name, "All")}
+                        {renderLocationIndicators(team.id, "All")}
                       </button>
                       {team.positions
                         ?.filter((pos) => !pos.parentId)
                         ?.map((pos) => {
                           const isActive =
-                            activeSideItem === pos.name &&
-                            activeTeamName === team.name;
+                            activeSideItem === pos.id &&
+                            activeTeamName === team.id;
                           return (
                             <button
-                              key={pos.name}
+                              key={pos.id}
                               className={`${styles.sideNavItem} ${styles.sideNavItemSub} ${
                                 isActive ? styles.sideNavItemActive : ""
                               }`}
                               onClick={() => {
                                 handleNavItemClick(
-                                  `/app/roster/${team.name}/${pos.name}`,
+                                  `/app/roster/${team.id}/${pos.id}`,
                                 );
                                 dispatch(setMobileSidebarOpen(false));
                               }}
@@ -300,7 +303,7 @@ const SideNav = () => {
                               <span className={styles.navItemLabel}>
                                 {shouldShowLabels && pos.name}
                               </span>
-                              {renderLocationIndicators(team.name, pos.name)}
+                              {renderLocationIndicators(team.id, pos.id)}
                             </button>
                           );
                         })}
@@ -308,13 +311,13 @@ const SideNav = () => {
                         <button
                           className={`${styles.sideNavItem} ${styles.sideNavItemSub} ${
                             activeSideItem === "Absence" &&
-                            activeTeamName === team.name
+                            activeTeamName === team.id
                               ? styles.sideNavItemActive
                               : ""
                           }`}
                           onClick={() => {
                             handleNavItemClick(
-                              `/app/roster/${team.name}/Absence`,
+                              `/app/roster/${team.id}/Absence`,
                             );
                             dispatch(setMobileSidebarOpen(false));
                           }}
@@ -330,7 +333,7 @@ const SideNav = () => {
                           <span className={styles.navItemLabel}>
                             {shouldShowLabels && "Absence"}
                           </span>
-                          {renderLocationIndicators(team.name, "Absence")}
+                          {renderLocationIndicators(team.id, "Absence")}
                         </button>
                       )}
                     </div>
@@ -340,21 +343,21 @@ const SideNav = () => {
             })}
 
           {activeTab === AppTab.THOUGHTS &&
-            userData?.teams?.map((teamName) => {
-              const team = allTeams.find((t) => t.name === teamName);
+            userData?.teams?.map((teamIdentifier) => {
+              const team = allTeams.find((t) => t.id === teamIdentifier || t.name === teamIdentifier);
               if (!team) return null;
 
               const hasOneTeam = userData.teams.length === 1;
-              const isActive = activeTeamName === team.name;
+              const isActive = activeTeamName === team.id;
 
               return (
                 <button
-                  key={team.name}
+                  key={team.id}
                   className={`${styles.sideNavItem} ${hasOneTeam ? "" : styles.sideNavItemSub} ${
                     isActive ? styles.sideNavItemActive : ""
                   }`}
                   onClick={() => {
-                    handleNavItemClick(`/app/thoughts/${team.name}`);
+                    handleNavItemClick(`/app/thoughts/${team.id}`);
                     dispatch(setMobileSidebarOpen(false));
                   }}
                 >
@@ -362,7 +365,7 @@ const SideNav = () => {
                   <span className={styles.navItemLabel}>
                     {shouldShowLabels && team.name}
                   </span>
-                  {renderLocationIndicators(team.name)}
+                  {renderLocationIndicators(team.id)}
                 </button>
               );
             })}

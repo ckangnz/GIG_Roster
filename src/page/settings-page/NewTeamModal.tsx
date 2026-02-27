@@ -132,7 +132,7 @@ const NewTeamModal = ({ isOpen, onClose, onAdd, availablePositions }: NewTeamMod
     
     const teamToAdd: Team = {
       ...newTeam,
-      id: newTeam.name.trim()
+      id: crypto.randomUUID()
     };
     
     onAdd(teamToAdd);
