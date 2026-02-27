@@ -4,8 +4,21 @@ service cloud.firestore {
 
     // --- HELPER FUNCTIONS ---
     function isSignedIn() { return request.auth != null; }
-    function isAdmin() { return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true; }
-    function isApproved() { return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isApproved == true; }
+
+    // Safely check if the current user is an Admin
+    function isAdmin() {
+      return isSignedIn() &&
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+    }
+
+    // Safely check if the current user is Approved
+    function isApproved() {
+      return isSignedIn() &&
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isApproved == true;
+    }
+
     function isOwner(userId) { return request.auth.uid == userId; }
 
     // --- RULES ---
@@ -13,38 +26,43 @@ service cloud.firestore {
     match /users/{userId} {
       allow read: if isSignedIn();
 
-      // Only Admins can approve others or grant Admin status.
-      // Users can only edit their own basic profile info (Name, Gender, teams, etc.)
-      // but are blocked from changing their own permission flags.
-      allow write: if isSignedIn() && (
+      // NEW USER REGISTRATION:
+      // A user can create their own document if they set isAdmin and isApproved to false.
+      // This allows them to "seed" their profile so Admins can see and approve them.
+      allow create: if isSignedIn() && isOwner(userId) &&
+        request.resource.data.get('isAdmin', false) == false &&
+        request.resource.data.get('isApproved', false) == false;
+
+      // PROFILE UPDATES:
+      // Admins can change anything (including approving users).
+      // Owners can change their Name, Gender, Teams, etc., but cannot touch permission flags.
+      allow update: if isSignedIn() && (
         isAdmin() ||
         (isOwner(userId) &&
          !request.resource.data.diff(resource.data).affectedKeys().hasAny(['isAdmin', 'isApproved']))
       );
+
+      allow delete: if isAdmin();
     }
 
     match /metadata/{document} {
       allow read: if isSignedIn();
-      allow write: if isSignedIn() && isAdmin();
+      allow write: if isAdmin();
     }
 
     match /roster/{date} {
-      // Access limited to approved members.
-      // Per requirements: All approved members can edit the roster to facilitate manual swapping.
-      allow read, write: if isSignedIn() && isApproved();
+      // Must be approved or an admin to access the roster data
+      allow read, write: if isApproved() || isAdmin();
     }
 
     match /thoughts/{thoughtId} {
       allow read: if isSignedIn();
-
-      allow create: if isSignedIn() && (
-        request.resource.data.userUid == request.auth.uid || isAdmin()
-      );
+      allow create: if isSignedIn() && (request.resource.data.userUid == request.auth.uid || isAdmin());
 
       allow update, delete: if isSignedIn() && (
         resource.data.userUid == request.auth.uid ||
         isAdmin() ||
-        // Atomic Likes: Only allow updating 'hearts' if the user is only touching their own UID key.
+        // Atomic Likes
         (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['hearts', 'updatedAt']) &&
          request.resource.data.hearts.diff(resource.data.hearts).affectedKeys().hasOnly([request.auth.uid]))
       );

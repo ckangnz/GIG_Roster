@@ -31,10 +31,10 @@ Enhancing the day-to-day experience for members and leads.
 
 Adding high-value functional modules.
 
-- [ ] **"Shift Swap" Marketplace**:
-  - Members can "Request Swap" for an assignment.
-  - Slot turns orange and becomes "Claimable" by others.
-  - Leader notified via in-app indicator.
+- [x] **"Shift Swap" / Coverage Marketplace**:
+  - Members can "Request Swap" via Absence table (automated).
+  - Slot turns orange and becomes "Claimable" in Roster and Dashboard.
+  - Leader notified via in-app indicator and bottom nav badge.
 - [ ] **Run Sheet / Event Metadata**:
   - Add a "Details" drawer to date headers.
   - Support listing songs, themes, or special notes for specific Sundays.
