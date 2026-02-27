@@ -54,23 +54,23 @@ export const useRosterData = () => {
 
   // Data Fetching Effects
   useEffect(() => {
-    if (teamName) {
-      dispatch(fetchTeamDataForRoster(teamName));
-      dispatch(fetchAllTeamUsers(teamName));
+    if (teamId) {
+      dispatch(fetchTeamDataForRoster(teamId));
+      dispatch(fetchAllTeamUsers(teamId));
     }
-  }, [teamName, dispatch]);
+  }, [teamId, dispatch]);
 
   useEffect(() => {
     if (
-      activePosition &&
-      teamName &&
-      !["Absence", "All"].includes(activePosition)
+      activePositionId &&
+      teamId &&
+      !["Absence", "All"].includes(activePositionId)
     ) {
       dispatch(
-        fetchUsersByTeamAndPosition({ teamName, positionName: activePosition }),
+        fetchUsersByTeamAndPosition({ teamId, positionId: activePositionId }),
       );
     }
-  }, [activePosition, teamName, dispatch]);
+  }, [activePositionId, teamId, dispatch]);
 
   const isLoading = 
     loadingUsers || 

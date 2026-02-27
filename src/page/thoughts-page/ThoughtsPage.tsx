@@ -51,14 +51,19 @@ const ThoughtsPage = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { teamName: rawTeamName } = useParams();
-  const teamName = safeDecode(rawTeamName).trim();
+  const teamNameFromUrl = safeDecode(rawTeamName).trim();
 
   const { userData, firebaseUser } = useAppSelector((state) => state.auth);
-  const { loading: teamsLoading } = useAppSelector((state) => state.teams);
+  const { teams: allTeams, loading: teamsLoading } = useAppSelector((state) => state.teams);
   const { allUsers } = useAppSelector((state) => state.userManagement);
   const { thoughts } = useAppSelector((state) => state.thoughts);
 
-  const selectedTeam = teamName || userData?.teams?.[0] || "";
+  // Resolve UUID for data fetching
+  const teamId = useMemo(() => {
+    const found = allTeams.find(t => t.name === teamNameFromUrl || t.id === teamNameFromUrl);
+    return found?.id || teamNameFromUrl || userData?.teams?.[0] || "";
+  }, [allTeams, teamNameFromUrl, userData?.teams]);
+
   const [focusedUser, setFocusedUser] = useState<AppUser | null>(null);
   const [managementUser, setManagementUser] = useState<AppUser | null>(null);
 
@@ -74,21 +79,24 @@ const ThoughtsPage = () => {
 
   // Auto-navigate to first team if none in URL
   useEffect(() => {
-    if (!teamName && userData?.teams?.[0]) {
-      navigate(`/app/thoughts/${userData.teams[0]}`, { replace: true });
+    if (!teamNameFromUrl && userData?.teams?.[0]) {
+      const firstTeam = allTeams.find(t => t.id === userData.teams[0] || t.name === userData.teams[0]);
+      if (firstTeam) {
+        navigate(`/app/thoughts/${firstTeam.name}`, { replace: true });
+      }
     }
-  }, [teamName, userData, navigate]);
+  }, [teamNameFromUrl, userData, navigate, allTeams]);
 
   const focusedThoughtId = focusedUser
-    ? `${focusedUser.id}_${selectedTeam}`
+    ? `${focusedUser.id}_${teamId}`
     : "";
   const focusedThought = thoughts[focusedThoughtId];
 
-  const myThoughtId = firebaseUser ? `${firebaseUser.uid}_${selectedTeam}` : "";
+  const myThoughtId = firebaseUser ? `${firebaseUser.uid}_${teamId}` : "";
   const myThought = thoughts[myThoughtId];
 
   const targetThought = managementUser
-    ? thoughts[`${managementUser.id}_${selectedTeam}`]
+    ? thoughts[`${managementUser.id}_${teamId}`]
     : null;
 
   const handleOpenManagement = () => {
@@ -102,7 +110,7 @@ const ThoughtsPage = () => {
   };
 
   const handleOpenEditor = (entryId: string | null = null) => {
-    setIsManagementOpen(false); // Close management to avoid focus conflicts
+    setIsManagementOpen(false);
     if (entryId) {
       const entry = targetThought?.entries?.find((e) => e.id === entryId);
       setInputText(entry?.text || "");
@@ -117,20 +125,18 @@ const ThoughtsPage = () => {
   const handleCloseEditor = () => {
     setIsEditorOpen(false);
     setEditingEntryId(null);
-    // If we have thoughts, go back to management. If we cleared everything, stay closed.
     if (targetThought?.entries?.length) {
       setIsManagementOpen(true);
     }
   };
 
   const handleSaveThought = () => {
-    if (!selectedTeam || !inputText.trim() || !managementUser) return;
+    if (!teamId || !inputText.trim() || !managementUser) return;
 
     const sanitizedText = inputText.trim().replace(/<[^>]*>?/gm, "");
     const currentEntries = [...(targetThought?.entries || [])];
 
     if (editingEntryId) {
-      // Update existing
       const index = currentEntries.findIndex((e) => e.id === editingEntryId);
       if (index >= 0) {
         currentEntries[index] = {
@@ -140,7 +146,6 @@ const ThoughtsPage = () => {
         };
       }
     } else {
-      // Add new (max 5)
       if (currentEntries.length >= 5) {
         dispatch(
           showAlert({
@@ -161,18 +166,18 @@ const ThoughtsPage = () => {
 
     const payload = {
       userUid: managementUser.id!,
-      teamName: selectedTeam,
+      teamName: teamId, // Store as UUID
       userName: managementUser.name || "Anonymous",
       entries: currentEntries,
     };
 
-    const id = `${payload.userUid}_${selectedTeam}`;
+    const id = `${payload.userUid}_${teamId}`;
     dispatch(applyOptimisticThoughts({ id, entries: currentEntries }));
     dispatch(syncThoughtEntriesRemote(payload));
 
     setIsEditorOpen(false);
     setEditingEntryId(null);
-    setIsManagementOpen(true); // Go back to management after saving
+    setIsManagementOpen(true);
   };
 
   const handleClearEntry = (entryId: string) => {
@@ -189,14 +194,13 @@ const ThoughtsPage = () => {
             targetThought.entries?.filter((e) => e.id !== entryId) || [];
 
           if (updatedEntries.length === 0) {
-            // If last one, remove the whole doc
             dispatch(applyOptimisticRemove({ id: targetThought.id }));
             dispatch(removeThoughtRemote({ id: targetThought.id }));
             setIsManagementOpen(false);
           } else {
             const payload = {
               userUid: targetThought.userUid,
-              teamName: selectedTeam,
+              teamName: teamId,
               userName: targetThought.userName,
               entries: updatedEntries,
             };
@@ -259,23 +263,22 @@ const ThoughtsPage = () => {
         return {
           name: user?.name || "Unknown User",
           time: formatRelativeTime(timestamp),
-          timestamp, // Keep for sorting
+          timestamp,
         };
       });
-      // Sort by most recent
       list.sort((a, b) => b.timestamp - a.timestamp);
       setLikerList(list.map((l) => ({ name: l.name, time: l.time })));
     },
     [allUsers],
   );
 
-  // Real-time thoughts listener
+  // Real-time thoughts listener (Query by UUID)
   useEffect(() => {
-    if (!selectedTeam) return;
+    if (!teamId) return;
 
     const q = query(
       collection(db, "thoughts"),
-      where("teamName", "==", selectedTeam),
+      where("teamName", "==", teamId),
     );
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const thoughtsMap: Record<string, Thought> = {};
@@ -297,22 +300,23 @@ const ThoughtsPage = () => {
     });
 
     return () => unsubscribe();
-  }, [selectedTeam, dispatch]);
+  }, [teamId, dispatch]);
 
   const teamUsers = useMemo(() => {
-    if (!selectedTeam) return [];
+    if (!teamId) return [];
     return allUsers.filter(
-      (u) => u.teams?.includes(selectedTeam) && u.isActive,
+      (u) => (u.teams?.includes(teamId)) && u.isActive,
     );
-  }, [allUsers, selectedTeam]);
+  }, [allUsers, teamId]);
 
   if (teamsLoading) return <Spinner />;
 
   const isMyProfileFocused = focusedUser?.id === firebaseUser?.uid;
   const showAdminControls = userData?.isAdmin && !isMyProfileFocused;
 
-  const displayTitle = selectedTeam
-    ? `Thoughts • ${selectedTeam}`
+  const displayTeamName = allTeams.find(t => t.id === teamId || t.name === teamId)?.name || teamId;
+  const displayTitle = teamId
+    ? `Thoughts • ${displayTeamName}`
     : "Team Thoughts";
 
   return (
@@ -329,7 +333,7 @@ const ThoughtsPage = () => {
               currentUserEmail={userData?.email || null}
               currentUserId={firebaseUser?.uid}
               thoughts={thoughts}
-              selectedTeam={selectedTeam}
+              selectedTeam={teamId}
               onUserFocus={setFocusedUser}
               onHeart={handleHeart}
               onShowLikers={handleShowLikers}
@@ -363,8 +367,6 @@ const ThoughtsPage = () => {
           </Button>
         </div>
       </div>
-
-      {/* Thought Management List */}
 
       <ActionSheet
         isOpen={isManagementOpen}
@@ -432,7 +434,6 @@ const ThoughtsPage = () => {
         </div>
       </ActionSheet>
 
-      {/* Thought Editor */}
       <ActionSheet
         isOpen={isEditorOpen}
         onClose={handleCloseEditor}
@@ -463,7 +464,6 @@ const ThoughtsPage = () => {
         </div>
       </ActionSheet>
 
-      {/* Liker List */}
       <ActionSheet
         isOpen={!!likerList}
         onClose={() => setLikerList(null)}

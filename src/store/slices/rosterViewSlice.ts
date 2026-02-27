@@ -118,11 +118,12 @@ const initialState: RosterViewState = {
 
 export const fetchAllTeamUsers = createAsyncThunk(
   'rosterView/fetchAllTeamUsers',
-  async (teamName: string, { rejectWithValue }) => {
-    if (!teamName) return [];
+  async (teamId: string, { rejectWithValue }) => {
+    if (!teamId) return [];
     try {
       const usersCollectionRef = collection(db, 'users');
-      const q = query(usersCollectionRef, where('teams', 'array-contains', teamName));
+      // Query by UUID in the 'teams' array
+      const q = query(usersCollectionRef, where('teams', 'array-contains', teamId));
       const querySnapshot = await getDocs(q);
       const fetchedUsers: AppUser[] = [];
       querySnapshot.forEach((doc) => {
@@ -139,20 +140,20 @@ export const fetchAllTeamUsers = createAsyncThunk(
 export const fetchUsersByTeamAndPosition = createAsyncThunk(
   'rosterView/fetchUsers',
   async (
-    { teamName, positionName }: { teamName: string; positionName: string },
+    { teamId, positionId }: { teamId: string; positionId: string },
     { rejectWithValue, getState },
   ) => {
-    if (!teamName || !positionName) return [];
+    if (!teamId || !positionId) return [];
     try {
       const state = getState() as RootState;
       const allPositions = state.positions.positions;
 
       // Find children of this position
-      const children = allPositions.filter((p) => p.parentId === positionName);
-      const positionGroup = [positionName, ...children.map((c) => c.name)];
+      const children = allPositions.filter((p) => p.parentId === positionId);
+      const positionGroup = [positionId, ...children.map((c) => c.id)];
 
-      // Create indexed keys for all positions in the group
-      const indexedKeys = positionGroup.map((pos) => `${teamName}|${pos}`);
+      // Create indexed keys for all positions in the group (ID|ID)
+      const indexedKeys = positionGroup.map((posId) => `${teamId}|${posId}`);
 
       const usersCollectionRef = collection(db, 'users');
       const q = query(
@@ -174,8 +175,8 @@ export const fetchUsersByTeamAndPosition = createAsyncThunk(
 
 export const fetchTeamDataForRoster = createAsyncThunk(
   'rosterView/fetchTeamData',
-  async (teamName: string, { rejectWithValue }) => {
-    if (!teamName) return null;
+  async (teamId: string, { rejectWithValue }) => {
+    if (!teamId) return null;
     try {
       const teamsDocRef = doc(db, 'metadata', 'teams');
       const teamsSnap = await getDoc(teamsDocRef);
@@ -189,7 +190,8 @@ export const fetchTeamDataForRoster = createAsyncThunk(
               positions: teamData.positions || [],
             }))
           : [];
-        const foundTeam = allTeamsList.find((team) => team.name === teamName);
+        // Match by ID
+        const foundTeam = allTeamsList.find((team) => team.id === teamId || team.name === teamId);
         return foundTeam || null;
       }
       return null;
