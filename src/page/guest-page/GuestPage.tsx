@@ -36,7 +36,10 @@ const GuestPage = () => {
         </div>
       </header>
 
-      <ProfileSettings className={styles.profileCardOverride} />
+      <ProfileSettings 
+        className={styles.profileCardOverride} 
+        showExtendedInfo={false} 
+      />
     </div>
   );
 };

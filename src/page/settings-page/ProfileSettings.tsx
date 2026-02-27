@@ -12,7 +12,13 @@ import formStyles from "../../styles/form.module.css";
 
 import styles from "./profile-settings.module.css";
 
-const ProfileSettings = ({ className }: { className?: string }) => {
+const ProfileSettings = ({ 
+  className, 
+  showExtendedInfo = true 
+}: { 
+  className?: string; 
+  showExtendedInfo?: boolean 
+}) => {
   const dispatch = useAppDispatch();
   const { userData, firebaseUser } = useAppSelector((state) => state.auth);
   const { teams: availableTeams } = useAppSelector((state) => state.teams);
@@ -29,6 +35,8 @@ const ProfileSettings = ({ className }: { className?: string }) => {
   });
 
   const [status, setStatus] = useState("idle");
+
+  const isLocked = !userData?.isApproved && !!userData?.name;
 
   // Initial and real-time sync from Redux
   useEffect(() => {
@@ -97,6 +105,24 @@ const ProfileSettings = ({ className }: { className?: string }) => {
     });
   };
 
+  const handleWithdraw = async () => {
+    if (!firebaseUser) return;
+    setStatus("saving");
+    try {
+      // Clearing the name and gender unlocks the profile
+      await dispatch(
+        updateUserProfile({ 
+          uid: firebaseUser.uid, 
+          data: { ...formState, name: "", gender: "" } 
+        }),
+      ).unwrap();
+      setStatus("idle");
+    } catch (e) {
+      console.error(e);
+      setStatus("idle");
+    }
+  };
+
   const toggleTeam = (teamName: string) => {
     setFormState((prev) => {
       const isRemoving = prev.teams.includes(teamName);
@@ -145,6 +171,7 @@ const ProfileSettings = ({ className }: { className?: string }) => {
         <input
           type="text"
           value={formState.name}
+          disabled={isLocked}
           onChange={(e) =>
             setFormState((prev) => ({ ...prev, name: e.target.value }))
           }
@@ -161,10 +188,13 @@ const ProfileSettings = ({ className }: { className?: string }) => {
             <Pill
               key={g.value}
               colour={g.colour}
-              onClick={() =>
-                setFormState((prev) => ({ ...prev, gender: g.value }))
-              }
+              onClick={() => {
+                if (!isLocked) {
+                  setFormState((prev) => ({ ...prev, gender: g.value }));
+                }
+              }}
               isActive={formState.gender === g.value}
+              isDisabled={isLocked}
             >
               {g.value}
             </Pill>
@@ -172,49 +202,74 @@ const ProfileSettings = ({ className }: { className?: string }) => {
         </PillGroup>
       </div>
 
-      {userData.isApproved ? (
-        <TeamPositionEditor
-          selectedTeams={formState.teams}
-          teamPositions={formState.teamPositions}
-          onToggleTeam={toggleTeam}
-          onTogglePosition={toggleTeamPosition}
-          onReorderTeams={(newOrder) =>
-            setFormState((prev) => ({ ...prev, teams: newOrder }))
-          }
-          availableTeams={availableTeams}
-          globalPositions={globalPositions}
-        />
-      ) : (
-        <div className={styles.approvalNotice}>
-          <p>
-            Your account is pending approval. Once approved by an administrator, 
-            you will be able to select your teams and positions.
+      {showExtendedInfo && (
+        <>
+          {userData.isApproved ? (
+            <TeamPositionEditor
+              selectedTeams={formState.teams}
+              teamPositions={formState.teamPositions}
+              onToggleTeam={toggleTeam}
+              onTogglePosition={toggleTeamPosition}
+              onReorderTeams={(newOrder) =>
+                setFormState((prev) => ({ ...prev, teams: newOrder }))
+              }
+              availableTeams={availableTeams}
+              globalPositions={globalPositions}
+            />
+          ) : (
+            <div className={styles.approvalNotice}>
+              <p>
+                Your account is pending approval. Once approved by an administrator, 
+                you will be able to select your teams and positions.
+              </p>
+            </div>
+          )}
+        </>
+      )}
+
+      {!isLocked && (
+        <div className={formStyles.formGroup} style={{ marginTop: "24px" }}>
+          <label>Availability Status</label>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <span
+              style={{
+                fontSize: "0.95rem",
+                color: "var(--color-text-secondary)",
+              }}
+            >
+              {formState.isActive ? "ACTIVE & AVAILABLE" : "INACTIVE / AWAY"}
+            </span>
+            <Toggle
+              isOn={formState.isActive}
+              onToggle={(isOn) =>
+                setFormState((prev) => ({ ...prev, isActive: isOn }))
+              }
+            />
+          </div>
+          <p className={formStyles.fieldHint}>
+            Turn off if you want to be hidden from the roster.
           </p>
         </div>
       )}
 
-      <div className={formStyles.formGroup} style={{ marginTop: "24px" }}>
-        <label>Availability Status</label>
-        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          <span
-            style={{
-              fontSize: "0.95rem",
-              color: "var(--color-text-secondary)",
-            }}
+      {isLocked && (
+        <div className={styles.lockedStatusContainer}>
+          <div className={styles.lockedBadge}>
+            <span className={styles.lockedPulse} />
+            Application Submitted
+          </div>
+          <p className={styles.lockedHint}>
+            Your profile is currently being reviewed. You will receive access once approved by an administrator.
+          </p>
+          <button 
+            className={styles.withdrawBtn} 
+            onClick={handleWithdraw}
+            disabled={status === "saving"}
           >
-            {formState.isActive ? "ACTIVE & AVAILABLE" : "INACTIVE / AWAY"}
-          </span>
-          <Toggle
-            isOn={formState.isActive}
-            onToggle={(isOn) =>
-              setFormState((prev) => ({ ...prev, isActive: isOn }))
-            }
-          />
+            Withdraw & Edit Profile
+          </button>
         </div>
-        <p className={formStyles.fieldHint}>
-          Turn off if you want to be hidden from the roster.
-        </p>
-      </div>
+      )}
 
       <div className={styles.actionContainer}>
         <Button variant="delete" onClick={() => auth.signOut()}>
@@ -222,7 +277,7 @@ const ProfileSettings = ({ className }: { className?: string }) => {
         </Button>
       </div>
 
-      {hasChanges && (
+      {hasChanges && !isLocked && (
         <SaveFooter
           label="Unsaved profile changes"
           saveText="Update Profile"
