@@ -219,15 +219,15 @@ export const resolveCoverageRequestRemote = createAsyncThunk(
     },
     { rejectWithValue }
   ) => {
-    const { date, requestId, status, resolvedByEmail } = payload;
+    const { date, requestId } = payload;
     try {
       const docRef = doc(db, "roster", date);
+      // Remove the request from the document entirely
       await updateDoc(docRef, {
-        [`coverageRequests.${requestId}.status`]: status,
-        [`coverageRequests.${requestId}.resolvedByEmail`]: resolvedByEmail || null,
+        [`coverageRequests.${requestId}`]: deleteField(),
         updatedAt: serverTimestamp(),
       });
-      return { date, requestId, status, resolvedByEmail };
+      return { date, requestId };
     } catch (error: unknown) {
       return rejectWithValue(error instanceof Error ? error.message : "Resolution failed");
     }
@@ -329,11 +329,10 @@ const rosterSlice = createSlice({
       status: "resolved" | "dismissed";
       resolvedByEmail?: string;
     }>) {
-      const { date, requestId, status, resolvedByEmail } = action.payload;
+      const { date, requestId } = action.payload;
       const entry = state.entries[date];
       if (entry?.coverageRequests?.[requestId]) {
-        entry.coverageRequests[requestId].status = status;
-        entry.coverageRequests[requestId].resolvedByEmail = resolvedByEmail;
+        delete entry.coverageRequests[requestId];
       }
     }
   },
@@ -382,11 +381,10 @@ const rosterSlice = createSlice({
         state.syncing[action.meta.arg.date] = false;
       })
       .addCase(resolveCoverageRequestRemote.fulfilled, (state, action) => {
-        const { date, requestId, status, resolvedByEmail } = action.payload;
+        const { date, requestId } = action.payload;
         const entry = state.entries[date];
         if (entry?.coverageRequests?.[requestId]) {
-          entry.coverageRequests[requestId].status = status;
-          entry.coverageRequests[requestId].resolvedByEmail = resolvedByEmail;
+          delete entry.coverageRequests[requestId];
         }
       });
   },
