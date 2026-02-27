@@ -16,6 +16,7 @@ interface AbsenceCellProps {
   absenceReason: string;
   onClick?: () => void;
   handleAbsenceReasonChange?: (reason: string) => void;
+  disabled?: boolean;
 }
 
 const AbsenceCell = memo(({
@@ -28,9 +29,10 @@ const AbsenceCell = memo(({
   absenceReason,
   onClick,
   handleAbsenceReasonChange,
+  disabled = false,
 }: AbsenceCellProps) => {
   const className = [
-    styles.clickable, 
+    !disabled ? styles.clickable : styles.disabled, 
     absenceStyles.absenceRosterCell, 
     absent ? absenceStyles.absentCell : ""
   ].filter(Boolean).join(" ");
@@ -43,8 +45,8 @@ const AbsenceCell = memo(({
       identifier={identifier}
       dateString={dateString}
       className={className}
-      tabIndex={0}
-      onClick={onClick}
+      tabIndex={disabled ? -1 : 0}
+      onClick={!disabled ? onClick : undefined}
       title={absenceReason}
     >
       {absent ? (
@@ -55,20 +57,23 @@ const AbsenceCell = memo(({
             value={absenceReason}
             placeholder="Reason..."
             maxLength={20}
-            autoFocus={isFocused}
+            autoFocus={isFocused && !disabled}
+            disabled={disabled}
             onClick={(e) => e.stopPropagation()}
             onChange={(e) => handleAbsenceReasonChange?.(e.target.value)}
           />
-          <button
-            className={absenceStyles.removeAbsenceBtn}
-            onClick={(e) => {
-              e.stopPropagation();
-              onClick?.();
-            }}
-            title="Mark as present"
-          >
-            <X size={14} />
-          </button>
+          {!disabled && (
+            <button
+              className={absenceStyles.removeAbsenceBtn}
+              onClick={(e) => {
+                e.stopPropagation();
+                onClick?.();
+              }}
+              title="Mark as present"
+            >
+              <X size={14} />
+            </button>
+          )}
         </div>
       ) : (
         ""

@@ -17,6 +17,7 @@ interface RosterCellProps {
   absenceReason?: string;
   isAssignedOnClosestDate?: boolean;
   isHighlighted?: boolean;
+  hasConflict?: boolean;
   content?: ReactNode;
   onClick?: () => void;
   // Absence View
@@ -40,6 +41,7 @@ const RosterCell = memo(({
   absenceReason = "",
   isAssignedOnClosestDate = false,
   isHighlighted = false,
+  hasConflict = false,
   content = null,
   onClick,
   handleAbsenceReasonChange,
@@ -62,6 +64,7 @@ const RosterCell = memo(({
           absenceReason={absenceReason}
           isAssignedOnClosestDate={isAssignedOnClosestDate}
           isHighlighted={isHighlighted}
+          hasConflict={hasConflict}
         />
       );
 
@@ -77,6 +80,7 @@ const RosterCell = memo(({
           absenceReason={absenceReason}
           onClick={onClick}
           handleAbsenceReasonChange={handleAbsenceReasonChange}
+          disabled={disabled}
         />
       );
 

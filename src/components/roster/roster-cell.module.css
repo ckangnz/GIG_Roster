@@ -109,6 +109,18 @@
   font-size: 0.7rem;
 }
 
+.conflictIndicator {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 6px;
+  height: 6px;
+  background-color: var(--warning);
+  border-radius: 50%;
+  box-shadow: 0 0 4px var(--warning);
+  z-index: 5;
+}
+
 /* Remote Cursor Styles */
 .remoteCursorBorder {
   position: absolute;

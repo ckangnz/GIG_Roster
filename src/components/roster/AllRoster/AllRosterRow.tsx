@@ -34,6 +34,7 @@ interface AllRosterRowProps {
   isUserAbsent: (dateString: string, userEmail: string) => boolean;
   getAbsenceReason: (dateString: string, userEmail: string) => string;
   isHighlightedCell: (dateString: string, identifier: string, type: 'user' | 'position') => boolean;
+  getConflictStatus: (dateString: string, userEmail: string) => { hasConflict: boolean };
 }
 
 export const AllRosterRow = memo(
@@ -56,6 +57,7 @@ export const AllRosterRow = memo(
     isUserAbsent,
     getAbsenceReason,
     isHighlightedCell,
+    getConflictStatus,
   }: AllRosterRowProps) => {
     return (
       <RosterRow
@@ -85,6 +87,7 @@ export const AllRosterRow = memo(
                   col.id ? getAbsenceReason(dateString, col.id) : ""
                 }
                 isHighlighted={isHighlightedCell(dateString, col.id, 'user')}
+                hasConflict={col.id ? getConflictStatus(dateString, col.id).hasConflict : false}
                 content={
                   col.id ? getAllViewUserCellContent(dateString, col.id) : null
                 }

@@ -24,6 +24,7 @@ const GeneralRosterTable = () => {
     hiddenUserList,
     userData,
     handleCellClick,
+    getConflictStatus,
   } = logic;
 
   const currentPosition = useMemo(
@@ -204,6 +205,7 @@ const GeneralRosterTable = () => {
           getAbsenceReason={logic.getAbsenceReason}
           assignedOnClosestDate={assignedOnClosestDate}
           showPeek={true}
+          getConflictStatus={getConflictStatus}
         />
       ))}
     </RosterTable>

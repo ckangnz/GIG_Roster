@@ -31,6 +31,7 @@ const AllRosterTable = () => {
     entries,
     hiddenUserList,
     closestNextDate,
+    getConflictStatus,
   } = logic;
 
   // Re-implementing view-specific logic
@@ -307,6 +308,7 @@ const AllRosterTable = () => {
             isUserAbsent={logic.isUserAbsent}
             getAbsenceReason={logic.getAbsenceReason}
             isHighlightedCell={isHighlightedCell}
+            getConflictStatus={getConflictStatus}
           />
         ))}
       </RosterTable>

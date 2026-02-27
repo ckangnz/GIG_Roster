@@ -16,6 +16,7 @@ interface UserAssignmentCellProps {
   absenceReason?: string;
   isAssignedOnClosestDate?: boolean;
   isHighlighted?: boolean;
+  hasConflict?: boolean;
 }
 
 const UserAssignmentCell = memo(({
@@ -31,6 +32,7 @@ const UserAssignmentCell = memo(({
   absenceReason,
   isAssignedOnClosestDate,
   isHighlighted,
+  hasConflict,
 }: UserAssignmentCellProps) => {
   const hasContent = !!content || absent;
 
@@ -53,6 +55,9 @@ const UserAssignmentCell = memo(({
       isHighlighted={isHighlighted}
     >
       <div className={styles.cellContent}>
+        {hasConflict && !absent && (
+          <div className={styles.conflictIndicator} title="User has multiple assignments on this day" />
+        )}
         {absent && isFocused && (
           <div className={`${styles.reasonPopover} ${rowIndex === 0 ? styles.popoverBottom : ""}`}>
             {absenceReason || <span className={styles.noReason}>No reason provided</span>}

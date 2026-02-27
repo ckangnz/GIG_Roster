@@ -30,6 +30,7 @@ interface GeneralRosterRowProps {
   getAbsenceReason: (dateString: string, userEmail: string) => string;
   assignedOnClosestDate: string[];
   showPeek?: boolean;
+  getConflictStatus: (dateString: string, userEmail: string) => { hasConflict: boolean };
 }
 
 export const GeneralRosterRow = memo(
@@ -50,6 +51,7 @@ export const GeneralRosterRow = memo(
     getAbsenceReason,
       assignedOnClosestDate,
       showPeek,
+      getConflictStatus,
     }: GeneralRosterRowProps) => {
       const { highlightedUserId } = useAppSelector((state) => state.rosterView);
     
@@ -91,9 +93,10 @@ export const GeneralRosterRow = memo(
                   user.email &&
                   assignedOnClosestDate.includes(user.email)
                 )}
-                            isHighlighted={user.email === highlightedUserId}
-                                          content={
-                                            user.email ? (
+                                                hasConflict={user.email ? getConflictStatus(dateString, user.email).hasConflict : false}
+                                                isHighlighted={user.email === highlightedUserId}
+                                                content={
+                                                                            user.email ? (
                                               <div
                                                 className={
                                                   user.email === highlightedUserId
