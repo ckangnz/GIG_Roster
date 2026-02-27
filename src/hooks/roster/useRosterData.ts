@@ -44,6 +44,14 @@ export const useRosterData = () => {
   const teamsState = useAppSelector((state) => state.teams);
   const allTeams = useMemo(() => teamsState?.teams || [], [teamsState?.teams]);
 
+  const teamId = useMemo(() => 
+    allTeams.find(t => t.name === teamName)?.id || teamName, 
+  [allTeams, teamName]);
+
+  const activePositionId = useMemo(() => 
+    allPositions.find(p => p.name === activePosition)?.id || activePosition, 
+  [allPositions, activePosition]);
+
   // Data Fetching Effects
   useEffect(() => {
     if (teamName) {
@@ -75,6 +83,8 @@ export const useRosterData = () => {
   return {
     teamName,
     activePosition,
+    teamId,
+    activePositionId,
     userData,
     users,
     allTeamUsers,

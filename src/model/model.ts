@@ -30,6 +30,7 @@ export interface RecurringEvent {
 }
 
 export interface Team {
+  id: string;
   name: string;
   emoji: string;
   positions: Position[];
@@ -41,6 +42,7 @@ export interface Team {
 }
 
 export interface Position {
+  id: string;
   name: string;
   emoji: string;
   colour: string;

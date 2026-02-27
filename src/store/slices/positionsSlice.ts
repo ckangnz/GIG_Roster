@@ -28,7 +28,11 @@ export const fetchPositions = createAsyncThunk(
       const snap = await getDoc(docRef);
       if (snap.exists()) {
         const data = snap.data();
-        return Array.isArray(data.list) ? data.list : [];
+        const list = Array.isArray(data.list) ? data.list : [];
+        return list.map((pos: Position) => ({
+          ...pos,
+          id: pos.id || pos.name
+        }));
       }
       return [];
     } catch (error) {

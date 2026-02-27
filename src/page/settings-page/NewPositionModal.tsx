@@ -21,6 +21,7 @@ interface NewPositionModalProps {
 }
 
 const defaultPosition: Position = {
+  id: "",
   name: "",
   emoji: "",
   colour: "#FFFFFF",
@@ -39,8 +40,9 @@ const NewPositionModal = ({ isOpen, onClose, onAdd, availableParents }: NewPosit
   const handleAdd = () => {
     if (!newPos.name.trim() || !newPos.emoji.trim()) return;
     
-    const positionToAdd = {
+    const positionToAdd: Position = {
       ...newPos,
+      id: newPos.name.trim(),
       parentId: isChild ? newPos.parentId : undefined
     };
     

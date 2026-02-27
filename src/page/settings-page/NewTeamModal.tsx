@@ -33,6 +33,7 @@ const WEEK_DAYS: Weekday[] = [
 ];
 
 const defaultTeam: Team = {
+  id: "",
   name: "",
   emoji: "",
   positions: [],
@@ -128,7 +129,13 @@ const NewTeamModal = ({ isOpen, onClose, onAdd, availablePositions }: NewTeamMod
 
   const handleAdd = () => {
     if (!newTeam.name.trim() || !newTeam.emoji.trim()) return;
-    onAdd(newTeam);
+    
+    const teamToAdd: Team = {
+      ...newTeam,
+      id: newTeam.name.trim()
+    };
+    
+    onAdd(teamToAdd);
     setNewTeam(defaultTeam);
     onClose();
   };

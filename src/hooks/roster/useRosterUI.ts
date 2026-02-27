@@ -16,8 +16,8 @@ import {
 import { useAppDispatch, useAppSelector } from "../redux";
 
 export const useRosterUI = (
-  teamName?: string, 
-  activePosition?: string,
+  teamId?: string, 
+  activePositionId?: string,
   rosterDates: string[] = [],
   entries: Record<string, RosterEntry> = {}
 ) => {
@@ -59,20 +59,20 @@ export const useRosterUI = (
 
   // Visibility Handling
   const handleToggleVisibility = useCallback((userEmail: string) => {
-    if (!teamName || !activePosition) return;
+    if (!teamId || !activePositionId) return;
     dispatch(
       toggleUserVisibility({
-        teamName,
-        positionName: activePosition,
+        teamName: teamId,
+        positionName: activePositionId,
         userEmail,
       }),
     );
-  }, [dispatch, teamName, activePosition]);
+  }, [dispatch, teamId, activePositionId]);
 
   const hiddenUserList = useMemo(() => {
-    if (!teamName || !activePosition) return [];
-    return hiddenUsers[teamName]?.[activePosition] || [];
-  }, [hiddenUsers, teamName, activePosition]);
+    if (!teamId || !activePositionId) return [];
+    return hiddenUsers[teamId]?.[activePositionId] || [];
+  }, [hiddenUsers, teamId, activePositionId]);
 
   // Date/Navigation Handling
   const handleLoadPrevious = useCallback(() => dispatch(loadPreviousDates()), [dispatch]);

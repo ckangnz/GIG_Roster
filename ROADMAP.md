@@ -1,74 +1,83 @@
-# GIG Roster Development Roadmap
+# GIG Roster: Strategic Roadmap
 
-This roadmap outlines the planned improvements, refactorings, and feature expansions for the GIG Roster application.
+## 📜 Development Guidelines (Strict)
+*These rules must be followed for all contributions to maintain code quality and scalability.*
 
----
-
-## 🛠 Phase 1: Code Health & Security (Refactoring)
-
-High-priority technical debt and security infrastructure.
-
-- [x] **Firestore Security Rules**: Implement robust `firestore.rules` to restrict data access (e.g., users can only edit their own profile, only admins can manage teams).
-- [x] **Decompose `RosterCell.tsx`**: Refactor into a strategy pattern (e.g., `StandardCell`, `AbsenceCell`, `SummaryCell`) to reduce complexity.
-- [x] **Split `useRosterBaseLogic.ts`**: Break the "God Hook" into smaller, focused hooks:
-  - `useRosterData` (Data fetching/subscriptions)
-  - `useRosterActions` (State updates/saving)
-  - `useRosterUI` (Focus/Selection/View modes)
-- [x] **Redux Slice Cleanup**: Audit slices for redundant state and ensure consistent normalization (especially for Timestamps).
+- **Component First**: Always reuse existing common components. Create new ones only if a reusable pattern doesn't exist.
+- **Refactoring is Core**: Never "bolt on" code. Refactor existing logic to support new features cleanly.
+- **No Inline Styles**: All styling must reside in `.module.css` files.
+- **Modular CSS**: Transition any legacy global CSS into module CSS without breaking existing visuals.
+- **Clean Structure**: Maintain a logical, flat, and intuitive folder structure.
+- **Minimal Comments**: Code should be self-documenting. Remove unnecessary comments; keep only high-value "why" notes if requested.
+- **Theme-Only Colors**: NEVER hardcode hex/rgb values. Use existing CSS variables from the theme engine.
+- **Dynamic Roadmap**: Update this file immediately as tasks are completed or new requirements emerge.
+- **Branch Strategy**: Always perform large features or structural changes on a new branch.
 
 ---
 
-## 🚀 Phase 2: UX & Visual Polish
+## 🏗 Phase 1: Scalable Foundation (Architecture)
+*Objective: Stabilize the data model before multi-tenancy complicates it.*
 
-Enhancing the day-to-day experience for members and leads.
-
-- [x] **Conflict Detection Visuals**: Show a "soft warning" (e.g., yellow dot) in the roster when a user is assigned to multiple positions/teams on the same day.
-- [ ] **Global Undo System (Ctrl+Z)**: Allow users to quickly revert their own recent roster assignments or absence changes.
-- [x] **Enhanced Loading States**: Implement skeleton screens for the Roster grid to replace the full-page spinner.
-
----
-
-## 💡 Phase 3: New Feature Implementation
-
-Adding high-value functional modules.
-
-- [x] **"Shift Swap" / Coverage Marketplace**:
-  - Members can "Request Swap" via Absence table (automated).
-  - Slot turns orange and becomes "Claimable" in Roster and Dashboard.
-  - Leader notified via in-app indicator and bottom nav badge.
-- [ ] **Run Sheet / Event Metadata**:
-  - Add a "Details" drawer to date headers.
-  - Support listing songs, themes, or special notes for specific Sundays.
-- [ ] **AI "Draft Roster" (Auto-Fill)**:
-  - Logic-based drafting considering frequency of play, gender balance, and availability.
-  - Pop-in animation sequence when the draft is generated.
-- [ ] **Team "Vibe Check"**:
-  - Analytics for admins to see general team sentiment based on Thought activity/hearts.
+- [x] **ID-Based Infrastructure**: Updated models, hooks, and slices to support stable IDs.
+- [ ] **Data Migration**: Run script/manual save to populate `id` fields in production metadata.
+- [ ] **Legacy Cleanup**: Remove name-as-ID fallback logic once migration is verified.
+- [ ] **Granular Time Roster**: Refactor Roster model to support sub-day shifts (e.g., 15-min intervals) alongside date-based entries.
 
 ---
 
-## 💰 Phase 4: Scalability & Monetization
+## 🏢 Phase 2: Multi-Tenancy & User Journey (The SaaS Pivot)
+*Objective: Support multiple organizations with distinct billing and governance.*
 
-Preparing the app to support multiple organizations.
+- [ ] **Organisation Root Entity**: Implement `Organisation` model. All data queries become scoped by `orgId`.
+- [ ] **New User Onboarding**: 
+    - **Flow**: Login -> "Join Existing Org" (via Invite Code) OR "Create New Org".
+    - **Approval System**: Joining requires Org Admin approval (Notification via In-App + Email/Push).
+- [ ] **Monetization Infrastructure**:
+    - **Free Tier**: AdSense integration for non-paying orgs. Limited users/teams.
+    - **Pro Tier**: Ad-free, unlimited history, advanced analytics.
+    - **Limits**: Enforce user count limits per tier (e.g., Free = 50 users).
+- [ ] **Public vs. Private Teams**: 
+    - **Private**: Invite-only within the Org.
+    - **Public**: Open to anyone in the Org.
 
-- [ ] **Multi-Tenancy Architecture**:
-  - Add `organizationId` to all core models.
-  - Implement "Join via Invite Code" flow.
-- [ ] **Member Management Dashboard**:
-  - More granular permissions (e.g., "Team Lead" vs "Global Admin").
-  - User activity logs.
-- [ ] **Subscription Tiering**:
-  - Standard (Free): Manual scheduling, limited members.
-  - Pro (Paid): Auto-Fill, Shift Swap Marketplace, Service Run Sheets.
-- [ ] **Native PWA Push Notifications**: Integrate Web Push API for critical roster changes (without Firebase Functions where possible, or as a Pro feature).
+---
+
+## ⚙️ Phase 3: Advanced Logic & Configuration
+*Objective: Flexible rules for diverse team needs.*
+
+- [ ] **Configurable Absence Logic**: 
+    - Toggle per Org/Team: "Auto-Approve Absence" vs "Require Admin Approval".
+- [ ] **Scalable "Thoughts" Engine**: 
+    - **Refactor**: Move from "Wheel" UI to a "Feed/Grid" for teams >50 members.
+    - **Interaction**: Configurable "Like Expiry" (e.g., daily reset to encourage engagement).
+    - **Controls**: Org-level toggle to enable/disable Thoughts entirely.
+- [ ] **Position Constraints**: Define "Minimum Required" counts per slot.
+
+---
+
+## 📊 Phase 4: Intelligence, Analytics & Collaboration
+*Objective: High-value features for Pro users.*
+
+- [ ] **Personal Statistics**: Attendance heatmaps, role distribution, social engagement metrics.
+- [ ] **AI / MCP Auto-Roster**: Chat agent for natural language assignments and "One-Click Draft".
+- [ ] **Collaborative File Hub**: PDF upload with live annotation/markup.
+- [ ] **Advanced Event Metadata**: Detailed run sheets per date.
+
+---
+
+## 🚀 Phase 5: Production & Scale
+*Objective: Professional hosting and domain management.*
+
+- [ ] **Infrastructure Migration**: 
+    - Migrate from GitHub Pages to AWS S3 + CloudFront (or Vercel/Netlify for easier CI/CD).
+    - Purchase and configure custom domain (SSL/TLS).
+- [ ] **Native PWA Push**: Robust notification system for approvals and urgent coverage needs.
 
 ---
 
 ## ✅ Completed Recently
-
-- [x] **iOS Midnight Theme**: High-contrast dark mode implementation.
-- [x] **Modal-based Workflow**: Refactored team/position creation into sleek modals.
-- [x] **Real-time Animations**: Implemented Heart bursts, Roster pop-ins, and rubber-band dragging.
-- [x] **Thought Expiration**: Implemented 7-day soft-expiry and revival system.
-- [x] **Gender-Aware Theming**: Dynamic color shifts based on user profile (Rose vs Blue).
-- [x] **Presence System**: Real-time cursor and location tracking for all online users.
+- [x] **Shift Swap / Coverage Marketplace (Self-Cleaning)**
+- [x] **Firestore Security Rules (Registration Fixed)**
+- [x] **Global Undo System (Ctrl+Z)**
+- [x] **Conflict Detection Visuals**
+- [x] **iOS Midnight Theme & Gender-Aware Styling**

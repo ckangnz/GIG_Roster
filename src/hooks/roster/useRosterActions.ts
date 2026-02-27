@@ -27,8 +27,8 @@ import { pushAction } from "../../store/slices/undoSlice";
 import { useAppDispatch } from "../redux";
 
 export const useRosterActions = (
-  teamName?: string,
-  activePosition?: string,
+  teamId?: string,
+  activePositionId?: string,
   allPositions: Position[] = [],
   allTeams: Team[] = [],
   entries: Record<string, RosterEntry> = {},
@@ -56,50 +56,50 @@ export const useRosterActions = (
   const isCellDisabled = useCallback(
     (dateString: string, userEmail: string) => {
       if (
-        !teamName ||
-        !activePosition ||
-        activePosition === "Absence" ||
-        activePosition === "All"
+        !teamId ||
+        !activePositionId ||
+        activePositionId === "Absence" ||
+        activePositionId === "All"
       )
         return false;
       if (isUserAbsent(dateString, userEmail)) return true;
 
       const entry = entries[dateString];
-      const currentTeam = allTeams.find((t) => t.name === teamName);
+      const currentTeam = allTeams.find((t) => t.id === teamId);
       const maxConflict = currentTeam?.maxConflict || 1;
 
       if (
         !entry ||
-        !entry.teams[teamName] ||
-        !entry.teams[teamName][userEmail]
+        !entry.teams[teamId] ||
+        !entry.teams[teamId][userEmail]
       )
         return false;
 
-      const userAssignments = entry.teams[teamName][userEmail];
+      const userAssignments = entry.teams[teamId][userEmail];
       if (!Array.isArray(userAssignments)) return false;
 
       const children = allPositions.filter(
-        (p) => p.parentId === activePosition,
+        (p) => p.parentId === activePositionId,
       );
-      const positionGroupNames = [
-        activePosition,
-        ...children.map((c) => c.name),
+      const positionGroupIds = [
+        activePositionId,
+        ...children.map((c) => c.id),
       ];
 
-      if (userAssignments.some((p) => positionGroupNames.includes(p)))
+      if (userAssignments.some((p) => positionGroupIds.includes(p)))
         return false;
       return userAssignments.length >= maxConflict;
     },
-    [teamName, activePosition, isUserAbsent, entries, allTeams, allPositions],
+    [teamId, activePositionId, isUserAbsent, entries, allTeams, allPositions],
   );
 
   const handleCellClick = useCallback(
     (dateString: string, userEmail: string, row: number, col: number) => {
       if (
-        activePosition === "Absence" ||
-        activePosition === "All" ||
-        !teamName ||
-        !activePosition
+        activePositionId === "Absence" ||
+        activePositionId === "All" ||
+        !teamId ||
+        !activePositionId
       )
         return;
 
@@ -114,7 +114,7 @@ export const useRosterActions = (
         dispatch(setFocusedCell({ row, col, table: "roster" }));
 
         const entry = entries[dateString];
-        const userAssignments = entry?.teams[teamName]?.[userEmail] || [];
+        const userAssignments = entry?.teams[teamId]?.[userEmail] || [];
 
         // --- UNDO INTEGRATION ---
         const targetUserName = allTeamUsers.find(u => u.email === userEmail)?.name || userEmail;
@@ -124,7 +124,7 @@ export const useRosterActions = (
           timestamp: Date.now(),
           payload: {
             date: dateString,
-            teamName,
+            teamName: teamId,
             userEmail,
             previousAssignments: userAssignments,
           },
@@ -132,40 +132,40 @@ export const useRosterActions = (
         }));
 
         const children = allPositions.filter(
-          (p) => p.parentId === activePosition,
+          (p) => p.parentId === activePositionId,
         );
-        const positionGroupNames: string[] = [
-          activePosition,
-          ...children.map((c) => c.name),
+        const positionGroupIds: string[] = [
+          activePositionId,
+          ...children.map((c) => c.id),
         ];
 
-        const currentInGroupIndex = positionGroupNames.findIndex((p) =>
+        const currentInGroupIndex = positionGroupIds.findIndex((p) =>
           userAssignments.includes(p),
         );
-        const currentInGroupName =
+        const currentInGroupId =
           currentInGroupIndex >= 0
-            ? positionGroupNames[currentInGroupIndex]
+            ? positionGroupIds[currentInGroupIndex]
             : null;
 
-        let nextPositionName: string | null = null;
-        if (currentInGroupName === null) {
-          nextPositionName = positionGroupNames[0];
-        } else if (currentInGroupIndex < positionGroupNames.length - 1) {
-          nextPositionName = positionGroupNames[currentInGroupIndex + 1];
+        let nextPositionId: string | null = null;
+        if (currentInGroupId === null) {
+          nextPositionId = positionGroupIds[0];
+        } else if (currentInGroupIndex < positionGroupIds.length - 1) {
+          nextPositionId = positionGroupIds[currentInGroupIndex + 1];
         } else {
-          nextPositionName = null;
+          nextPositionId = null;
         }
 
         const updatedAssignments = userAssignments.filter(
-          (p) => !positionGroupNames.includes(p),
+          (p) => !positionGroupIds.includes(p),
         );
-        if (nextPositionName) {
-          updatedAssignments.push(nextPositionName);
+        if (nextPositionId) {
+          updatedAssignments.push(nextPositionId);
         }
 
         const payload = {
           date: dateString,
-          teamName,
+          teamName: teamId,
           userIdentifier: userEmail,
           updatedAssignments,
         };
@@ -174,13 +174,12 @@ export const useRosterActions = (
         dispatch(syncAssignmentRemote(payload));
 
         // --- TEAM NEEDS INTEGRATION: RESOLVE ON ASSIGNMENT ---
-        if (nextPositionName && entry?.coverageRequests) {
-          // Identify the entire group Chris is filling (e.g. Vocal group)
-          const children = allPositions.filter(p => p.parentId === activePosition || p.parentId === nextPositionName);
-          const groupNames = [activePosition, nextPositionName, ...children.map(c => c.name)];
+        if (nextPositionId && entry?.coverageRequests) {
+          // Identify the entire group Chris is filling
+          const groupIds = [activePositionId, nextPositionId, ...children.map(c => c.id)];
 
           Object.entries(entry.coverageRequests).forEach(([reqId, req]) => {
-            if (req.status === "open" && req.teamName === teamName && groupNames.includes(req.positionName)) {
+            if (req.status === "open" && req.teamName === teamId && groupIds.includes(req.positionName)) {
               const resolvePayload = {
                 date: dateString,
                 requestId: reqId,
@@ -194,7 +193,7 @@ export const useRosterActions = (
         }
 
         // 2. Automatically clear Chris's absence if he's claiming his own slot
-        if (nextPositionName && entry?.absence?.[userEmail]) {
+        if (nextPositionId && entry?.absence?.[userEmail]) {
           const absencePayload = {
             date: dateString,
             userIdentifier: userEmail,
@@ -222,8 +221,8 @@ export const useRosterActions = (
       }
     },
     [
-      activePosition,
-      teamName,
+      activePositionId,
+      teamId,
       isCellDisabled,
       entries,
       allPositions,
@@ -406,23 +405,23 @@ export const useRosterActions = (
   }, [dispatch]);
 
   const getPeekAssignedUsers = useCallback(
-    (dateString: string, peekPositionName?: string) => {
-      if (!peekPositionName || !teamName) return [];
+    (dateString: string, peekPositionId?: string) => {
+      if (!peekPositionId || !teamId) return [];
       const dateKey = dateString.split("T")[0];
       const entry = entries[dateKey];
-      if (!entry || !entry.teams[teamName]) return [];
+      if (!entry || !entry.teams[teamId]) return [];
 
-      return Object.entries(entry.teams[teamName])
+      return Object.entries(entry.teams[teamId])
         .filter(
           ([, assignments]) =>
-            Array.isArray(assignments) && assignments.includes(peekPositionName),
+            Array.isArray(assignments) && assignments.includes(peekPositionId),
         )
         .map(([email]) => {
           const user = allTeamUsers.find((u) => u.email === email);
           return user?.name || email;
         });
     },
-    [teamName, entries, allTeamUsers],
+    [teamId, entries, allTeamUsers],
   );
 
   const getConflictStatus = useCallback(
@@ -434,13 +433,13 @@ export const useRosterActions = (
       let teamCount = 0;
       let overLimitInAnyTeam = false;
 
-      Object.entries(entry.teams).forEach(([tName, teamData]) => {
+      Object.entries(entry.teams).forEach(([tId, teamData]) => {
         const assignments = teamData[userEmail];
         if (Array.isArray(assignments) && assignments.length > 0) {
           totalAssignments += assignments.length;
           teamCount++;
 
-          const teamConfig = allTeams.find((t) => t.name === tName);
+          const teamConfig = allTeams.find((t) => t.id === tId);
           if (teamConfig && assignments.length > teamConfig.maxConflict) {
             overLimitInAnyTeam = true;
           }
@@ -458,12 +457,12 @@ export const useRosterActions = (
   );
 
   const hasPositionCoverageRequest = useCallback(
-    (dateString: string, tName: string, pName: string) => {
+    (dateString: string, tId: string, pId: string) => {
       const entry = entries[dateString];
       if (!entry?.coverageRequests) return false;
 
       return Object.values(entry.coverageRequests).some(
-        (req) => req.teamName === tName && req.positionName === pName && req.status === "open"
+        (req) => req.teamName === tId && req.positionName === pId && req.status === "open"
       );
     },
     [entries]

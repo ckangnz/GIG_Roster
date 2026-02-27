@@ -132,7 +132,8 @@ const TeamManagement = () => {
   const saveToFirebase = async () => {
     setStatus("saving");
     try {
-      const teamsToSave = teams.map((t) => ({
+      const teamsToSave: Team[] = teams.map((t) => ({
+        id: t.id || t.name,
         name: t.name || "",
         emoji: t.emoji || "",
         maxConflict: t.maxConflict || 1,
@@ -141,6 +142,7 @@ const TeamManagement = () => {
         dayEndTimes: t.dayEndTimes || {},
         recurringEvents: t.recurringEvents || [],
         positions: (t.positions || []).map((p) => ({
+          id: p.id || p.name,
           name: p.name || "",
           emoji: p.emoji || "",
           colour: p.colour || "",

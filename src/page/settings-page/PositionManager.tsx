@@ -198,6 +198,7 @@ const PositionManagement = () => {
     try {
       const positionsToSave = positions.map((p) => {
         const cleanPos: Position = {
+          id: p.id || p.name,
           name: p.name || "",
           emoji: p.emoji || "",
           colour: p.colour || "",
