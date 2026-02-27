@@ -2,7 +2,7 @@ import { useMemo } from "react";
 
 import UserManagementRow from "./UserManagementRow";
 import SaveFooter from "../../components/common/SaveFooter";
-import SettingsTable from "../../components/common/SettingsTable";
+import SettingsTable, { SettingsTableHeaderProps } from "../../components/common/SettingsTable";
 import Spinner from "../../components/common/Spinner";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { AppUser } from "../../model/model";
@@ -58,28 +58,54 @@ const UserManagement = () => {
     return <div>Error: {error}</div>;
   }
 
+  const pendingUsers = allUsers.filter((u) => !u.isApproved);
+  const approvedUsers = allUsers.filter((u) => u.isApproved);
+
+  const tableHeaders: SettingsTableHeaderProps[] = [
+    { text: "Name", minWidth: 70, width: 100, textAlign: "center" },
+    { text: "Email", minWidth: 170, textAlign: "center" },
+    { text: "Gender", minWidth: 90, textAlign: "center" },
+    { text: "Assignments", minWidth: 150, textAlign: "center" },
+    { text: "Active", minWidth: 95, textAlign: "center" },
+    { text: "Approved", minWidth: 95, textAlign: "center" },
+    { text: "Admin", minWidth: 95, textAlign: "center" },
+  ];
+
   return (
     <div className={styles.managementWrapper}>
-      <SettingsTable
-        headers={[
-          { text: "Name", minWidth: 70, width: 100, textAlign: "center" },
-          { text: "Email", minWidth: 170, textAlign: "center" },
-          { text: "Gender", minWidth: 90, textAlign: "center" },
-          { text: "Assignments", minWidth: 150, textAlign: "center" },
-          { text: "Active", minWidth: 95, textAlign: "center" },
-          { text: "Approved", minWidth: 95, textAlign: "center" },
-          { text: "Admin", minWidth: 95, textAlign: "center" },
-        ]}
-      >
-        {allUsers.map((u) => (
-          <UserManagementRow
-            key={u.id}
-            user={u}
-            availableTeams={availableTeams}
-            adminEmail={import.meta.env.VITE_ADMIN_EMAIL as string}
-          />
-        ))}
-      </SettingsTable>
+      {pendingUsers.length > 0 && (
+        <div className={styles.pendingSection}>
+          <h2 className={styles.pendingTitle}>
+            Pending Approval ({pendingUsers.length})
+          </h2>
+          <SettingsTable headers={tableHeaders}>
+            {pendingUsers.map((u) => (
+              <UserManagementRow
+                key={u.id}
+                user={u}
+                availableTeams={availableTeams}
+                adminEmail={import.meta.env.VITE_ADMIN_EMAIL as string}
+              />
+            ))}
+          </SettingsTable>
+        </div>
+      )}
+
+      <div className={styles.approvedSection}>
+        <h2 className={styles.sectionTitle}>
+          Approved Users ({approvedUsers.length})
+        </h2>
+        <SettingsTable headers={tableHeaders}>
+          {approvedUsers.map((u) => (
+            <UserManagementRow
+              key={u.id}
+              user={u}
+              availableTeams={availableTeams}
+              adminEmail={import.meta.env.VITE_ADMIN_EMAIL as string}
+            />
+          ))}
+        </SettingsTable>
+      </div>
 
       {hasChanges && (
         <SaveFooter

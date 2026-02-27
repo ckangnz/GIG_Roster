@@ -4,7 +4,7 @@ import formStyles from "../../styles/form.module.css";
 
 import styles from "./settings-table.module.css";
 
-interface SettingsTableHeaderProps {
+export interface SettingsTableHeaderProps {
   text: string;
   textAlign?: "left" | "center" | "right";
   width?: number;
