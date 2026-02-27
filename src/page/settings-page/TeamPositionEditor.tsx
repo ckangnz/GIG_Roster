@@ -111,11 +111,12 @@ const TeamPositionEditor = ({
         <label className={commonStyles.sectionLabel}>Teams</label>
         <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
           {availableTeams.map((team) => {
-            const isSelected = selectedTeams.includes(team.id) || selectedTeams.includes(team.name);
+            const teamIdentifier = team.id || team.name;
+            const isSelected = selectedTeams.includes(teamIdentifier) || selectedTeams.includes(team.name);
             return (
               <Pill
-                key={team.id}
-                onClick={() => onToggleTeam(team.id)}
+                key={teamIdentifier}
+                onClick={() => onToggleTeam(teamIdentifier)}
                 isActive={isSelected}
               >
                 <span>{team.emoji}</span> {team.name}
@@ -143,8 +144,8 @@ const TeamPositionEditor = ({
               gap: "12px" 
             }}
           >
-            {selectedTeams.map((teamName) => {
-              const team = availableTeams.find((t) => t.name === teamName);
+            {selectedTeams.map((teamId) => {
+              const team = availableTeams.find((t) => t.id === teamId || t.name === teamId);
               if (!team) return null;
 
               const allTopLevelPositions = (team.positions || [])
@@ -153,8 +154,8 @@ const TeamPositionEditor = ({
 
               return (
                 <ReorderableTeamItem
-                  key={teamName}
-                  teamName={teamName}
+                  key={teamId}
+                  teamName={teamId}
                   team={team}
                   allTopLevelPositions={allTopLevelPositions}
                   teamPositions={teamPositions}
