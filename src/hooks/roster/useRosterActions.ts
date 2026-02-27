@@ -23,6 +23,7 @@ import {
   resolveCoverageRequestRemote,
 } from "../../store/slices/rosterSlice";
 import { showAlert, setFocusedCell } from "../../store/slices/uiSlice";
+import { pushAction } from "../../store/slices/undoSlice";
 import { useAppDispatch } from "../redux";
 
 export const useRosterActions = (
@@ -114,6 +115,22 @@ export const useRosterActions = (
 
         const entry = entries[dateString];
         const userAssignments = entry?.teams[teamName]?.[userEmail] || [];
+
+        // --- UNDO INTEGRATION ---
+        const targetUserName = allTeamUsers.find(u => u.email === userEmail)?.name || userEmail;
+        dispatch(pushAction({
+          id: crypto.randomUUID(),
+          type: 'assignment',
+          timestamp: Date.now(),
+          payload: {
+            date: dateString,
+            teamName,
+            userEmail,
+            previousAssignments: userAssignments,
+          },
+          description: `Updated assignment for ${targetUserName}`
+        }));
+
         const children = allPositions.filter(
           (p) => p.parentId === activePosition,
         );
@@ -252,9 +269,25 @@ export const useRosterActions = (
           clearedPositions,
         };
 
+        // --- UNDO INTEGRATION ---
+        const userName = allTeamUsers.find(u => u.email === userEmail)?.name || userEmail;
+        dispatch(pushAction({
+          id: crypto.randomUUID(),
+          type: 'absence',
+          timestamp: Date.now(),
+          payload: {
+            date: dateString,
+            userEmail,
+            previousIsAbsent: isCurrentlyAbsent,
+            previousReason: getAbsenceReason(dateString, userEmail),
+            restoredAssignments: targetAbsence ? clearedPositions : undefined,
+          },
+          description: `${targetAbsence ? 'Marked' : 'Removed'} absence for ${userName}`
+        }));
+
         if (targetAbsence && clearedTeams.length > 0) {
           const teamList = clearedTeams.join(", ");
-          const userName = allTeamUsers.find(u => u.email === userEmail)?.name || userEmail;
+          const absentUserNameForAlert = allTeamUsers.find(u => u.email === userEmail)?.name || userEmail;
           dispatch(
             showAlert({
               title: "Clear Existing Assignments?",
@@ -267,7 +300,7 @@ export const useRosterActions = (
                     userIdentifier: userEmail,
                     isAbsent: true,
                     clearedPositions,
-                    userName,
+                    userName: absentUserNameForAlert,
                   }),
                 );
                 dispatch(syncAbsenceRemote(payload));
@@ -277,14 +310,14 @@ export const useRosterActions = (
           return;
         }
 
-        const userName = allTeamUsers.find(u => u.email === userEmail)?.name || userEmail;
+        const currentUserName = allTeamUsers.find(u => u.email === userEmail)?.name || userEmail;
         dispatch(
           applyOptimisticAbsence({
             date: dateString,
             userIdentifier: userEmail,
             isAbsent: targetAbsence,
             clearedPositions: targetAbsence ? clearedPositions : undefined,
-            userName,
+            userName: currentUserName,
           }),
         );
         dispatch(syncAbsenceRemote(payload));
@@ -321,7 +354,7 @@ export const useRosterActions = (
         performUpdate();
       }
     },
-    [isUserAbsent, entries, dispatch, userData, allTeamUsers],
+    [isUserAbsent, entries, dispatch, userData, allTeamUsers, getAbsenceReason],
   );
 
   const handleAbsenceReasonChange = useCallback(
@@ -341,11 +374,25 @@ export const useRosterActions = (
 
   const handleEventNameChange = useCallback(
     (dateString: string, eventName: string) => {
+      const entry = entries[dateString];
+      const previousEventName = entry?.eventName || "";
+
+      dispatch(pushAction({
+        id: crypto.randomUUID(),
+        type: 'eventName',
+        timestamp: Date.now(),
+        payload: {
+          date: dateString,
+          previousEventName,
+        },
+        description: `Updated event name for ${dateString}`
+      }));
+
       const payload = { date: dateString, eventName };
       dispatch(applyOptimisticEventName(payload));
       dispatch(syncEventNameRemote(payload));
     },
-    [dispatch],
+    [dispatch, entries],
   );
 
   const handleSave = useCallback(() => {

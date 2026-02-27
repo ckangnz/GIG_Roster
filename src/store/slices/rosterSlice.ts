@@ -150,6 +150,13 @@ export const syncAbsenceRemote = createAsyncThunk(
         }
       } else {
         updates.push(new FieldPath("absence", userIdentifier), deleteField());
+        
+        // RESTORE team assignments if provided (Undo case)
+        if (clearedPositions) {
+          Object.entries(clearedPositions).forEach(([tName, positions]) => {
+            updates.push(new FieldPath("teams", tName, userIdentifier), positions);
+          });
+        }
       }
 
       // @ts-expect-error - spread for variadic call
@@ -300,6 +307,13 @@ const rosterSlice = createSlice({
         }
       } else {
         delete entry.absence[userIdentifier];
+        // Restore positions if present (Undo case)
+        if (clearedPositions) {
+          Object.entries(clearedPositions).forEach(([tName, positions]) => {
+            if (!entry.teams[tName]) entry.teams[tName] = {};
+            entry.teams[tName][userIdentifier] = positions;
+          });
+        }
       }
     },
     applyOptimisticEventName(state, action: PayloadAction<{ date: string; eventName: string }>) {

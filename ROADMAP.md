@@ -23,7 +23,8 @@ High-priority technical debt and security infrastructure.
 Enhancing the day-to-day experience for members and leads.
 
 - [x] **Conflict Detection Visuals**: Show a "soft warning" (e.g., yellow dot) in the roster when a user is assigned to multiple positions/teams on the same day.
-- [ ] **Enhanced Loading States**: Implement skeleton screens for the Roster grid to replace the full-page spinner.
+- [ ] **Global Undo System (Ctrl+Z)**: Allow users to quickly revert their own recent roster assignments or absence changes.
+- [x] **Enhanced Loading States**: Implement skeleton screens for the Roster grid to replace the full-page spinner.
 
 ---
 

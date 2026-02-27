@@ -12,6 +12,7 @@ import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { useAppListeners } from "../../hooks/useAppListeners";
 import { setLastVisitedPath } from "../../store/slices/uiSlice";
 import ConfirmModal from "../common/ConfirmModal";
+import UndoToast from "../common/UndoToast";
 import BottomNav from "../navigation/BottomNav";
 import SideNav from "../navigation/SideNav";
 
@@ -174,6 +175,7 @@ const MainLayout = () => {
 
         <BottomNav />
       </div>
+      <UndoToast />
       <ConfirmModal />
     </div>
   );

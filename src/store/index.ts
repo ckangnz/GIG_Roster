@@ -9,6 +9,7 @@ import { rosterViewReducer } from './slices/rosterViewSlice';
 import { teamsReducer } from './slices/teamsSlice';
 import { thoughtsReducer } from './slices/thoughtsSlice';
 import { uiReducer } from './slices/uiSlice';
+import { undoReducer } from './slices/undoSlice';
 import { userManagementReducer } from './slices/userManagementSlice';
 
 export const store = configureStore({
@@ -21,6 +22,7 @@ export const store = configureStore({
     teams: teamsReducer,
     thoughts: thoughtsReducer,
     ui: uiReducer,
+    undo: undoReducer,
     userManagement: userManagementReducer,
   },
   middleware: (getDefaultMiddleware) =>
