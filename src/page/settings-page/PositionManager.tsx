@@ -54,7 +54,7 @@ const DraggableRowBlock = ({
         const actualIdx = indexInPositions + 1 + childIdx;
         return (
           <PositionManagementRow
-            key={child.name}
+            key={child.id}
             position={child}
             index={actualIdx}
             onUpdate={onUpdate}
@@ -78,6 +78,7 @@ const PositionManagement = () => {
   const hasChanges = useMemo(() => {
     const normalize = (list: Position[]) =>
       list.map((p) => ({
+        id: p.id,
         name: p.name || "",
         emoji: p.emoji || "",
         colour: p.colour || "",
@@ -101,15 +102,15 @@ const PositionManagement = () => {
     const processed = new Set<string>();
 
     positions.forEach((p) => {
-      if (!p.parentId && !processed.has(p.name)) {
-        const children = positions.filter((c) => c.parentId === p.name);
+      if (!p.parentId && !processed.has(p.id)) {
+        const children = positions.filter((c) => c.parentId === p.id);
         blocks.push({
-          id: p.name,
+          id: p.id,
           parent: p,
           children,
         });
-        processed.add(p.name);
-        children.forEach((c) => processed.add(c.name));
+        processed.add(p.id);
+        children.forEach((c) => processed.add(c.id));
       }
     });
 
@@ -128,7 +129,7 @@ const PositionManagement = () => {
   ) => {
     setPositions((prev) => {
       const updated = [...prev];
-      const oldName = updated[index].name;
+      const oldId = updated[index].id;
       const updates: Partial<Position> = { [field]: value };
 
       if (field === "isCustom" && value === true) {
@@ -137,10 +138,10 @@ const PositionManagement = () => {
 
       updated[index] = { ...updated[index], ...updates };
 
-      // If name changed, update all children's parentId
-      if (field === "name" && !updated[index].parentId) {
+      // If ID changed (shouldn't happen often now), update all children's parentId
+      if (field === "id" && !updated[index].parentId) {
         updated.forEach((p, i) => {
-          if (p.parentId === oldName) {
+          if (p.parentId === oldId) {
             updated[i] = { ...p, parentId: value as string };
           }
         });
@@ -153,7 +154,7 @@ const PositionManagement = () => {
   const addPosition = (newPos: Position) => {
     if (newPos.parentId) {
       setPositions((prev) => {
-        const parentIndex = prev.findIndex(p => p.name === newPos.parentId);
+        const parentIndex = prev.findIndex(p => p.id === newPos.parentId);
         if (parentIndex === -1) return [...prev, newPos];
         
         let insertIndex = parentIndex;
@@ -185,7 +186,7 @@ const PositionManagement = () => {
 
         if (!positionToDelete.parentId) {
           updatedPositions = updatedPositions.filter(
-            (p) => p.parentId !== positionToDelete.name,
+            (p) => p.parentId !== positionToDelete.id,
           );
         }
         setPositions(updatedPositions);
@@ -198,7 +199,7 @@ const PositionManagement = () => {
     try {
       const positionsToSave = positions.map((p) => {
         const cleanPos: Position = {
-          id: p.id || p.name,
+          id: p.id,
           name: p.name || "",
           emoji: p.emoji || "",
           colour: p.colour || "",
@@ -263,7 +264,7 @@ const PositionManagement = () => {
           <>
             {positionBlocks.map((block) => {
               const parentIdx = positions.findIndex(
-                (p) => p.name === block.parent.name,
+                (p) => p.id === block.parent.id,
               );
               return (
                 <DraggableRowBlock

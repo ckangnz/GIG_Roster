@@ -193,7 +193,7 @@ const TeamManagement = () => {
           <Reorder.Group axis="y" values={teams} onReorder={setTeams} as="tbody">
             {teams.map((team, teamIndex) => (
               <TeamManagementRow
-                key={`${team.emoji}-${team.name}`}
+                key={team.id}
                 team={team}
                 teamIndex={teamIndex}
                 availablePositions={availablePositions}
