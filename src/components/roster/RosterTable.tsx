@@ -1,5 +1,6 @@
 import { ReactNode, useEffect, RefObject } from "react";
 
+import { motion } from "framer-motion";
 import { RefreshCw } from "lucide-react";
 
 import TopControls from "./TopControls";
@@ -160,10 +161,6 @@ const RosterTable = ({
     setFocusedCell,
   ]);
 
-  if (isLoading) {
-    return <Spinner />;
-  }
-
   if (error) {
     return <div className={styles.rosterTableError}>Error: {error}</div>;
   }
@@ -190,49 +187,65 @@ const RosterTable = ({
       )}
 
       <div className={styles.rosterSection}>
-        <table
-          className={`${styles.rosterTable} ${isAbsenceView ? styles.absenceTable : ""}`}
-        >
-          {renderHeader()}
-          <tbody>
-            {hasPastDates && (
-              <tr className={headerStyles.resetRow}>
-                <td
-                  className={`${rowStyles.dateCell} ${rowStyles.stickyCol} ${headerStyles.resetCell}`}
-                >
-                  <button
-                    className={headerStyles.loadPrevBtn}
-                    onClick={() => dispatch(resetToUpcomingDates())}
-                    title="Reset to upcoming dates"
-                  >
-                    <RefreshCw size={16} />
-                  </button>
-                </td>
-                <td
-                  colSpan={colCount + (isAllView ? 0 : 1)} // +1 for Peek column
-                  className={cellStyles.rosterCell}
-                  style={{
-                    textAlign: "left",
-                    paddingLeft: "12px",
-                    fontSize: "0.85rem",
-                    color: "var(--color-primary)",
-                    fontWeight: "500",
-                    cursor: "pointer",
-                  }}
-                  onClick={() => dispatch(resetToUpcomingDates())}
-                >
-                  Past dates loaded. Click to reset to today.
-                </td>
-              </tr>
-            )}
-            {children}
-          </tbody>
-        </table>
-        <div className={styles.loadMoreFooter}>
-          <button className={styles.loadNextYearBtn} onClick={onLoadNextYear}>
-            Load Next Year ↓
-          </button>
-        </div>
+        {isLoading ? (
+          <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <Spinner />
+          </div>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
+            style={{ width: "100%" }}
+          >
+            <table
+              className={`${styles.rosterTable} ${isAbsenceView ? styles.absenceTable : ""}`}
+            >
+              {renderHeader()}
+              <tbody>
+                {hasPastDates && (
+                  <tr className={headerStyles.resetRow}>
+                    <td
+                      className={`${rowStyles.dateCell} ${rowStyles.stickyCol} ${headerStyles.resetCell}`}
+                    >
+                      <button
+                        className={headerStyles.loadPrevBtn}
+                        onClick={() => dispatch(resetToUpcomingDates())}
+                        title="Reset to upcoming dates"
+                      >
+                        <RefreshCw size={16} />
+                      </button>
+                    </td>
+                    <td
+                      colSpan={colCount + (isAllView ? 0 : 1)} // +1 for Peek column
+                      className={cellStyles.rosterCell}
+                      style={{
+                        textAlign: "left",
+                        paddingLeft: "12px",
+                        fontSize: "0.85rem",
+                        color: "var(--color-primary)",
+                        fontWeight: "500",
+                        cursor: "pointer",
+                      }}
+                      onClick={() => dispatch(resetToUpcomingDates())}
+                    >
+                      Past dates loaded. Click to reset to today.
+                    </td>
+                  </tr>
+                )}
+                {children}
+              </tbody>
+            </table>
+            <div className={styles.loadMoreFooter}>
+              <button
+                className={styles.loadNextYearBtn}
+                onClick={onLoadNextYear}
+              >
+                Load Next Year ↓
+              </button>
+            </div>
+          </motion.div>
+        )}
       </div>
     </div>
   );
