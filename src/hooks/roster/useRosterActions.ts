@@ -30,6 +30,7 @@ export const useRosterActions = (
   allTeams: Team[] = [],
   entries: Record<string, RosterEntry> = {},
   allTeamUsers: AppUser[] = [],
+  userData: { email?: string | null; isAdmin?: boolean } | null = null,
 ) => {
   const dispatch = useAppDispatch();
 
@@ -98,53 +99,75 @@ export const useRosterActions = (
         !activePosition
       )
         return;
-      if (isCellDisabled(dateString, userEmail)) {
+
+      const isMe = userEmail === userData?.email;
+      const isAdmin = userData?.isAdmin;
+
+      const performUpdate = () => {
+        if (isCellDisabled(dateString, userEmail)) {
+          dispatch(setFocusedCell({ row, col, table: "roster" }));
+          return;
+        }
         dispatch(setFocusedCell({ row, col, table: "roster" }));
-        return;
-      }
-      dispatch(setFocusedCell({ row, col, table: "roster" }));
 
-      const entry = entries[dateString];
-      const userAssignments = entry?.teams[teamName]?.[userEmail] || [];
-      const children = allPositions.filter(
-        (p) => p.parentId === activePosition,
-      );
-      const positionGroupNames: string[] = [
-        activePosition,
-        ...children.map((c) => c.name),
-      ];
+        const entry = entries[dateString];
+        const userAssignments = entry?.teams[teamName]?.[userEmail] || [];
+        const children = allPositions.filter(
+          (p) => p.parentId === activePosition,
+        );
+        const positionGroupNames: string[] = [
+          activePosition,
+          ...children.map((c) => c.name),
+        ];
 
-      const currentInGroupIndex = positionGroupNames.findIndex((p) =>
-        userAssignments.includes(p),
-      );
-      const currentInGroupName =
-        currentInGroupIndex >= 0 ? positionGroupNames[currentInGroupIndex] : null;
+        const currentInGroupIndex = positionGroupNames.findIndex((p) =>
+          userAssignments.includes(p),
+        );
+        const currentInGroupName =
+          currentInGroupIndex >= 0
+            ? positionGroupNames[currentInGroupIndex]
+            : null;
 
-      let nextPositionName: string | null = null;
-      if (currentInGroupName === null) {
-        nextPositionName = positionGroupNames[0];
-      } else if (currentInGroupIndex < positionGroupNames.length - 1) {
-        nextPositionName = positionGroupNames[currentInGroupIndex + 1];
-      } else {
-        nextPositionName = null;
-      }
+        let nextPositionName: string | null = null;
+        if (currentInGroupName === null) {
+          nextPositionName = positionGroupNames[0];
+        } else if (currentInGroupIndex < positionGroupNames.length - 1) {
+          nextPositionName = positionGroupNames[currentInGroupIndex + 1];
+        } else {
+          nextPositionName = null;
+        }
 
-      const updatedAssignments = userAssignments.filter(
-        (p) => !positionGroupNames.includes(p),
-      );
-      if (nextPositionName) {
-        updatedAssignments.push(nextPositionName);
-      }
+        const updatedAssignments = userAssignments.filter(
+          (p) => !positionGroupNames.includes(p),
+        );
+        if (nextPositionName) {
+          updatedAssignments.push(nextPositionName);
+        }
 
-      const payload = {
-        date: dateString,
-        teamName,
-        userIdentifier: userEmail,
-        updatedAssignments,
+        const payload = {
+          date: dateString,
+          teamName,
+          userIdentifier: userEmail,
+          updatedAssignments,
+        };
+
+        dispatch(applyOptimisticAssignment(payload));
+        dispatch(syncAssignmentRemote(payload));
       };
 
-      dispatch(applyOptimisticAssignment(payload));
-      dispatch(syncAssignmentRemote(payload));
+      if (!isMe && !isAdmin) {
+        const targetUser = allTeamUsers.find((u) => u.email === userEmail);
+        dispatch(
+          showAlert({
+            title: "Edit Teammate's Roster?",
+            message: `You are about to change ${targetUser?.name || userEmail}'s assignment. Please ensure you have coordinated this swap with them.`,
+            confirmText: "Change Assignment",
+            onConfirm: performUpdate,
+          }),
+        );
+      } else {
+        performUpdate();
+      }
     },
     [
       activePosition,
@@ -153,68 +176,89 @@ export const useRosterActions = (
       entries,
       allPositions,
       dispatch,
+      userData,
+      allTeamUsers,
     ],
   );
 
   const handleAbsenceClick = useCallback(
     (dateString: string, userEmail: string, row: number, col: number) => {
-      dispatch(setFocusedCell({ row, col, table: "absence" }));
-      const isCurrentlyAbsent = isUserAbsent(dateString, userEmail);
-      const targetAbsence = !isCurrentlyAbsent;
+      const isMe = userEmail === userData?.email;
+      const isAdmin = userData?.isAdmin;
 
-      const entry = entries[dateString];
-      const clearedTeams: string[] = [];
-      if (targetAbsence && entry) {
-        Object.entries(entry.teams).forEach(([tName, teamAssignments]) => {
-          const assignments = teamAssignments as TeamAssignments;
-          if (
-            Array.isArray(assignments[userEmail]) &&
-            assignments[userEmail].length > 0
-          ) {
-            clearedTeams.push(tName);
-          }
-        });
-      }
+      const performUpdate = () => {
+        dispatch(setFocusedCell({ row, col, table: "absence" }));
+        const isCurrentlyAbsent = isUserAbsent(dateString, userEmail);
+        const targetAbsence = !isCurrentlyAbsent;
 
-      const payload = {
-        date: dateString,
-        userIdentifier: userEmail,
-        isAbsent: targetAbsence,
-        clearedTeams,
-      };
+        const entry = entries[dateString];
+        const clearedTeams: string[] = [];
+        if (targetAbsence && entry) {
+          Object.entries(entry.teams).forEach(([tName, teamAssignments]) => {
+            const assignments = teamAssignments as TeamAssignments;
+            if (
+              Array.isArray(assignments[userEmail]) &&
+              assignments[userEmail].length > 0
+            ) {
+              clearedTeams.push(tName);
+            }
+          });
+        }
 
-      if (targetAbsence && clearedTeams.length > 0) {
-        const teamList = clearedTeams.join(", ");
-        dispatch(
-          showAlert({
-            title: "Clear Existing Assignments?",
-            message: `User is already assigned to: ${teamList}. Marking them as absent will remove these assignments. Continue?`,
-            confirmText: "Mark Absent",
-            onConfirm: () => {
-              dispatch(
-                applyOptimisticAbsence({
-                  date: dateString,
-                  userIdentifier: userEmail,
-                  isAbsent: true,
-                }),
-              );
-              dispatch(syncAbsenceRemote(payload));
-            },
-          }),
-        );
-        return;
-      }
-
-      dispatch(
-        applyOptimisticAbsence({
+        const payload = {
           date: dateString,
           userIdentifier: userEmail,
           isAbsent: targetAbsence,
-        }),
-      );
-      dispatch(syncAbsenceRemote(payload));
+          clearedTeams,
+        };
+
+        if (targetAbsence && clearedTeams.length > 0) {
+          const teamList = clearedTeams.join(", ");
+          dispatch(
+            showAlert({
+              title: "Clear Existing Assignments?",
+              message: `User is already assigned to: ${teamList}. Marking them as absent will remove these assignments. Continue?`,
+              confirmText: "Mark Absent",
+              onConfirm: () => {
+                dispatch(
+                  applyOptimisticAbsence({
+                    date: dateString,
+                    userIdentifier: userEmail,
+                    isAbsent: true,
+                  }),
+                );
+                dispatch(syncAbsenceRemote(payload));
+              },
+            }),
+          );
+          return;
+        }
+
+        dispatch(
+          applyOptimisticAbsence({
+            date: dateString,
+            userIdentifier: userEmail,
+            isAbsent: targetAbsence,
+          }),
+        );
+        dispatch(syncAbsenceRemote(payload));
+      };
+
+      if (!isMe && !isAdmin) {
+        const targetUser = allTeamUsers.find((u) => u.email === userEmail);
+        dispatch(
+          showAlert({
+            title: "Update Teammate's Absence?",
+            message: `You are about to mark ${targetUser?.name || userEmail} as ${isUserAbsent(dateString, userEmail) ? "present" : "absent"}. Confirm if this was requested.`,
+            confirmText: "Update Absence",
+            onConfirm: performUpdate,
+          }),
+        );
+      } else {
+        performUpdate();
+      }
     },
-    [isUserAbsent, entries, dispatch],
+    [isUserAbsent, entries, dispatch, userData, allTeamUsers],
   );
 
   const handleAbsenceReasonChange = useCallback(

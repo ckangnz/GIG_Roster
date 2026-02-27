@@ -35,7 +35,8 @@ export const useRosterBaseLogic = () => {
     allPositions,
     allTeams,
     entries,
-    allTeamUsers
+    allTeamUsers,
+    data.userData
   );
 
   // Maintain existing unified API
