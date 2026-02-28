@@ -3,14 +3,14 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { Reorder } from "framer-motion";
 import { Plus } from "lucide-react";
 
-import NewTeamModal from "./NewTeamModal";
+import TeamConfigModal from "./TeamConfigModal";
 import TeamManagementRow from "./TeamManagementRow";
 import Button from "../../components/common/Button";
 import SaveFooter from "../../components/common/SaveFooter";
 import SettingsTable from "../../components/common/SettingsTable";
 import Spinner from "../../components/common/Spinner";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
-import { Position, RecurringEvent, Team, Weekday } from "../../model/model";
+import { Team } from "../../model/model";
 import { updateTeams } from "../../store/slices/teamsSlice";
 import { showAlert } from "../../store/slices/uiSlice";
 import { cleanupUsersAfterDeletion } from "../../store/slices/userManagementSlice";
@@ -26,7 +26,8 @@ const TeamManagement = () => {
     useAppSelector((state) => state.positions);
 
   const [teams, setTeams] = useState<Team[]>(reduxTeams);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingTeamIndex, setEditingTeamIndex] = useState<number | null>(null);
+  const [isNewTeamModalOpen, setIsNewTeamModalOpen] = useState(false);
   const [status, setStatus] = useState("idle");
 
   const hasChanges = useMemo(() => {
@@ -71,59 +72,16 @@ const TeamManagement = () => {
     });
   }, []);
 
-  const togglePosition = useCallback((teamIndex: number, pos: Position) => {
-    setTeams(prev => prev.map((team, index) => {
-      if (index !== teamIndex) return team;
-
-      const currentPositionIds = team.positions || [];
-      const newPositionIds = currentPositionIds.includes(pos.id)
-        ? currentPositionIds.filter((id) => id !== pos.id)
-        : [...currentPositionIds, pos.id];
-      return { ...team, positions: newPositionIds };
-    }));
-  }, []);
-
-  const toggleDay = useCallback((teamIndex: number, day: Weekday) => {
-    setTeams(prev => prev.map((team, index) => {
-      if (index !== teamIndex) return team;
-
-      const currentDays = team.preferredDays || [];
-      const newDays = currentDays.includes(day)
-        ? currentDays.filter((d) => d !== day)
-        : [...currentDays, day];
-      return { ...team, preferredDays: newDays };
-    }));
-  }, []);
-
-  const toggleAllowAbsence = useCallback((teamIndex: number, allow: boolean) => {
-    setTeams(prev => prev.map((team, index) => {
-      if (index !== teamIndex) return team;
-      return { ...team, allowAbsence: allow };
-    }));
-  }, []);
-
-  const handleUpdateEvents = useCallback((index: number, events: RecurringEvent[]) => {
-    setTeams(prev => {
-      const updated = [...prev];
-      updated[index] = { ...updated[index], recurringEvents: events };
-      return updated;
-    });
-  }, []);
-
-  const handleUpdateDayEndTime = useCallback((index: number, day: Weekday, time: string) => {
-    setTeams(prev => {
-      const updated = [...prev];
-      const currentEndTimes = updated[index].dayEndTimes || {};
-      updated[index] = { 
-        ...updated[index], 
-        dayEndTimes: { ...currentEndTimes, [day]: time } 
-      };
-      return updated;
-    });
-  }, []);
-
-  const addTeam = (newTeam: Team) => {
-    setTeams([...teams, newTeam]);
+  const handleApplyTeamConfig = (updatedTeam: Team) => {
+    if (editingTeamIndex !== null) {
+      setTeams(prev => {
+        const updated = [...prev];
+        updated[editingTeamIndex] = updatedTeam;
+        return updated;
+      });
+    } else {
+      setTeams(prev => [...prev, updatedTeam]);
+    }
   };
 
   const deleteTeam = (index: number) => {
@@ -213,12 +171,7 @@ const TeamManagement = () => {
                 availablePositions={availablePositions}
                 onUpdate={handleUpdate}
                 onDelete={deleteTeam}
-                onTogglePosition={togglePosition}
-                onToggleDay={toggleDay}
-                onToggleAllowAbsence={toggleAllowAbsence}
-                onUpdateEvents={handleUpdateEvents}
-                onUpdateDayEndTime={handleUpdateDayEndTime}
-                onUpdateField={(field, val) => handleUpdate(teamIndex, field, val)}
+                onEdit={(idx) => setEditingTeamIndex(idx)}
               />
             ))}
           </Reorder.Group>
@@ -228,16 +181,20 @@ const TeamManagement = () => {
       </SettingsTable>
 
       <div style={{ display: "flex", justifyContent: "flex-end" }}>
-        <Button variant="primary" onClick={() => setIsModalOpen(true)}>
+        <Button variant="primary" onClick={() => setIsNewTeamModalOpen(true)}>
           <Plus size={18} style={{ marginRight: "8px" }} />
           New Team
         </Button>
       </div>
 
-      <NewTeamModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onAdd={addTeam}
+      <TeamConfigModal
+        isOpen={isNewTeamModalOpen || editingTeamIndex !== null}
+        onClose={() => {
+          setIsNewTeamModalOpen(false);
+          setEditingTeamIndex(null);
+        }}
+        team={editingTeamIndex !== null ? teams[editingTeamIndex] : null}
+        onSave={handleApplyTeamConfig}
         availablePositions={availablePositions}
       />
 

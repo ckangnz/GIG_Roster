@@ -1,26 +1,42 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import { Reorder, useDragControls } from "framer-motion";
-import { Plus, Trash2, GripVertical, Clock, CalendarPlus, Sparkles, ChevronDown, ChevronUp, Eraser } from "lucide-react";
+import { 
+  Plus, 
+  Trash2, 
+  GripVertical, 
+  Clock, 
+  Sparkles, 
+  CalendarPlus, 
+  ChevronDown, 
+  ChevronUp, 
+  Eraser 
+} from "lucide-react";
 
 import Button from "../../components/common/Button";
 import { InputField, SelectField } from "../../components/common/InputField";
 import Modal from "../../components/common/Modal";
 import Pill, { PillGroup } from "../../components/common/Pill";
-import { SettingsGroup, SettingsRow } from "../../components/common/SettingsGroup";
+import { SettingsGroup } from "../../components/common/SettingsGroup";
 import Toggle from "../../components/common/Toggle";
 import { useAppDispatch } from "../../hooks/redux";
-import { Position, Team, Weekday, RecurringEvent, RosterSlot } from "../../model/model";
+import { 
+  Position, 
+  RecurringEvent, 
+  Team, 
+  Weekday, 
+  RosterSlot,
+} from "../../model/model";
 import { showAlert } from "../../store/slices/uiSlice";
 import formStyles from "../../styles/form.module.css";
 
 import localStyles from "./team-edit-modal.module.css";
 
-
-interface NewTeamModalProps {
+interface TeamConfigModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAdd: (team: Team) => void;
+  team: Team | null; // null means "Create Mode"
+  onSave: (team: Team) => void;
   availablePositions: Position[];
 }
 
@@ -33,6 +49,8 @@ const WEEK_DAYS: Weekday[] = [
   "Friday",
   "Saturday",
 ];
+
+const EMOJI_REGEX = /(\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])/g;
 
 const defaultTeam: Team = {
   id: "",
@@ -47,8 +65,6 @@ const defaultTeam: Team = {
   rosterMode: "daily",
   slots: [],
 };
-
-const EMOJI_REGEX = /(\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])/g;
 
 const SlotItem = ({
   slot,
@@ -189,56 +205,38 @@ const EventItem = ({
   );
 };
 
-const NewTeamModal = ({ isOpen, onClose, onAdd, availablePositions }: NewTeamModalProps) => {
+const TeamConfigModal = ({ 
+  isOpen, 
+  onClose, 
+  team, 
+  onSave, 
+  availablePositions 
+}: TeamConfigModalProps) => {
   const dispatch = useAppDispatch();
-  const [newTeam, setNewTeam] = useState<Team>(defaultTeam);
+  const [draft, setDraft] = useState<Team>(defaultTeam);
   
-  // Generator states
+  // UI States
   const [showGenerator, setShowGenerator] = useState(false);
   const [genStart, setGenStart] = useState("08:00");
   const [genEnd, setGenEnd] = useState("10:00");
   const [genInterval, setGenInterval] = useState(15);
 
-  const handleAdd = () => {
-    if (!newTeam.name.trim() || !newTeam.emoji.trim()) return;
-    
-    const teamToAdd: Team = {
-      ...newTeam,
-      id: crypto.randomUUID()
-    };
-    
-    onAdd(teamToAdd);
-    setNewTeam(defaultTeam);
-    onClose();
+  useEffect(() => {
+    if (isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setDraft(team ? JSON.parse(JSON.stringify(team)) : { ...defaultTeam, id: crypto.randomUUID() });
+      setShowGenerator(false);
+    }
+  }, [isOpen, team]);
+
+  const updateDraft = (updates: Partial<Team>) => {
+    setDraft(prev => ({ ...prev, ...updates }));
   };
 
   const handleEmojiChange = (val: string) => {
     const onlyEmojis = val.match(EMOJI_REGEX)?.join("") || "";
     const limited = Array.from(onlyEmojis).slice(0, 1).join("");
-    setNewTeam({ ...newTeam, emoji: limited });
-  };
-
-  const handleAddEvent = () => {
-    const newEvent: RecurringEvent = {
-      id: Math.random().toString(36).substring(2, 10),
-      label: "",
-      day: "Sunday",
-      startTime: "09:00",
-      endTime: "10:30",
-    };
-    setNewTeam({ ...newTeam, recurringEvents: [...(newTeam.recurringEvents || []), newEvent] });
-  };
-
-  const handleUpdateEvent = (id: string, field: keyof RecurringEvent, value: string | number) => {
-    const updated = (newTeam.recurringEvents || []).map((ev) =>
-      ev.id === id ? { ...ev, [field]: value } : ev,
-    );
-    setNewTeam({ ...newTeam, recurringEvents: updated });
-  };
-
-  const handleRemoveEvent = (id: string) => {
-    const updated = (newTeam.recurringEvents || []).filter((ev) => ev.id !== id);
-    setNewTeam({ ...newTeam, recurringEvents: updated });
+    updateDraft({ emoji: limited });
   };
 
   const handleAutoGenerateSlots = () => {
@@ -275,7 +273,7 @@ const NewTeamModal = ({ isOpen, onClose, onAdd, availablePositions }: NewTeamMod
       currentTotalMinutes = nextTotalMinutes;
     }
 
-    setNewTeam({ ...newTeam, slots });
+    updateDraft({ slots });
     setShowGenerator(false);
   };
 
@@ -284,51 +282,98 @@ const NewTeamModal = ({ isOpen, onClose, onAdd, availablePositions }: NewTeamMod
       title: "Clear All Slots?",
       message: "This will remove all current time slots for this team. This action cannot be undone.",
       confirmText: "Clear All",
-      onConfirm: () => setNewTeam({ ...newTeam, slots: [] })
+      onConfirm: () => updateDraft({ slots: [] })
     }));
   };
 
+  const handleAddSlot = () => {
+    const newSlot: RosterSlot = {
+      id: crypto.randomUUID(),
+      label: "New Slot",
+      startTime: "09:00",
+      endTime: "09:15",
+    };
+    updateDraft({ slots: [...(draft.slots || []), newSlot] });
+  };
+
+  const handleAddEvent = () => {
+    const newEvent: RecurringEvent = {
+      id: Math.random().toString(36).substring(2, 10),
+      label: "",
+      day: "Sunday",
+      startTime: "09:00",
+      endTime: "10:30",
+    };
+    updateDraft({ recurringEvents: [...(draft.recurringEvents || []), newEvent] });
+  };
+
+  const isFormValid = draft.name.trim() !== "" && draft.emoji.trim() !== "";
+
+  const footer = (
+    <div style={{ display: "flex", gap: "12px", width: "100%" }}>
+      <Button variant="secondary" onClick={onClose} style={{ flex: 1 }}>
+        Cancel
+      </Button>
+      <Button 
+        variant="primary" 
+        onClick={() => { onSave(draft); onClose(); }} 
+        disabled={!isFormValid}
+        style={{ flex: 2 }}
+      >
+        {team ? "Apply Changes" : "Create Team"}
+      </Button>
+    </div>
+  );
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Create New Team">
+    <Modal 
+      isOpen={isOpen} 
+      onClose={onClose} 
+      title={team ? `Edit Team: ${team.name}` : "Create New Team"}
+      footer={footer}
+    >
       <div style={{ display: "flex", flexDirection: "column", gap: "24px", padding: "10px 0" }}>
+        
         {/* Basic Info */}
         <SettingsGroup label="General Information">
           <InputField
             label="Team Name"
-            value={newTeam.name}
-            placeholder=""
-            onChange={(e) => setNewTeam({ ...newTeam, name: e.target.value })}
-            autoFocus
+            value={draft.name}
+            placeholder="e.g. Production"
+            onChange={(e) => updateDraft({ name: e.target.value })}
           />
           
           <InputField
             label="Team Emoji"
-            value={newTeam.emoji}
+            value={draft.emoji}
             placeholder="Select emoji"
             onChange={(e) => handleEmojiChange(e.target.value)}
             maxLength={10}
           />
 
-          <SettingsRow 
-            label="Max Concurrent Conflicts" 
-            description="Maximum number of simultaneous positions a member can be assigned to within this team on a single day."
-          >
+          <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+            <span style={{ fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "1.2px", color: "var(--color-text-dim)", fontWeight: 700 }}>
+              Max Concurrent Conflicts
+            </span>
             <input
               type="number"
               className={formStyles.formInput}
-              value={newTeam.maxConflict?.toString() || "1"}
-              onChange={(e) => setNewTeam({ ...newTeam, maxConflict: parseInt(e.target.value) || 1 })}
-              style={{ width: "100px", marginTop: "8px" }}
+              value={draft.maxConflict?.toString() || "1"}
+              onChange={(e) => updateDraft({ maxConflict: parseInt(e.target.value) || 1 })}
+              style={{ width: "100px" }}
             />
-          </SettingsRow>
+            <p style={{ fontSize: "0.75rem", color: "var(--color-text-dim)", margin: 0 }}>
+              Maximum simultaneous positions a member can have.
+            </p>
+          </div>
         </SettingsGroup>
 
         {/* Roster Mode Section */}
         <SettingsGroup label="Roster Accuracy" description="How precise should the schedule be?">
           <div className={localStyles.rosterModeContainer}>
             <button 
-              className={`${localStyles.modeBtn} ${newTeam.rosterMode !== 'slotted' ? localStyles.modeBtnActive : ""}`}
-              onClick={() => setNewTeam({ ...newTeam, rosterMode: 'daily' })}
+              className={`${localStyles.modeBtn} ${draft.rosterMode !== 'slotted' ? localStyles.modeBtnActive : ""}`}
+              onClick={() => updateDraft({ rosterMode: 'daily' })}
             >
               <CalendarPlus size={20} />
               <div style={{ textAlign: 'left' }}>
@@ -337,8 +382,8 @@ const NewTeamModal = ({ isOpen, onClose, onAdd, availablePositions }: NewTeamMod
               </div>
             </button>
             <button 
-              className={`${localStyles.modeBtn} ${newTeam.rosterMode === 'slotted' ? localStyles.modeBtnActive : ""}`}
-              onClick={() => setNewTeam({ ...newTeam, rosterMode: 'slotted' })}
+              className={`${localStyles.modeBtn} ${draft.rosterMode === 'slotted' ? localStyles.modeBtnActive : ""}`}
+              onClick={() => updateDraft({ rosterMode: 'slotted' })}
               disabled
               title="Slotted Mode coming soon"
               style={{ opacity: 0.6, cursor: 'not-allowed' }}
@@ -353,7 +398,7 @@ const NewTeamModal = ({ isOpen, onClose, onAdd, availablePositions }: NewTeamMod
         </SettingsGroup>
 
         {/* Slotted Mode Management */}
-        {newTeam.rosterMode === 'slotted' && (
+        {draft.rosterMode === 'slotted' && (
           <SettingsGroup label="Time Slots Configuration" description="Define the timing pattern for this team">
             <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
               <Button 
@@ -401,7 +446,7 @@ const NewTeamModal = ({ isOpen, onClose, onAdd, availablePositions }: NewTeamMod
                     variant="primary" 
                     onClick={handleAutoGenerateSlots} 
                     disabled={genInterval <= 0}
-                    style={{ height: '42px' }}
+                    style={{ height: '36px' }}
                   >
                     Generate
                   </Button>
@@ -411,26 +456,35 @@ const NewTeamModal = ({ isOpen, onClose, onAdd, availablePositions }: NewTeamMod
 
             <Reorder.Group
               axis="y"
-              values={newTeam.slots || []}
-              onReorder={(newOrder) => setNewTeam({ ...newTeam, slots: newOrder })}
+              values={draft.slots || []}
+              onReorder={(newOrder) => updateDraft({ slots: newOrder })}
               className={localStyles.eventList}
               style={{ listStyle: "none", padding: 0, margin: 0 }}
             >
-              {(newTeam.slots || []).map((slot) => (
+              {(draft.slots || []).map((slot) => (
                 <SlotItem
                   key={slot.id}
                   slot={slot}
                   onUpdate={(id, field, val) => {
-                    const updated = (newTeam.slots || []).map(s => s.id === id ? { ...s, [field]: val } : s);
-                    setNewTeam({ ...newTeam, slots: updated });
+                    const updated = (draft.slots || []).map(s => s.id === id ? { ...s, [field]: val } : s);
+                    updateDraft({ slots: updated });
                   }}
                   onRemove={(id) => {
-                    const updated = (newTeam.slots || []).filter(s => s.id !== id);
-                    setNewTeam({ ...newTeam, slots: updated });
+                    const updated = (draft.slots || []).filter(s => s.id !== id);
+                    updateDraft({ slots: updated });
                   }}
                 />
               ))}
             </Reorder.Group>
+
+            <Button
+              onClick={handleAddSlot}
+              className={localStyles.addEntryBtn}
+              variant="secondary"
+              style={{ width: '100%', marginTop: '12px' }}
+            >
+              <Plus size={16} style={{ marginRight: 8 }} /> Add custom slot
+            </Button>
           </SettingsGroup>
         )}
 
@@ -440,18 +494,18 @@ const NewTeamModal = ({ isOpen, onClose, onAdd, availablePositions }: NewTeamMod
             {availablePositions
               ?.filter((pos) => !pos.parentId)
               ?.map((pos) => {
-                const isActive = newTeam.positions?.some((pId) => pId === pos.id);
+                const isActive = draft.positions?.some((pId) => pId === pos.id);
                 return (
                   <Pill
                     key={pos.id}
                     colour={pos.colour}
                     isActive={isActive}
                     onClick={() => {
-                      const current = newTeam.positions || [];
-                      const updated = current.some(pId => pId === pos.id)
+                      const current = draft.positions || [];
+                      const updated = current.includes(pos.id)
                         ? current.filter(pId => pId !== pos.id)
                         : [...current, pos.id];
-                      setNewTeam({ ...newTeam, positions: updated });
+                      updateDraft({ positions: updated });
                     }}
                   >
                     {pos.emoji} {pos.name}
@@ -462,10 +516,10 @@ const NewTeamModal = ({ isOpen, onClose, onAdd, availablePositions }: NewTeamMod
         </SettingsGroup>
 
         {/* Preferred Days */}
-        <SettingsGroup label="Preferred Days & End Times" description="Operating days and when the roster cycle ends">
+        <SettingsGroup label="Preferred Days & End Times" description="Operating days and cut-off times">
           <div className={localStyles.preferredDaysGrid}>
             {WEEK_DAYS.map((day) => {
-              const isActive = newTeam.preferredDays?.includes(day);
+              const isActive = draft.preferredDays?.includes(day);
               return (
                 <div
                   key={day}
@@ -476,11 +530,11 @@ const NewTeamModal = ({ isOpen, onClose, onAdd, availablePositions }: NewTeamMod
                     <Toggle
                       isOn={isActive}
                       onToggle={(isOn) => {
-                        const current = newTeam.preferredDays || [];
+                        const current = draft.preferredDays || [];
                         const updated = isOn
                           ? [...current, day]
                           : current.filter(d => d !== day);
-                        setNewTeam({ ...newTeam, preferredDays: updated });
+                        updateDraft({ preferredDays: updated });
                       }}
                     />
                   </div>
@@ -488,10 +542,10 @@ const NewTeamModal = ({ isOpen, onClose, onAdd, availablePositions }: NewTeamMod
                     <InputField
                       type="time"
                       label="End Time"
-                      value={newTeam.dayEndTimes?.[day] || ""}
+                      value={draft.dayEndTimes?.[day] || ""}
                       onChange={(e) => {
-                        const currentEndTimes = newTeam.dayEndTimes || {};
-                        setNewTeam({ ...newTeam, dayEndTimes: { ...currentEndTimes, [day]: e.target.value } });
+                        const currentEndTimes = draft.dayEndTimes || {};
+                        updateDraft({ dayEndTimes: { ...currentEndTimes, [day]: e.target.value } });
                       }}
                       style={{ width: "100%" }}
                     />
@@ -503,9 +557,9 @@ const NewTeamModal = ({ isOpen, onClose, onAdd, availablePositions }: NewTeamMod
         </SettingsGroup>
 
         {/* Calendar Setup */}
-        <SettingsGroup label="Calendar Setup">
+        <SettingsGroup label="Calendar Setup" description="Recurring events for calendar export">
           <div className={localStyles.sectionHeader} style={{ marginTop: 0, border: "none", paddingTop: 0 }}>
-            <span style={{ fontSize: "0.85rem", color: "var(--color-text-dim)" }}>Recurring events for calendar export</span>
+            <span style={{ fontSize: "0.85rem", color: "var(--color-text-dim)" }}>Events configuration</span>
             <Button variant="primary" size="small" onClick={handleAddEvent}>
               <Plus size={16} />
             </Button>
@@ -513,17 +567,23 @@ const NewTeamModal = ({ isOpen, onClose, onAdd, availablePositions }: NewTeamMod
 
           <Reorder.Group
             axis="y"
-            values={newTeam.recurringEvents || []}
-            onReorder={(newOrder) => setNewTeam({ ...newTeam, recurringEvents: newOrder })}
+            values={draft.recurringEvents || []}
+            onReorder={(newOrder) => updateDraft({ recurringEvents: newOrder })}
             className={localStyles.eventList}
             style={{ listStyle: "none", padding: 0, margin: 0 }}
           >
-            {(newTeam.recurringEvents || []).map((ev) => (
+            {(draft.recurringEvents || []).map((ev) => (
               <EventItem
                 key={ev.id}
                 ev={ev}
-                onUpdate={handleUpdateEvent}
-                onRemove={handleRemoveEvent}
+                onUpdate={(id, field, val) => {
+                  const updated = (draft.recurringEvents || []).map(e => e.id === id ? { ...e, [field]: val } : e);
+                  updateDraft({ recurringEvents: updated });
+                }}
+                onRemove={(id) => {
+                  const updated = (draft.recurringEvents || []).filter(e => e.id !== id);
+                  updateDraft({ recurringEvents: updated });
+                }}
               />
             ))}
           </Reorder.Group>
@@ -537,26 +597,14 @@ const NewTeamModal = ({ isOpen, onClose, onAdd, availablePositions }: NewTeamMod
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "8px" }}>
             <span style={{ fontSize: "0.95rem", fontWeight: 500 }}>Allow Member Absences</span>
             <Toggle
-              isOn={newTeam.allowAbsence !== false}
-              onToggle={(isOn) => setNewTeam({ ...newTeam, allowAbsence: isOn })}
+              isOn={draft.allowAbsence !== false}
+              onToggle={(isOn) => updateDraft({ allowAbsence: isOn })}
             />
           </div>
         </SettingsGroup>
-
-        <div style={{ marginTop: "10px" }}>
-          <Button
-            variant="primary"
-            onClick={handleAdd}
-            disabled={!newTeam.name.trim() || !newTeam.emoji.trim()}
-            style={{ width: "100%", height: "48px" }}
-          >
-            <Plus size={20} style={{ marginRight: "8px" }} />
-            Create Team
-          </Button>
-        </div>
       </div>
     </Modal>
   );
 };
 
-export default NewTeamModal;
+export default TeamConfigModal;

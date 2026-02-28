@@ -1,15 +1,12 @@
-import { useState } from "react";
-
 import { Reorder, useDragControls } from "framer-motion";
 import { Trash2, GripVertical } from "lucide-react";
 
-import TeamEditModal from "./TeamEditModal";
 import Button from "../../components/common/Button";
 import {
   SettingsTableAnyCell,
 } from "../../components/common/SettingsTable";
 import SummaryCell from "../../components/common/SummaryCell";
-import { Position, RecurringEvent, Team, Weekday } from "../../model/model";
+import { Position, Team } from "../../model/model";
 import formStyles from "../../styles/form.module.css";
 import styles from "../../styles/settings-common.module.css";
 
@@ -19,12 +16,7 @@ interface TeamManagementRowProps {
   availablePositions: Position[];
   onUpdate: (index: number, field: keyof Team, value: Team[keyof Team]) => void;
   onDelete: (index: number) => void;
-  onTogglePosition: (teamIndex: number, pos: Position) => void;
-  onToggleDay: (teamIndex: number, day: Weekday) => void;
-  onToggleAllowAbsence: (teamIndex: number, allow: boolean) => void;
-  onUpdateEvents: (teamIndex: number, events: RecurringEvent[]) => void;
-  onUpdateDayEndTime: (teamIndex: number, day: Weekday, time: string) => void;
-  onUpdateField: (field: keyof Team, value: Team[keyof Team]) => void;
+  onEdit: (index: number) => void;
 }
 
 const TeamManagementRow = ({
@@ -33,14 +25,8 @@ const TeamManagementRow = ({
   availablePositions,
   onUpdate,
   onDelete,
-  onTogglePosition,
-  onToggleDay,
-  onToggleAllowAbsence,
-  onUpdateEvents,
-  onUpdateDayEndTime,
-  onUpdateField,
+  onEdit,
 }: TeamManagementRowProps) => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const dragControls = useDragControls();
 
   const getPositionsSummary = () => {
@@ -138,7 +124,7 @@ const TeamManagementRow = ({
           <SummaryCell
             primaryText={getPositionsSummary()}
             secondaryText={getDaysSummary()}
-            onClick={() => setIsModalOpen(true)}
+            onClick={() => onEdit(teamIndex)}
           />
         </SettingsTableAnyCell>
         <SettingsTableAnyCell>
@@ -152,21 +138,6 @@ const TeamManagementRow = ({
           </Button>
         </SettingsTableAnyCell>
       </Reorder.Item>
-
-      <TeamEditModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        team={team}
-        availablePositions={availablePositions}
-        onTogglePosition={(pos) => onTogglePosition(teamIndex, pos)}
-        onToggleDay={(day) => onToggleDay(teamIndex, day)}
-        onToggleAllowAbsence={(allow) => onToggleAllowAbsence(teamIndex, allow)}
-        onUpdateEvents={(events) => onUpdateEvents(teamIndex, events)}
-        onUpdateDayEndTime={(day, time) =>
-          onUpdateDayEndTime(teamIndex, day, time)
-        }
-        onUpdateField={onUpdateField}
-      />
     </>
   );
 };
