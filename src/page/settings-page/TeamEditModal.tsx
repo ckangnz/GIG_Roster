@@ -101,7 +101,7 @@ const EventItem = ({
           onChange={(e) => onUpdate(ev.id, "startTime", e.target.value)}
         />
       </div>
-      <div className={localStyles.eventInputDay}>
+      <div className={localStyles.eventInputEnd}>
         <InputField
           label="Finishes"
           type="time"
@@ -147,7 +147,7 @@ const SlotItem = ({
         <GripVertical size={20} />
       </div>
 
-      <div style={{ flex: 2 }}>
+      <div className={localStyles.eventInputLabel} style={{ gridColumn: "span 2" }}>
         <InputField
           label="Label"
           value={slot.label}
@@ -155,7 +155,7 @@ const SlotItem = ({
           onChange={(e) => onUpdate(slot.id, "label", e.target.value)}
         />
       </div>
-      <div style={{ flex: 1 }}>
+      <div className={localStyles.eventInputStart}>
         <InputField
           label="Start"
           type="time"
@@ -163,7 +163,7 @@ const SlotItem = ({
           onChange={(e) => onUpdate(slot.id, "startTime", e.target.value)}
         />
       </div>
-      <div style={{ flex: 1 }}>
+      <div className={localStyles.eventInputEnd}>
         <InputField
           label="End"
           type="time"

@@ -27,8 +27,8 @@
   display: grid;
   grid-template-areas: 
     "handle label label delete"
-    "handle day day day"
-    "handle start start end end";
+    "handle day day delete"
+    "handle start end delete";
   grid-template-columns: 32px 1fr 1fr 32px;
   gap: 12px;
   padding: 16px 12px;
@@ -36,7 +36,7 @@
   background-color: var(--background-card);
   border: 1px solid var(--border-color-secondary);
   position: relative;
-  align-items: start;
+  align-items: end;
 }
 
 @media (max-width: 440px) {
@@ -44,15 +44,10 @@
     grid-template-areas: 
       "handle label delete"
       "handle day day"
-      "handle start start"
-      "handle end end";
+      "handle start end";
     grid-template-columns: 32px 1fr auto;
     padding: 12px 8px;
     gap: 8px;
-  }
-  
-  .deleteBtn {
-    margin-top: 12px;
   }
 }
 
@@ -71,6 +66,7 @@
 
 .eventInputLabel, .eventInputDay, .eventInputStart, .eventInputEnd {
   min-width: 0;
+  width: 100%;
 }
 
 .eventInputLabel {
@@ -91,7 +87,10 @@
 
 .deleteBtn {
   grid-area: delete;
-  margin-top: 24px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .preferredDaysGrid {
@@ -127,7 +126,7 @@
   .eventItem {
     grid-template-areas: 
       "handle label label label delete"
-      "handle day start end end";
+      "handle day start end delete";
     grid-template-columns: auto 2fr 1fr 1fr auto;
     align-items: end;
     padding: 20px 16px;
@@ -136,8 +135,8 @@
 
   .deleteBtn {
     grid-area: delete;
-    margin-top: 0;
-    margin-bottom: 8px;
+    align-self: center;
+    margin: 0;
   }
 
   .preferredDaysGrid {
