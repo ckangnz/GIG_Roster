@@ -75,7 +75,7 @@ const SlotItem = ({
         <GripVertical size={20} />
       </div>
 
-      <div style={{ flex: 2 }}>
+      <div className={localStyles.eventInputLabel}>
         <InputField
           label="Label"
           value={slot.label}
@@ -83,7 +83,7 @@ const SlotItem = ({
           onChange={(e) => onUpdate(slot.id, "label", e.target.value)}
         />
       </div>
-      <div style={{ flex: 1 }}>
+      <div className={localStyles.eventInputStart}>
         <InputField
           label="Start"
           type="time"
@@ -91,7 +91,7 @@ const SlotItem = ({
           onChange={(e) => onUpdate(slot.id, "startTime", e.target.value)}
         />
       </div>
-      <div style={{ flex: 1 }}>
+      <div className={localStyles.eventInputEnd}>
         <InputField
           label="End"
           type="time"
@@ -530,13 +530,17 @@ const NewTeamModal = ({ isOpen, onClose, onAdd, availablePositions }: NewTeamMod
         </SettingsGroup>
 
         {/* Absence */}
-        <SettingsGroup label="Absence Settings">
-          <SettingsRow label="Allow Absence" description="Enable users to mark themselves as absent for this team">
+        <SettingsGroup 
+          label="Absence Settings" 
+          description="Enable users to mark themselves as absent for this team"
+        >
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "8px" }}>
+            <span style={{ fontSize: "0.95rem", fontWeight: 500 }}>Allow Member Absences</span>
             <Toggle
               isOn={newTeam.allowAbsence !== false}
               onToggle={(isOn) => setNewTeam({ ...newTeam, allowAbsence: isOn })}
             />
-          </SettingsRow>
+          </div>
         </SettingsGroup>
 
         <div style={{ marginTop: "10px" }}>

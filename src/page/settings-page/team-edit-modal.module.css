@@ -26,10 +26,9 @@
 .eventItem {
   display: grid;
   grid-template-areas: 
-    "handle label label delete"
-    "handle day day delete"
+    "handle label day delete"
     "handle start end delete";
-  grid-template-columns: 32px 1fr 1fr 32px;
+  grid-template-columns: 32px 1fr 1fr auto;
   gap: 12px;
   padding: 16px 12px;
   border-radius: 16px;
@@ -39,15 +38,10 @@
   align-items: end;
 }
 
-@media (max-width: 440px) {
+@media (max-width: 480px) {
   .eventItem {
-    grid-template-areas: 
-      "handle label delete"
-      "handle day day"
-      "handle start end";
-    grid-template-columns: 32px 1fr auto;
-    padding: 12px 8px;
     gap: 8px;
+    padding: 12px;
   }
 }
 
@@ -59,7 +53,7 @@
   align-items: center;
   justify-content: center;
   width: 32px;
-  align-self: stretch;
+  align-self: center;
   opacity: 0.5;
   touch-action: none;
 }
@@ -91,6 +85,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  align-self: center;
 }
 
 .preferredDaysGrid {
@@ -124,19 +119,8 @@
 
 @media (min-width: 600px) {
   .eventItem {
-    grid-template-areas: 
-      "handle label label label delete"
-      "handle day start end delete";
-    grid-template-columns: auto 2fr 1fr 1fr auto;
-    align-items: end;
     padding: 20px 16px;
     gap: 16px;
-  }
-
-  .deleteBtn {
-    grid-area: delete;
-    align-self: center;
-    margin: 0;
   }
 
   .preferredDaysGrid {

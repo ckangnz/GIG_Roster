@@ -7,7 +7,7 @@ import Button from "../../components/common/Button";
 import { InputField, SelectField } from "../../components/common/InputField";
 import Modal from "../../components/common/Modal";
 import Pill, { PillGroup } from "../../components/common/Pill";
-import { SettingsGroup, SettingsRow } from "../../components/common/SettingsGroup";
+import { SettingsGroup } from "../../components/common/SettingsGroup";
 import Toggle from "../../components/common/Toggle";
 import { useAppDispatch } from "../../hooks/redux";
 import {
@@ -147,7 +147,7 @@ const SlotItem = ({
         <GripVertical size={20} />
       </div>
 
-      <div className={localStyles.eventInputLabel} style={{ gridColumn: "span 2" }}>
+      <div className={localStyles.eventInputLabel}>
         <InputField
           label="Label"
           value={slot.label}
@@ -511,13 +511,17 @@ const TeamEditModal = ({
           )}
         </SettingsGroup>
 
-        <SettingsGroup label="Absence Settings">
-          <SettingsRow label="Allow Absence" description="Enable users to mark themselves as absent">
+        <SettingsGroup 
+          label="Absence Settings" 
+          description="Enable users to mark themselves as absent for this team"
+        >
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "8px" }}>
+            <span style={{ fontSize: "0.95rem", fontWeight: 500 }}>Allow Member Absences</span>
             <Toggle
               isOn={team.allowAbsence !== false}
               onToggle={(isOn) => onToggleAllowAbsence(isOn)}
             />
-          </SettingsRow>
+          </div>
         </SettingsGroup>
       </div>
     </Modal>
