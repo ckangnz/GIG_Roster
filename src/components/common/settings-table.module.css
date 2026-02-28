@@ -19,6 +19,9 @@
 }
 
 .settingsTable th {
+  position: sticky;
+  top: 0;
+  z-index: 60;
   background: var(--background-table-header);
   padding: 12px 8px;
   text-align: left;
@@ -26,7 +29,7 @@
   color: var(--color-text-dim);
   text-transform: uppercase;
   letter-spacing: 1px;
-  border-bottom: 1px solid var(--border-color-secondary);
+  border-bottom: 2px solid var(--border-color-secondary);
   border-right: 1px solid var(--border-color-secondary);
   white-space: nowrap;
 }
@@ -72,8 +75,7 @@
 }
 
 .settingsTable th.stickyCol {
-  top: 0;
-  z-index: 60;
+  z-index: 70;
   text-align: left;
   background-color: var(--background-table-header);
 }
