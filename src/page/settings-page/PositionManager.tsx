@@ -14,6 +14,7 @@ import { Position } from "../../model/model";
 import { updatePositions } from "../../store/slices/positionsSlice";
 import { removePositionFromAllTeams, updateTeams } from "../../store/slices/teamsSlice";
 import { showAlert } from "../../store/slices/uiSlice";
+import { cleanupUsersAfterDeletion } from "../../store/slices/userManagementSlice";
 
 import styles from "./settings-page.module.css";
 
@@ -194,6 +195,18 @@ const PositionManagement = () => {
         }));
         
         await dispatch(updateTeams(currentTeams)).unwrap();
+
+        // 4. Cleanup users
+        const idsToCleanup = [positionId];
+        if (!positionToDelete.parentId) {
+          // If it's a parent, also cleanup child assignments
+          const childIds = positions.filter(p => p.parentId === positionId).map(p => p.id);
+          idsToCleanup.push(...childIds);
+        }
+
+        for (const id of idsToCleanup) {
+          await dispatch(cleanupUsersAfterDeletion({ positionId: id })).unwrap();
+        }
       }
     }));
   };

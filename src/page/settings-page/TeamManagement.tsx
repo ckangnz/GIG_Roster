@@ -13,6 +13,7 @@ import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { Position, RecurringEvent, Team, Weekday } from "../../model/model";
 import { updateTeams } from "../../store/slices/teamsSlice";
 import { showAlert } from "../../store/slices/uiSlice";
+import { cleanupUsersAfterDeletion } from "../../store/slices/userManagementSlice";
 
 import styles from "./settings-page.module.css";
 
@@ -139,6 +140,10 @@ const TeamManagement = () => {
   const saveToFirebase = async () => {
     setStatus("saving");
     try {
+      // 1. Identify which teams are being removed
+      const currentIds = new Set(teams.map(t => t.id));
+      const deletedTeams = reduxTeams.filter(t => !currentIds.has(t.id));
+
       const teamsToSave: Team[] = teams.map((t) => ({
         id: t.id,
         name: t.name || "",
@@ -153,6 +158,15 @@ const TeamManagement = () => {
         slots: t.slots || [],
       }));
       await dispatch(updateTeams(teamsToSave)).unwrap();
+
+      // 2. Cleanup users for deleted teams
+      for (const team of deletedTeams) {
+        await dispatch(cleanupUsersAfterDeletion({ 
+          teamId: team.id,
+          teamName: team.name
+        })).unwrap();
+      }
+
       setStatus("success");
       setTimeout(() => setStatus("idle"), 2000);
     } catch (e) {
