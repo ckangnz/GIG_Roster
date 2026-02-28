@@ -318,10 +318,13 @@ const TeamEditModal = ({
             <button 
               className={`${localStyles.modeBtn} ${team.rosterMode === 'slotted' ? localStyles.modeBtnActive : ""}`}
               onClick={() => onUpdateField("rosterMode", "slotted" as RosterMode)}
+              disabled
+              title="Slotted Mode coming soon"
+              style={{ opacity: 0.6, cursor: 'not-allowed' }}
             >
               <Clock size={20} />
               <div style={{ textAlign: 'left' }}>
-                <div style={{ fontWeight: 700 }}>Slotted</div>
+                <div style={{ fontWeight: 700 }}>Slotted (Coming Soon)</div>
                 <div style={{ fontSize: '0.75rem', opacity: 0.7 }}>Time-slots & Shifts</div>
               </div>
             </button>

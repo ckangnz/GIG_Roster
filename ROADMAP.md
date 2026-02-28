@@ -21,7 +21,7 @@
 - [x] **ID-Based Infrastructure**: Updated models, hooks, and slices to support stable IDs.
 - [x] **Data Migration**: Run script/manual save to populate `id` fields in production metadata.
 - [x] **Legacy Cleanup**: Remove name-as-ID fallback logic once migration is verified.
-- [ ] **Granular Time Roster**: Refactor Roster model to support sub-day shifts (e.g., 15-min intervals) alongside date-based entries.
+- [x] **Granular Time Roster**: Refactor Roster model to support sub-day shifts (e.g., 15-min intervals). *Note: Implementation complete, pending production review.*
 
 ---
 
@@ -87,3 +87,4 @@
 - [x] **Global Undo System (Ctrl+Z)**
 - [x] **Conflict Detection Visuals**
 - [x] **iOS Midnight Theme & Gender-Aware Styling**
+- [x] **Granular Time Roster (Slotted Mode)**: Functional implementation complete. (Awaiting production review)
