@@ -101,10 +101,20 @@
   font-weight: bold;
 }
 
-.closestNextDateRow td:not(:global(.peekCell)),
-.todayDate td:not(:global(.peekCell)) {
+.closestNextDateRow td:not(:global(.peekCell)):not(.peekPlaceholder):not(.divider),
+.todayDate td:not(:global(.peekCell)):not(.peekPlaceholder):not(.divider) {
   color: var(--color-primary) !important;
+}
+
+.slottedGroupBottom td:not(:global(.peekCell)):not(.peekPlaceholder):not(.divider) {
   border-bottom: 3px solid var(--color-primary) !important;
+}
+
+.divider {
+  width: 8px;
+  background-color: var(--border-color-secondary) !important;
+  border-right: none !important;
+  border-bottom: none !important;
 }
 
 .closestNextDateRow {
@@ -124,4 +134,34 @@
     width: 8px;
     height: 8px;
   }
+}
+
+/* Slotted Mode Styles */
+.slottedRow {
+  border-top: 1px solid var(--border-color-secondary);
+}
+
+.subsequentSlotRow .dateCellContent {
+  font-size: 0.7rem;
+  opacity: 0.8;
+  color: var(--color-primary);
+}
+
+.subsequentSlotRow td {
+  border-top: 1px dashed var(--border-color-table) !important;
+}
+
+.slotTimeLabel {
+  font-weight: 700;
+  font-size: 0.8rem;
+  color: var(--color-text-primary);
+  background: var(--background-toggle-off-transparent);
+  padding: 2px 6px;
+  border-radius: 4px;
+  min-width: 45px;
+  text-align: center;
+}
+
+.peekPlaceholder {
+  background: transparent !important;
 }

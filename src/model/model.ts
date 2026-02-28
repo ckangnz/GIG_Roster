@@ -8,13 +8,22 @@ export type Weekday =
   | "Saturday"
   | "Sunday";
 
+export type RosterMode = "daily" | "slotted";
+
+export interface RosterSlot {
+  id: string;
+  label: string; // e.g. "Shift 1", "08:00 - 08:15"
+  startTime: string; // "HH:mm"
+  endTime: string; // "HH:mm"
+}
+
 export interface AppUser {
   id?: string;
   name: string | null;
   email: string | null;
   teams: string[];
-  teamPositions?: Record<string, string[]>; // teamName -> positionNames[]
-  indexedAssignments?: string[]; // ["TeamName|PositionName", ...]
+  teamPositions?: Record<string, string[]>; // teamId -> positionIds[]
+  indexedAssignments?: string[]; // ["TeamId|PositionId", ...]
   gender: string;
   isApproved: boolean;
   isAdmin: boolean;
@@ -39,6 +48,9 @@ export interface Team {
   maxConflict: number;
   allowAbsence?: boolean;
   recurringEvents?: RecurringEvent[];
+  // Granular Time Support
+  rosterMode?: RosterMode; // Default to 'daily'
+  slots?: RosterSlot[]; // Template for slots if mode is 'slotted'
 }
 
 export interface Position {
@@ -65,50 +77,97 @@ export interface ThoughtEntry {
 }
 
 export interface Thought {
-  id: string; // userUid_teamName
+  id: string; // userUid_teamId
   userUid: string;
   userName: string;
-  teamName: string;
-  entries?: ThoughtEntry[]; // NEW
+  teamName: string; // This stores teamId
+  entries?: ThoughtEntry[];
   updatedAt: number;
-  
-  /** 
-   * LEGACY SUPPORT - To be removed after March 2026 
-   * Migration logic is in thoughtsSlice.ts -> normalizeThought
-   */
   text?: string;
   hearts?: Record<string, number>;
 }
 
-export type TeamAssignments = Record<string, string[]>; // userEmail/uid -> positionNames[]
+// Assignments for a single day OR a single slot
+export type UserAssignments = Record<string, string[]>; // userEmail/uid -> positionIds[]
+
+// Wrapper for a team's data within a roster date
+export interface TeamRosterData {
+  type: RosterMode;
+  // If 'daily': assignments is Record<userEmail, positionIds[]>
+  // If 'slotted': slots is Record<slotId, Record<userEmail, positionIds[]>>
+  assignments?: UserAssignments; 
+  slots?: Record<string, UserAssignments>;
+}
 
 export interface CoverageRequest {
-  teamName: string;
-  positionName: string;
+  teamName: string; // This stores teamId
+  positionName: string; // This stores positionId
   absentUserEmail: string;
   absentUserName?: string;
   requestedAt: number;
   status: "open" | "resolved" | "dismissed";
   resolvedByEmail?: string;
+  slotId?: string; // Optional: reference to a specific time slot
 }
 
 export interface RosterEntry {
   id: string; // Document ID (usually date)
   date: string; // YYYY-MM-DD
   eventName?: string; // Special occasion name
-  teams: Record<string, TeamAssignments>; // teamName -> { userIdentifier -> positions[] }
+  // teamId -> TeamRosterData
+  teams: Record<string, TeamRosterData | UserAssignments>; 
   absence: Record<string, Absence>; // userIdentifier -> { reason }
-  coverageRequests?: Record<string, CoverageRequest>; // key: teamName_positionName_userEmail
+  coverageRequests?: Record<string, CoverageRequest>;
   updatedAt?: number;
 }
+
+/**
+ * Type guard to distinguish between TeamRosterData container and legacy UserAssignments.
+ */
+export const isTeamRosterData = (data: TeamRosterData | UserAssignments): data is TeamRosterData => {
+  return (data as TeamRosterData).type !== undefined;
+};
+
+/**
+ * Safely extracts user assignments for a specific team from a roster entry.
+ * Handles both legacy flat structures and new TeamRosterData containers.
+ */
+export const getAssignmentsForTeam = (
+  entry: RosterEntry, 
+  teamId: string
+): UserAssignments => {
+  const teamData = entry.teams[teamId];
+  if (!teamData) return {};
+  
+  if (isTeamRosterData(teamData)) {
+    if (teamData.type === 'daily') {
+      return teamData.assignments || {};
+    }
+    // For 'slotted', we combine all slot assignments for compatibility with daily views
+    if (teamData.type === 'slotted' && teamData.slots) {
+      const combined: UserAssignments = {};
+      Object.values(teamData.slots).forEach(slotAssignments => {
+        Object.entries(slotAssignments).forEach(([email, posIds]) => {
+          if (!combined[email]) combined[email] = [];
+          combined[email] = Array.from(new Set([...combined[email], ...posIds]));
+        });
+      });
+      return combined;
+    }
+    return {};
+  }
+  
+  // Legacy flat structure
+  return teamData;
+};
 
 export const generateIndexedAssignments = (
   teamPositions: Record<string, string[]>,
 ): string[] => {
   const indexed: string[] = [];
-  Object.entries(teamPositions).forEach(([teamName, positions]) => {
-    positions.forEach((posName) => {
-      indexed.push(`${teamName}|${posName}`);
+  Object.entries(teamPositions).forEach(([teamId, positionIds]) => {
+    positionIds.forEach((posId) => {
+      indexed.push(`${teamId}|${posId}`);
     });
   });
   return indexed;
@@ -127,13 +186,11 @@ export const formatDisplayDate = (dateString: string): string => {
 };
 
 export const getTodayKey = (): string => {
-  // Always calculate "Today" relative to NZ time (Pacific/Auckland)
   const nzDate = new Intl.DateTimeFormat("en-CA", {
     timeZone: "Pacific/Auckland",
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
   }).format(new Date());
-  // en-CA returns YYYY-MM-DD
   return nzDate;
 };

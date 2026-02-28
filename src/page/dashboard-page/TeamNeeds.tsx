@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 import ActionSheet from "../../components/common/ActionSheet";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
-import { formatDisplayDate } from "../../model/model";
+import { formatDisplayDate, getAssignmentsForTeam } from "../../model/model";
 import { selectQualifiedCoverageRequests } from "../../store/selectors/rosterSelectors";
 import { 
   syncAssignmentRemote, 
@@ -31,7 +31,8 @@ const TeamNeeds = memo(() => {
     if (!userData?.email) return;
 
     const entry = entries[date];
-    const currentAssignments = entry?.teams[teamName]?.[userData.email] || [];
+    const teamAssignments = entry ? getAssignmentsForTeam(entry, teamName) : {};
+    const currentAssignments = teamAssignments[userData.email] || [];
     
     if (currentAssignments.includes(positionName)) return;
 

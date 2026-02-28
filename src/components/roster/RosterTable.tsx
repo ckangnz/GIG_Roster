@@ -57,6 +57,7 @@ interface RosterTableProps {
 
   // Header Actions
   hasPastDates?: boolean;
+  rowCount?: number;
 
   // Settings Actions (if any)
   hasDirtyChanges?: boolean;
@@ -89,6 +90,7 @@ const RosterTable = ({
   handleCancel,
   hasPastDates,
   className,
+  rowCount,
 }: RosterTableProps) => {
   const dispatch = useAppDispatch();
 
@@ -107,7 +109,7 @@ const RosterTable = ({
       if (!focusedCell) return;
 
       const { row, col, table } = focusedCell;
-      const rowCount = rosterDates.length;
+      const effectiveRowCount = rowCount !== undefined ? rowCount : rosterDates.length;
 
       switch (e.key) {
         case "ArrowUp":
@@ -116,7 +118,7 @@ const RosterTable = ({
           break;
         case "ArrowDown":
           e.preventDefault();
-          if (row < rowCount - 1) setFocusedCell({ row: row + 1, col, table });
+          if (row < effectiveRowCount - 1) setFocusedCell({ row: row + 1, col, table });
           break;
         case "ArrowLeft":
           e.preventDefault();
@@ -131,7 +133,7 @@ const RosterTable = ({
           if (e.shiftKey) {
             if (row > 0) setFocusedCell({ row: row - 1, col, table });
           } else {
-            if (row < rowCount - 1)
+            if (row < effectiveRowCount - 1)
               setFocusedCell({ row: row + 1, col, table });
           }
           break;
@@ -153,6 +155,7 @@ const RosterTable = ({
   }, [
     focusedCell,
     rosterDates.length,
+    rowCount,
     colCount,
     onCellClick,
     handleSave,

@@ -39,7 +39,10 @@ const TeamManagement = () => {
         maxConflict: t.maxConflict || 1,
         allowAbsence: t.allowAbsence !== false,
         dayEndTimes: t.dayEndTimes || {},
+        rosterMode: t.rosterMode || "daily",
+        slots: [...(t.slots || [])].map(s => ({ id: s.id, label: s.label, startTime: s.startTime, endTime: s.endTime })),
         recurringEvents: (t.recurringEvents || []).map(ev => ({
+          id: ev.id,
           label: ev.label,
           day: ev.day,
           startTime: ev.startTime,
@@ -146,6 +149,8 @@ const TeamManagement = () => {
         dayEndTimes: t.dayEndTimes || {},
         recurringEvents: t.recurringEvents || [],
         positions: t.positions || [],
+        rosterMode: t.rosterMode || "daily",
+        slots: t.slots || [],
       }));
       await dispatch(updateTeams(teamsToSave)).unwrap();
       setStatus("success");
@@ -199,6 +204,7 @@ const TeamManagement = () => {
                 onToggleAllowAbsence={toggleAllowAbsence}
                 onUpdateEvents={handleUpdateEvents}
                 onUpdateDayEndTime={handleUpdateDayEndTime}
+                onUpdateField={(field, val) => handleUpdate(teamIndex, field, val)}
               />
             ))}
           </Reorder.Group>
@@ -225,17 +231,13 @@ const TeamManagement = () => {
         <SaveFooter
           label="Unsaved team changes"
           saveText="Save All Team Changes"
-          onSave={handleSaveChanges}
+          onSave={() => saveToFirebase()}
           onCancel={handleCancel}
           isSaving={status === "saving"}
         />
       )}
     </div>
   );
-  
-  function handleSaveChanges() {
-    saveToFirebase();
-  }
 };
 
 export default TeamManagement;

@@ -2,13 +2,14 @@ import { useMemo, useCallback } from "react";
 
 import { motion } from "framer-motion";
 
-
-import { useRosterBaseLogic } from "../../../hooks/useRosterBaseLogic";
-import RosterTable from "../RosterTable";
 import { GeneralRosterHeader } from "./GeneralRosterHeader";
 import { GeneralRosterRow } from "./GeneralRosterRow";
+import { useRosterBaseLogic } from "../../../hooks/useRosterBaseLogic";
 import { useRosterHeaderLogic } from "../../../hooks/useRosterHeaderLogic";
+import { useRosterVisualRows } from "../../../hooks/useRosterVisualRows";
+import { getAssignmentsForTeam, isTeamRosterData } from "../../../model/model";
 import cellStyles from "../roster-cell.module.css";
+import RosterTable from "../RosterTable";
 
 const GeneralRosterTable = () => {
   const logic = useRosterBaseLogic();
@@ -29,6 +30,11 @@ const GeneralRosterTable = () => {
     hasPositionCoverageRequest,
   } = logic;
 
+  const currentTeam = useMemo(() => allTeams.find(t => t.id === teamId), [allTeams, teamId]);
+  const isSlotted = currentTeam?.rosterMode === "slotted";
+
+  const visualRows = useRosterVisualRows(rosterDates, currentTeam || null, !!isSlotted);
+
   const currentPosition = useMemo(
     () => allPositions.find((p) => p.id === activePositionId),
     [allPositions, activePositionId],
@@ -39,7 +45,6 @@ const GeneralRosterTable = () => {
       (u) => u.email && !hiddenUserList.includes(u.email) && u.isActive,
     );
 
-    // Sort function that puts current user first
     const sortFn = (a: (typeof list)[0], b: (typeof list)[0]) => {
       const isMeA = a.email === userData?.email;
       const isMeB = b.email === userData?.email;
@@ -75,51 +80,52 @@ const GeneralRosterTable = () => {
     const entry = entries[dateKey];
     if (!entry || !entry.teams[teamId]) return [];
 
+    const teamAssignments = getAssignmentsForTeam(entry, teamId);
     const children = allPositions.filter((p) => p.parentId === activePositionId);
     const positionGroupIds = [activePositionId, ...children.map((c) => c.id)];
 
-    return Object.entries(entry.teams[teamId])
+    return Object.entries(teamAssignments)
       .filter(([, positions]) =>
         (positions as string[]).some((p) => positionGroupIds.includes(p)),
       )
       .map(([email]) => email);
-  }, [
-    closestNextDate,
-    teamId,
-    activePositionId,
-    entries,
-    allPositions,
-  ]);
+  }, [closestNextDate, teamId, activePositionId, entries, allPositions]);
 
-  const handleKeyboardCellClick = useCallback((row: number, col: number) => {
-    const dateString = rosterDates[row];
+  const handleKeyboardCellClick = useCallback((rowIdx: number, col: number) => {
+    const row = visualRows[rowIdx];
     const user = sortedUsers[col];
-    if (dateString && user?.email) {
-      handleCellClick(dateString, user.email, row, col);
+    if (row && user?.email) {
+      handleCellClick(row.dateString, user.email, rowIdx, col, row.slot?.id);
     }
-  }, [rosterDates, sortedUsers, handleCellClick]);
+  }, [visualRows, sortedUsers, handleCellClick]);
 
   const getCellContent = useCallback(
-    (dateString: string, userEmail: string) => {
+    (dateString: string, userEmail: string, slotId?: string) => {
       const entry = entries[dateString];
       if (!entry || !teamId) return "";
 
-      const currentTeamAssignments = entry.teams[teamId]?.[userEmail] || [];
+      const teamData = entry.teams[teamId];
+      let currentTeamAssignments: string[] = [];
+
+      if (teamData) {
+        if (isTeamRosterData(teamData) && teamData.type === 'slotted' && slotId) {
+          currentTeamAssignments = teamData.slots?.[slotId]?.[userEmail] || [];
+        } else {
+          currentTeamAssignments = getAssignmentsForTeam(entry, teamId)[userEmail] || [];
+        }
+      }
+
       const otherTeamsAssignments: { teamId: string; positions: string[] }[] = [];
-      Object.entries(entry.teams).forEach(([tId, teamData]) => {
-        if (tId !== teamId && teamData[userEmail]) {
-          otherTeamsAssignments.push({
-            teamId: tId,
-            positions: teamData[userEmail],
-          });
+      Object.entries(entry.teams).forEach(([tId]) => {
+        if (tId !== teamId) {
+          const assignments = getAssignmentsForTeam(entry, tId)[userEmail];
+          if (assignments && assignments.length > 0) {
+            otherTeamsAssignments.push({ teamId: tId, positions: assignments });
+          }
         }
       });
 
-      if (
-        currentTeamAssignments.length === 0 &&
-        otherTeamsAssignments.length === 0
-      )
-        return "";
+      if (currentTeamAssignments.length === 0 && otherTeamsAssignments.length === 0) return "";
 
       return (
         <>
@@ -187,21 +193,22 @@ const GeneralRosterTable = () => {
       renderHeader={renderHeader}
       onLoadNextYear={logic.handleLoadNextYear}
       colCount={sortedUsers.length}
+      rowCount={visualRows.length}
       onCellClick={handleKeyboardCellClick}
       hasPastDates={hasPastDates}
     >
-      {rosterDates.map((dateString, rowIndex) => (
+      {visualRows.map((row, rowIndex) => (
         <GeneralRosterRow
-          key={dateString}
-          dateString={dateString}
+          key={row.slot ? `${row.dateString}-${row.slot.id}` : row.dateString}
+          dateString={row.dateString}
           rowIndex={rowIndex}
           entries={entries}
           closestNextDate={closestNextDate}
           onDateClick={logic.handleDateClick}
           focusedCell={logic.focusedCell}
           setFocusedCell={logic.setFocusedCell}
-          handleCellClick={handleCellClick}
-          getCellContent={getCellContent}
+          handleCellClick={(date, email, r, c) => handleCellClick(date, email, r, c, row.slot?.id)}
+          getCellContent={(date, email) => getCellContent(date, email, row.slot?.id)}
           sortedUsers={sortedUsers}
           genderDividerIndex={genderDividerIndex}
           isCellDisabled={logic.isCellDisabled}
@@ -215,6 +222,9 @@ const GeneralRosterTable = () => {
           teamName={teamId || ""}
           activePosition={activePositionId || ""}
           hasPositionCoverageRequest={hasPositionCoverageRequest}
+          slot={row.slot}
+          isFirstSlot={row.isFirstSlot}
+          isLastSlot={row.isLastSlot}
         />
       ))}
     </RosterTable>

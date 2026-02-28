@@ -2,7 +2,7 @@ import { useCallback, useMemo, useRef, useEffect } from "react";
 
 import { useNavigate, useSearchParams } from "react-router-dom";
 
-import { getTodayKey, RosterEntry, TeamAssignments } from "../../model/model";
+import { getTodayKey, RosterEntry, getAssignmentsForTeam } from "../../model/model";
 import { 
   loadPreviousDates, 
   resetToUpcomingDates, 
@@ -14,12 +14,14 @@ import {
   FocusedCell 
 } from "../../store/slices/uiSlice";
 import { useAppDispatch, useAppSelector } from "../redux";
+import { VisualRow } from "../useRosterVisualRows";
 
 export const useRosterUI = (
   teamId?: string, 
   activePositionId?: string,
   rosterDates: string[] = [],
-  entries: Record<string, RosterEntry> = {}
+  entries: Record<string, RosterEntry> = {},
+  visualRows: VisualRow[] = []
 ) => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
@@ -50,12 +52,16 @@ export const useRosterUI = (
   useEffect(() => {
     const targetDate = searchParams.get("date");
     if (targetDate && rosterDates.length > 0 && !focusedCell) {
-      const rowIndex = rosterDates.indexOf(targetDate);
+      // Find the first visual row that matches this date
+      const rowIndex = visualRows.length > 0 
+        ? visualRows.findIndex(row => row.dateString === targetDate)
+        : rosterDates.indexOf(targetDate);
+        
       if (rowIndex !== -1) {
         dispatch(setFocusedCell({ row: rowIndex, col: 0, table: "roster" }));
       }
     }
-  }, [searchParams, rosterDates, dispatch, focusedCell]);
+  }, [searchParams, rosterDates, visualRows, dispatch, focusedCell]);
 
   // Visibility Handling
   const handleToggleVisibility = useCallback((userEmail: string) => {
@@ -84,9 +90,12 @@ export const useRosterUI = (
       const dateKey = dateString.split("T")[0];
       const entry = entries[dateKey];
       if (!entry) return false;
-      return Object.values(entry.teams).some((teamAssignments: TeamAssignments) =>
-        Object.values(teamAssignments).some((posList) => Array.isArray(posList) && posList.length > 0),
-      );
+      return Object.keys(entry.teams).some((tId) => {
+        const teamAssignments = getAssignmentsForTeam(entry, tId);
+        return Object.values(teamAssignments).some(
+          (posList) => Array.isArray(posList) && posList.length > 0,
+        );
+      });
     },
     [entries],
   );

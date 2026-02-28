@@ -1,8 +1,9 @@
-import { Fragment, memo } from "react";
+import { Fragment, memo, ReactNode } from "react";
 
 import { useAppSelector } from "../../../hooks/redux";
-import { AppUser, RosterEntry, Team } from "../../../model/model";
+import { AppUser, RosterEntry, Team, RosterSlot } from "../../../model/model";
 import cellStyles from "../roster-cell.module.css";
+import styles from "../roster-row.module.css";
 import RosterCell from "../RosterCell";
 import RosterRow from "../RosterRow";
 
@@ -22,7 +23,7 @@ interface GeneralRosterRowProps {
     row: number,
     col: number,
   ) => void;
-  getCellContent: (dateString: string, userEmail: string) => React.ReactNode;
+  getCellContent: (dateString: string, userEmail: string) => ReactNode;
   sortedUsers: AppUser[];
   genderDividerIndex: number;
   isCellDisabled: (dateString: string, userEmail: string) => boolean;
@@ -36,6 +37,10 @@ interface GeneralRosterRowProps {
   teamName: string;
   activePosition: string;
   hasPositionCoverageRequest: (dateString: string, tName: string, pName: string) => boolean;
+  // Slotted mode props
+  slot?: RosterSlot;
+  isFirstSlot?: boolean;
+  isLastSlot?: boolean;
 }
 
 export const GeneralRosterRow = memo(
@@ -54,94 +59,97 @@ export const GeneralRosterRow = memo(
     isCellDisabled,
     isUserAbsent,
     getAbsenceReason,
-      assignedOnClosestDate,
-      showPeek,
-      getConflictStatus,
-      userData,
-      allTeams,
-      teamName,
-      activePosition,
-      hasPositionCoverageRequest,
-    }: GeneralRosterRowProps) => {
-      const { highlightedUserId } = useAppSelector((state) => state.rosterView);
-    
-      return (
-        <RosterRow
-          dateString={dateString}
-          entries={entries}
-          onDateClick={onDateClick}
-          closestNextDate={closestNextDate}
-          showPeek={showPeek}
-        >
-          {sortedUsers.map((user, colIndex) => (
-            <Fragment key={user.email}>
-              {genderDividerIndex === colIndex && (
-                <td style={{ width: "8px", background: "var(--border-color-secondary)" }} />
+    assignedOnClosestDate,
+    showPeek,
+    getConflictStatus,
+    userData,
+    allTeams,
+    teamName,
+    activePosition,
+    hasPositionCoverageRequest,
+    slot,
+    isFirstSlot = true,
+    isLastSlot = true,
+  }: GeneralRosterRowProps) => {
+    const { highlightedUserId } = useAppSelector((state) => state.rosterView);
+
+    return (
+      <RosterRow
+        dateString={dateString}
+        entries={entries}
+        onDateClick={onDateClick}
+        closestNextDate={closestNextDate}
+        showPeek={showPeek}
+        slot={slot}
+        isFirstSlot={isFirstSlot}
+        isLastSlot={isLastSlot}
+      >
+        {sortedUsers.map((user, colIndex) => (
+          <Fragment key={user.email}>
+            {genderDividerIndex === colIndex && (
+              <td className={styles.divider} />
+            )}
+            <RosterCell
+              type="roster-user"
+              dateString={dateString}
+              rowIndex={rowIndex}
+              isFocused={
+                focusedCell?.row === rowIndex &&
+                focusedCell?.col === colIndex &&
+                focusedCell?.table === "roster"
+              }
+              onFocus={() =>
+                setFocusedCell({ row: rowIndex, col: colIndex, table: "roster" })
+              }
+              identifier={user.email || ""}
+              disabled={
+                user.email ? isCellDisabled(dateString, user.email) : false
+              }
+              absent={user.email ? isUserAbsent(dateString, user.email) : false}
+              absenceReason={
+                user.email ? getAbsenceReason(dateString, user.email) : ""
+              }
+              isAssignedOnClosestDate={!!(
+                dateString === closestNextDate &&
+                user.email &&
+                assignedOnClosestDate.includes(user.email)
               )}
-              <RosterCell
-                type="roster-user"
-                dateString={dateString}
-                rowIndex={rowIndex}
-                isFocused={
-                  focusedCell?.row === rowIndex &&
-                  focusedCell?.col === colIndex &&
-                  focusedCell?.table === "roster"
+              hasConflict={user.email ? getConflictStatus(dateString, user.email).hasConflict : false}
+              isHighlighted={user.email === highlightedUserId}
+              userData={userData}
+              allTeams={allTeams}
+              teamName={teamName}
+              activePosition={activePosition}
+              hasOpenPositionRequest={hasPositionCoverageRequest(dateString, teamName, activePosition)}
+              content={
+                user.email ? (
+                  (() => {
+                    const cellContent = getCellContent(dateString, user.email);
+                    if (!cellContent) return null;
+                    return (
+                      <div
+                        className={
+                          user.email === highlightedUserId
+                            ? cellStyles.highlightedUserName
+                            : ""
+                        }
+                      >
+                        {cellContent}
+                      </div>
+                    );
+                  })()
+                ) : null
+              }
+              onClick={() => {
+                if (user.email && !isCellDisabled(dateString, user.email)) {
+                  handleCellClick(dateString, user.email, rowIndex, colIndex);
                 }
-                onFocus={() =>
-                  setFocusedCell({ row: rowIndex, col: colIndex, table: "roster" })
-                }
-                identifier={user.email || ""}
-                disabled={
-                  user.email ? isCellDisabled(dateString, user.email) : false
-                }
-                absent={user.email ? isUserAbsent(dateString, user.email) : false}
-                absenceReason={
-                  user.email ? getAbsenceReason(dateString, user.email) : ""
-                }
-                isAssignedOnClosestDate={!!(
-                  dateString === closestNextDate &&
-                  user.email &&
-                  assignedOnClosestDate.includes(user.email)
-                )}
-                                                                hasConflict={user.email ? getConflictStatus(dateString, user.email).hasConflict : false}
-                                                                                isHighlighted={user.email === highlightedUserId}
-                                                                                                userData={userData}
-                                                                                                                allTeams={allTeams}
-                                                                                                                teamName={teamName}
-                                                                                                                activePosition={activePosition}
-                                                                                                                hasOpenPositionRequest={hasPositionCoverageRequest(dateString, teamName, activePosition)}
-                                                                                                                content={
-                                                                                                
-                                                                                                  user.email ? (
-                                                                                                    (() => {
-                                                                                                      const cellContent = getCellContent(dateString, user.email);
-                                                                                                      if (!cellContent) return null;
-                                                                                                      return (
-                                                                                                        <div
-                                                                                                          className={
-                                                                                                            user.email === highlightedUserId
-                                                                                                              ? cellStyles.highlightedUserName
-                                                                                                              : ""
-                                                                                                          }
-                                                                                                        >
-                                                                                                          {cellContent}
-                                                                                                        </div>
-                                                                                                      );
-                                                                                                    })()
-                                                                                                  ) : null
-                                                                                                }
-                                                                                                onClick={() => {
-                                                                                
-                
-                  if (user.email && !isCellDisabled(dateString, user.email)) {
-                    handleCellClick(dateString, user.email, rowIndex, colIndex);
-                  }
-                }}
-              />
-            </Fragment>
-          ))}
-          <td style={{ width: "8px", background: "var(--border-color-secondary)" }} />
-        </RosterRow>
-      );
-    },
+              }}
+            />
+          </Fragment>
+        ))}
+        <td className={styles.divider} />
+      </RosterRow>
+    );
+  },
 );

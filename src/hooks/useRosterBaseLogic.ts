@@ -23,10 +23,11 @@ export const useRosterBaseLogic = () => {
     allTeamUsers,
     rosterDates,
     positionsDirty,
+    visualRows,
   } = data;
 
   // 2. UI Layer
-  const ui = useRosterUI(teamId, activePositionId, rosterDates, entries);
+  const ui = useRosterUI(teamId, activePositionId, rosterDates, entries, visualRows);
 
   // 3. Actions Layer
   const actions = useRosterActions(

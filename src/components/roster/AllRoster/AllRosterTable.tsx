@@ -2,15 +2,16 @@ import { useMemo, useCallback } from "react";
 
 import { motion } from "framer-motion";
 
-
-import { useRosterBaseLogic } from "../../../hooks/useRosterBaseLogic";
-import NameTag from "../../common/NameTag";
-import RosterTable from "../RosterTable";
 import { AllRosterHeader } from "./AllRosterHeader";
 import { AllRosterRow } from "./AllRosterRow";
 import { useAppDispatch, useAppSelector } from "../../../hooks/redux";
+import { useRosterBaseLogic } from "../../../hooks/useRosterBaseLogic";
 import { useRosterHeaderLogic } from "../../../hooks/useRosterHeaderLogic";
+import { useRosterVisualRows } from "../../../hooks/useRosterVisualRows";
+import { getAssignmentsForTeam } from "../../../model/model";
 import { setHighlightedUserId } from "../../../store/slices/rosterViewSlice";
+import NameTag from "../../common/NameTag";
+import RosterTable from "../RosterTable";
 
 import allStyles from "./all-roster.module.css";
 
@@ -33,6 +34,11 @@ const AllRosterTable = () => {
     closestNextDate,
     getConflictStatus,
   } = logic;
+
+  const currentTeam = useMemo(() => currentTeamData, [currentTeamData]);
+  const isSlotted = currentTeam?.rosterMode === "slotted";
+
+  const visualRows = useRosterVisualRows(rosterDates, currentTeam || null, !!isSlotted);
 
   // Re-implementing view-specific logic
   const filteredAllTeamUsers = useMemo(() => {
@@ -94,17 +100,18 @@ const AllRosterTable = () => {
       const entry = entries[dateKey];
       if (!entry || !teamId || !entry.teams[teamId]) return [];
 
-      let assignments = entry.teams[teamId][identifier] || [];
-      if (!Array.isArray(assignments) || assignments.length === 0) {
+      const teamAssignments = getAssignmentsForTeam(entry, teamId);
+      let assignments = teamAssignments[identifier] || [];
+      if (assignments.length === 0) {
         const target = identifier.trim();
-        const matchingKey = Object.keys(entry.teams[teamId]).find(
+        const matchingKey = Object.keys(teamAssignments).find(
           (k) => k.trim() === target,
         );
         if (matchingKey) {
-          assignments = entry.teams[teamId][matchingKey];
+          assignments = teamAssignments[matchingKey];
         }
       }
-      return Array.isArray(assignments) ? assignments : [];
+      return assignments;
     },
     [entries, teamId],
   );
@@ -157,7 +164,8 @@ const AllRosterTable = () => {
       const entry = entries[dateKey];
       if (!entry || !teamId) return null;
 
-      const assignedEntries = Object.entries(entry.teams[teamId] || {}).filter(
+      const teamAssignments = getAssignmentsForTeam(entry, teamId);
+      const assignedEntries = Object.entries(teamAssignments).filter(
         ([, positions]) =>
           Array.isArray(positions) && positions.includes(positionIdentifier),
       );
@@ -236,30 +244,31 @@ const AllRosterTable = () => {
     if (!highlightedUserId || !entries) return false;
     const dateKey = dateString.split('T')[0];
     const entry = entries[dateKey];
-    if (!entry || !teamId || !entry.teams[teamId]) return false;
+    if (!entry || !teamId) return false;
 
     if (type === 'user') {
       return identifier === highlightedUserId;
     } else {
       // position
-      const assignments = entry.teams[teamId][highlightedUserId] || [];
+      const teamAssignments = getAssignmentsForTeam(entry, teamId);
+      const assignments = teamAssignments[highlightedUserId] || [];
       return assignments.includes(identifier);
     }
   };
 
-  const handleKeyboardAllCellClick = useCallback((row: number, col: number) => {
+  const handleKeyboardAllCellClick = useCallback((rowIdx: number, col: number) => {
     if (rosterAllViewMode !== "user") return;
-    const dateString = rosterDates[row];
+    const row = visualRows[rowIdx];
     const column = allViewColumns[col];
-    if (dateString && column?.isUser && column.id) {
-      const assignments = getAssignmentsForIdentifier(dateString, column.id);
+    if (row && column?.isUser && column.id) {
+      const assignments = getAssignmentsForIdentifier(row.dateString, column.id);
       if (assignments.length > 0) {
         const firstPosId = assignments[0];
         const pos = allPositions.find(p => p.id === firstPosId || p.name === firstPosId);
         navigate(`/app/roster/${teamId}/${pos?.id || firstPosId}`);
       }
     }
-  }, [rosterAllViewMode, rosterDates, allViewColumns, getAssignmentsForIdentifier, navigate, teamId, allPositions]);
+  }, [rosterAllViewMode, visualRows, allViewColumns, getAssignmentsForIdentifier, navigate, teamId, allPositions]);
 
   const renderHeader = () => (
     <AllRosterHeader
@@ -286,14 +295,15 @@ const AllRosterTable = () => {
           ? allViewColumns.length
           : currentTeamData?.positions.length || 0
       }
+      rowCount={visualRows.length}
       onCellClick={handleKeyboardAllCellClick}
       hasPastDates={hasPastDates}
       className={filterUserId ? allStyles.filteredTableContainer : ""}
     >
-      {rosterDates.map((dateString, rowIndex) => (
+      {visualRows.map((row, rowIndex) => (
           <AllRosterRow
-            key={dateString}
-            dateString={dateString}
+            key={row.slot ? `${row.dateString}-${row.slot.id}` : row.dateString}
+            dateString={row.dateString}
             rowIndex={rowIndex}
             entries={entries}
             closestNextDate={closestNextDate}
@@ -313,6 +323,9 @@ const AllRosterTable = () => {
             getAbsenceReason={logic.getAbsenceReason}
             isHighlightedCell={isHighlightedCell}
             getConflictStatus={getConflictStatus}
+            slot={row.slot}
+            isFirstSlot={row.isFirstSlot}
+            isLastSlot={row.isLastSlot}
           />
         ))}
       </RosterTable>

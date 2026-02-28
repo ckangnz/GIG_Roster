@@ -2,20 +2,21 @@ import { useMemo, useCallback } from "react";
 
 import { motion } from "framer-motion";
 
-
-import { useRosterBaseLogic } from "../../../hooks/useRosterBaseLogic";
-import { updatePositionCustomLabels } from "../../../store/slices/positionsSlice";
-import RosterTable from "../RosterTable";
 import { CustomRosterHeader } from "./CustomRosterHeader";
 import { CustomRosterRow } from "./CustomRosterRow";
+import { useRosterBaseLogic } from "../../../hooks/useRosterBaseLogic";
 import { useRosterHeaderLogic } from "../../../hooks/useRosterHeaderLogic";
+import { useRosterVisualRows } from "../../../hooks/useRosterVisualRows";
+import { isTeamRosterData } from "../../../model/model";
+import { updatePositionCustomLabels } from "../../../store/slices/positionsSlice";
+import RosterTable from "../RosterTable";
 
 const CustomRosterTable = () => {
   const logic = useRosterBaseLogic();
   const { hasPastDates } = useRosterHeaderLogic();
   const {
     dispatch,
-    teamName,
+    teamId,
     activePosition,
     allPositions,
     userData,
@@ -24,7 +25,13 @@ const CustomRosterTable = () => {
     hiddenUserList,
     closestNextDate,
     handleCellClick,
+    allTeams,
   } = logic;
+
+  const currentTeam = useMemo(() => allTeams.find(t => t.id === teamId), [allTeams, teamId]);
+  const isSlotted = currentTeam?.rosterMode === "slotted";
+
+  const visualRows = useRosterVisualRows(rosterDates, currentTeam || null, !!isSlotted);
 
   const currentPosition = useMemo(
     () => allPositions.find((p) => p.name === activePosition),
@@ -91,19 +98,29 @@ const CustomRosterTable = () => {
     );
   }, [dispatch, currentPosition, activePosition]);
 
-  const handleKeyboardCustomCellClick = useCallback((row: number, col: number) => {
-    const dateString = rosterDates[row];
+  const handleKeyboardCustomCellClick = useCallback((rowIdx: number, col: number) => {
+    const row = visualRows[rowIdx];
     const label = currentPosition?.customLabels?.[col];
-    if (dateString && label) {
-      handleCellClick(dateString, label, row, col);
+    if (row && label) {
+      handleCellClick(row.dateString, label, rowIdx, col, row.slot?.id);
     }
-  }, [rosterDates, currentPosition, handleCellClick]);
+  }, [visualRows, currentPosition, handleCellClick]);
 
   const getCellContent = useCallback(
-    (dateString: string, label: string) => {
+    (dateString: string, label: string, slotId?: string) => {
       const entry = entries[dateString];
-      if (!entry || !teamName) return "";
-      const assignments = entry.teams[teamName]?.[label] || [];
+      if (!entry || !teamId) return "";
+
+      const teamData = entry.teams[teamId];
+      let assignments: string[] = [];
+
+      if (teamData) {
+        if (isTeamRosterData(teamData) && teamData.type === 'slotted' && slotId) {
+          assignments = teamData.slots?.[slotId]?.[label] || [];
+        } else if (!isTeamRosterData(teamData)) {
+          assignments = teamData[label] || [];
+        }
+      }
       
       if (assignments.length === 0) return "";
 
@@ -119,7 +136,7 @@ const CustomRosterTable = () => {
         </motion.span>
       );
     },
-    [entries, teamName, currentPosition],
+    [entries, teamId, currentPosition],
   );
 
   const renderHeader = () => (
@@ -143,13 +160,14 @@ const CustomRosterTable = () => {
       renderHeader={renderHeader}
       onLoadNextYear={logic.handleLoadNextYear}
       colCount={currentPosition?.customLabels?.length || 0}
+      rowCount={visualRows.length}
       onCellClick={handleKeyboardCustomCellClick}
       hasPastDates={hasPastDates}
     >
-      {rosterDates.map((dateString, rowIndex) => (
+      {visualRows.map((row, rowIndex) => (
         <CustomRosterRow
-          key={dateString}
-          dateString={dateString}
+          key={row.slot ? `${row.dateString}-${row.slot.id}` : row.dateString}
+          dateString={row.dateString}
           rowIndex={rowIndex}
           entries={entries}
           closestNextDate={closestNextDate}
@@ -157,9 +175,12 @@ const CustomRosterTable = () => {
           focusedCell={logic.focusedCell}
           setFocusedCell={logic.setFocusedCell}
           currentPosition={currentPosition}
-          handleCellClick={handleCellClick}
-          getCellContent={getCellContent}
+          handleCellClick={(date, email, r, c) => handleCellClick(date, email, r, c, row.slot?.id)}
+          getCellContent={(date, email) => getCellContent(date, email, row.slot?.id)}
           showPeek={true}
+          slot={row.slot}
+          isFirstSlot={row.isFirstSlot}
+          isLastSlot={row.isLastSlot}
         />
       ))}
     </RosterTable>

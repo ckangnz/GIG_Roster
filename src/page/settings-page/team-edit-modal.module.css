@@ -144,3 +144,42 @@
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   }
 }
+
+/* NEW: Roster Mode Styles */
+.rosterModeContainer {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.modeBtn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border-color-secondary);
+  background: var(--background-card);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.modeBtn:hover {
+  border-color: var(--color-primary);
+}
+
+.modeBtnActive {
+  background: var(--color-primary);
+  color: white;
+  border-color: var(--color-primary);
+}
+
+.slotGeneratorCard {
+  background: var(--background-toggle-off-transparent);
+  padding: 12px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  border: 1px dashed var(--border-color-secondary);
+}

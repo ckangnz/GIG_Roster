@@ -12,7 +12,7 @@ import {
 } from "firebase/firestore";
 
 import { db } from "../../firebase";
-import { RosterEntry } from "../../model/model";
+import { RosterEntry, TeamRosterData } from "../../model/model";
 
 interface RosterState {
   entries: Record<string, RosterEntry>; // date -> RosterEntry
@@ -68,30 +68,52 @@ export const syncAssignmentRemote = createAsyncThunk(
       teamName: string;
       userIdentifier: string;
       updatedAssignments: string[];
+      slotId?: string;
     },
     { rejectWithValue }
   ) => {
-    const { date, teamName, userIdentifier, updatedAssignments } = payload;
+    const { date, teamName, userIdentifier, updatedAssignments, slotId } = payload;
 
     try {
       const docRef = doc(db, "roster", date);
       const isRemoving = updatedAssignments.length === 0;
       const value = isRemoving ? deleteField() : updatedAssignments;
 
-      await updateDoc(
-        docRef, 
-        new FieldPath("teams", teamName, userIdentifier), value,
-        new FieldPath("updatedAt"), serverTimestamp()
-      );
+      if (slotId) {
+        // Nested under slots
+        await updateDoc(
+          docRef, 
+          new FieldPath("teams", teamName, "slots", slotId, userIdentifier), value,
+          new FieldPath("teams", teamName, "type"), "slotted",
+          new FieldPath("updatedAt"), serverTimestamp()
+        );
+      } else {
+        // Flat daily assignments
+        await updateDoc(
+          docRef, 
+          new FieldPath("teams", teamName, userIdentifier), value,
+          new FieldPath("updatedAt"), serverTimestamp()
+        );
+      }
       
       return { date };
     } catch (error: unknown) {
       const firebaseError = error as { code?: string; message?: string };
       if (firebaseError.code === 'not-found') {
+        let teamData: TeamRosterData | Record<string, string[]>;
+        if (slotId) {
+          teamData = { 
+            type: "slotted", 
+            slots: { [slotId]: { [userIdentifier]: updatedAssignments } } 
+          };
+        } else {
+          teamData = { [userIdentifier]: updatedAssignments };
+        }
+
         const newEntry: RosterEntry = {
           id: date,
           date,
-          teams: { [teamName]: { [userIdentifier]: updatedAssignments } },
+          teams: { [teamName]: teamData },
           absence: {},
           updatedAt: Date.now(),
         };
@@ -222,7 +244,6 @@ export const resolveCoverageRequestRemote = createAsyncThunk(
     const { date, requestId } = payload;
     try {
       const docRef = doc(db, "roster", date);
-      // Remove the request from the document entirely
       await updateDoc(docRef, {
         [`coverageRequests.${requestId}`]: deleteField(),
         updatedAt: serverTimestamp(),
@@ -249,24 +270,44 @@ const rosterSlice = createSlice({
     setLoading(state, action: PayloadAction<boolean>) {
       state.loading = action.payload;
     },
-    // Pure optimistic updates - now they just take the target state
     applyOptimisticAssignment(state, action: PayloadAction<{
       date: string;
       teamName: string;
       userIdentifier: string;
       updatedAssignments: string[];
+      slotId?: string;
     }>) {
-      const { date, teamName, userIdentifier, updatedAssignments } = action.payload;
+      const { date, teamName, userIdentifier, updatedAssignments, slotId } = action.payload;
       if (!state.entries[date]) {
         state.entries[date] = { id: date, date, teams: {}, absence: {} };
       }
       const entry = state.entries[date];
-      if (!entry.teams[teamName]) entry.teams[teamName] = {};
       
-      if (updatedAssignments.length === 0) {
-        delete entry.teams[teamName][userIdentifier];
+      if (slotId) {
+        // SLOTTED MODE
+        let teamData = entry.teams[teamName] as TeamRosterData;
+        if (!teamData || !('type' in teamData)) {
+          teamData = { type: 'slotted', slots: {} };
+          entry.teams[teamName] = teamData;
+        }
+        if (!teamData.slots) teamData.slots = {};
+        if (!teamData.slots[slotId]) teamData.slots[slotId] = {};
+        
+        if (updatedAssignments.length === 0) {
+          delete teamData.slots[slotId][userIdentifier];
+        } else {
+          teamData.slots[slotId][userIdentifier] = updatedAssignments;
+        }
       } else {
-        entry.teams[teamName][userIdentifier] = updatedAssignments;
+        // DAILY MODE
+        if (!entry.teams[teamName]) entry.teams[teamName] = {};
+        const teamData = entry.teams[teamName] as Record<string, string[]>;
+        
+        if (updatedAssignments.length === 0) {
+          delete teamData[userIdentifier];
+        } else {
+          teamData[userIdentifier] = updatedAssignments;
+        }
       }
     },
     applyOptimisticAbsence(state, action: PayloadAction<{
@@ -285,10 +326,14 @@ const rosterSlice = createSlice({
       if (isAbsent) {
         entry.absence[userIdentifier] = { reason: reason || "" };
         Object.keys(entry.teams).forEach(tName => {
-          delete entry.teams[tName][userIdentifier];
+          const teamData = entry.teams[tName];
+          if (teamData && 'type' in teamData && teamData.type === 'slotted') {
+            Object.values(teamData.slots || {}).forEach(s => delete s[userIdentifier]);
+          } else {
+            delete (teamData as Record<string, string[]>)[userIdentifier];
+          }
         });
 
-        // Optimistically create coverage requests
         if (clearedPositions) {
           if (!entry.coverageRequests) entry.coverageRequests = {};
           Object.entries(clearedPositions).forEach(([tName, positions]) => {
@@ -307,11 +352,11 @@ const rosterSlice = createSlice({
         }
       } else {
         delete entry.absence[userIdentifier];
-        // Restore positions if present (Undo case)
         if (clearedPositions) {
           Object.entries(clearedPositions).forEach(([tName, positions]) => {
             if (!entry.teams[tName]) entry.teams[tName] = {};
-            entry.teams[tName][userIdentifier] = positions;
+            const teamData = entry.teams[tName] as Record<string, string[]>;
+            teamData[userIdentifier] = positions;
           });
         }
       }

@@ -24,6 +24,7 @@ interface TeamManagementRowProps {
   onToggleAllowAbsence: (teamIndex: number, allow: boolean) => void;
   onUpdateEvents: (teamIndex: number, events: RecurringEvent[]) => void;
   onUpdateDayEndTime: (teamIndex: number, day: Weekday, time: string) => void;
+  onUpdateField: (field: keyof Team, value: Team[keyof Team]) => void;
 }
 
 const TeamManagementRow = ({
@@ -37,6 +38,7 @@ const TeamManagementRow = ({
   onToggleAllowAbsence,
   onUpdateEvents,
   onUpdateDayEndTime,
+  onUpdateField,
 }: TeamManagementRowProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const dragControls = useDragControls();
@@ -46,7 +48,7 @@ const TeamManagementRow = ({
       return "No positions";
     }
 
-    const displayEmojis = team.positions
+    const displayEmojis = (team.positions || [])
       .slice(0, 3)
       .map((posId) => {
         const pos = availablePositions.find(ap => ap.id === posId || ap.name === posId);
@@ -163,6 +165,7 @@ const TeamManagementRow = ({
         onUpdateDayEndTime={(day, time) =>
           onUpdateDayEndTime(teamIndex, day, time)
         }
+        onUpdateField={onUpdateField}
       />
     </>
   );

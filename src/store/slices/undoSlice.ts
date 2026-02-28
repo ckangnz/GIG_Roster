@@ -7,6 +7,7 @@ export interface AssignmentUndoPayload {
   teamName: string;
   userEmail: string;
   previousAssignments: string[];
+  slotId?: string;
 }
 
 export interface AbsenceUndoPayload {

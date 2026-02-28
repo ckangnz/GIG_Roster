@@ -5,7 +5,8 @@ import {
   Team,
   AppUser,
   RosterEntry,
-  TeamAssignments,
+  getAssignmentsForTeam,
+  isTeamRosterData,
 } from "../../model/model";
 import {
   updatePositions,
@@ -54,7 +55,7 @@ export const useRosterActions = (
   );
 
   const isCellDisabled = useCallback(
-    (dateString: string, userEmail: string) => {
+    (dateString: string, userEmail: string, slotId?: string) => {
       if (
         !teamId ||
         !activePositionId ||
@@ -68,14 +69,18 @@ export const useRosterActions = (
       const currentTeam = allTeams.find((t) => t.id === teamId);
       const maxConflict = currentTeam?.maxConflict || 1;
 
-      if (
-        !entry ||
-        !entry.teams[teamId] ||
-        !entry.teams[teamId][userEmail]
-      )
-        return false;
+      if (!entry || !entry.teams[teamId]) return false;
 
-      const userAssignments = entry.teams[teamId][userEmail];
+      const teamData = entry.teams[teamId];
+      let userAssignments: string[] = [];
+
+      if (isTeamRosterData(teamData) && teamData.type === 'slotted' && slotId) {
+        userAssignments = teamData.slots?.[slotId]?.[userEmail] || [];
+      } else {
+        const teamAssignments = getAssignmentsForTeam(entry, teamId);
+        userAssignments = teamAssignments[userEmail] || [];
+      }
+
       if (!Array.isArray(userAssignments)) return false;
 
       const children = allPositions.filter(
@@ -94,7 +99,7 @@ export const useRosterActions = (
   );
 
   const handleCellClick = useCallback(
-    (dateString: string, userEmail: string, row: number, col: number) => {
+    (dateString: string, userEmail: string, row: number, col: number, slotId?: string) => {
       if (
         activePositionId === "Absence" ||
         activePositionId === "All" ||
@@ -107,14 +112,22 @@ export const useRosterActions = (
       const isAdmin = userData?.isAdmin;
 
       const performUpdate = () => {
-        if (isCellDisabled(dateString, userEmail)) {
+        if (isCellDisabled(dateString, userEmail, slotId)) {
           dispatch(setFocusedCell({ row, col, table: "roster" }));
           return;
         }
         dispatch(setFocusedCell({ row, col, table: "roster" }));
 
         const entry = entries[dateString];
-        const userAssignments = entry?.teams[teamId]?.[userEmail] || [];
+        const teamData = entry?.teams[teamId];
+        let userAssignments: string[] = [];
+
+        if (teamData && isTeamRosterData(teamData) && teamData.type === 'slotted' && slotId) {
+          userAssignments = teamData.slots?.[slotId]?.[userEmail] || [];
+        } else {
+          const teamAssignments = entry ? getAssignmentsForTeam(entry, teamId) : {};
+          userAssignments = teamAssignments[userEmail] || [];
+        }
 
         // --- UNDO INTEGRATION ---
         const targetUserName = allTeamUsers.find(u => u.email === userEmail)?.name || userEmail;
@@ -127,6 +140,7 @@ export const useRosterActions = (
             teamName: teamId,
             userEmail,
             previousAssignments: userAssignments,
+            slotId, // Pass slotId to undo payload
           },
           description: `Updated assignment for ${targetUserName}`
         }));
@@ -168,6 +182,7 @@ export const useRosterActions = (
           teamName: teamId,
           userIdentifier: userEmail,
           updatedAssignments,
+          slotId, // Include slotId in sync payload
         };
 
         dispatch(applyOptimisticAssignment(payload));
@@ -175,11 +190,12 @@ export const useRosterActions = (
 
         // --- TEAM NEEDS INTEGRATION: RESOLVE ON ASSIGNMENT ---
         if (nextPositionId && entry?.coverageRequests) {
-          // Identify the entire group Chris is filling
           const groupIds = [activePositionId, nextPositionId, ...children.map(c => c.id)];
 
           Object.entries(entry.coverageRequests).forEach(([reqId, req]) => {
-            if (req.status === "open" && req.teamName === teamId && groupIds.includes(req.positionName)) {
+            // Resolve if matches team, position group, AND same slot (if applicable)
+            const matchesSlot = !slotId || req.slotId === slotId;
+            if (req.status === "open" && req.teamName === teamId && groupIds.includes(req.positionName) && matchesSlot) {
               const resolvePayload = {
                 date: dateString,
                 requestId: reqId,
@@ -247,14 +263,14 @@ export const useRosterActions = (
         const clearedPositions: Record<string, string[]> = {};
         
         if (targetAbsence && entry) {
-          Object.entries(entry.teams).forEach(([tName, teamAssignments]) => {
-            const assignments = teamAssignments as TeamAssignments;
+          Object.keys(entry.teams).forEach((tId) => {
+            const teamAssignments = getAssignmentsForTeam(entry, tId);
             if (
-              Array.isArray(assignments[userEmail]) &&
-              assignments[userEmail].length > 0
+              Array.isArray(teamAssignments[userEmail]) &&
+              teamAssignments[userEmail].length > 0
             ) {
-              clearedTeams.push(tName);
-              clearedPositions[tName] = assignments[userEmail];
+              clearedTeams.push(tId);
+              clearedPositions[tId] = teamAssignments[userEmail];
             }
           });
         }
@@ -268,7 +284,6 @@ export const useRosterActions = (
           clearedPositions,
         };
 
-        // --- UNDO INTEGRATION ---
         const userName = allTeamUsers.find(u => u.email === userEmail)?.name || userEmail;
         dispatch(pushAction({
           id: crypto.randomUUID(),
@@ -321,8 +336,6 @@ export const useRosterActions = (
         );
         dispatch(syncAbsenceRemote(payload));
 
-        // --- TEAM NEEDS INTEGRATION: RESOLVE ON PRESENCE ---
-        // If the user is returning from absence, find and resolve any requests they created.
         if (!targetAbsence && entry?.coverageRequests) {
           Object.entries(entry.coverageRequests).forEach(([reqId, req]) => {
             if (req.status === "open" && req.absentUserEmail === userEmail) {
@@ -411,7 +424,9 @@ export const useRosterActions = (
       const entry = entries[dateKey];
       if (!entry || !entry.teams[teamId]) return [];
 
-      return Object.entries(entry.teams[teamId])
+      const teamAssignments = getAssignmentsForTeam(entry, teamId);
+
+      return Object.entries(teamAssignments)
         .filter(
           ([, assignments]) =>
             Array.isArray(assignments) && assignments.includes(peekPositionId),
@@ -433,8 +448,9 @@ export const useRosterActions = (
       let teamCount = 0;
       let overLimitInAnyTeam = false;
 
-      Object.entries(entry.teams).forEach(([tId, teamData]) => {
-        const assignments = teamData[userEmail];
+      Object.keys(entry.teams).forEach((tId) => {
+        const teamAssignments = getAssignmentsForTeam(entry, tId);
+        const assignments = teamAssignments[userEmail];
         if (Array.isArray(assignments) && assignments.length > 0) {
           totalAssignments += assignments.length;
           teamCount++;

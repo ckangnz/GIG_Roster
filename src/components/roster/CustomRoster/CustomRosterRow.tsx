@@ -1,6 +1,6 @@
 import { memo } from "react";
 
-import { Position, RosterEntry } from "../../../model/model";
+import { Position, RosterEntry, RosterSlot } from "../../../model/model";
 import RosterCell from "../RosterCell";
 import RosterRow from "../RosterRow";
 
@@ -23,6 +23,10 @@ interface CustomRosterRowProps {
   ) => void;
   getCellContent: (dateString: string, userEmail: string) => React.ReactNode;
   showPeek?: boolean;
+  // Slotted mode props
+  slot?: RosterSlot;
+  isFirstSlot?: boolean;
+  isLastSlot?: boolean;
 }
 
 export const CustomRosterRow = memo(
@@ -38,6 +42,9 @@ export const CustomRosterRow = memo(
     handleCellClick,
     getCellContent,
     showPeek,
+    slot,
+    isFirstSlot = true,
+    isLastSlot = true,
   }: CustomRosterRowProps) => {
     return (
       <RosterRow
@@ -46,6 +53,9 @@ export const CustomRosterRow = memo(
         onDateClick={onDateClick}
         closestNextDate={closestNextDate}
         showPeek={showPeek}
+        slot={slot}
+        isFirstSlot={isFirstSlot}
+        isLastSlot={isLastSlot}
       >
         {(currentPosition?.customLabels || []).map((label, colIndex) => (
           <RosterCell

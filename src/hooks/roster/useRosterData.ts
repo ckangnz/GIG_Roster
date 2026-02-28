@@ -8,6 +8,7 @@ import {
   fetchUsersByTeamAndPosition,
 } from "../../store/slices/rosterViewSlice";
 import { useAppDispatch, useAppSelector } from "../redux";
+import { useRosterVisualRows } from "../useRosterVisualRows";
 
 export const useRosterData = () => {
   const dispatch = useAppDispatch();
@@ -51,6 +52,10 @@ export const useRosterData = () => {
   const activePositionId = useMemo(() => 
     allPositions.find(p => p.name === activePosition)?.id || activePosition, 
   [allPositions, activePosition]);
+
+  const currentTeam = useMemo(() => allTeams.find(t => t.id === teamId), [allTeams, teamId]);
+  const isSlotted = currentTeam?.rosterMode === "slotted";
+  const visualRows = useRosterVisualRows(rosterDates, currentTeam || null, !!isSlotted);
 
   // Data Fetching Effects
   useEffect(() => {
@@ -98,5 +103,6 @@ export const useRosterData = () => {
     isLoading,
     error,
     dispatch,
+    visualRows,
   };
 };

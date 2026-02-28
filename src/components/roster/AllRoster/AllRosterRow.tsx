@@ -1,6 +1,6 @@
 import { ReactNode, memo } from "react";
 
-import { Position, RosterEntry } from "../../../model/model";
+import { Position, RosterEntry, RosterSlot } from "../../../model/model";
 import RosterCell from "../RosterCell";
 import RosterRow from "../RosterRow";
 
@@ -36,6 +36,10 @@ interface AllRosterRowProps {
   getAbsenceReason: (dateString: string, userEmail: string) => string;
   isHighlightedCell: (dateString: string, identifier: string, type: 'user' | 'position') => boolean;
   getConflictStatus: (dateString: string, userEmail: string) => { hasConflict: boolean };
+  // Slotted mode props
+  slot?: RosterSlot;
+  isFirstSlot?: boolean;
+  isLastSlot?: boolean;
 }
 
 export const AllRosterRow = memo(
@@ -60,6 +64,9 @@ export const AllRosterRow = memo(
     getAbsenceReason,
     isHighlightedCell,
     getConflictStatus,
+    slot,
+    isFirstSlot = true,
+    isLastSlot = true,
   }: AllRosterRowProps) => {
     return (
       <RosterRow
@@ -67,6 +74,9 @@ export const AllRosterRow = memo(
         entries={entries}
         onDateClick={onDateClick}
         closestNextDate={closestNextDate}
+        slot={slot}
+        isFirstSlot={isFirstSlot}
+        isLastSlot={isLastSlot}
       >
         {rosterAllViewMode === "user"
           ? allViewColumns.map((col, colIndex) => (
