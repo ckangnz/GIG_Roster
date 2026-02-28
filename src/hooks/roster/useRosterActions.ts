@@ -409,14 +409,20 @@ export const useRosterActions = (
   );
 
   const handleSave = useCallback(() => {
+    // Note: updatePositions handles orgId internally via getState(), 
+    // but we can pass it if we update the thunk signature later.
+    // For now, the existing thunk reads from state.
     dispatch(updatePositions(allPositions));
   }, [dispatch, allPositions]);
 
   const handleCancel = useCallback(() => {
     dispatch(resetPositionsDirty());
-    dispatch(fetchPositions());
+    const orgId = (userData as AppUser)?.orgId;
+    if (orgId) {
+      dispatch(fetchPositions(orgId));
+    }
     dispatch(setFocusedCell(null));
-  }, [dispatch]);
+  }, [dispatch, userData]);
 
   const getPeekAssignedUsers = useCallback(
     (dateString: string, peekPositionId?: string) => {

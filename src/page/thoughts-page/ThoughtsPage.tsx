@@ -273,12 +273,13 @@ const ThoughtsPage = () => {
     [allUsers],
   );
 
-  // Real-time thoughts listener (Query by UUID)
+  // Real-time thoughts listener (Query by UUID and Org scope)
   useEffect(() => {
-    if (!teamId) return;
+    const orgId = userData?.orgId;
+    if (!teamId || !orgId) return;
 
     const q = query(
-      collection(db, "thoughts"),
+      collection(db, "organisations", orgId, "thoughts"),
       where("teamName", "==", teamId),
     );
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -301,14 +302,15 @@ const ThoughtsPage = () => {
     });
 
     return () => unsubscribe();
-  }, [teamId, dispatch]);
+  }, [teamId, dispatch, userData?.orgId]);
 
   const teamUsers = useMemo(() => {
-    if (!teamId) return [];
+    const orgId = userData?.orgId;
+    if (!teamId || !orgId) return [];
     return allUsers.filter(
-      (u) => (u.teams?.includes(teamId)) && u.isActive,
+      (u) => u.teams?.includes(teamId) && u.isActive && u.orgId === orgId,
     );
-  }, [allUsers, teamId]);
+  }, [allUsers, teamId, userData?.orgId]);
 
   if (teamsLoading) return <Spinner />;
 

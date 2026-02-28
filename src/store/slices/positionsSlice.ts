@@ -2,7 +2,7 @@ import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 import { db } from '../../firebase';
-import { Position } from '../../model/model';
+import { Position, AppUser } from '../../model/model';
 
 interface PositionsState {
   positions: Position[];
@@ -22,9 +22,9 @@ const initialState: PositionsState = {
 
 export const fetchPositions = createAsyncThunk(
   'positions/fetchPositions',
-  async (_, { rejectWithValue }) => {
+  async (orgId: string, { rejectWithValue }) => {
     try {
-      const docRef = doc(db, 'metadata', 'positions');
+      const docRef = doc(db, 'organisations', orgId, 'metadata', 'positions');
       const snap = await getDoc(docRef);
       if (snap.exists()) {
         const data = snap.data();
@@ -41,9 +41,13 @@ export const fetchPositions = createAsyncThunk(
 
 export const updatePositions = createAsyncThunk(
   'positions/updatePositions',
-  async (positions: Position[], { rejectWithValue }) => {
+  async (positions: Position[], { rejectWithValue, getState }) => {
     try {
-      const docRef = doc(db, 'metadata', 'positions');
+      const state = getState() as { auth: { userData: AppUser | null } };
+      const orgId = state.auth.userData?.orgId;
+      if (!orgId) throw new Error("Organisation ID missing");
+
+      const docRef = doc(db, 'organisations', orgId, 'metadata', 'positions');
       await setDoc(docRef, { list: positions });
       return positions;
     } catch (error) {

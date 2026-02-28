@@ -2,6 +2,7 @@ import { useEffect, useMemo } from "react";
 
 import { useParams } from "react-router-dom";
 
+import { fetchRosterEntries } from "../../store/slices/rosterSlice";
 import {
   fetchTeamDataForRoster,
   fetchAllTeamUsers,
@@ -15,6 +16,7 @@ export const useRosterData = () => {
   const { teamName, positionName: activePosition } = useParams();
 
   const { userData } = useAppSelector((state) => state.auth);
+  const orgId = userData?.orgId;
   
   // Roster View Selectors
   const {
@@ -59,23 +61,25 @@ export const useRosterData = () => {
 
   // Data Fetching Effects
   useEffect(() => {
-    if (teamId) {
-      dispatch(fetchTeamDataForRoster(teamId));
-      dispatch(fetchAllTeamUsers(teamId));
+    if (teamId && orgId) {
+      dispatch(fetchTeamDataForRoster({ teamId, orgId }));
+      dispatch(fetchAllTeamUsers({ teamId, orgId }));
+      dispatch(fetchRosterEntries(orgId));
     }
-  }, [teamId, dispatch]);
+  }, [teamId, orgId, dispatch]);
 
   useEffect(() => {
     if (
       activePositionId &&
       teamId &&
+      orgId &&
       !["Absence", "All"].includes(activePositionId)
     ) {
       dispatch(
-        fetchUsersByTeamAndPosition({ teamId, positionId: activePositionId }),
+        fetchUsersByTeamAndPosition({ teamId, positionId: activePositionId, orgId }),
       );
     }
-  }, [activePositionId, teamId, dispatch]);
+  }, [activePositionId, teamId, orgId, dispatch]);
 
   const isLoading = 
     loadingUsers || 

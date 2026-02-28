@@ -15,6 +15,9 @@ import styles from "./settings-page.module.css";
 
 const UserManagement = () => {
   const dispatch = useAppDispatch();
+  const { userData } = useAppSelector((state) => state.auth);
+  const orgId = userData?.orgId;
+
   const { allUsers, originalUsers, loading, saving, error } = useAppSelector(
     (state) => state.userManagement,
   );
@@ -58,8 +61,8 @@ const UserManagement = () => {
     return <div>Error: {error}</div>;
   }
 
-  const pendingUsers = allUsers.filter((u) => !u.isApproved);
-  const approvedUsers = allUsers.filter((u) => u.isApproved);
+  const pendingUsers = allUsers.filter((u) => !u.isApproved && u.orgId === orgId);
+  const approvedUsers = allUsers.filter((u) => u.isApproved && u.orgId === orgId);
 
   const tableHeaders: SettingsTableHeaderProps[] = [
     { text: "Name", minWidth: 70, width: 100, textAlign: "center" },

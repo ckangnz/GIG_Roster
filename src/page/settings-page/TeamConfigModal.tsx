@@ -19,7 +19,7 @@ import Modal from "../../components/common/Modal";
 import Pill, { PillGroup } from "../../components/common/Pill";
 import { SettingsGroup } from "../../components/common/SettingsGroup";
 import Toggle from "../../components/common/Toggle";
-import { useAppDispatch } from "../../hooks/redux";
+import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { 
   Position, 
   RecurringEvent, 
@@ -52,8 +52,7 @@ const WEEK_DAYS: Weekday[] = [
 
 const EMOJI_REGEX = /(\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])/g;
 
-const defaultTeam: Team = {
-  id: "",
+const defaultTeam: Partial<Team> = {
   name: "",
   emoji: "",
   positions: [],
@@ -213,7 +212,10 @@ const TeamConfigModal = ({
   availablePositions 
 }: TeamConfigModalProps) => {
   const dispatch = useAppDispatch();
-  const [draft, setDraft] = useState<Team>(defaultTeam);
+  const { userData } = useAppSelector((state) => state.auth);
+  const orgId = userData?.orgId;
+
+  const [draft, setDraft] = useState<Partial<Team>>(defaultTeam);
   
   // UI States
   const [showGenerator, setShowGenerator] = useState(false);
@@ -307,7 +309,7 @@ const TeamConfigModal = ({
     updateDraft({ recurringEvents: [...(draft.recurringEvents || []), newEvent] });
   };
 
-  const isFormValid = draft.name.trim() !== "" && draft.emoji.trim() !== "";
+  const isFormValid = (draft.name || "").trim() !== "" && (draft.emoji || "").trim() !== "" && !!orgId;
 
   const footer = (
     <div style={{ display: "flex", gap: "12px", width: "100%" }}>
@@ -316,7 +318,16 @@ const TeamConfigModal = ({
       </Button>
       <Button 
         variant="primary" 
-        onClick={() => { onSave(draft); onClose(); }} 
+        onClick={() => { 
+          if (orgId) {
+            onSave({
+              ...draft as Team,
+              id: draft.id || crypto.randomUUID(),
+              orgId: draft.orgId || orgId
+            }); 
+            onClose(); 
+          }
+        }} 
         disabled={!isFormValid}
         style={{ flex: 2 }}
       >
@@ -528,7 +539,7 @@ const TeamConfigModal = ({
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
                     <span className={localStyles.dayLabel}>{day}</span>
                     <Toggle
-                      isOn={isActive}
+                      isOn={!!isActive}
                       onToggle={(isOn) => {
                         const current = draft.preferredDays || [];
                         const updated = isOn

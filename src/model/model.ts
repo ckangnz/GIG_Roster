@@ -10,6 +10,17 @@ export type Weekday =
 
 export type RosterMode = "daily" | "slotted";
 
+export interface Organisation {
+  id: string;
+  name: string;
+  ownerId: string; // userUid of the creator
+  createdAt: number;
+  settings?: {
+    allowUserRegistration?: boolean;
+    requireApproval?: boolean;
+  };
+}
+
 export interface RosterSlot {
   id: string;
   label: string; // e.g. "Shift 1", "08:00 - 08:15"
@@ -21,6 +32,7 @@ export interface AppUser {
   id?: string;
   name: string | null;
   email: string | null;
+  orgId: string | null; // Multi-tenancy scoping
   teams: string[];
   teamPositions?: Record<string, string[]>; // teamId -> positionIds[]
   indexedAssignments?: string[]; // ["TeamId|PositionId", ...]
@@ -40,6 +52,7 @@ export interface RecurringEvent {
 
 export interface Team {
   id: string;
+  orgId: string; // Scoped to an organisation
   name: string;
   emoji: string;
   positions: string[]; // Store IDs only for proper relational mapping
@@ -55,6 +68,7 @@ export interface Team {
 
 export interface Position {
   id: string;
+  orgId: string; // Scoped to an organisation
   name: string;
   emoji: string;
   colour: string;
@@ -78,6 +92,7 @@ export interface ThoughtEntry {
 
 export interface Thought {
   id: string; // userUid_teamId
+  orgId: string; // Scoped to an organisation
   userUid: string;
   userName: string;
   teamName: string; // This stores teamId
@@ -100,6 +115,7 @@ export interface TeamRosterData {
 }
 
 export interface CoverageRequest {
+  orgId: string; // Scoped to an organisation
   teamName: string; // This stores teamId
   positionName: string; // This stores positionId
   absentUserEmail: string;
@@ -112,6 +128,7 @@ export interface CoverageRequest {
 
 export interface RosterEntry {
   id: string; // Document ID (usually date)
+  orgId: string; // Scoped to an organisation
   date: string; // YYYY-MM-DD
   eventName?: string; // Special occasion name
   // teamId -> TeamRosterData

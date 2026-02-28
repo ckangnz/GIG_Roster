@@ -18,17 +18,18 @@ const ProtectedRoute = () => {
   );
 
   useEffect(() => {
-    if (firebaseUser && userData?.isApproved) {
+    const orgId = userData?.orgId;
+    if (firebaseUser && userData?.isApproved && orgId) {
       if (!teamsFetched && !teamsLoading) {
-        dispatch(fetchTeams());
+        dispatch(fetchTeams(orgId));
       }
       if (!positionsFetched && !positionsLoading) {
-        dispatch(fetchPositions());
+        dispatch(fetchPositions(orgId));
       }
     }
   }, [dispatch, firebaseUser, userData, teamsFetched, teamsLoading, positionsFetched, positionsLoading]);
 
-  if (loading || (userData?.isApproved && (!teamsFetched || !positionsFetched))) {
+  if (loading || !userData) {
     return <LoadingPage />;
   }
 
@@ -36,13 +37,13 @@ const ProtectedRoute = () => {
     return <Navigate to="/login" replace />;
   }
 
-  if (!userData) {
-    return <LoadingPage />;
-  }
-
   if (!userData.isApproved) {
     return <Navigate to="/guest" replace />;
   }
+
+  // We no longer block on teamsFetched/positionsFetched here.
+  // The master listeners in MainLayout will handle the real-time data sync.
+  // Individual pages (like Dashboard) already have their own loading spinners.
 
   return <Outlet />;
 };

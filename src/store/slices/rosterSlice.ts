@@ -6,13 +6,13 @@ import {
   doc,
   updateDoc,
   setDoc,
+  deleteDoc,
   serverTimestamp,
   deleteField,
-  FieldPath,
 } from "firebase/firestore";
 
 import { db } from "../../firebase";
-import { RosterEntry, TeamRosterData } from "../../model/model";
+import { RosterEntry, TeamRosterData, AppUser } from "../../model/model";
 
 interface RosterState {
   entries: Record<string, RosterEntry>; // date -> RosterEntry
@@ -32,29 +32,54 @@ const initialState: RosterState = {
 
 export const fetchRosterEntries = createAsyncThunk(
   "roster/fetchEntries",
-  async (_, { rejectWithValue }) => {
+  async (orgId: string, { rejectWithValue }) => {
     try {
-      const q = query(collection(db, "roster"));
-      const snapshot = await getDocs(q);
       const entries: Record<string, RosterEntry> = {};
-      snapshot.docs.forEach((doc) => {
-        const data = doc.data();
-        const updatedAt = data.updatedAt;
-        const serializableData = {
-          ...data,
-          updatedAt:
-            updatedAt && typeof updatedAt === 'object' && 'toMillis' in updatedAt
-              ? (updatedAt as { toMillis: () => number }).toMillis()
-              : (updatedAt as number | undefined),
-        };
-        entries[doc.id] = { ...serializableData, id: doc.id } as RosterEntry;
+
+      // 1. Fetch Team-Date Rosters
+      const rosterRef = collection(db, "organisations", orgId, "roster");
+      const rosterSnap = await getDocs(query(rosterRef));
+      
+      rosterSnap.docs.forEach((doc) => {
+        const docData = doc.data();
+        const { date, teamId, data, orgId: docOrgId } = docData;
+        
+        if (!entries[date]) {
+          entries[date] = { id: date, date, teams: {}, absence: {}, orgId: docOrgId || orgId };
+        }
+        
+        entries[date].teams[teamId] = data;
       });
+
+      // 2. Fetch Absences
+      const absenceRef = collection(db, "organisations", orgId, "absences");
+      const absenceSnap = await getDocs(query(absenceRef));
+      
+      absenceSnap.docs.forEach((doc) => {
+        const docData = doc.data();
+        const { date, userId, reason, orgId: docOrgId } = docData;
+        
+        if (!entries[date]) {
+          entries[date] = { id: date, date, teams: {}, absence: {}, orgId: docOrgId || orgId };
+        }
+        
+        entries[date].absence[userId] = { reason: reason || "" };
+      });
+
+      // 3. Fetch Calendar Events (Metadata)
+      const calendarRef = collection(db, "organisations", orgId, "metadata", "calendar", "events");
+      const calendarSnap = await getDocs(query(calendarRef));
+      calendarSnap.docs.forEach(doc => {
+        const eventData = doc.data();
+        if (entries[eventData.date]) {
+          entries[eventData.date].eventName = eventData.eventName;
+        }
+      });
+
       return entries;
     } catch (error) {
       return rejectWithValue(
-        error instanceof Error
-          ? error.message
-          : "Failed to fetch roster entries",
+        error instanceof Error ? error.message : "Failed to fetch roster",
       );
     }
   },
@@ -65,62 +90,39 @@ export const syncAssignmentRemote = createAsyncThunk(
   async (
     payload: {
       date: string;
-      teamName: string;
+      teamName: string; // This is teamId
       userIdentifier: string;
       updatedAssignments: string[];
       slotId?: string;
     },
-    { rejectWithValue }
+    { rejectWithValue, getState }
   ) => {
-    const { date, teamName, userIdentifier, updatedAssignments, slotId } = payload;
+    const { date, teamName: teamId } = payload;
 
     try {
-      const docRef = doc(db, "roster", date);
-      const isRemoving = updatedAssignments.length === 0;
-      const value = isRemoving ? deleteField() : updatedAssignments;
+      const state = getState() as { auth: { userData: AppUser | null }, roster: RosterState };
+      const orgId = state.auth.userData?.orgId;
+      if (!orgId) throw new Error("Org ID missing");
 
-      if (slotId) {
-        // Nested under slots
-        await updateDoc(
-          docRef, 
-          new FieldPath("teams", teamName, "slots", slotId, userIdentifier), value,
-          new FieldPath("teams", teamName, "type"), "slotted",
-          new FieldPath("updatedAt"), serverTimestamp()
-        );
-      } else {
-        // Flat daily assignments
-        await updateDoc(
-          docRef, 
-          new FieldPath("teams", teamName, userIdentifier), value,
-          new FieldPath("updatedAt"), serverTimestamp()
-        );
-      }
+      // With atomic docs, we replace the team-date doc with the latest state
+      const entry = state.roster.entries[date];
+      const teamData = entry?.teams[teamId];
+      
+      const docId = `${teamId}_${date}`;
+      const docRef = doc(db, "organisations", orgId, "roster", docId);
+
+      await setDoc(docRef, {
+        id: docId,
+        orgId,
+        teamId,
+        date,
+        data: teamData,
+        updatedAt: serverTimestamp()
+      });
       
       return { date };
     } catch (error: unknown) {
-      const firebaseError = error as { code?: string; message?: string };
-      if (firebaseError.code === 'not-found') {
-        let teamData: TeamRosterData | Record<string, string[]>;
-        if (slotId) {
-          teamData = { 
-            type: "slotted", 
-            slots: { [slotId]: { [userIdentifier]: updatedAssignments } } 
-          };
-        } else {
-          teamData = { [userIdentifier]: updatedAssignments };
-        }
-
-        const newEntry: RosterEntry = {
-          id: date,
-          date,
-          teams: { [teamName]: teamData },
-          absence: {},
-          updatedAt: Date.now(),
-        };
-        await setDoc(doc(db, "roster", date), { ...newEntry, updatedAt: serverTimestamp() });
-        return { date };
-      }
-      return rejectWithValue(firebaseError.message || "Sync failed");
+      return rejectWithValue(error instanceof Error ? error.message : "Sync failed");
     }
   }
 );
@@ -137,95 +139,91 @@ export const syncAbsenceRemote = createAsyncThunk(
       absentUserName?: string;
       clearedPositions?: Record<string, string[]>; // teamName -> positions[]
     },
-    { rejectWithValue }
+    { rejectWithValue, getState }
   ) => {
-    const { date, userIdentifier, isAbsent, reason, clearedTeams, absentUserName, clearedPositions } = payload;
+    const { date, userIdentifier, isAbsent, reason, clearedTeams } = payload;
 
     try {
-      const docRef = doc(db, "roster", date);
-      const updates: (string | FieldPath | unknown)[] = [];
-      updates.push(new FieldPath("updatedAt"), serverTimestamp());
+      const state = getState() as { auth: { userData: AppUser | null }, roster: RosterState };
+      const orgId = state.auth.userData?.orgId;
+      if (!orgId) throw new Error("Org ID missing");
+
+      const absenceDocId = `${userIdentifier}_${date}`;
+      const absenceRef = doc(db, "organisations", orgId, "absences", absenceDocId);
 
       if (isAbsent) {
-        updates.push(new FieldPath("absence", userIdentifier), { reason: reason || "" });
-        
-        // Clear team assignments
-        clearedTeams.forEach(tName => {
-          updates.push(new FieldPath("teams", tName, userIdentifier), deleteField());
+        // 1. Set Absence Doc
+        await setDoc(absenceRef, {
+          id: absenceDocId,
+          orgId,
+          userId: userIdentifier,
+          date,
+          reason: reason || "",
+          updatedAt: serverTimestamp()
         });
 
-        // Create Coverage Requests for each cleared position
-        if (clearedPositions) {
-          Object.entries(clearedPositions).forEach(([tName, positions]) => {
-            positions.forEach(posName => {
-              const reqId = `${tName}_${posName}_${userIdentifier}`.replace(/\./g, '_');
-              updates.push(new FieldPath("coverageRequests", reqId), {
-                teamName: tName,
-                positionName: posName,
-                absentUserEmail: userIdentifier,
-                absentUserName: absentUserName || userIdentifier,
-                requestedAt: Date.now(),
-                status: "open"
-              });
-            });
+        // 2. Cleanup Team Assignments in atomic roster docs
+        const entry = state.roster.entries[date];
+        for (const teamId of clearedTeams) {
+          const rosterDocId = `${teamId}_${date}`;
+          const rosterRef = doc(db, "organisations", orgId, "roster", rosterDocId);
+          const teamData = entry?.teams[teamId];
+          
+          await setDoc(rosterRef, {
+            id: rosterDocId,
+            orgId,
+            teamId,
+            date,
+            data: teamData, // This is already optimistically cleaned in Redux
+            updatedAt: serverTimestamp()
           });
         }
       } else {
-        updates.push(new FieldPath("absence", userIdentifier), deleteField());
+        // Remove absence
+        await deleteDoc(absenceRef);
         
-        // RESTORE team assignments if provided (Undo case)
-        if (clearedPositions) {
-          Object.entries(clearedPositions).forEach(([tName, positions]) => {
-            updates.push(new FieldPath("teams", tName, userIdentifier), positions);
+        // Restore assignments if needed (Undo case)
+        const entry = state.roster.entries[date];
+        for (const teamId of Object.keys(entry.teams)) {
+          const rosterDocId = `${teamId}_${date}`;
+          const rosterRef = doc(db, "organisations", orgId, "roster", rosterDocId);
+          await setDoc(rosterRef, {
+            id: rosterDocId,
+            orgId,
+            teamId,
+            date,
+            data: entry.teams[teamId],
+            updatedAt: serverTimestamp()
           });
         }
       }
 
-      // @ts-expect-error - spread for variadic call
-      await updateDoc(docRef, ...updates);
       return { date };
     } catch (error: unknown) {
-      const firebaseError = error as { code?: string; message?: string };
-      if (firebaseError.code === 'not-found' && isAbsent) {
-        const newEntry: RosterEntry = {
-          id: date,
-          date,
-          teams: {},
-          absence: { [userIdentifier]: { reason: reason || "" } },
-          updatedAt: Date.now(),
-        };
-        await setDoc(doc(db, "roster", date), { ...newEntry, updatedAt: serverTimestamp() });
-        return { date };
-      }
-      return rejectWithValue(firebaseError.message || "Sync failed");
+      return rejectWithValue(error instanceof Error ? error.message : "Sync failed");
     }
   }
 );
 
 export const syncEventNameRemote = createAsyncThunk(
   "roster/syncEventNameRemote",
-  async (payload: { date: string; eventName: string }, { rejectWithValue }) => {
+  async (payload: { date: string; eventName: string }, { rejectWithValue, getState }) => {
     const { date, eventName } = payload;
     try {
-      const docRef = doc(db, "roster", date);
-      await updateDoc(docRef, { eventName, updatedAt: serverTimestamp() });
+      const state = getState() as { auth: { userData: AppUser | null } };
+      const orgId = state.auth.userData?.orgId;
+      if (!orgId) throw new Error("Org ID missing");
+
+      const docRef = doc(db, "organisations", orgId, "metadata", "calendar", "events", date);
+      await setDoc(docRef, { 
+        date,
+        orgId,
+        eventName, 
+        updatedAt: serverTimestamp() 
+      });
       return { date };
     } catch (error: unknown) {
-      const firebaseError = error as { code?: string; message?: string };
-      if (firebaseError.code === 'not-found') {
-        const docRef = doc(db, "roster", date);
-        const newEntry: RosterEntry = {
-          id: date,
-          date,
-          teams: {},
-          absence: {},
-          eventName,
-          updatedAt: Date.now(),
-        };
-        await setDoc(docRef, { ...newEntry, updatedAt: serverTimestamp() });
-        return { date };
-      }
-      return rejectWithValue(firebaseError.message || "Sync failed");
+      return rejectWithValue(error instanceof Error ? error.message : "Sync failed");
     }
   }
 );
@@ -239,15 +237,30 @@ export const resolveCoverageRequestRemote = createAsyncThunk(
       status: "resolved" | "dismissed";
       resolvedByEmail?: string;
     },
-    { rejectWithValue }
+    { rejectWithValue, getState }
   ) => {
     const { date, requestId } = payload;
     try {
-      const docRef = doc(db, "roster", date);
-      await updateDoc(docRef, {
-        [`coverageRequests.${requestId}`]: deleteField(),
-        updatedAt: serverTimestamp(),
-      });
+      const state = getState() as { auth: { userData: AppUser | null }, roster: RosterState };
+      const orgId = state.auth.userData?.orgId;
+      if (!orgId) throw new Error("Org ID missing");
+
+      // Coverage requests were originally part of RosterEntry. 
+      // In the new atomic model, we need to know which team it belonged to.
+      // For now, if we don't have teamId in the payload, we might need to find it in state.
+      const entry = state.roster.entries[date];
+      const request = entry?.coverageRequests?.[requestId];
+      const teamId = request?.teamName; // teamName field actually stores teamId
+
+      if (teamId) {
+        const docId = `${teamId}_${date}`;
+        const docRef = doc(db, "organisations", orgId, "roster", docId);
+        await updateDoc(docRef, {
+          [`data.coverageRequests.${requestId}`]: deleteField(),
+          updatedAt: serverTimestamp(),
+        });
+      }
+
       return { date, requestId };
     } catch (error: unknown) {
       return rejectWithValue(error instanceof Error ? error.message : "Resolution failed");
@@ -279,7 +292,8 @@ const rosterSlice = createSlice({
     }>) {
       const { date, teamName, userIdentifier, updatedAssignments, slotId } = action.payload;
       if (!state.entries[date]) {
-        state.entries[date] = { id: date, date, teams: {}, absence: {} };
+        const existingOrgId = Object.values(state.entries)[0]?.orgId || "legacy-org-id";
+        state.entries[date] = { id: date, date, teams: {}, absence: {}, orgId: existingOrgId };
       }
       const entry = state.entries[date];
       
@@ -320,7 +334,8 @@ const rosterSlice = createSlice({
     }>) {
       const { date, userIdentifier, isAbsent, reason, clearedPositions, userName } = action.payload;
       if (!state.entries[date]) {
-        state.entries[date] = { id: date, date, teams: {}, absence: {} };
+        const existingOrgId = Object.values(state.entries)[0]?.orgId || "legacy-org-id";
+        state.entries[date] = { id: date, date, teams: {}, absence: {}, orgId: existingOrgId };
       }
       const entry = state.entries[date];
       if (isAbsent) {
@@ -336,10 +351,12 @@ const rosterSlice = createSlice({
 
         if (clearedPositions) {
           if (!entry.coverageRequests) entry.coverageRequests = {};
+          const currentOrgId = entry.orgId;
           Object.entries(clearedPositions).forEach(([tName, positions]) => {
             positions.forEach(posName => {
               const reqId = `${tName}_${posName}_${userIdentifier}`.replace(/\./g, '_');
               entry.coverageRequests![reqId] = {
+                orgId: currentOrgId,
                 teamName: tName,
                 positionName: posName,
                 absentUserEmail: userIdentifier,
@@ -364,7 +381,8 @@ const rosterSlice = createSlice({
     applyOptimisticEventName(state, action: PayloadAction<{ date: string; eventName: string }>) {
       const { date, eventName } = action.payload;
       if (!state.entries[date]) {
-        state.entries[date] = { id: date, date, teams: {}, absence: {} };
+        const existingOrgId = Object.values(state.entries)[0]?.orgId || "legacy-org-id";
+        state.entries[date] = { id: date, date, teams: {}, absence: {}, orgId: existingOrgId };
       }
       state.entries[date].eventName = eventName;
     },

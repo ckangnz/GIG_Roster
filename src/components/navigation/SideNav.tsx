@@ -13,8 +13,6 @@ import { resolvePresenceColor } from "../../hooks/presenceUtils";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { useTheme } from "../../hooks/useThemeHook";
 import { Position } from "../../model/model";
-import { fetchPositions } from "../../store/slices/positionsSlice";
-import { fetchTeams } from "../../store/slices/teamsSlice";
 import {
   setDesktopSidebarExpanded,
   setMobileSidebarOpen,
@@ -44,10 +42,9 @@ const SideNav = () => {
     useAppSelector((state) => state.ui);
   const {
     teams: allTeams,
-    fetched: teamsFetched,
     loading: teamsLoading,
   } = useAppSelector((state) => state.teams);
-  const { positions: allPositions, fetched: positionsFetched } = useAppSelector(
+  const { positions: allPositions } = useAppSelector(
     (state) => state.positions,
   );
   const { onlineUsers } = useAppSelector((state) => state.presence);
@@ -103,15 +100,6 @@ const SideNav = () => {
     }
     prevTeamRef.current = activeTeamName;
   }, [activeTeamName, activeTab, dispatch]);
-
-  useEffect(() => {
-    if (!teamsFetched) {
-      dispatch(fetchTeams());
-    }
-    if (!positionsFetched) {
-      dispatch(fetchPositions());
-    }
-  }, [dispatch, teamsFetched, positionsFetched]);
 
   const handleNavItemClick = useCallback(
     (path: string) => {

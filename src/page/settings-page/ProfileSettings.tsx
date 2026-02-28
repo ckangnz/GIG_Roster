@@ -21,7 +21,12 @@ const ProfileSettings = ({
 }) => {
   const dispatch = useAppDispatch();
   const { userData, firebaseUser } = useAppSelector((state) => state.auth);
-  const { teams: availableTeams } = useAppSelector((state) => state.teams);
+  const orgId = userData?.orgId;
+  const { teams: allTeams } = useAppSelector((state) => state.teams);
+  const availableTeams = useMemo(() => 
+    allTeams.filter(t => t.orgId === orgId), 
+  [allTeams, orgId]);
+
   const { positions: globalPositions } = useAppSelector(
     (state) => state.positions,
   );
@@ -32,6 +37,7 @@ const ProfileSettings = ({
     isActive: true,
     teams: [] as string[],
     teamPositions: {} as Record<string, string[]>,
+    orgId: null as string | null,
   });
 
   const [status, setStatus] = useState("idle");
@@ -61,6 +67,7 @@ const ProfileSettings = ({
           isActive: userData.isActive ?? true,
           teams: userData.teams || [],
           teamPositions: userData.teamPositions || {},
+          orgId: userData.orgId || null,
         };
       }
       return prev;
@@ -75,6 +82,7 @@ const ProfileSettings = ({
       isActive: userData.isActive ?? true,
       teams: userData.teams || [],
       teamPositions: userData.teamPositions || {},
+      orgId: userData.orgId || null,
     };
     return JSON.stringify(formState) !== JSON.stringify(originalData);
   }, [formState, userData]);
@@ -102,6 +110,7 @@ const ProfileSettings = ({
       isActive: userData.isActive ?? true,
       teams: userData.teams || [],
       teamPositions: userData.teamPositions || {},
+      orgId: userData.orgId || null,
     });
   };
 

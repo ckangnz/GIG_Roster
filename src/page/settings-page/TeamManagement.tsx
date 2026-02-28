@@ -19,11 +19,20 @@ import styles from "./settings-page.module.css";
 
 const TeamManagement = () => {
   const dispatch = useAppDispatch();
-  const { teams: reduxTeams, loading: teamsLoading } = useAppSelector(
-    (state) => state.teams,
-  );
-  const { positions: availablePositions, loading: positionsLoading } =
+  const { userData } = useAppSelector((state) => state.auth);
+  const orgId = userData?.orgId;
+
+  const teamsState = useAppSelector((state) => state.teams);
+  const reduxTeams = useMemo(() => 
+    (teamsState?.teams || []).filter(t => t.orgId === orgId), 
+  [teamsState?.teams, orgId]);
+  
+  const { positions: allPositions, loading: positionsLoading } =
     useAppSelector((state) => state.positions);
+    
+  const availablePositions = useMemo(() => 
+    allPositions.filter(p => p.orgId === orgId), 
+  [allPositions, orgId]);
 
   const [teams, setTeams] = useState<Team[]>(reduxTeams);
   const [editingTeamIndex, setEditingTeamIndex] = useState<number | null>(null);
@@ -98,12 +107,14 @@ const TeamManagement = () => {
   const saveToFirebase = async () => {
     setStatus("saving");
     try {
+      if (!orgId) throw new Error("Org ID missing");
       // 1. Identify which teams are being removed
       const currentIds = new Set(teams.map(t => t.id));
       const deletedTeams = reduxTeams.filter(t => !currentIds.has(t.id));
 
       const teamsToSave: Team[] = teams.map((t) => ({
         id: t.id,
+        orgId: t.orgId || orgId, // Ensure orgId is present
         name: t.name || "",
         emoji: t.emoji || "",
         maxConflict: t.maxConflict || 1,
@@ -142,7 +153,7 @@ const TeamManagement = () => {
     setTeams(reduxTeams);
   };
 
-  if (teamsLoading || positionsLoading) {
+  if (teamsState?.loading || positionsLoading) {
     return <Spinner />;
   }
 

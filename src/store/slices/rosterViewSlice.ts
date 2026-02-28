@@ -118,12 +118,16 @@ const initialState: RosterViewState = {
 
 export const fetchAllTeamUsers = createAsyncThunk(
   'rosterView/fetchAllTeamUsers',
-  async (teamId: string, { rejectWithValue }) => {
-    if (!teamId) return [];
+  async ({ teamId, orgId }: { teamId: string, orgId: string }, { rejectWithValue }) => {
+    if (!teamId || !orgId) return [];
     try {
       const usersCollectionRef = collection(db, 'users');
-      // Query by UUID in the 'teams' array
-      const q = query(usersCollectionRef, where('teams', 'array-contains', teamId));
+      // Query by UUID in the 'teams' array AND scoped by orgId
+      const q = query(
+        usersCollectionRef, 
+        where('teams', 'array-contains', teamId),
+        where('orgId', '==', orgId)
+      );
       const querySnapshot = await getDocs(q);
       const fetchedUsers: AppUser[] = [];
       querySnapshot.forEach((doc) => {
@@ -140,10 +144,10 @@ export const fetchAllTeamUsers = createAsyncThunk(
 export const fetchUsersByTeamAndPosition = createAsyncThunk(
   'rosterView/fetchUsers',
   async (
-    { teamId, positionId }: { teamId: string; positionId: string },
+    { teamId, positionId, orgId }: { teamId: string; positionId: string; orgId: string },
     { rejectWithValue, getState },
   ) => {
-    if (!teamId || !positionId) return [];
+    if (!teamId || !positionId || !orgId) return [];
     try {
       const state = getState() as RootState;
       const allPositions = state.positions.positions;
@@ -159,6 +163,7 @@ export const fetchUsersByTeamAndPosition = createAsyncThunk(
       const q = query(
         usersCollectionRef,
         where('indexedAssignments', 'array-contains-any', indexedKeys),
+        where('orgId', '==', orgId)
       );
       const querySnapshot = await getDocs(q);
       const fetchedUsers: AppUser[] = [];
@@ -175,10 +180,10 @@ export const fetchUsersByTeamAndPosition = createAsyncThunk(
 
 export const fetchTeamDataForRoster = createAsyncThunk(
   'rosterView/fetchTeamData',
-  async (teamId: string, { rejectWithValue }) => {
-    if (!teamId) return null;
+  async ({ teamId, orgId }: { teamId: string, orgId: string }, { rejectWithValue }) => {
+    if (!teamId || !orgId) return null;
     try {
-      const teamsDocRef = doc(db, 'metadata', 'teams');
+      const teamsDocRef = doc(db, 'organisations', orgId, 'metadata', 'teams');
       const teamsSnap = await getDoc(teamsDocRef);
 
       if (teamsSnap.exists()) {
@@ -191,7 +196,7 @@ export const fetchTeamDataForRoster = createAsyncThunk(
             }))
           : [];
         // Match by ID
-        const foundTeam = allTeamsList.find((team) => team.id === teamId || team.name === teamId);
+        const foundTeam = allTeamsList.find((team) => team.id === teamId);
         return foundTeam || null;
       }
       return null;

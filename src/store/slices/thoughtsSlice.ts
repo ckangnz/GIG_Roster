@@ -9,7 +9,7 @@ import {
 } from "firebase/firestore";
 
 import { db } from "../../firebase";
-import { Thought, ThoughtEntry } from "../../model/model";
+import { Thought, ThoughtEntry, AppUser } from "../../model/model";
 
 interface ThoughtsState {
   thoughts: Record<string, Thought>; // id ({userUid}_{teamName}) -> Thought
@@ -103,13 +103,17 @@ export const syncThoughtEntriesRemote = createAsyncThunk(
       userName: string;
       entries: ThoughtEntry[];
     },
-    { rejectWithValue }
+    { rejectWithValue, getState }
   ) => {
     const { userUid, teamName, userName, entries } = payload;
     const id = `${userUid}_${teamName}`;
 
     try {
-      const docRef = doc(db, "thoughts", id);
+      const state = getState() as { auth: { userData: AppUser | null } };
+      const orgId = state.auth.userData?.orgId;
+      if (!orgId) throw new Error("Org ID missing");
+
+      const docRef = doc(db, "organisations", orgId, "thoughts", id);
       
       // Strip isExpired for Firebase
       const cleanEntries = entries.map(({ isExpired, ...rest }) => {
@@ -121,6 +125,7 @@ export const syncThoughtEntriesRemote = createAsyncThunk(
         docRef,
         {
           id,
+          orgId,
           userUid,
           teamName,
           userName,
@@ -143,9 +148,13 @@ export const syncThoughtEntriesRemote = createAsyncThunk(
 
 export const removeThoughtRemote = createAsyncThunk(
   "thoughts/removeThoughtRemote",
-  async (payload: { id: string }, { rejectWithValue }) => {
+  async (payload: { id: string }, { rejectWithValue, getState }) => {
     try {
-      const docRef = doc(db, "thoughts", payload.id);
+      const state = getState() as { auth: { userData: AppUser | null } };
+      const orgId = state.auth.userData?.orgId;
+      if (!orgId) throw new Error("Org ID missing");
+
+      const docRef = doc(db, "organisations", orgId, "thoughts", payload.id);
       await deleteDoc(docRef);
       return { id: payload.id };
     } catch (error: unknown) {
@@ -165,11 +174,15 @@ export const syncHeartEntryRemote = createAsyncThunk(
       userUid: string;
       updatedEntries: ThoughtEntry[];
     },
-    { rejectWithValue }
+    { rejectWithValue, getState }
   ) => {
     const { thoughtId, updatedEntries } = payload;
     try {
-      const docRef = doc(db, "thoughts", thoughtId);
+      const state = getState() as { auth: { userData: AppUser | null } };
+      const orgId = state.auth.userData?.orgId;
+      if (!orgId) throw new Error("Org ID missing");
+
+      const docRef = doc(db, "organisations", orgId, "thoughts", thoughtId);
       
       const cleanEntries = updatedEntries.map(({ isExpired, ...rest }) => {
         void isExpired;

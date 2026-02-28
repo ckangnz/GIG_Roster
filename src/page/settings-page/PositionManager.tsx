@@ -71,13 +71,21 @@ const DraggableRowBlock = ({
 
 const PositionManagement = () => {
   const dispatch = useAppDispatch();
+  const { userData } = useAppSelector((state) => state.auth);
+  const orgId = userData?.orgId;
   const { positions: reduxPositions, loading: positionsLoading } =
     useAppSelector((state) => state.positions);
   const { teams: reduxTeams } = useAppSelector((state) => state.teams);
     
-  const [positions, setPositions] = useState<Position[]>(reduxPositions);
+  const [positions, setPositions] = useState<Position[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [status, setStatus] = useState("idle");
+
+  useEffect(() => {
+    if (orgId) {
+      setPositions(reduxPositions.filter(p => p.orgId === orgId));
+    }
+  }, [reduxPositions, orgId]);
 
   const hasChanges = useMemo(() => {
     const normalize = (list: Position[]) =>
@@ -97,8 +105,10 @@ const PositionManagement = () => {
   }, [positions, reduxPositions]);
 
   useEffect(() => {
-    setPositions(reduxPositions);
-  }, [reduxPositions]);
+    if (orgId) {
+      setPositions(reduxPositions.filter(p => p.orgId === orgId));
+    }
+  }, [reduxPositions, orgId]);
 
   // Group positions into blocks for dragging
   const positionBlocks: PositionBlock[] = useMemo(() => {
@@ -214,10 +224,12 @@ const PositionManagement = () => {
   const saveToFirebase = async () => {
     setStatus("saving");
     try {
+      if (!orgId) throw new Error("Org ID missing");
       // 1. Save global positions
       const positionsToSave: Position[] = positions.map((p) => {
         const cleanPos: Position = {
           id: p.id,
+          orgId: p.orgId || orgId,
           name: p.name || "",
           emoji: p.emoji || "",
           colour: p.colour || "",

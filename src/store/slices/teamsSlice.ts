@@ -2,7 +2,7 @@ import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 
 import { db } from "../../firebase";
-import { Team } from "../../model/model";
+import { Team, AppUser } from "../../model/model";
 
 interface TeamsState {
   teams: Team[];
@@ -20,9 +20,9 @@ const initialState: TeamsState = {
 
 export const fetchTeams = createAsyncThunk(
   "teams/fetchTeams",
-  async (_, { rejectWithValue }) => {
+  async (orgId: string, { rejectWithValue }) => {
     try {
-      const docRef = doc(db, "metadata", "teams");
+      const docRef = doc(db, "organisations", orgId, "metadata", "teams");
       const snap = await getDoc(docRef);
       if (snap.exists()) {
         const data = snap.data();
@@ -50,9 +50,13 @@ export const fetchTeams = createAsyncThunk(
 
 export const updateTeams = createAsyncThunk(
   "teams/updateTeams",
-  async (teams: Team[], { rejectWithValue }) => {
+  async (teams: Team[], { rejectWithValue, getState }) => {
     try {
-      const docRef = doc(db, "metadata", "teams");
+      const state = getState() as { auth: { userData: AppUser | null } };
+      const orgId = state.auth.userData?.orgId;
+      if (!orgId) throw new Error("Organisation ID missing");
+
+      const docRef = doc(db, "organisations", orgId, "metadata", "teams");
       await setDoc(docRef, { list: teams });
       return teams;
     } catch (error) {

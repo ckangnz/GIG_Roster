@@ -7,6 +7,7 @@ import { InputField, SelectField } from "../../components/common/InputField";
 import Modal from "../../components/common/Modal";
 import { SettingsGroup, SettingsRow } from "../../components/common/SettingsGroup";
 import Toggle from "../../components/common/Toggle";
+import { useAppSelector } from "../../hooks/redux";
 import { Position } from "../../model/model";
 import formStyles from "../../styles/form.module.css";
 
@@ -20,8 +21,7 @@ interface NewPositionModalProps {
   availableParents: Position[];
 }
 
-const defaultPosition: Position = {
-  id: "",
+const defaultPosition: Partial<Position> = {
   name: "",
   emoji: "",
   colour: "#FFFFFF",
@@ -34,15 +34,19 @@ const defaultPosition: Position = {
 const EMOJI_REGEX = /(\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])/g;
 
 const NewPositionModal = ({ isOpen, onClose, onAdd, availableParents }: NewPositionModalProps) => {
-  const [newPos, setNewPos] = useState<Position>(defaultPosition);
+  const { userData } = useAppSelector((state) => state.auth);
+  const orgId = userData?.orgId;
+
+  const [newPos, setNewPos] = useState<Partial<Position>>(defaultPosition);
   const [isChild, setIsChild] = useState(false);
 
   const handleAdd = () => {
-    if (!newPos.name.trim() || !newPos.emoji.trim()) return;
+    if (!newPos.name?.trim() || !newPos.emoji?.trim() || !orgId) return;
     
     const positionToAdd: Position = {
-      ...newPos,
+      ...newPos as Position,
       id: crypto.randomUUID(),
+      orgId,
       parentId: isChild ? newPos.parentId : undefined
     };
     
@@ -170,7 +174,7 @@ const NewPositionModal = ({ isOpen, onClose, onAdd, availableParents }: NewPosit
           <Button
             variant="primary"
             onClick={handleAdd}
-            disabled={!newPos.name.trim() || !newPos.emoji.trim() || (isChild && !newPos.parentId)}
+            disabled={!newPos.name?.trim() || !newPos.emoji?.trim() || (isChild && !newPos.parentId)}
             style={{ width: "100%", height: "48px" }}
           >
             <Plus size={20} style={{ marginRight: "8px" }} />

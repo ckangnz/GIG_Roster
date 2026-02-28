@@ -23,30 +23,30 @@
 *Objective: Transform the flat app into a multi-tenant platform with isolated, performant data.*
 
 ### 🎯 Goals
-- Create `Organisation` entity.
-- **Roster Refactor**: Move from monolithic date documents to atomic Team-Date documents.
-- Move from "System Global" to "Org Global" positions.
-- **Searchable Position Picker**: Refactor UI to use Autocomplete.
+- [x] **Organisation Entity**: Created `Organisation` model and scoped all data (Teams, Positions, Users, Thoughts).
+- [x] **Atomic Roster Structure**: Refactored monolithic date documents into per-team-per-date documents (`organisations/{orgId}/roster/{teamId}_{date}`).
+- [x] **Data Migration**: Created `migrate-to-organisations.ts` script to transition legacy data to the new structure.
+- [ ] **Searchable Position Picker**: Refactor UI to use Autocomplete.
 
 ### 🛠 Implementation Guidelines
-- [ ] **Step 0: Preparation & Simplification (Minimize Effort)**:
+- [x] **Step 0: Preparation & Simplification (Minimize Effort)**:
     - [x] Clean up all remaining `id || name` fallbacks to rely strictly on stable UUIDs.
-    - [ ] **Abstract Data Access**: Ensure all components use `getAssignmentsForTeam` and `getAbsenceForUser` helpers instead of direct object indexing. This makes the storage structural change transparent to the UI.
-    - [ ] **Decouple Redux Sync**: Refactor `rosterSlice` to accept a `teamId` in every remote sync action, even before the database structure changes.
-- [ ] **Step 1: The Organisation Entity**:
-    - Define `Organisation` model in `model.ts`.
-    - Create `organisations` collection in Firestore.
-    - Add `orgId` to `AppUser` (mandatory).
-- [ ] **Atomic Roster Structure**:
+    - [x] **Abstract Data Access**: Ensure all components use `getAssignmentsForTeam` and `getAbsenceForUser` helpers instead of direct object indexing. This makes the storage structural change transparent to the UI.
+    - [x] **Decouple Redux Sync**: Refactor `rosterSlice` to accept a `teamId` in every remote sync action, even before the database structure changes.
+- [x] **Step 1: The Organisation Entity**:
+    - [x] Define `Organisation` model in `model.ts`.
+    - [x] Create `organisations` collection in Firestore.
+    - [x] Add `orgId` to `AppUser` (mandatory).
+- [x] **Atomic Roster Structure**:
     - **Old Path**: `roster/{date}` (Monolithic)
     - **New Path**: `organisations/{orgId}/roster/{teamId}_{date}` (Atomic)
     - This allows fetching only the specific team data needed and enables per-team security rules.
-- [ ] **Absence Decoupling**:
-    - Move `absence` data to its own collection: `organisations/{orgId}/absences/{userId}_{date}`.
+- [x] **Absence Decoupling**:
+    - [x] Move `absence` data to its own collection: `organisations/{orgId}/absences/{userId}_{date}`.
     - This ensures a user's absence is Org-wide but doesn't bloat team roster documents.
-- [ ] **Scoped Data Migration**:
-    - Create a script to explode existing monolithic date docs into individual team-date docs.
-    - Assign all existing data to a default "Legacy Org".
+- [x] **Scoped Data Migration**:
+    - [x] Create a script to explode existing monolithic date docs into individual team-date docs.
+    - [x] Assign all existing data to a default "Legacy Org".
 - [ ] **UX Update**:
     - Replace "Pill Cloud" in `TeamPositionEditor` and `ProfileSettings` with a Searchable Multi-select.
 

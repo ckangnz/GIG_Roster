@@ -38,14 +38,20 @@ const DashboardPage = () => {
   const targetDate = searchParams.get("date");
 
   const { userData } = useAppSelector((state) => state.auth);
-  const { teams: allTeams } = useAppSelector((state) => state.teams);
+  const orgId = userData?.orgId;
+  const teamsState = useAppSelector((state) => state.teams);
+  const allTeams = useMemo(() => 
+    (teamsState?.teams || []).filter(t => t.orgId === orgId), 
+  [teamsState?.teams, orgId]);
+
   const {
     entries,
     loading: loadingRoster,
   } = useAppSelector((state) => state.roster);
-  const { positions: allPositions } = useAppSelector(
-    (state) => state.positions,
-  );
+  const positionsState = useAppSelector((state) => state.positions);
+  const allPositions = useMemo(() => 
+    (positionsState?.positions || []).filter(p => p.orgId === orgId), 
+  [positionsState?.positions, orgId]);
 
   const [teamUsers, setTeamUsers] = useState<AppUser[]>([]);
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -107,7 +113,10 @@ const DashboardPage = () => {
     const todayKey = getTodayKey();
     if (!userData?.teams || allTeams.length === 0) return [];
 
-    const userTeams = allTeams.filter((t) => userData.teams.includes(t.id) || userData.teams.includes(t.name));
+    const userTeams = allTeams.filter((t) => 
+      userData.teams.includes(t.id) || 
+      userData.teams.includes(t.name)
+    );
     const dateSet = new Set<string>();
 
     userTeams.forEach((team) => {
@@ -179,12 +188,13 @@ const DashboardPage = () => {
 
   useEffect(() => {
     const fetchMyTeamsUsers = async () => {
-      if (!userData?.teams || userData.teams.length === 0) return;
+      if (!userData?.teams || userData.teams.length === 0 || !orgId) return;
       try {
         const usersRef = collection(db, "users");
         const q = query(
           usersRef,
           where("teams", "array-contains-any", userData.teams),
+          where("orgId", "==", orgId)
         );
         const snap = await getDocs(q);
         const users: AppUser[] = [];
@@ -196,7 +206,7 @@ const DashboardPage = () => {
     };
 
     fetchMyTeamsUsers();
-  }, [userData?.teams]);
+  }, [userData?.teams, orgId]);
 
   const getDashboardDataForDate = useCallback(
     (dateStr: string | null) => {
