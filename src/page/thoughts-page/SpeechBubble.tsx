@@ -109,9 +109,15 @@ const SpeechBubble = ({
     };
   }, [entry.text, isExpanded]);
 
-  const handleTap = useCallback(() => {
+  const handleTap = useCallback((e: MouseEvent | TouchEvent | PointerEvent) => {
     // If a drag was recognized, don't trigger tap logic
     if (isDragging.current) return;
+
+    // Check if the tap originated from something that should be ignored (like the heart button)
+    const target = e?.target as HTMLElement;
+    if (target && target.closest('[data-ignore-tap="true"]')) {
+      return;
+    }
 
     if (clickTimer.current) {
       clearTimeout(clickTimer.current);
@@ -124,16 +130,9 @@ const SpeechBubble = ({
         clickTimer.current = null;
       }, 250);
     }
-      }, [onToggleExpand, entry.id, onHeart]);
-    const handleHeartClick = useCallback(
-    (e: React.MouseEvent) => {
-      e.stopPropagation();
-      onShowLikers(entry.hearts);
-    },
-    [entry.hearts, onShowLikers],
-  );
-
-  return (
+  }, [onToggleExpand, entry.id, onHeart]);
+      
+        return (
     <div
       className={`${styles.bubbleContainer} ${isExpanded ? styles.expandedContainer : ""}`}
     >
@@ -220,10 +219,16 @@ const SpeechBubble = ({
             )}
 
             {heartCount > 0 && (
-              <div
+              <motion.div
                 className={styles.heartOverlayInside}
-                onClick={handleHeartClick}
-                style={{ position: "relative" }}
+                data-ignore-tap="true"
+                onTap={(e) => {
+                  e.stopPropagation();
+                  onShowLikers(entry.hearts);
+                }}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+                style={{ position: "relative", cursor: "pointer" }}
               >
                 <AnimatePresence>
                   {showBurst && (
@@ -270,7 +275,7 @@ const SpeechBubble = ({
                 <span style={{ marginLeft: 3, fontWeight: 800 }}>
                   {heartCount}
                 </span>
-              </div>
+              </motion.div>
             )}
           </div>
         )}
