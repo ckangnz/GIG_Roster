@@ -51,7 +51,7 @@ const TeamManagementRow = ({
     const displayEmojis = (team.positions || [])
       .slice(0, 3)
       .map((posId) => {
-        const pos = availablePositions.find(ap => ap.id === posId || ap.name === posId);
+        const pos = availablePositions.find(ap => ap.id === posId);
         return (
           <span key={posId} className={styles.summaryEmoji}>
             {pos?.emoji || "❓"}

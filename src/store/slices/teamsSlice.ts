@@ -33,7 +33,7 @@ export const fetchTeams = createAsyncThunk(
               maxConflict: teamData.maxConflict || 1,
               // Convert object-based positions to ID-based if necessary
               positions: (teamData.positions || []).map((p: string | { id?: string; name?: string }) => 
-                typeof p === 'string' ? p : (p.id || p.name || '')
+                typeof p === 'string' ? p : (p.id || '')
               )
             }))
           : [];

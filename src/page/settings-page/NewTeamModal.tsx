@@ -440,7 +440,7 @@ const NewTeamModal = ({ isOpen, onClose, onAdd, availablePositions }: NewTeamMod
             {availablePositions
               ?.filter((pos) => !pos.parentId)
               ?.map((pos) => {
-                const isActive = newTeam.positions?.some((pId) => pId === pos.id || pId === pos.name);
+                const isActive = newTeam.positions?.some((pId) => pId === pos.id);
                 return (
                   <Pill
                     key={pos.id}
@@ -448,8 +448,8 @@ const NewTeamModal = ({ isOpen, onClose, onAdd, availablePositions }: NewTeamMod
                     isActive={isActive}
                     onClick={() => {
                       const current = newTeam.positions || [];
-                      const updated = current.some(pId => pId === pos.id || pId === pos.name)
-                        ? current.filter(pId => pId !== pos.id && pId !== pos.name)
+                      const updated = current.some(pId => pId === pos.id)
+                        ? current.filter(pId => pId !== pos.id)
                         : [...current, pos.id];
                       setNewTeam({ ...newTeam, positions: updated });
                     }}

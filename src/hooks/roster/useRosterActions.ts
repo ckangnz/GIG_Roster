@@ -7,6 +7,7 @@ import {
   RosterEntry,
   getAssignmentsForTeam,
   isTeamRosterData,
+  getAbsenceForUser,
 } from "../../model/model";
 import {
   updatePositions,
@@ -41,7 +42,7 @@ export const useRosterActions = (
   const isUserAbsent = useCallback(
     (dateString: string, userEmail: string) => {
       const entry = entries[dateString];
-      return !!(entry && entry.absence && entry.absence[userEmail]);
+      return !!getAbsenceForUser(entry, userEmail);
     },
     [entries],
   );
@@ -49,7 +50,7 @@ export const useRosterActions = (
   const getAbsenceReason = useCallback(
     (dateString: string, userEmail: string) => {
       const entry = entries[dateString];
-      return entry?.absence?.[userEmail]?.reason || "";
+      return getAbsenceForUser(entry, userEmail)?.reason || "";
     },
     [entries],
   );

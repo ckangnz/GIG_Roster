@@ -421,7 +421,7 @@ const TeamEditModal = ({
             {availablePositions
               ?.filter((pos) => !pos.parentId)
               ?.map((pos) => {
-                const isActive = team.positions?.some((pId) => pId === pos.id || pId === pos.name);
+                const isActive = team.positions?.some((pId) => pId === pos.id);
                 return (
                   <Pill
                     key={pos.id}

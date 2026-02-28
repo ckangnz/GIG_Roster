@@ -111,8 +111,8 @@ const TeamPositionEditor = ({
         <label className={commonStyles.sectionLabel}>Teams</label>
         <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
           {availableTeams.map((team) => {
-            const teamIdentifier = team.id || team.name;
-            const isSelected = selectedTeams.includes(teamIdentifier) || selectedTeams.includes(team.name);
+            const teamIdentifier = team.id;
+            const isSelected = selectedTeams.includes(teamIdentifier);
             return (
               <Pill
                 key={teamIdentifier}

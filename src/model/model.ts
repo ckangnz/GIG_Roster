@@ -161,6 +161,17 @@ export const getAssignmentsForTeam = (
   return teamData;
 };
 
+/**
+ * Safely extracts absence information for a specific user from a roster entry.
+ */
+export const getAbsenceForUser = (
+  entry: RosterEntry | undefined,
+  userIdentifier: string
+): Absence | null => {
+  if (!entry || !entry.absence) return null;
+  return entry.absence[userIdentifier] || null;
+};
+
 export const generateIndexedAssignments = (
   teamPositions: Record<string, string[]>,
 ): string[] => {

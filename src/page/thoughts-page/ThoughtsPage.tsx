@@ -60,7 +60,7 @@ const ThoughtsPage = () => {
 
   // Resolve UUID for data fetching
   const teamId = useMemo(() => {
-    const found = allTeams.find(t => t.name === teamNameFromUrl || t.id === teamNameFromUrl);
+    const found = allTeams.find(t => t.id === teamNameFromUrl || t.name === teamNameFromUrl);
     return found?.id || teamNameFromUrl || userData?.teams?.[0] || "";
   }, [allTeams, teamNameFromUrl, userData?.teams]);
 
@@ -80,7 +80,8 @@ const ThoughtsPage = () => {
   // Auto-navigate to first team if none in URL
   useEffect(() => {
     if (!teamNameFromUrl && userData?.teams?.[0]) {
-      const firstTeam = allTeams.find(t => t.id === userData.teams[0] || t.name === userData.teams[0]);
+      const firstTeamId = userData.teams[0];
+      const firstTeam = allTeams.find(t => t.id === firstTeamId || t.name === firstTeamId);
       if (firstTeam) {
         navigate(`/app/thoughts/${firstTeam.id}`, { replace: true });
       }
