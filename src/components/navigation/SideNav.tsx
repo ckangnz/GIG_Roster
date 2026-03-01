@@ -47,8 +47,9 @@ const SideNav = ({ isVisible = true }: SideNavProps) => {
   const {
     teams: allTeams,
     loading: teamsLoading,
+    fetched: teamsFetched,
   } = useAppSelector((state) => state.teams);
-  const { positions: allPositions } = useAppSelector(
+  const { positions: allPositions, fetched: positionsFetched } = useAppSelector(
     (state) => state.positions,
   );
   const { onlineUsers } = useAppSelector((state) => state.presence);
@@ -122,8 +123,20 @@ const SideNav = ({ isVisible = true }: SideNavProps) => {
     );
     const tabLabel = currentTabInfo ? currentTabInfo.label : "GIG ROSTER";
 
-    const resolvedTeamName = allTeams.find(t => t.id === activeTeamName || t.name === activeTeamName)?.name || activeTeamName;
-    const resolvedSideItem = allPositions.find(p => p.id === activeSideItem || p.name === activeSideItem)?.name || activeSideItem;
+    // Resolve display names from IDs/Identifiers
+    const foundTeam = allTeams.find(t => t.id === activeTeamName || t.name === activeTeamName);
+    const foundPos = allPositions.find(p => p.id === activeSideItem || p.name === activeSideItem);
+
+    // If metadata isn't fetched yet and the param looks like an ID, show Loading
+    const isTeamId = activeTeamName?.includes("-");
+    const isPosId = activeSideItem?.includes("-");
+
+    if ((isTeamId && !teamsFetched) || (isPosId && !positionsFetched)) {
+      return `${tabLabel} • Loading...`;
+    }
+
+    const resolvedTeamName = foundTeam?.name || activeTeamName;
+    const resolvedSideItem = foundPos?.name || activeSideItem;
 
     if (activeTab === AppTab.THOUGHTS && resolvedTeamName) {
       return `${tabLabel} • ${resolvedTeamName}`;

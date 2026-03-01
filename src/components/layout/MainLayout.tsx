@@ -46,7 +46,8 @@ const MainLayout = () => {
   // Initialize all real-time app listeners (Presence, Roster, Profile, Metadata)
   useAppListeners();
 
-  const { teams: allTeams } = useAppSelector((state) => state.teams);
+  const { teams: allTeams, fetched: teamsFetched } = useAppSelector((state) => state.teams);
+  const { positions: allPositions, fetched: positionsFetched } = useAppSelector((state) => state.positions);
   const { isMobileSidebarOpen, isDesktopSidebarExpanded, lastVisitedPaths } =
     useAppSelector((state) => state.ui);
 
@@ -142,8 +143,6 @@ const MainLayout = () => {
     lastVisitedPaths,
   ]);
 
-  const { positions: allPositions } = useAppSelector((state) => state.positions);
-
   const getHeaderTitle = () => {
     const currentTabInfo = BOTTOM_NAV_ITEMS.find(
       (item) => item.id === activeTab,
@@ -151,8 +150,19 @@ const MainLayout = () => {
     const tabLabel = currentTabInfo ? currentTabInfo.label : "GIG ROSTER";
 
     // Resolve display names from IDs/Identifiers
-    const resolvedTeamName = allTeams.find(t => t.id === activeTeamName || t.name === activeTeamName)?.name || activeTeamName;
-    const resolvedSideItem = allPositions.find(p => p.id === activeSideItem || p.name === activeSideItem)?.name || activeSideItem;
+    const foundTeam = allTeams.find(t => t.id === activeTeamName || t.name === activeTeamName);
+    const foundPos = allPositions.find(p => p.id === activeSideItem || p.name === activeSideItem);
+
+    // If metadata isn't fetched yet and the param looks like an ID, show Loading
+    const isTeamId = activeTeamName?.includes("-");
+    const isPosId = activeSideItem?.includes("-");
+
+    if ((isTeamId && !teamsFetched) || (isPosId && !positionsFetched)) {
+      return `${tabLabel} • Loading...`;
+    }
+
+    const resolvedTeamName = foundTeam?.name || activeTeamName;
+    const resolvedSideItem = foundPos?.name || activeSideItem;
 
     if (activeTab === AppTab.THOUGHTS && resolvedTeamName) {
       return `${tabLabel} • ${resolvedTeamName}`;
