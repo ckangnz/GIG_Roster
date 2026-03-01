@@ -154,7 +154,7 @@ export const getAssignmentsForTeam = (
   teamId: string
 ): UserAssignments => {
   const teamData = entry.teams[teamId];
-  if (!teamData) return {};
+  if (!teamData || typeof teamData !== 'object') return {};
   
   if (isTeamRosterData(teamData)) {
     if (teamData.type === 'daily') {
@@ -164,18 +164,28 @@ export const getAssignmentsForTeam = (
     if (teamData.type === 'slotted' && teamData.slots) {
       const combined: UserAssignments = {};
       Object.values(teamData.slots).forEach(slotAssignments => {
-        Object.entries(slotAssignments).forEach(([email, posIds]) => {
-          if (!combined[email]) combined[email] = [];
-          combined[email] = Array.from(new Set([...combined[email], ...posIds]));
-        });
+        if (slotAssignments && typeof slotAssignments === 'object') {
+          Object.entries(slotAssignments).forEach(([email, posIds]) => {
+            if (Array.isArray(posIds)) {
+              if (!combined[email]) combined[email] = [];
+              combined[email] = Array.from(new Set([...combined[email], ...posIds]));
+            }
+          });
+        }
       });
       return combined;
     }
     return {};
   }
   
-  // Legacy flat structure
-  return teamData;
+  // Legacy flat structure - verify it's a Record<string, string[]>
+  const assignments: UserAssignments = {};
+  Object.entries(teamData).forEach(([email, posIds]) => {
+    if (Array.isArray(posIds)) {
+      assignments[email] = posIds;
+    }
+  });
+  return assignments;
 };
 
 /**

@@ -2,7 +2,7 @@ import { useCallback, useMemo, useRef, useEffect } from "react";
 
 import { useNavigate, useSearchParams } from "react-router-dom";
 
-import { getTodayKey, RosterEntry, getAssignmentsForTeam } from "../../model/model";
+import { getTodayKey, RosterEntry, getAssignmentsForTeam, Team, Weekday } from "../../model/model";
 import { 
   loadPreviousDates, 
   resetToUpcomingDates, 
@@ -27,11 +27,56 @@ export const useRosterUI = (
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   
+  const { teams } = useAppSelector((state) => state.teams);
+  const currentTeam = useMemo(() => teams.find(t => t.id === teamId), [teams, teamId]);
+
   const { hiddenUsers, rosterAllViewMode, peekPositionName, focusedCell } = useAppSelector(
     (state) => state.ui,
   );
 
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const isTeamExpired = useCallback((team: Team, dateStr: string) => {
+    const todayKey = getTodayKey();
+    if (dateStr !== todayKey) return false;
+
+    const dateObj = new Date(dateStr);
+    const dayName = new Intl.DateTimeFormat("en-US", { weekday: "long" }).format(
+      dateObj,
+    ) as Weekday;
+    const endTimeStr = team.dayEndTimes?.[dayName] || "23:59";
+    
+    const [endH, endM] = endTimeStr.split(":").map(Number);
+    
+    const now = new Date();
+    const nowH = now.getHours();
+    const nowM = now.getMinutes();
+
+    return nowH > endH || (nowH === endH && nowM >= endM);
+  }, []);
+
+  const getRowClass = useCallback((dateString: string) => {
+    const todayKey = getTodayKey();
+    const dateKey = dateString.split("T")[0];
+    if (dateKey < todayKey) return "past-date";
+    if (dateKey === todayKey) {
+      if (currentTeam && isTeamExpired(currentTeam, dateKey)) return "past-date";
+      return "today-date";
+    }
+    return "future-date";
+  }, [currentTeam, isTeamExpired]);
+
+  const closestNextDate = useMemo(() => {
+    const today = getTodayKey();
+    return rosterDates.find((d) => {
+      const dateKey = d.split("T")[0];
+      if (dateKey < today) return false;
+      if (dateKey === today) {
+        if (currentTeam && isTeamExpired(currentTeam, dateKey)) return false;
+      }
+      return true;
+    });
+  }, [rosterDates, currentTeam, isTeamExpired]);
 
   // Focus Handling
   useEffect(() => {
@@ -48,10 +93,12 @@ export const useRosterUI = (
     dispatch(setFocusedCell(cell));
   }, [dispatch]);
 
-  // Auto-focus logic for linked dates
+  // Auto-focus logic for linked dates or closest upcoming date
   useEffect(() => {
-    const targetDate = searchParams.get("date");
-    if (targetDate && rosterDates.length > 0 && !focusedCell) {
+    if (rosterDates.length > 0 && !focusedCell) {
+      const targetDate = searchParams.get("date") || closestNextDate;
+      if (!targetDate) return;
+
       // Find the first visual row that matches this date
       const rowIndex = visualRows.length > 0 
         ? visualRows.findIndex(row => row.dateString === targetDate)
@@ -61,7 +108,7 @@ export const useRosterUI = (
         dispatch(setFocusedCell({ row: rowIndex, col: 0, table: "roster" }));
       }
     }
-  }, [searchParams, rosterDates, visualRows, dispatch, focusedCell]);
+  }, [searchParams, rosterDates, visualRows, dispatch, focusedCell, closestNextDate]);
 
   // Visibility Handling
   const handleToggleVisibility = useCallback((userEmail: string) => {
@@ -106,22 +153,9 @@ export const useRosterUI = (
     }
   }, [checkHasAssignments, navigate]);
 
-  const getRowClass = useCallback((dateString: string) => {
-    const todayKey = getTodayKey();
-    const dateKey = dateString.split("T")[0];
-    if (dateKey < todayKey) return "past-date";
-    if (dateKey === todayKey) return "today-date";
-    return "future-date";
-  }, []);
-
   const hasPastDates = useMemo(() => {
     const today = getTodayKey();
     return rosterDates.length > 0 && rosterDates[0] < today;
-  }, [rosterDates]);
-
-  const closestNextDate = useMemo(() => {
-    const today = getTodayKey();
-    return rosterDates.find((d) => d.split("T")[0] >= today);
   }, [rosterDates]);
 
   return {

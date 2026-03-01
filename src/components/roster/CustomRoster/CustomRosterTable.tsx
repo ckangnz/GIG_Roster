@@ -164,25 +164,33 @@ const CustomRosterTable = () => {
       onCellClick={handleKeyboardCustomCellClick}
       hasPastDates={hasPastDates}
     >
-      {visualRows.map((row, rowIndex) => (
-        <CustomRosterRow
-          key={row.slot ? `${row.dateString}-${row.slot.id}` : row.dateString}
-          dateString={row.dateString}
-          rowIndex={rowIndex}
-          entries={entries}
-          closestNextDate={closestNextDate}
-          onDateClick={logic.handleDateClick}
-          focusedCell={logic.focusedCell}
-          setFocusedCell={logic.setFocusedCell}
-          currentPosition={currentPosition}
-          handleCellClick={(date, email, r, c) => handleCellClick(date, email, r, c, row.slot?.id)}
-          getCellContent={(date, email) => getCellContent(date, email, row.slot?.id)}
-          showPeek={true}
-          slot={row.slot}
-          isFirstSlot={row.isFirstSlot}
-          isLastSlot={row.isLastSlot}
-        />
-      ))}
+      {visualRows.map((row, rowIndex) => {
+        const rowClass = logic.getRowClass(row.dateString);
+        const isPast = rowClass === "past-date";
+        const isToday = rowClass === "today-date";
+
+        return (
+          <CustomRosterRow
+            key={row.slot ? `${row.dateString}-${row.slot.id}` : row.dateString}
+            dateString={row.dateString}
+            rowIndex={rowIndex}
+            entries={entries}
+            closestNextDate={closestNextDate}
+            onDateClick={logic.handleDateClick}
+            focusedCell={logic.focusedCell}
+            setFocusedCell={logic.setFocusedCell}
+            currentPosition={currentPosition}
+            handleCellClick={(date, email, r, c) => handleCellClick(date, email, r, c, row.slot?.id)}
+            getCellContent={(date, email) => getCellContent(date, email, row.slot?.id)}
+            showPeek={true}
+            isToday={isToday}
+            isPast={isPast}
+            slot={row.slot}
+            isFirstSlot={row.isFirstSlot}
+            isLastSlot={row.isLastSlot}
+          />
+        );
+      })}
     </RosterTable>
   );
 };

@@ -86,7 +86,7 @@ const GeneralRosterTable = () => {
 
     return Object.entries(teamAssignments)
       .filter(([, positions]) =>
-        (positions as string[]).some((p) => positionGroupIds.includes(p)),
+        Array.isArray(positions) && (positions as string[]).some((p) => positionGroupIds.includes(p)),
       )
       .map(([email]) => email);
   }, [closestNextDate, teamId, activePositionId, entries, allPositions]);
@@ -119,7 +119,7 @@ const GeneralRosterTable = () => {
       Object.entries(entry.teams).forEach(([tId]) => {
         if (tId !== teamId) {
           const assignments = getAssignmentsForTeam(entry, tId)[userEmail];
-          if (assignments && assignments.length > 0) {
+          if (Array.isArray(assignments) && assignments.length > 0) {
             otherTeamsAssignments.push({ teamId: tId, positions: assignments });
           }
         }
@@ -197,36 +197,44 @@ const GeneralRosterTable = () => {
       onCellClick={handleKeyboardCellClick}
       hasPastDates={hasPastDates}
     >
-      {visualRows.map((row, rowIndex) => (
-        <GeneralRosterRow
-          key={row.slot ? `${row.dateString}-${row.slot.id}` : row.dateString}
-          dateString={row.dateString}
-          rowIndex={rowIndex}
-          entries={entries}
-          closestNextDate={closestNextDate}
-          onDateClick={logic.handleDateClick}
-          focusedCell={logic.focusedCell}
-          setFocusedCell={logic.setFocusedCell}
-          handleCellClick={(date, email, r, c) => handleCellClick(date, email, r, c, row.slot?.id)}
-          getCellContent={(date, email) => getCellContent(date, email, row.slot?.id)}
-          sortedUsers={sortedUsers}
-          genderDividerIndex={genderDividerIndex}
-          isCellDisabled={logic.isCellDisabled}
-          isUserAbsent={logic.isUserAbsent}
-          getAbsenceReason={logic.getAbsenceReason}
-          assignedOnClosestDate={assignedOnClosestDate}
-          showPeek={true}
-          getConflictStatus={getConflictStatus}
-          userData={userData}
-          allTeams={allTeams}
-          teamName={teamId || ""}
-          activePosition={activePositionId || ""}
-          hasPositionCoverageRequest={hasPositionCoverageRequest}
-          slot={row.slot}
-          isFirstSlot={row.isFirstSlot}
-          isLastSlot={row.isLastSlot}
-        />
-      ))}
+      {visualRows.map((row, rowIndex) => {
+        const rowClass = logic.getRowClass(row.dateString);
+        const isPast = rowClass === "past-date";
+        const isToday = rowClass === "today-date";
+
+        return (
+          <GeneralRosterRow
+            key={row.slot ? `${row.dateString}-${row.slot.id}` : row.dateString}
+            dateString={row.dateString}
+            rowIndex={rowIndex}
+            entries={entries}
+            closestNextDate={closestNextDate}
+            onDateClick={logic.handleDateClick}
+            focusedCell={logic.focusedCell}
+            setFocusedCell={logic.setFocusedCell}
+            handleCellClick={(date, email, r, c) => handleCellClick(date, email, r, c, row.slot?.id)}
+            getCellContent={(date, email) => getCellContent(date, email, row.slot?.id)}
+            sortedUsers={sortedUsers}
+            genderDividerIndex={genderDividerIndex}
+            isCellDisabled={logic.isCellDisabled}
+            isUserAbsent={logic.isUserAbsent}
+            getAbsenceReason={logic.getAbsenceReason}
+            assignedOnClosestDate={assignedOnClosestDate}
+            showPeek={true}
+            getConflictStatus={getConflictStatus}
+            userData={userData}
+            allTeams={allTeams}
+            teamName={teamId || ""}
+            activePosition={activePositionId || ""}
+            hasPositionCoverageRequest={hasPositionCoverageRequest}
+            isToday={isToday}
+            isPast={isPast}
+            slot={row.slot}
+            isFirstSlot={row.isFirstSlot}
+            isLastSlot={row.isLastSlot}
+          />
+        );
+      })}
     </RosterTable>
   );
 };

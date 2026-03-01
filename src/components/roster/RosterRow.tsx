@@ -1,7 +1,7 @@
 import { ReactNode, memo, useMemo } from "react";
 
 import { PeekCell } from "./Peek/PeekCell";
-import { getTodayKey, RosterEntry, formatDisplayDate, RosterSlot, getAssignmentsForTeam, isTeamRosterData } from "../../model/model";
+import { RosterEntry, formatDisplayDate, RosterSlot, getAssignmentsForTeam, isTeamRosterData } from "../../model/model";
 
 import styles from "./roster-row.module.css";
 
@@ -13,6 +13,8 @@ interface RosterRowProps {
   showPeek?: boolean;
   children: ReactNode;
   hasPositionRequest?: boolean;
+  isToday?: boolean;
+  isPast?: boolean;
   // Slotted mode props
   slot?: RosterSlot;
   isFirstSlot?: boolean;
@@ -28,15 +30,13 @@ const RosterRow = memo(
     showPeek,
     children,
     hasPositionRequest = false,
+    isToday = false,
+    isPast = false,
     slot,
     isFirstSlot = true,
     isLastSlot = true,
   }: RosterRowProps) => {
-    const todayKey = useMemo(() => getTodayKey(), []);
     const dateKey = dateString.split("T")[0];
-
-    const isToday = dateKey === todayKey;
-    const isPast = dateKey < todayKey;
 
     const entry = entries[dateKey];
     const eventName = entry?.eventName;

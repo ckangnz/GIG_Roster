@@ -58,25 +58,33 @@ const AbsenceRosterTable = () => {
       onCellClick={handleKeyboardAbsenceClick}
       hasPastDates={hasPastDates}
     >
-      {rosterDates.map((dateString, rowIndex) => (
-        <AbsenceRosterRow
-          key={dateString}
-          dateString={dateString}
-          rowIndex={rowIndex}
-          entries={entries}
-          closestNextDate={closestNextDate}
-          onDateClick={logic.handleDateClick}
-          focusedCell={logic.focusedCell}
-          setFocusedCell={logic.setFocusedCell}
-          allTeamUsers={sortedAllTeamUsers}
-          handleAbsenceClick={handleAbsenceClick}
-          handleAbsenceReasonChange={handleAbsenceReasonChange}
-          isUserAbsent={logic.isUserAbsent}
-          getAbsenceReason={logic.getAbsenceReason}
-          showPeek={true}
-          teamId={logic.teamId}
-        />
-      ))}
+      {rosterDates.map((dateString, rowIndex) => {
+        const rowClass = logic.getRowClass(dateString);
+        const isPast = rowClass === "past-date";
+        const isToday = rowClass === "today-date";
+
+        return (
+          <AbsenceRosterRow
+            key={dateString}
+            dateString={dateString}
+            rowIndex={rowIndex}
+            entries={entries}
+            closestNextDate={closestNextDate}
+            onDateClick={logic.handleDateClick}
+            focusedCell={logic.focusedCell}
+            setFocusedCell={logic.setFocusedCell}
+            allTeamUsers={sortedAllTeamUsers}
+            handleAbsenceClick={handleAbsenceClick}
+            handleAbsenceReasonChange={handleAbsenceReasonChange}
+            isUserAbsent={logic.isUserAbsent}
+            getAbsenceReason={logic.getAbsenceReason}
+            showPeek={true}
+            teamId={logic.teamId}
+            isToday={isToday}
+            isPast={isPast}
+          />
+        );
+      })}
     </RosterTable>
   );
 };

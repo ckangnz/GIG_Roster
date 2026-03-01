@@ -37,6 +37,8 @@ interface GeneralRosterRowProps {
   teamName: string;
   activePosition: string;
   hasPositionCoverageRequest: (dateString: string, tName: string, pName: string) => boolean;
+  isToday?: boolean;
+  isPast?: boolean;
   // Slotted mode props
   slot?: RosterSlot;
   isFirstSlot?: boolean;
@@ -67,6 +69,8 @@ export const GeneralRosterRow = memo(
     teamName,
     activePosition,
     hasPositionCoverageRequest,
+    isToday,
+    isPast,
     slot,
     isFirstSlot = true,
     isLastSlot = true,
@@ -81,6 +85,8 @@ export const GeneralRosterRow = memo(
         closestNextDate={closestNextDate}
         showPeek={showPeek}
         hasPositionRequest={hasPositionCoverageRequest(dateString, teamName, activePosition)}
+        isToday={isToday}
+        isPast={isPast}
         slot={slot}
         isFirstSlot={isFirstSlot}
         isLastSlot={isLastSlot}

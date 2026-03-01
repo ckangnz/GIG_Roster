@@ -300,34 +300,42 @@ const AllRosterTable = () => {
       hasPastDates={hasPastDates}
       className={filterUserId ? allStyles.filteredTableContainer : ""}
     >
-      {visualRows.map((row, rowIndex) => (
-          <AllRosterRow
-            key={row.slot ? `${row.dateString}-${row.slot.id}` : row.dateString}
-            dateString={row.dateString}
-            rowIndex={rowIndex}
-            entries={entries}
-            closestNextDate={closestNextDate}
-            onDateClick={logic.handleDateClick}
-            focusedCell={logic.focusedCell}
-            setFocusedCell={logic.setFocusedCell}
-            rosterAllViewMode={rosterAllViewMode}
-            allViewColumns={allViewColumns}
-            currentTeamData={currentTeamData}
-            allPositions={allPositions}
-            getAllViewUserCellContent={getAllViewUserCellContent}
-            getAllViewPositionCellContent={getAllViewPositionCellContent}
-            getAssignmentsForIdentifier={getAssignmentsForIdentifier}
-            navigate={navigate}
-            teamName={teamId || ""}
-            isUserAbsent={logic.isUserAbsent}
-            getAbsenceReason={logic.getAbsenceReason}
-            isHighlightedCell={isHighlightedCell}
-            getConflictStatus={getConflictStatus}
-            slot={row.slot}
-            isFirstSlot={row.isFirstSlot}
-            isLastSlot={row.isLastSlot}
-          />
-        ))}
+      {visualRows.map((row, rowIndex) => {
+          const rowClass = logic.getRowClass(row.dateString);
+          const isPast = rowClass === "past-date";
+          const isToday = rowClass === "today-date";
+
+          return (
+            <AllRosterRow
+              key={row.slot ? `${row.dateString}-${row.slot.id}` : row.dateString}
+              dateString={row.dateString}
+              rowIndex={rowIndex}
+              entries={entries}
+              closestNextDate={closestNextDate}
+              onDateClick={logic.handleDateClick}
+              focusedCell={logic.focusedCell}
+              setFocusedCell={logic.setFocusedCell}
+              rosterAllViewMode={rosterAllViewMode}
+              allViewColumns={allViewColumns}
+              currentTeamData={currentTeamData}
+              allPositions={allPositions}
+              getAllViewUserCellContent={getAllViewUserCellContent}
+              getAllViewPositionCellContent={getAllViewPositionCellContent}
+              getAssignmentsForIdentifier={getAssignmentsForIdentifier}
+              navigate={navigate}
+              teamName={teamId || ""}
+              isUserAbsent={logic.isUserAbsent}
+              getAbsenceReason={logic.getAbsenceReason}
+              isHighlightedCell={isHighlightedCell}
+              getConflictStatus={getConflictStatus}
+              isToday={isToday}
+              isPast={isPast}
+              slot={row.slot}
+              isFirstSlot={row.isFirstSlot}
+              isLastSlot={row.isLastSlot}
+            />
+          );
+        })}
       </RosterTable>
   );
 };

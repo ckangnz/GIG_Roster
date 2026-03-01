@@ -36,6 +36,8 @@ interface AllRosterRowProps {
   getAbsenceReason: (dateString: string, userEmail: string) => string;
   isHighlightedCell: (dateString: string, identifier: string, type: 'user' | 'position') => boolean;
   getConflictStatus: (dateString: string, userEmail: string) => { hasConflict: boolean };
+  isToday?: boolean;
+  isPast?: boolean;
   // Slotted mode props
   slot?: RosterSlot;
   isFirstSlot?: boolean;
@@ -64,6 +66,8 @@ export const AllRosterRow = memo(
     getAbsenceReason,
     isHighlightedCell,
     getConflictStatus,
+    isToday,
+    isPast,
     slot,
     isFirstSlot = true,
     isLastSlot = true,
@@ -74,6 +78,8 @@ export const AllRosterRow = memo(
         entries={entries}
         onDateClick={onDateClick}
         closestNextDate={closestNextDate}
+        isToday={isToday}
+        isPast={isPast}
         slot={slot}
         isFirstSlot={isFirstSlot}
         isLastSlot={isLastSlot}

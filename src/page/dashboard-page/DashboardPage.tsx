@@ -18,7 +18,7 @@ import NameTag from "../../components/common/NameTag";
 import Spinner from "../../components/common/Spinner";
 import { db } from "../../firebase";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
-import { Weekday, AppUser, getTodayKey, RecurringEvent, Team } from "../../model/model";
+import { Weekday, AppUser, getTodayKey, RecurringEvent, Team, getAssignmentsForTeam } from "../../model/model";
 import {
   applyOptimisticAssignment,
   applyOptimisticAbsence,
@@ -147,7 +147,7 @@ const DashboardPage = () => {
         // Check if this specific team has expired if it's today
         if (isTeamExpired(team, dateKey)) return false;
 
-        const teamAssignments = entry.teams?.[team.id] || {};
+        const teamAssignments = getAssignmentsForTeam(entry, team.id);
         return Object.values(teamAssignments).some(
           (posList) => Array.isArray(posList) && posList.length > 0,
         );
@@ -229,7 +229,7 @@ const DashboardPage = () => {
         });
 
       const data = userTeams.map((team) => {
-        const teamAssignments = entry?.teams?.[team.id] || {};
+        const teamAssignments = entry ? getAssignmentsForTeam(entry, team.id) : {};
 
         const positionGroups: {
           posId: string;

@@ -30,6 +30,8 @@ interface AbsenceRosterRowProps {
   getAbsenceReason: (dateString: string, userEmail: string) => string;
   showPeek?: boolean;
   teamId?: string;
+  isToday?: boolean;
+  isPast?: boolean;
 }
 
 export const AbsenceRosterRow = memo(
@@ -48,6 +50,8 @@ export const AbsenceRosterRow = memo(
     getAbsenceReason,
     showPeek,
     teamId,
+    isToday,
+    isPast,
   }: AbsenceRosterRowProps) => {
     const hasAnyTeamRequest = () => {
       if (!teamId || !entries[dateString]?.coverageRequests) return false;
@@ -64,6 +68,8 @@ export const AbsenceRosterRow = memo(
         closestNextDate={closestNextDate}
         showPeek={showPeek}
         hasPositionRequest={hasAnyTeamRequest()}
+        isToday={isToday}
+        isPast={isPast}
       >
         {allTeamUsers.map((user, colIndex) => (
           <RosterCell

@@ -23,6 +23,8 @@ interface CustomRosterRowProps {
   ) => void;
   getCellContent: (dateString: string, userEmail: string) => React.ReactNode;
   showPeek?: boolean;
+  isToday?: boolean;
+  isPast?: boolean;
   // Slotted mode props
   slot?: RosterSlot;
   isFirstSlot?: boolean;
@@ -42,6 +44,8 @@ export const CustomRosterRow = memo(
     handleCellClick,
     getCellContent,
     showPeek,
+    isToday,
+    isPast,
     slot,
     isFirstSlot = true,
     isLastSlot = true,
@@ -53,6 +57,8 @@ export const CustomRosterRow = memo(
         onDateClick={onDateClick}
         closestNextDate={closestNextDate}
         showPeek={showPeek}
+        isToday={isToday}
+        isPast={isPast}
         slot={slot}
         isFirstSlot={isFirstSlot}
         isLastSlot={isLastSlot}
