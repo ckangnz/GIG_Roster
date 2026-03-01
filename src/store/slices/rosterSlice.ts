@@ -509,7 +509,9 @@ const rosterSlice = createSlice({
         if (clearedPositions) {
           const newTeams = { ...entry.teams };
           Object.entries(clearedPositions).forEach(([tName, positions]) => {
-            newTeams[tName] = { ...(newTeams[tName] || {}), [userIdentifier]: positions };
+            const teamData = { ...(newTeams[tName] || {}) } as UserAssignments;
+            teamData[userIdentifier] = positions;
+            newTeams[tName] = teamData;
           });
           entry.teams = newTeams;
         }

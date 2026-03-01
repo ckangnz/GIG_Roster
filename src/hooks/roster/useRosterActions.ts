@@ -247,6 +247,7 @@ export const useRosterActions = (
         const clearedPositions: Record<string, string[]> = {};
         
         if (targetAbsence && entry) {
+          // Marking absent: find current assignments to clear
           Object.keys(entry.teams).forEach((tId) => {
             const teamAssignments = getAssignmentsForTeam(entry, tId);
             if (
@@ -255,6 +256,19 @@ export const useRosterActions = (
             ) {
               clearedTeams.push(tId);
               clearedPositions[tId] = teamAssignments[userEmail];
+            }
+          });
+        } else if (!targetAbsence && entry?.coverageRequests) {
+          // Removing absent: find coverage requests to restore assignments
+          Object.values(entry.coverageRequests).forEach(req => {
+            if (req.status === "open" && req.absentUserEmail === userEmail) {
+              if (!clearedPositions[req.teamName]) {
+                clearedPositions[req.teamName] = [];
+                clearedTeams.push(req.teamName);
+              }
+              if (!clearedPositions[req.teamName].includes(req.positionName)) {
+                clearedPositions[req.teamName].push(req.positionName);
+              }
             }
           });
         }
@@ -278,7 +292,7 @@ export const useRosterActions = (
             userEmail,
             previousIsAbsent: isCurrentlyAbsent,
             previousReason: getAbsenceReason(dateString, userEmail),
-            restoredAssignments: targetAbsence ? clearedPositions : undefined,
+            restoredAssignments: clearedPositions, // Always pass these for bidirectional undo
           },
           description: `${targetAbsence ? 'Marked' : 'Removed'} absence for ${userName}`
         }));
