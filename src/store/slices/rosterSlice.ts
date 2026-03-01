@@ -107,6 +107,16 @@ export const syncAssignmentRemote = createAsyncThunk(
       // With atomic docs, we replace the team-date doc with the latest state
       const entry = state.roster.entries[date];
       const teamData = entry?.teams[teamId];
+
+      // Extract coverage requests for this specific team to avoid overwriting them
+      const teamCoverageRequests: Record<string, CoverageRequest> = {};
+      if (entry?.coverageRequests) {
+        Object.entries(entry.coverageRequests).forEach(([reqId, req]) => {
+          if (req.teamName === teamId) {
+            teamCoverageRequests[reqId] = req;
+          }
+        });
+      }
       
       const docId = `${teamId}_${date}`;
       const docRef = doc(db, "organisations", orgId, "roster", docId);
@@ -117,6 +127,7 @@ export const syncAssignmentRemote = createAsyncThunk(
         teamId,
         date,
         data: teamData,
+        coverageRequests: teamCoverageRequests,
         updatedAt: serverTimestamp()
       });
       
@@ -169,12 +180,23 @@ export const syncAbsenceRemote = createAsyncThunk(
           const rosterRef = doc(db, "organisations", orgId, "roster", rosterDocId);
           const teamData = entry?.teams[teamId];
           
+          // IMPORTANT: Extract coverage requests for this specific team from the entry
+          const teamCoverageRequests: Record<string, CoverageRequest> = {};
+          if (entry.coverageRequests) {
+            Object.entries(entry.coverageRequests).forEach(([reqId, req]) => {
+              if (req.teamName === teamId) {
+                teamCoverageRequests[reqId] = req;
+              }
+            });
+          }
+          
           await setDoc(rosterRef, {
             id: rosterDocId,
             orgId,
             teamId,
             date,
             data: teamData, // This is already optimistically cleaned in Redux
+            coverageRequests: teamCoverageRequests, // Persist the new requests
             updatedAt: serverTimestamp()
           });
         }
@@ -256,7 +278,7 @@ export const resolveCoverageRequestRemote = createAsyncThunk(
         const docId = `${teamId}_${date}`;
         const docRef = doc(db, "organisations", orgId, "roster", docId);
         await updateDoc(docRef, {
-          [`data.coverageRequests.${requestId}`]: deleteField(),
+          [`coverageRequests.${requestId}`]: deleteField(),
           updatedAt: serverTimestamp(),
         });
       }

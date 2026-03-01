@@ -49,17 +49,17 @@ export const useAppListeners = () => {
           const coverageUpdates: Record<string, Record<string, CoverageRequest>> = {};
 
           snap.docs.forEach(d => {
-            const data = d.data();
-            const { date, teamId, data: rosterData } = data;
+            const docData = d.data();
+            const { date, teamId, data: rosterData, coverageRequests } = docData;
             
             // 1. Handle Team Data
             if (!teamUpdates[date]) teamUpdates[date] = {};
             teamUpdates[date][teamId] = rosterData;
 
-            // 2. Handle Coverage Requests
-            if (rosterData.coverageRequests) {
+            // 2. Handle Coverage Requests (at root of doc)
+            if (coverageRequests) {
               if (!coverageUpdates[date]) coverageUpdates[date] = {};
-              Object.assign(coverageUpdates[date], rosterData.coverageRequests);
+              Object.assign(coverageUpdates[date], coverageRequests);
             }
           });
 
