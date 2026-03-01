@@ -25,7 +25,10 @@
 ### 🎯 Goals
 - [x] **Organisation Entity**: Created `Organisation` model and scoped all data (Teams, Positions, Users, Thoughts).
 - [x] **Atomic Roster Structure**: Refactored monolithic date documents into per-team-per-date documents (`organisations/{orgId}/roster/{teamId}_{date}`).
-- [ ] **Organisation Onboarding**: Implement "Option A" - Invite Codes and Searchable Join Requests for new users.
+- [ ] **Organisation Onboarding**:
+    - **Step 1: Profile Setup**: User provides Name and Gender (Male/Female/Undefined).
+    - **Step 2: Selection**: "Join Organisation" (Search with autocomplete, min 3 chars) or "Create Organisation" (Disabled).
+    - **Step 3: Approval**: User remains in Guest state until specific Org Admin approves them.
 - [ ] **Searchable Position Picker**: Refactor UI to use Autocomplete.
 
 ### 🛠 Implementation Guidelines
@@ -73,6 +76,18 @@
 - [ ] **The Discovery Flow**:
     - **Browse Page**: Create a view to list all `public` teams in the Org.
     - **Membership Workflow**: Implement `Request to Join` (new `requests` collection) and `Leave Team` logic.
+
+---
+
+## 💰 Phase 4: SaaS & Monetization
+*Objective: Transform the platform into a sustainable service.*
+
+### 🎯 Goals
+- **Tiered Planning**: 
+    - **Free Tier**: Limited users/teams, Google AdSense visible on Roster tables.
+    - **Standard/Premium**: Subscription-based per user/team volume.
+- **Promo System**: Support for "Free for a year" codes or X-months-free event vouchers.
+- **Org Creation Flow**: Enable the "Create Organisation" wizard with payment/tier selection.
 
 ---
 
