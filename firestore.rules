@@ -22,15 +22,23 @@ service cloud.firestore {
     // --- RULES ---
 
     match /organisations/{orgId}/{allPaths=**} {
-      // Allows access to metadata, roster, absences, AND thoughts
+      // Allow searching organisations for unapproved users
       allow read: if isSignedIn();
-      allow write: if isApproved() || isAdmin();
+      allow write: if isAdmin();
     }
 
     match /users/{userId} {
+      // Admins can see all users.
+      // Approved users can see others in their org (implemented via queries usually, but let's allow read here).
       allow read: if isSignedIn();
+
       allow create: if isSignedIn() && isOwner(userId);
-      allow update: if isSignedIn() && (isAdmin() || isOwner(userId));
+
+      allow update: if isSignedIn() && (
+        isAdmin() ||
+        isOwner(userId) // Owners can update their profile (onboarding)
+      );
+
       allow delete: if isAdmin();
     }
 

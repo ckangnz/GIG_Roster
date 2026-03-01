@@ -16,7 +16,7 @@ export const authMiddleware: Middleware = (store) => {
     onAuthStateChanged(auth, (firebaseUser) => {
       if (firebaseUser) {
         store.dispatch(setUser(firebaseUser))
-          ; (store.dispatch as (action: unknown) => unknown)(initializeUserData(firebaseUser.uid));
+          ; (store.dispatch as (action: unknown) => unknown)(initializeUserData(firebaseUser));
 
         const userRef = doc(db, 'users', firebaseUser.uid);
 

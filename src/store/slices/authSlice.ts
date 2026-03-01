@@ -1,9 +1,16 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { User } from 'firebase/auth';
-import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
+import { 
+  doc, 
+  getDoc, 
+  setDoc, 
+  updateDoc, 
+  collection, 
+  getDocs 
+} from 'firebase/firestore';
 
-import { auth, db } from '../../firebase';
-import { AppUser, generateIndexedAssignments } from '../../model/model';
+import { db } from '../../firebase';
+import { AppUser, Organisation, generateIndexedAssignments } from '../../model/model';
 
 interface AuthState {
   firebaseUser: User | null;
@@ -21,16 +28,16 @@ const initialState: AuthState = {
 
 export const initializeUserData = createAsyncThunk(
   'auth/initializeUserData',
-  async (uid: string, { rejectWithValue }) => {
+  async (authUser: User | null, { rejectWithValue }) => {
+    if (!authUser) return null;
     try {
-      const userRef = doc(db, 'users', uid);
-      const userSnap = await getDoc(userRef);
+      const userDocRef = doc(db, 'users', authUser.uid);
+      const userSnap = await getDoc(userDocRef);
 
-      if (!userSnap.exists()) {
-        const adminEmail = import.meta.env.VITE_ADMIN_EMAIL;
-        const authUser = auth.currentUser;
-        const isAutoAdmin = authUser?.email === adminEmail;
-
+      if (userSnap.exists()) {
+        return userSnap.data() as AppUser;
+      } else {
+        const isAutoAdmin = authUser.email === 'cksdud12345@gmail.com';
         const newData: AppUser = {
           name: authUser?.displayName || null,
           email: authUser?.email || null,
@@ -43,13 +50,12 @@ export const initializeUserData = createAsyncThunk(
           indexedAssignments: [],
           gender: '',
         };
-        await setDoc(userRef, newData);
+        await setDoc(userDocRef, newData);
         return newData;
       }
-      return userSnap.data() as AppUser;
     } catch (error) {
       return rejectWithValue(
-        error instanceof Error ? error.message : 'Unknown error',
+        error instanceof Error ? error.message : 'Failed to initialize user data',
       );
     }
   },
@@ -79,6 +85,48 @@ export const updateUserProfile = createAsyncThunk(
   },
 );
 
+export const searchOrganisations = createAsyncThunk(
+  'auth/searchOrganisations',
+  async (searchTerm: string, { rejectWithValue }) => {
+    try {
+      const q = collection(db, 'organisations');
+      const snap = await getDocs(q);
+      const results: Organisation[] = [];
+      
+      const term = searchTerm.toLowerCase();
+      snap.forEach(doc => {
+        const data = doc.data() as Organisation;
+        if (data.name.toLowerCase().includes(term)) {
+          results.push(data);
+        }
+      });
+      
+      return results;
+    } catch (error) {
+      return rejectWithValue(error instanceof Error ? error.message : 'Search failed');
+    }
+  }
+);
+
+export const joinOrganisation = createAsyncThunk(
+  'auth/joinOrganisation',
+  async ({ uid, orgId, profileData }: { uid: string; orgId: string; profileData: Partial<AppUser> }, { rejectWithValue }) => {
+    try {
+      const userRef = doc(db, 'users', uid);
+      const update = {
+        ...profileData,
+        orgId,
+        isApproved: false, // Must be approved by Org Admin
+        updatedAt: Date.now()
+      };
+      await updateDoc(userRef, update);
+      return update;
+    } catch (error) {
+      return rejectWithValue(error instanceof Error ? error.message : 'Join failed');
+    }
+  }
+);
+
 const authSlice = createSlice({
   name: 'auth',
   initialState,
@@ -104,7 +152,7 @@ const authSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(initializeUserData.fulfilled, (state, action: PayloadAction<AppUser>) => {
+      .addCase(initializeUserData.fulfilled, (state, action: PayloadAction<AppUser | null>) => {
         state.userData = action.payload;
         state.loading = false;
       })
@@ -125,6 +173,11 @@ const authSlice = createSlice({
       )
       .addCase(updateUserProfile.rejected, (state, action) => {
         state.error = action.payload as string;
+      })
+      .addCase(joinOrganisation.fulfilled, (state, action: PayloadAction<Partial<AppUser>>) => {
+        if (state.userData) {
+          state.userData = { ...state.userData, ...action.payload };
+        }
       });
   },
 });

@@ -1,0 +1,187 @@
+.wizardContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 3rem 2rem 2rem;
+  background: var(--background-card);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
+  position: relative;
+}
+
+.backHeaderButton {
+  position: absolute;
+  top: 1.25rem;
+  left: 1.25rem;
+  background: none;
+  border: none;
+  color: var(--color-text-dim);
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  z-index: 10;
+}
+
+.backHeaderButton:hover {
+  background: var(--background-hover);
+  color: var(--color-text-primary);
+}
+
+.stepHeader {
+  text-align: center;
+}
+
+.stepTitle {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+  color: var(--color-text-primary);
+}
+
+.stepDescription {
+  font-size: 0.9rem;
+  color: var(--color-text-dim);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Step 2: Choice Cards */
+.choiceContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.choiceCard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1.5rem;
+  border: 2px solid var(--border-color-secondary);
+  border-radius: 16px;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--color-text-primary);
+}
+
+.choiceCard:not(.disabled):hover {
+  border-color: var(--color-link);
+  background: var(--background-primary-subtle);
+}
+
+.choiceCard.active {
+  border-color: var(--color-link);
+  background: var(--background-primary-subtle);
+}
+
+.choiceCard.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: var(--background-body);
+}
+
+.choiceTitle {
+  font-size: 1.1rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.choiceSubtitle {
+  font-size: 0.85rem;
+  color: var(--color-text-dim);
+}
+
+.disabledBadge {
+  font-size: 0.65rem;
+  background: var(--background-toggle-off-transparent);
+  color: var(--color-text-dim);
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin-left: auto;
+}
+
+/* Search Box */
+.searchContainer {
+  position: relative;
+  width: 100%;
+}
+
+.resultsList {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--background-card);
+  border: 1px solid var(--border-color-secondary);
+  border-radius: 12px;
+  margin-top: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 100;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.resultItem {
+  width: 100%;
+  padding: 12px 16px;
+  text-align: left;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--border-color-secondary);
+  cursor: pointer;
+  color: var(--color-text-primary);
+  display: flex;
+  flex-direction: column;
+}
+
+.resultItem:last-child {
+  border-bottom: none;
+}
+
+.resultItem:hover {
+  background: var(--background-hover);
+}
+
+.orgName {
+  font-weight: 700;
+}
+
+.orgMeta {
+  font-size: 0.75rem;
+  color: var(--color-text-dim);
+}
+
+.noResults {
+  padding: 16px;
+  text-align: center;
+  color: var(--color-text-dim);
+  font-style: italic;
+}
+
+.wizardActions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 1rem;
+}
+
+.fullWidthBtn {
+  width: 100%;
+  justify-content: center;
+}
