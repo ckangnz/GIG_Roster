@@ -262,6 +262,59 @@
     width: 64px;
   }
 
+  .sidebarCollapsed .tabletSidebarHeader {
+    justify-content: center;
+    padding: 1rem 0;
+  }
+
+  .sidebarCollapsed .sideMenuList {
+    padding-right: 0;
+    padding-left: 0;
+    align-items: stretch;
+  }
+
+  .sidebarCollapsed .sideNavItem {
+    justify-content: center;
+    padding: 1rem 0;
+    border-radius: 0;
+    gap: 0;
+    border-left: none;
+    position: relative;
+    width: 100%;
+  }
+
+  .sidebarCollapsed .sideNavItemActive::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background-color: var(--active-color, var(--color-link));
+  }
+
+  .sidebarCollapsed .sideNavItemSub {
+    padding-left: 0;
+  }
+
+  .sidebarCollapsed .sidenavMenuSubheading {
+    justify-content: center;
+    padding: 1rem 0 0.5rem;
+  }
+
+  .sidebarCollapsed .expandIcon,
+  .sidebarCollapsed .locationIndicators,
+  .sidebarCollapsed .navItemLabel {
+    display: none;
+  }
+
+  .sidebarCollapsed .sideEmoji {
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+  }
+
   .sidebarFooter {
     display: flex;
   }
