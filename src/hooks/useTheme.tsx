@@ -1,4 +1,4 @@
-import { useState, useEffect, ReactNode, useCallback } from "react";
+import { useState, useEffect, ReactNode, useCallback, useMemo } from "react";
 
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 
@@ -10,48 +10,74 @@ interface ThemeProviderProps {
 }
 
 export const ThemeProvider = ({ children }: ThemeProviderProps) => {
-  const [theme, setThemeState] = useState<Theme>(() => {
+  // Theme can be "light", "dark", or "system"
+  const [themeMode, setThemeMode] = useState<Theme>(() => {
     const savedTheme = localStorage.getItem("app-theme") as Theme;
-    if (savedTheme) {
-      return savedTheme;
-    }
-    return window.matchMedia("(prefers-color-scheme: dark)").matches
-      ? "dark"
-      : "light";
+    return savedTheme || "system";
   });
 
-  const applyTheme = useCallback((newTheme: Theme) => {
-    document.documentElement.setAttribute("data-theme", newTheme);
-    localStorage.setItem("app-theme", newTheme);
+  // Calculate the actual applied theme (light or dark)
+  const [systemTheme, setSystemTheme] = useState<"light" | "dark">(
+    window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
+  );
+
+  // Listen for system theme changes
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    const handler = (e: MediaQueryListEvent) => {
+      setSystemTheme(e.matches ? "dark" : "light");
+    };
+    mediaQuery.addEventListener("change", handler);
+    return () => mediaQuery.removeEventListener("change", handler);
+  }, []);
+
+  // The final theme to apply to the DOM
+  const appliedTheme = useMemo(() => {
+    if (themeMode === "system") return systemTheme;
+    return themeMode;
+  }, [themeMode, systemTheme]);
+
+  const applyToDOM = useCallback((theme: "light" | "dark") => {
+    document.documentElement.setAttribute("data-theme", theme);
   }, []);
 
   useEffect(() => {
-    applyTheme(theme);
-  }, [theme, applyTheme]);
+    applyToDOM(appliedTheme);
+    localStorage.setItem("app-theme", themeMode);
+  }, [appliedTheme, themeMode, applyToDOM]);
 
-  const setTheme = useCallback(
-    (newTheme: Theme) => {
-      setThemeState(newTheme);
-      applyTheme(newTheme);
+  const updatePreference = useCallback((newMode: Theme) => {
+    setThemeMode(newMode);
+    
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+      const userRef = doc(db, "users", currentUser.uid);
+      updateDoc(userRef, {
+        preferredTheme: newMode,
+      }).catch((error) =>
+        console.error("Error updating preferred theme in Firebase:", error),
+      );
+    }
+  }, []);
 
-      const currentUser = auth.currentUser;
-      if (currentUser) {
-        const userRef = doc(db, "users", currentUser.uid);
-        updateDoc(userRef, {
-          preferredTheme: newTheme,
-        }).catch((error) =>
-          console.error("Error updating preferred theme in Firebase:", error),
-        );
-      }
-    },
-    [applyTheme],
-  );
+  const setTheme = useCallback((newTheme: Theme) => {
+    updatePreference(newTheme);
+  }, [updatePreference]);
 
   const toggleTheme = useCallback(() => {
-    setThemeState((prevTheme: Theme) =>
-      prevTheme === "light" ? "dark" : "light",
-    );
-  }, [setThemeState]);
+    setThemeMode((prev) => {
+      // If currently system, we toggle to the opposite of what system currently is
+      if (prev === "system") {
+        const next = systemTheme === "light" ? "dark" : "light";
+        updatePreference(next);
+        return next;
+      }
+      // If manual, we just flip
+      const next = prev === "light" ? "dark" : "light";
+      updatePreference(next);
+      return next;
+    });
+  }, [systemTheme, updatePreference]);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
@@ -60,16 +86,15 @@ export const ThemeProvider = ({ children }: ThemeProviderProps) => {
         const docSnap = await getDoc(userRef);
         if (docSnap.exists() && docSnap.data().preferredTheme) {
           const firebaseTheme = docSnap.data().preferredTheme as Theme;
-          setThemeState(firebaseTheme);
-          applyTheme(firebaseTheme);
+          setThemeMode(firebaseTheme);
         }
       }
     });
     return unsubscribe;
-  }, [applyTheme]);
+  }, []);
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme, setTheme }}>
+    <ThemeContext.Provider value={{ theme: appliedTheme, toggleTheme, setTheme }}>
       {children}
     </ThemeContext.Provider>
   );
