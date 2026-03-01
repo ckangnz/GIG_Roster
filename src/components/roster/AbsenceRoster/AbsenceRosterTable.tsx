@@ -74,6 +74,7 @@ const AbsenceRosterTable = () => {
           isUserAbsent={logic.isUserAbsent}
           getAbsenceReason={logic.getAbsenceReason}
           showPeek={true}
+          teamId={logic.teamId}
         />
       ))}
     </RosterTable>

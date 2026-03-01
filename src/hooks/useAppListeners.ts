@@ -57,8 +57,8 @@ export const useAppListeners = () => {
             teamUpdates[date][teamId] = rosterData;
 
             // 2. Handle Coverage Requests (at root of doc)
+            if (!coverageUpdates[date]) coverageUpdates[date] = {};
             if (coverageRequests) {
-              if (!coverageUpdates[date]) coverageUpdates[date] = {};
               Object.assign(coverageUpdates[date], coverageRequests);
             }
           });

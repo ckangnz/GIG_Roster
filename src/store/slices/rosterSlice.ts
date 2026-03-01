@@ -12,7 +12,7 @@ import {
 } from "firebase/firestore";
 
 import { db } from "../../firebase";
-import { RosterEntry, TeamRosterData, AppUser, CoverageRequest } from "../../model/model";
+import { RosterEntry, TeamRosterData, AppUser, CoverageRequest, UserAssignments } from "../../model/model";
 
 interface RosterState {
   entries: Record<string, RosterEntry>; // date -> RosterEntry
@@ -42,13 +42,20 @@ export const fetchRosterEntries = createAsyncThunk(
       
       rosterSnap.docs.forEach((doc) => {
         const docData = doc.data();
-        const { date, teamId, data, orgId: docOrgId } = docData;
+        const { date, teamId, data, orgId: docOrgId, coverageRequests } = docData;
         
         if (!entries[date]) {
-          entries[date] = { id: date, date, teams: {}, absence: {}, orgId: docOrgId || orgId };
+          entries[date] = { id: date, date, teams: {}, absence: {}, orgId: docOrgId || orgId, coverageRequests: {} };
         }
         
         entries[date].teams[teamId] = data;
+
+        if (coverageRequests) {
+          entries[date].coverageRequests = {
+            ...entries[date].coverageRequests,
+            ...coverageRequests
+          };
+        }
       });
 
       // 2. Fetch Absences
@@ -60,7 +67,7 @@ export const fetchRosterEntries = createAsyncThunk(
         const { date, userId, reason, orgId: docOrgId } = docData;
         
         if (!entries[date]) {
-          entries[date] = { id: date, date, teams: {}, absence: {}, orgId: docOrgId || orgId };
+          entries[date] = { id: date, date, teams: {}, absence: {}, orgId: docOrgId || orgId, coverageRequests: {} };
         }
         
         entries[date].absence[userId] = { reason: reason || "" };
@@ -267,9 +274,6 @@ export const resolveCoverageRequestRemote = createAsyncThunk(
       const orgId = state.auth.userData?.orgId;
       if (!orgId) throw new Error("Org ID missing");
 
-      // Coverage requests were originally part of RosterEntry. 
-      // In the new atomic model, we need to know which team it belonged to.
-      // For now, if we don't have teamId in the payload, we might need to find it in state.
       const entry = state.roster.entries[date];
       const request = entry?.coverageRequests?.[requestId];
       const teamId = request?.teamName; // teamName field actually stores teamId
@@ -306,53 +310,53 @@ const rosterSlice = createSlice({
       state.loading = action.payload;
     },
     updateRosterTeams(state, action: PayloadAction<{ 
-      teams: Record<string, Record<string, TeamRosterData | Record<string, string[]>>>,
+      teams: Record<string, Record<string, TeamRosterData | UserAssignments>>,
       coverageRequests: Record<string, Record<string, CoverageRequest>>
     }>) {
       const { teams, coverageRequests } = action.payload;
+      const newEntries = { ...state.entries };
 
-      // Update Teams
+      // 1. Update Teams
       Object.entries(teams).forEach(([date, teamMap]) => {
-        if (!state.entries[date]) {
-          state.entries[date] = { id: date, date, teams: {}, absence: {}, orgId: "" };
-        }
-        state.entries[date].teams = { ...state.entries[date].teams, ...teamMap };
+        const existingEntry = newEntries[date] || { id: date, date, teams: {}, absence: {}, orgId: "", coverageRequests: {} };
+        newEntries[date] = {
+          ...existingEntry,
+          teams: { ...existingEntry.teams, ...teamMap }
+        };
       });
 
-      // Update Coverage Requests
-      Object.entries(coverageRequests).forEach(([date, requests]) => {
-        if (state.entries[date]) {
-          state.entries[date].coverageRequests = { 
-            ...state.entries[date].coverageRequests, 
-            ...requests 
-          };
-        }
+      // 2. Update Coverage Requests - PER DATE REPLACEMENT
+      Object.keys(coverageRequests).forEach(date => {
+        const existingEntry = newEntries[date] || { id: date, date, teams: {}, absence: {}, orgId: "", coverageRequests: {} };
+        newEntries[date] = {
+          ...existingEntry,
+          coverageRequests: { ...coverageRequests[date] }
+        };
       });
 
+      state.entries = newEntries;
       state.loading = false;
       state.initialLoad = true;
     },
     updateRosterAbsences(state, action: PayloadAction<Record<string, Record<string, { reason: string }>>>) {
-      // action.payload is { date: { userId: { reason } } }
-      // First, clear all absences so we can rebuild from snapshot (simplest for sync)
-      Object.values(state.entries).forEach(entry => {
-        entry.absence = {};
-      });
-      
+      const newEntries = { ...state.entries };
       Object.entries(action.payload).forEach(([date, absenceMap]) => {
-        if (!state.entries[date]) {
-          state.entries[date] = { id: date, date, teams: {}, absence: {}, orgId: "" };
-        }
-        state.entries[date].absence = absenceMap;
+        const existingEntry = newEntries[date] || { id: date, date, teams: {}, absence: {}, orgId: "", coverageRequests: {} };
+        newEntries[date] = {
+          ...existingEntry,
+          absence: absenceMap
+        };
       });
+      state.entries = newEntries;
     },
     updateRosterCalendar(state, action: PayloadAction<Record<string, string>>) {
-      // action.payload is { date: eventName }
+      const newEntries = { ...state.entries };
       Object.entries(action.payload).forEach(([date, eventName]) => {
-        if (state.entries[date]) {
-          state.entries[date].eventName = eventName;
+        if (newEntries[date]) {
+          newEntries[date] = { ...newEntries[date], eventName };
         }
       });
+      state.entries = newEntries;
     },
     applyOptimisticAssignment(state, action: PayloadAction<{
       date: string;
@@ -362,39 +366,68 @@ const rosterSlice = createSlice({
       slotId?: string;
     }>) {
       const { date, teamName, userIdentifier, updatedAssignments, slotId } = action.payload;
-      if (!state.entries[date]) {
-        const existingOrgId = Object.values(state.entries)[0]?.orgId;
-        if (!existingOrgId) return; // Cannot update without org context
-        state.entries[date] = { id: date, date, teams: {}, absence: {}, orgId: existingOrgId };
+      const newEntries = { ...state.entries };
+      
+      if (!newEntries[date]) {
+        const existingOrgId = Object.values(state.entries)[0]?.orgId || "";
+        newEntries[date] = { id: date, date, teams: {}, absence: {}, orgId: existingOrgId, coverageRequests: {} };
       }
-      const entry = state.entries[date];
+      
+      const entry = { ...newEntries[date] };
+      const newTeams = { ...entry.teams };
       
       if (slotId) {
-        // SLOTTED MODE
-        let teamData = entry.teams[teamName] as TeamRosterData;
+        let teamData = { ...(newTeams[teamName] as TeamRosterData) };
         if (!teamData || !('type' in teamData)) {
           teamData = { type: 'slotted', slots: {} };
-          entry.teams[teamName] = teamData;
         }
-        if (!teamData.slots) teamData.slots = {};
-        if (!teamData.slots[slotId]) teamData.slots[slotId] = {};
+        const newSlots = { ...(teamData.slots || {}) };
+        const slotAssignments = { ...(newSlots[slotId] || {}) };
         
         if (updatedAssignments.length === 0) {
-          delete teamData.slots[slotId][userIdentifier];
+          delete slotAssignments[userIdentifier];
         } else {
-          teamData.slots[slotId][userIdentifier] = updatedAssignments;
+          slotAssignments[userIdentifier] = updatedAssignments;
         }
-      } else {
-        // DAILY MODE
-        if (!entry.teams[teamName]) entry.teams[teamName] = {};
-        const teamData = entry.teams[teamName] as Record<string, string[]>;
         
+        newSlots[slotId] = slotAssignments;
+        newTeams[teamName] = { ...teamData, slots: newSlots };
+      } else {
+        const teamData = { ...(newTeams[teamName] as UserAssignments) };
         if (updatedAssignments.length === 0) {
           delete teamData[userIdentifier];
         } else {
           teamData[userIdentifier] = updatedAssignments;
         }
+        newTeams[teamName] = teamData;
       }
+      
+      entry.teams = newTeams;
+
+      // --- AUTOMATIC RESOLUTION ---
+      // If we are assigning positions, resolve any matching coverage requests
+      if (updatedAssignments.length > 0 && entry.coverageRequests) {
+        const newRequests = { ...entry.coverageRequests };
+        let changed = false;
+        
+        Object.entries(newRequests).forEach(([reqId, req]) => {
+          const matchesTeam = req.teamName === teamName;
+          const matchesSlot = !slotId || req.slotId === slotId;
+          const matchesPos = updatedAssignments.includes(req.positionName);
+          
+          if (req.status === "open" && matchesTeam && matchesPos && matchesSlot) {
+            delete newRequests[reqId];
+            changed = true;
+          }
+        });
+        
+        if (changed) {
+          entry.coverageRequests = newRequests;
+        }
+      }
+
+      newEntries[date] = entry;
+      state.entries = newEntries;
     },
     applyOptimisticAbsence(state, action: PayloadAction<{
       date: string;
@@ -405,30 +438,45 @@ const rosterSlice = createSlice({
       userName?: string;
     }>) {
       const { date, userIdentifier, isAbsent, reason, clearedPositions, userName } = action.payload;
-      if (!state.entries[date]) {
-        const existingOrgId = Object.values(state.entries)[0]?.orgId;
-        if (!existingOrgId) return; // Cannot update without org context
-        state.entries[date] = { id: date, date, teams: {}, absence: {}, orgId: existingOrgId };
+      const newEntries = { ...state.entries };
+
+      if (!newEntries[date]) {
+        const existingOrgId = Object.values(state.entries)[0]?.orgId || "";
+        newEntries[date] = { id: date, date, teams: {}, absence: {}, orgId: existingOrgId, coverageRequests: {} };
       }
-      const entry = state.entries[date];
+      
+      const entry = { ...newEntries[date] };
+      
       if (isAbsent) {
-        entry.absence[userIdentifier] = { reason: reason || "" };
-        Object.keys(entry.teams).forEach(tName => {
-          const teamData = entry.teams[tName];
-          if (teamData && 'type' in teamData && teamData.type === 'slotted') {
-            Object.values(teamData.slots || {}).forEach(s => delete s[userIdentifier]);
+        entry.absence = { ...entry.absence, [userIdentifier]: { reason: reason || "" } };
+        
+        const newTeams = { ...entry.teams };
+        Object.keys(newTeams).forEach(tName => {
+          const teamData = newTeams[tName];
+          if (teamData && 'type' in (teamData as TeamRosterData) && (teamData as TeamRosterData).type === 'slotted') {
+            const slottedData = teamData as TeamRosterData;
+            const newSlots = { ...(slottedData.slots || {}) };
+            Object.keys(newSlots).forEach(sId => {
+              const slotData = { ...(newSlots[sId] || {}) };
+              delete slotData[userIdentifier];
+              newSlots[sId] = slotData;
+            });
+            newTeams[tName] = { ...slottedData, slots: newSlots };
           } else {
-            delete (teamData as Record<string, string[]>)[userIdentifier];
+            const teamDataFlat = { ...(teamData as UserAssignments) };
+            delete teamDataFlat[userIdentifier];
+            newTeams[tName] = teamDataFlat;
           }
         });
+        entry.teams = newTeams;
 
         if (clearedPositions) {
-          if (!entry.coverageRequests) entry.coverageRequests = {};
+          const newRequests = { ...(entry.coverageRequests || {}) };
           const currentOrgId = entry.orgId;
           Object.entries(clearedPositions).forEach(([tName, positions]) => {
             positions.forEach(posName => {
               const reqId = `${tName}_${posName}_${userIdentifier}`.replace(/\./g, '_');
-              entry.coverageRequests![reqId] = {
+              newRequests[reqId] = {
                 orgId: currentOrgId,
                 teamName: tName,
                 positionName: posName,
@@ -439,26 +487,46 @@ const rosterSlice = createSlice({
               };
             });
           });
+          entry.coverageRequests = newRequests;
         }
       } else {
-        delete entry.absence[userIdentifier];
-        if (clearedPositions) {
-          Object.entries(clearedPositions).forEach(([tName, positions]) => {
-            if (!entry.teams[tName]) entry.teams[tName] = {};
-            const teamData = entry.teams[tName] as Record<string, string[]>;
-            teamData[userIdentifier] = positions;
+        const newAbsence = { ...entry.absence };
+        delete newAbsence[userIdentifier];
+        entry.absence = newAbsence;
+        
+        if (entry.coverageRequests) {
+          const newRequests = { ...entry.coverageRequests };
+          let changed = false;
+          Object.keys(newRequests).forEach(reqId => {
+            if (reqId.includes(userIdentifier.replace(/\./g, '_'))) {
+              delete newRequests[reqId];
+              changed = true;
+            }
           });
+          if (changed) entry.coverageRequests = newRequests;
+        }
+
+        if (clearedPositions) {
+          const newTeams = { ...entry.teams };
+          Object.entries(clearedPositions).forEach(([tName, positions]) => {
+            newTeams[tName] = { ...(newTeams[tName] || {}), [userIdentifier]: positions };
+          });
+          entry.teams = newTeams;
         }
       }
+      
+      newEntries[date] = entry;
+      state.entries = newEntries;
     },
     applyOptimisticEventName(state, action: PayloadAction<{ date: string; eventName: string }>) {
       const { date, eventName } = action.payload;
-      if (!state.entries[date]) {
-        const existingOrgId = Object.values(state.entries)[0]?.orgId;
-        if (!existingOrgId) return; // Cannot update without org context
-        state.entries[date] = { id: date, date, teams: {}, absence: {}, orgId: existingOrgId };
+      const newEntries = { ...state.entries };
+      if (!newEntries[date]) {
+        const existingOrgId = Object.values(state.entries)[0]?.orgId || "";
+        newEntries[date] = { id: date, date, teams: {}, absence: {}, orgId: existingOrgId, coverageRequests: {} };
       }
-      state.entries[date].eventName = eventName;
+      newEntries[date] = { ...newEntries[date], eventName };
+      state.entries = newEntries;
     },
     applyOptimisticResolve(state, action: PayloadAction<{
       date: string;
@@ -467,9 +535,20 @@ const rosterSlice = createSlice({
       resolvedByEmail?: string;
     }>) {
       const { date, requestId } = action.payload;
-      const entry = state.entries[date];
+      const currentEntries = state.entries;
+      const entry = currentEntries[date];
+      
       if (entry?.coverageRequests?.[requestId]) {
-        delete entry.coverageRequests[requestId];
+        const newRequests = { ...entry.coverageRequests };
+        delete newRequests[requestId];
+        
+        state.entries = {
+          ...currentEntries,
+          [date]: {
+            ...entry,
+            coverageRequests: newRequests
+          }
+        };
       }
     }
   },
@@ -519,9 +598,20 @@ const rosterSlice = createSlice({
       })
       .addCase(resolveCoverageRequestRemote.fulfilled, (state, action) => {
         const { date, requestId } = action.payload;
-        const entry = state.entries[date];
+        const currentEntries = state.entries;
+        const entry = currentEntries[date];
+        
         if (entry?.coverageRequests?.[requestId]) {
-          delete entry.coverageRequests[requestId];
+          const newRequests = { ...entry.coverageRequests };
+          delete newRequests[requestId];
+          
+          state.entries = {
+            ...currentEntries,
+            [date]: {
+              ...entry,
+              coverageRequests: newRequests
+            }
+          };
         }
       });
   },

@@ -80,6 +80,7 @@ export const GeneralRosterRow = memo(
         onDateClick={onDateClick}
         closestNextDate={closestNextDate}
         showPeek={showPeek}
+        hasPositionRequest={hasPositionCoverageRequest(dateString, teamName, activePosition)}
         slot={slot}
         isFirstSlot={isFirstSlot}
         isLastSlot={isLastSlot}

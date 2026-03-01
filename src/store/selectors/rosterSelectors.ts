@@ -9,7 +9,7 @@ import { RootState } from "../index";
 export const selectQualifiedCoverageRequests = createSelector(
   [(state: RootState) => state.roster.entries, (state: RootState) => state.auth.userData],
   (entries, userData) => {
-    if (!userData) return [];
+    if (!userData || !userData.email) return [];
 
     const userQualifiedPositions = userData.teamPositions || {};
     const qualifiedRequests: { date: string; request: CoverageRequest; requestId: string }[] = [];
@@ -17,7 +17,8 @@ export const selectQualifiedCoverageRequests = createSelector(
     Object.entries(entries).forEach(([date, entry]) => {
       const requests = entry.coverageRequests || {};
       Object.entries(requests).forEach(([reqId, req]) => {
-        if (req.status !== "open") return;
+        // Only show requests that are open AND NOT from the current user
+        if (req.status !== "open" || req.absentUserEmail === userData.email) return;
 
         // Check if user is in this team and has this position
         const teamPos = userQualifiedPositions[req.teamName] || [];
@@ -28,6 +29,6 @@ export const selectQualifiedCoverageRequests = createSelector(
     });
 
     // Sort by date ascending
-    return qualifiedRequests.sort((a, b) => a.date.localeCompare(b.date));
+    return [...qualifiedRequests].sort((a, b) => a.date.localeCompare(b.date));
   }
 );

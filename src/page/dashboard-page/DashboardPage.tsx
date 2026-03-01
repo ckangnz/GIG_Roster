@@ -11,8 +11,8 @@ import { collection, query, where, getDocs } from "firebase/firestore";
 import { CopyIcon, CheckCircle2, CalendarPlus } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 
-import TeamNeeds from "./TeamNeeds";
 import ActionSheet from "../../components/common/ActionSheet";
+import Button from "../../components/common/Button";
 import ExpiryTimer from "../../components/common/ExpiryTimer";
 import NameTag from "../../components/common/NameTag";
 import Spinner from "../../components/common/Spinner";
@@ -20,7 +20,13 @@ import { db } from "../../firebase";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { Weekday, AppUser, getTodayKey, RecurringEvent, Team } from "../../model/model";
 import {
+  applyOptimisticAssignment,
+  applyOptimisticAbsence,
   applyOptimisticEventName,
+  applyOptimisticResolve,
+  resolveCoverageRequestRemote,
+  syncAssignmentRemote,
+  syncAbsenceRemote,
   syncEventNameRemote,
 } from "../../store/slices/rosterSlice";
 import { getUpcomingDates } from "../../store/slices/rosterViewSlice";
@@ -394,6 +400,46 @@ const DashboardPage = () => {
     dispatch(syncEventNameRemote(payload));
   };
 
+  const handleClaim = (
+    date: string,
+    teamId: string,
+    positionId: string,
+    requestId: string,
+  ) => {
+    const userEmail = userData?.email || "";
+    const payload = {
+      date,
+      teamName: teamId,
+      userIdentifier: userEmail,
+      updatedAssignments: [positionId],
+    };
+
+    dispatch(applyOptimisticAssignment(payload));
+    dispatch(syncAssignmentRemote(payload));
+
+    const resolvePayload = {
+      date,
+      requestId,
+      status: "resolved" as const,
+      resolvedByEmail: userEmail,
+    };
+    dispatch(applyOptimisticResolve(resolvePayload));
+    dispatch(resolveCoverageRequestRemote(resolvePayload));
+
+    // Automatically remove absence if user is claiming
+    if (entries[date]?.absence?.[userEmail]) {
+      const absencePayload = {
+        date,
+        userIdentifier: userEmail,
+        isAbsent: false,
+        clearedTeams: [],
+        clearedPositions: {},
+      };
+      dispatch(applyOptimisticAbsence(absencePayload));
+      dispatch(syncAbsenceRemote(absencePayload));
+    }
+  };
+
   const currentEventDate = rosterDates[currentDateIndex];
   const todayKey = getTodayKey();
 
@@ -418,6 +464,40 @@ const DashboardPage = () => {
       return currentTimeStr >= endTime;
     });
   }, [currentEventDate, todayKey, getDashboardDataForDate, allTeams]);
+
+  // Find dates that have an open coverage request the current user can fill
+  const needsReplacementDates = useMemo(() => {
+    if (!userData) return [];
+    const results: string[] = [];
+    
+    rosterDates.forEach(date => {
+      const entry = entries[date];
+      if (!entry?.coverageRequests) return;
+
+      const hasQualifiedRequest = Object.values(entry.coverageRequests).some(req => {
+        if (req.status !== "open") return false;
+        const userQualifiedPositions = userData.teamPositions?.[req.teamName] || [];
+        return userQualifiedPositions.includes(req.positionName);
+      });
+
+      if (hasQualifiedRequest) {
+        results.push(date);
+      }
+    });
+    return results;
+  }, [rosterDates, entries, userData]);
+
+  const handleScrollToNeeds = () => {
+    if (needsReplacementDates.length === 0) return;
+    const firstDate = needsReplacementDates[0];
+    const index = rosterDates.indexOf(firstDate);
+    if (index !== -1 && scrollRef.current) {
+      scrollRef.current.scrollTo({
+        left: index * containerWidth,
+        behavior: "smooth"
+      });
+    }
+  };
 
   if (rosterDates.length === 0 && !loadingRoster) {
     return (
@@ -449,6 +529,7 @@ const DashboardPage = () => {
 
     const entry = entries[dateStr];
     const eventName = entry?.eventName;
+    const coverageRequests = entry?.coverageRequests || {};
 
     return (
       <div className={styles.teamCardsContainer}>
@@ -528,32 +609,68 @@ const DashboardPage = () => {
               </div>
 
               <div className={styles.teamEventDetails}>
-                {teamData.positions.map((group) => (
-                  <div key={group.posName} className={styles.posAssignmentRow}>
-                    <span
-                      className={styles.posEmojiLabel}
-                      title={group.posName}
-                    >
-                      {group.emoji}
-                    </span>
-                    <span
-                      className={`${styles.assignedNames} ${group.assignedUsers.length === 0 ? styles.unassigned : ""}`}
-                    >
-                      {group.assignedUsers.length > 0
-                        ? group.assignedUsers.map((user, idx) => (
-                            <Fragment key={`${user.name}-${idx}`}>
-                              <NameTag
-                                displayName={user.name}
-                                isMe={user.isMe}
-                                gender={user.gender}
-                              />
-                              {idx < group.assignedUsers.length - 1 ? ", " : ""}
+                {teamData.positions.map((group) => {
+                  // Find ALL open coverage requests for this team and position
+                  const matchingRequests = Object.entries(coverageRequests)
+                    .filter(([, req]) => 
+                      req.teamName === teamData.teamId && 
+                      req.positionName === group.posId && 
+                      req.status === "open"
+                    );
+
+                  const userQualifiedPositions = userData?.teamPositions?.[teamData.teamId] || [];
+                  const isQualified = userQualifiedPositions.includes(group.posId);
+                  const isAlreadyAssigned = group.assignedUsers.some(u => u.isMe);
+
+                  return (
+                    <div key={group.posName} className={styles.posAssignmentRow}>
+                      <span
+                        className={styles.posEmojiLabel}
+                        title={group.posName}
+                      >
+                        {group.emoji}
+                      </span>
+                      <div className={styles.assignedNamesWrapper}>
+                        <span
+                          className={`${styles.assignedNames} ${group.assignedUsers.length === 0 && (!isQualified || matchingRequests.length === 0) ? styles.unassigned : ""}`}
+                        >
+                          {group.assignedUsers.length > 0 ? (
+                            group.assignedUsers.map((user, idx) => (
+                              <Fragment key={`${user.name}-${idx}`}>
+                                <NameTag
+                                  displayName={user.name}
+                                  isMe={user.isMe}
+                                  gender={user.gender}
+                                />
+                                {(idx < group.assignedUsers.length - 1 || (isQualified && !isAlreadyAssigned && matchingRequests.length > 0)) ? ", " : ""}
+                              </Fragment>
+                            ))
+                          ) : (!isQualified || matchingRequests.length === 0) ? (
+                            "Unassigned"
+                          ) : null}
+
+                          {/* Show Claim button inline if qualified, not assigned, and there's a request */}
+                          {isQualified && !isAlreadyAssigned && matchingRequests.map(([requestId, request], idx) => (
+                            <Fragment key={requestId}>
+                              <Button 
+                                size="small"
+                                variant="primary"
+                                onClick={() => handleClaim(dateStr, teamData.teamId, group.posId, requestId)}
+                                style={{ marginLeft: "4px", padding: "2px 8px", height: "auto", fontSize: "0.65rem" }}
+                              >
+                                Claim Shift
+                              </Button>
+                              <span className={styles.inlineClaimInfo}>
+                                &nbsp;({request.absentUserName} unavailable)
+                              </span>
+                              {idx < matchingRequests.length - 1 ? ", " : ""}
                             </Fragment>
-                          ))
-                        : "Unassigned"}
-                    </span>
-                  </div>
-                ))}
+                          ))}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           );
@@ -569,6 +686,11 @@ const DashboardPage = () => {
       <div className={styles.dashboardHeader}>
         <h1>{pageTitle}</h1>
         <div className={styles.dashboardHeaderActions}>
+          {needsReplacementDates.length > 0 && (
+            <button className={styles.needsReplacementAlert} onClick={handleScrollToNeeds}>
+              🚨 Replacement Needed
+            </button>
+          )}
           {isPast && (
             <button className={styles.clearPastBtn} onClick={handleClearDate}>
               Reset to upcoming
@@ -615,8 +737,6 @@ const DashboardPage = () => {
           {currentDateIndex + 1} / {rosterDates.length}
         </div>
       </div>
-
-      <TeamNeeds />
 
       <ActionSheet
         isOpen={!!activeCalendarTeam}

@@ -48,6 +48,27 @@
   opacity: 0.7;
 }
 
+.needsReplacementAlert {
+  background: var(--background-toggle-off-transparent);
+  border: 1px solid var(--color-error);
+  color: var(--color-error);
+  font-size: 0.75rem;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  animation: pulse 2s infinite;
+  transition: all 0.2s;
+}
+
+.needsReplacementAlert:hover {
+  background: var(--surface-error);
+  transform: translateY(-1px);
+}
+
 .eventNameContainer {
   width: 100%;
   display: flex;
@@ -249,6 +270,11 @@
   text-align: center;
 }
 
+.assignedNamesWrapper {
+  flex: 1;
+  text-align: left;
+}
+
 .dashboardExpiryTimer {
   margin-left: 8px;
 }
@@ -277,6 +303,13 @@
   font-weight: 400;
   font-size: 0.8rem;
   opacity: 0.6;
+}
+
+.inlineClaimInfo {
+  font-size: 0.75rem;
+  color: var(--color-warning-light);
+  font-weight: 600;
+  animation: pulse 2s infinite;
 }
 
 .carouselPagination {

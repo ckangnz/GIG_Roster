@@ -119,6 +119,9 @@ export const useRosterActions = (
         }
         dispatch(setFocusedCell({ row, col, table: "roster" }));
 
+        // CRITICAL: Get fresh entries from store to avoid closure staleness
+        // Since we are inside a callback, we can't easily use getState without updating the hook,
+        // but we can ensure the hook dependencies include 'entries'.
         const entry = entries[dateString];
         const teamData = entry?.teams[teamId];
         let userAssignments: string[] = [];
@@ -189,27 +192,7 @@ export const useRosterActions = (
         dispatch(applyOptimisticAssignment(payload));
         dispatch(syncAssignmentRemote(payload));
 
-        // --- TEAM NEEDS INTEGRATION: RESOLVE ON ASSIGNMENT ---
-        if (nextPositionId && entry?.coverageRequests) {
-          const groupIds = [activePositionId, nextPositionId, ...children.map(c => c.id)];
-
-          Object.entries(entry.coverageRequests).forEach(([reqId, req]) => {
-            // Resolve if matches team, position group, AND same slot (if applicable)
-            const matchesSlot = !slotId || req.slotId === slotId;
-            if (req.status === "open" && req.teamName === teamId && groupIds.includes(req.positionName) && matchesSlot) {
-              const resolvePayload = {
-                date: dateString,
-                requestId: reqId,
-                status: "resolved" as const,
-                resolvedByEmail: userData?.email || userEmail,
-              };
-              dispatch(applyOptimisticResolve(resolvePayload));
-              dispatch(resolveCoverageRequestRemote(resolvePayload));
-            }
-          });
-        }
-
-        // 2. Automatically clear Chris's absence if he's claiming his own slot
+        // --- ABSENCE INTEGRATION: Clear absence if user is being assigned ---
         if (nextPositionId && entry?.absence?.[userEmail]) {
           const absencePayload = {
             date: dateString,
@@ -492,11 +475,18 @@ export const useRosterActions = (
       const entry = entries[dateString];
       if (!entry?.coverageRequests) return false;
 
+      // Find children of this position to handle parent groups
+      const children = allPositions.filter(p => p.parentId === pId);
+      const groupIds = [pId, ...children.map(c => c.id)];
+
       return Object.values(entry.coverageRequests).some(
-        (req) => req.teamName === tId && req.positionName === pId && req.status === "open"
+        (req) => 
+          req.teamName === tId && 
+          groupIds.includes(req.positionName) && 
+          req.status === "open"
       );
     },
-    [entries]
+    [entries, allPositions]
   );
 
   return {

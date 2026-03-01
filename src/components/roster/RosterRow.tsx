@@ -12,6 +12,7 @@ interface RosterRowProps {
   closestNextDate?: string | null;
   showPeek?: boolean;
   children: ReactNode;
+  hasPositionRequest?: boolean;
   // Slotted mode props
   slot?: RosterSlot;
   isFirstSlot?: boolean;
@@ -26,6 +27,7 @@ const RosterRow = memo(
     closestNextDate,
     showPeek,
     children,
+    hasPositionRequest = false,
     slot,
     isFirstSlot = true,
     isLastSlot = true,
@@ -38,15 +40,6 @@ const RosterRow = memo(
 
     const entry = entries[dateKey];
     const eventName = entry?.eventName;
-
-    const hasOpenRequest = useMemo(() => {
-      if (!entry?.coverageRequests) return false;
-      return Object.values(entry.coverageRequests).some(req => {
-        // If this row is a specific slot, only show warning if req matches slot
-        if (slot) return req.status === "open" && req.slotId === slot.id;
-        return req.status === "open";
-      });
-    }, [entry, slot]);
 
     const hasData = useMemo(() => {
       if (!entry) return false;
@@ -74,7 +67,7 @@ const RosterRow = memo(
       !hasData && !slot ? styles.noData : "",
       eventName ? styles.specialEventRow : "",
       dateString === closestNextDate ? styles.closestNextDateRow : "",
-      hasOpenRequest ? styles.rowNeedsCoverage : "",
+      hasPositionRequest ? styles.rowNeedsCoverage : "",
       slot ? styles.slottedRow : "",
       !isFirstSlot ? styles.subsequentSlotRow : "",
       isLastSlot && (isToday || dateString === closestNextDate) ? styles.slottedGroupBottom : "",
@@ -85,11 +78,11 @@ const RosterRow = memo(
     return (
       <tr className={trClasses}>
         <td
-          className={`${styles.dateCell} ${styles.stickyCol} ${hasData ? styles.clickable : ""} ${hasOpenRequest ? styles.needsCoverage : ""}`}
+          className={`${styles.dateCell} ${styles.stickyCol} ${hasData ? styles.clickable : ""} ${hasPositionRequest ? styles.needsCoverage : ""}`}
           onClick={() => onDateClick(dateString)}
           title={eventName}
         >
-          <div className={`${styles.dateCellContent} ${hasOpenRequest ? styles.dateTextWarning : ""}`}>
+          <div className={`${styles.dateCellContent} ${hasPositionRequest ? styles.dateTextWarning : ""}`}>
             {isFirstSlot && (
               <>
                 {eventName && <span className={styles.specialEventDot} />}
