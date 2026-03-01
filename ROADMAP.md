@@ -25,7 +25,7 @@
 ### 🎯 Goals
 - [x] **Organisation Entity**: Created `Organisation` model and scoped all data (Teams, Positions, Users, Thoughts).
 - [x] **Atomic Roster Structure**: Refactored monolithic date documents into per-team-per-date documents (`organisations/{orgId}/roster/{teamId}_{date}`).
-- [x] **Data Migration**: Created `migrate-to-organisations.ts` script to transition legacy data to the new structure.
+- [ ] **Organisation Onboarding**: Implement "Option A" - Invite Codes and Searchable Join Requests for new users.
 - [ ] **Searchable Position Picker**: Refactor UI to use Autocomplete.
 
 ### 🛠 Implementation Guidelines
@@ -47,6 +47,9 @@
 - [x] **Scoped Data Migration**:
     - [x] Create a script to explode existing monolithic date docs into individual team-date docs.
     - [x] Assign all existing data to a default "Legacy Org".
+- [ ] **Onboarding Flow (Option A)**:
+    - **Guest Page**: Add search/input for "Join Organisation".
+    - **Approval Pipeline**: Ensure unapproved users with an `orgId` appear in that Org's Admin dashboard.
 - [ ] **UX Update**:
     - Replace "Pill Cloud" in `TeamPositionEditor` and `ProfileSettings` with a Searchable Multi-select.
 
