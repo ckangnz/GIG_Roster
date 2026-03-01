@@ -85,12 +85,89 @@
   padding: 1.5rem 0;
   position: relative;
   z-index: 100;
+  gap: 12px;
+}
+
+.footerButtons {
+  display: flex;
+  width: 100%;
+  max-width: 300px;
+  gap: 12px;
 }
 
 .shareBtn {
-  width: 100%;
-  max-width: 300px;
+  flex: 1;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.exportIconButton {
+  width: 48px !important;
+  height: 48px !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+}
+
+/* Toast Styles */
+.toast {
+  position: fixed;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--color-text-primary);
+  color: var(--background-app-shell);
+  padding: 12px 24px;
+  border-radius: 24px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  z-index: 2000;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  pointer-events: none;
+}
+
+.shareOptionItem {
+  width: 100%;
+  padding: 1.25rem;
+  background: var(--background-button-secondary);
+  border: 1px solid var(--border-color-secondary);
+  border-radius: 12px;
+  text-align: left;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.shareOptionItem:hover {
+  background: var(--background-primary-subtle);
+  border-color: var(--color-link);
+}
+
+.shareOptionText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.shareOptionLabel {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.shareOptionSubtext {
+  font-size: 0.75rem;
+  color: var(--color-text-dim);
+  font-weight: 500;
+}
+
+.shareOptionIcon {
+  color: var(--color-link);
 }
 
 .inputContainer {

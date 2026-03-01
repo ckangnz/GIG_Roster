@@ -1,7 +1,19 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 
 import { collection, query, where, onSnapshot } from "firebase/firestore";
-import { Plus, Trash2, Edit2 } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { 
+  Plus, 
+  Trash2, 
+  Edit2, 
+  ExternalLink, 
+  User, 
+  Users, 
+  ArrowUpAZ, 
+  ArrowDownAZ, 
+  Heart, 
+  MessageSquare 
+} from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { ThoughtExpiry } from "./ThoughtExpiry";
@@ -72,6 +84,10 @@ const ThoughtsPage = () => {
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [editingEntryId, setEditingEntryId] = useState<string | null>(null);
   const [inputText, setInputText] = useState("");
+
+  const [isShareSheetOpen, setIsShareSheetOpen] = useState(false);
+  const [isEveryoneOptionsOpen, setIsEveryoneOptionsOpen] = useState(false);
+  const [showCopiedToast, setShowCopiedToast] = useState(false);
 
   const [likerList, setLikerList] = useState<
     { name: string; time: string }[] | null
@@ -273,6 +289,65 @@ const ThoughtsPage = () => {
     [allUsers],
   );
 
+  const handleShareMyThoughts = () => {
+    if (!myThought?.entries?.length) return;
+    
+    const totalLikes = myThought.entries.reduce((sum, entry) => sum + Object.keys(entry.hearts || {}).length, 0);
+    let text = `My Thoughts (Total Likes: ${totalLikes})\n`;
+    myThought.entries.forEach((entry, i) => {
+      text += `${i + 1}. ${entry.text} (${Object.keys(entry.hearts || {}).length} ❤️)\n`;
+    });
+
+    navigator.clipboard.writeText(text).then(() => {
+      setShowCopiedToast(true);
+      setTimeout(() => setShowCopiedToast(false), 2000);
+      setIsShareSheetOpen(false);
+    });
+  };
+
+  type SortOption = "alpha-asc" | "alpha-desc" | "likes-desc" | "likes-asc" | "thoughts-desc" | "thoughts-asc";
+
+  const handleShareEveryone = (sortOption: SortOption) => {
+    const teamName = allTeams.find(t => t.id === teamId || t.name === teamId)?.name || "Team";
+    let text = `Team Thoughts: ${teamName}\n\n`;
+
+    const usersWithThoughts = teamUsers
+      .map(user => {
+        const userThought = thoughts[`${user.id}_${teamId}`];
+        const entries = userThought?.entries || [];
+        const totalLikes = entries.reduce((sum, e) => sum + Object.keys(e.hearts || {}).length, 0);
+        return { user, entries, totalLikes, count: entries.length };
+      })
+      .filter(u => u.count > 0);
+
+    usersWithThoughts.sort((a, b) => {
+      switch (sortOption) {
+        case "alpha-asc": return (a.user.name || "").localeCompare(b.user.name || "");
+        case "alpha-desc": return (b.user.name || "").localeCompare(a.user.name || "");
+        case "likes-desc": return b.totalLikes - a.totalLikes || (a.user.name || "").localeCompare(b.user.name || "");
+        case "likes-asc": return a.totalLikes - b.totalLikes || (a.user.name || "").localeCompare(b.user.name || "");
+        case "thoughts-desc": return b.count - a.count || (a.user.name || "").localeCompare(b.user.name || "");
+        case "thoughts-asc": return a.count - b.count || (a.user.name || "").localeCompare(b.user.name || "");
+        default: return 0;
+      }
+    });
+
+    usersWithThoughts.forEach(u => {
+      text += `${u.user.name} (${u.totalLikes} ❤️)\n`;
+      u.entries.forEach(entry => {
+        text += `- ${entry.text}\n`;
+      });
+      text += "\n";
+    });
+
+    navigator.clipboard.writeText(text).then(() => {
+      setShowCopiedToast(true);
+      setTimeout(() => setShowCopiedToast(false), 2000);
+      setIsEveryoneOptionsOpen(false);
+      setIsShareSheetOpen(false);
+    });
+  };
+
   // Real-time thoughts listener (Query by UUID and Org scope)
   useEffect(() => {
     const orgId = userData?.orgId;
@@ -355,21 +430,130 @@ const ThoughtsPage = () => {
         </div>
 
         <div className={styles.footer}>
-          <Button
-            onClick={handleOpenManagement}
-            className={styles.shareBtn}
-            variant={showAdminControls ? "secondary" : "primary"}
-          >
-            {showAdminControls
-              ? focusedThought
-                ? `Moderate ${focusedUser?.name}'s thoughts`
-                : `Share for ${focusedUser?.name}`
-              : myThought?.entries?.length
-                ? "Manage my thoughts"
-                : "Share a thought"}
-          </Button>
+          <div className={styles.footerButtons}>
+            <Button
+              onClick={handleOpenManagement}
+              className={styles.shareBtn}
+              variant={showAdminControls ? "secondary" : "primary"}
+              style={{ height: "48px" }}
+            >
+              {showAdminControls
+                ? focusedThought
+                  ? `Moderate ${focusedUser?.name}'s thoughts`
+                  : `Share for ${focusedUser?.name}`
+                : myThought?.entries?.length
+                  ? "Manage my thoughts"
+                  : "Share a thought"}
+            </Button>
+            <Button
+              variant="secondary"
+              className={styles.exportIconButton}
+              onClick={() => setIsShareSheetOpen(true)}
+              title="Share thoughts"
+              style={{ height: "48px" }}
+            >
+              <ExternalLink size={20} />
+            </Button>
+          </div>
         </div>
       </div>
+
+      <AnimatePresence>
+        {showCopiedToast && (
+          <motion.div 
+            className={styles.toast}
+            initial={{ opacity: 0, y: 20, x: "-50%" }}
+            animate={{ opacity: 1, y: 0, x: "-50%" }}
+            exit={{ opacity: 0, y: 20, x: "-50%" }}
+          >
+            Copied to clipboard
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <ActionSheet
+        isOpen={isShareSheetOpen}
+        onClose={() => setIsShareSheetOpen(false)}
+        title="Share Thoughts"
+      >
+        <button 
+          className={styles.shareOptionItem}
+          onClick={handleShareMyThoughts}
+          disabled={!myThought?.entries?.length}
+          style={{ opacity: !myThought?.entries?.length ? 0.5 : 1 }}
+        >
+          <div className={styles.shareOptionText}>
+            <span className={styles.shareOptionLabel}>Share My Thoughts</span>
+            <span className={styles.shareOptionSubtext}>Copy your active thoughts and total likes</span>
+          </div>
+          <User className={styles.shareOptionIcon} size={20} />
+        </button>
+
+        <button 
+          className={styles.shareOptionItem}
+          onClick={() => setIsEveryoneOptionsOpen(true)}
+        >
+          <div className={styles.shareOptionText}>
+            <span className={styles.shareOptionLabel}>Share Everyone's Thoughts</span>
+            <span className={styles.shareOptionSubtext}>Export all active team thoughts</span>
+          </div>
+          <Users className={styles.shareOptionIcon} size={20} />
+        </button>
+      </ActionSheet>
+
+      <ActionSheet
+        isOpen={isEveryoneOptionsOpen}
+        onClose={() => setIsEveryoneOptionsOpen(false)}
+        title="Export Order"
+      >
+        <button className={styles.shareOptionItem} onClick={() => handleShareEveryone("alpha-asc")}>
+          <div className={styles.shareOptionText}>
+            <span className={styles.shareOptionLabel}>Alphabetical (A-Z)</span>
+            <span className={styles.shareOptionSubtext}>Order by member name ascending</span>
+          </div>
+          <ArrowUpAZ className={styles.shareOptionIcon} size={20} />
+        </button>
+
+        <button className={styles.shareOptionItem} onClick={() => handleShareEveryone("alpha-desc")}>
+          <div className={styles.shareOptionText}>
+            <span className={styles.shareOptionLabel}>Alphabetical (Z-A)</span>
+            <span className={styles.shareOptionSubtext}>Order by member name descending</span>
+          </div>
+          <ArrowDownAZ className={styles.shareOptionIcon} size={20} />
+        </button>
+
+        <button className={styles.shareOptionItem} onClick={() => handleShareEveryone("likes-desc")}>
+          <div className={styles.shareOptionText}>
+            <span className={styles.shareOptionLabel}>Most Liked</span>
+            <span className={styles.shareOptionSubtext}>Order by total hearts received</span>
+          </div>
+          <Heart className={styles.shareOptionIcon} size={20} />
+        </button>
+
+        <button className={styles.shareOptionItem} onClick={() => handleShareEveryone("likes-asc")}>
+          <div className={styles.shareOptionText}>
+            <span className={styles.shareOptionLabel}>Least Liked</span>
+            <span className={styles.shareOptionSubtext}>Order by fewest hearts received</span>
+          </div>
+          <Heart className={styles.shareOptionIcon} size={20} style={{ opacity: 0.5 }} />
+        </button>
+
+        <button className={styles.shareOptionItem} onClick={() => handleShareEveryone("thoughts-desc")}>
+          <div className={styles.shareOptionText}>
+            <span className={styles.shareOptionLabel}>Most Thoughts</span>
+            <span className={styles.shareOptionSubtext}>Members with most active thoughts first</span>
+          </div>
+          <MessageSquare className={styles.shareOptionIcon} size={20} />
+        </button>
+
+        <button className={styles.shareOptionItem} onClick={() => handleShareEveryone("thoughts-asc")}>
+          <div className={styles.shareOptionText}>
+            <span className={styles.shareOptionLabel}>Least Thoughts</span>
+            <span className={styles.shareOptionSubtext}>Members with fewest active thoughts first</span>
+          </div>
+          <MessageSquare className={styles.shareOptionIcon} size={20} style={{ opacity: 0.5 }} />
+        </button>
+      </ActionSheet>
 
       <ActionSheet
         isOpen={isManagementOpen}
