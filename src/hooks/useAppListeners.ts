@@ -5,7 +5,7 @@ import { collection, onSnapshot, query, doc, where } from "firebase/firestore";
 import { useAppDispatch, useAppSelector } from "./redux";
 import { db } from "../firebase";
 import { useTrackPresence, usePresenceListener } from "./usePresence";
-import { AppUser, Team, Position } from "../model/model";
+import { AppUser, Team, Position, CoverageRequest, TeamRosterData } from "../model/model";
 import { setUserData } from "../store/slices/authSlice";
 import { setPositions } from "../store/slices/positionsSlice";
 import {
@@ -45,14 +45,25 @@ export const useAppListeners = () => {
       unsubRoster = onSnapshot(
         query(collection(db, "organisations", orgId, "roster")),
         (snap) => {
-          const teamUpdates: Record<string, Record<string, Record<string, string[]> | { type: "slotted"; slots: Record<string, Record<string, string[]>> }>> = {};
+          const teamUpdates: Record<string, Record<string, TeamRosterData | Record<string, string[]>>> = {};
+          const coverageUpdates: Record<string, Record<string, CoverageRequest>> = {};
+
           snap.docs.forEach(d => {
             const data = d.data();
             const { date, teamId, data: rosterData } = data;
+            
+            // 1. Handle Team Data
             if (!teamUpdates[date]) teamUpdates[date] = {};
             teamUpdates[date][teamId] = rosterData;
+
+            // 2. Handle Coverage Requests
+            if (rosterData.coverageRequests) {
+              if (!coverageUpdates[date]) coverageUpdates[date] = {};
+              Object.assign(coverageUpdates[date], rosterData.coverageRequests);
+            }
           });
-          dispatch(updateRosterTeams(teamUpdates));
+
+          dispatch(updateRosterTeams({ teams: teamUpdates, coverageRequests: coverageUpdates }));
         },
         (err) => {
           console.error("Roster Listener Error:", err.message);

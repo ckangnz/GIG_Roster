@@ -12,7 +12,7 @@ import {
 } from "firebase/firestore";
 
 import { db } from "../../firebase";
-import { RosterEntry, TeamRosterData, AppUser } from "../../model/model";
+import { RosterEntry, TeamRosterData, AppUser, CoverageRequest } from "../../model/model";
 
 interface RosterState {
   entries: Record<string, RosterEntry>; // date -> RosterEntry
@@ -283,14 +283,30 @@ const rosterSlice = createSlice({
     setLoading(state, action: PayloadAction<boolean>) {
       state.loading = action.payload;
     },
-    updateRosterTeams(state, action: PayloadAction<Record<string, Record<string, TeamRosterData | Record<string, string[]>>>>) {
-      // action.payload is { date: { teamId: data } }
-      Object.entries(action.payload).forEach(([date, teamMap]) => {
+    updateRosterTeams(state, action: PayloadAction<{ 
+      teams: Record<string, Record<string, TeamRosterData | Record<string, string[]>>>,
+      coverageRequests: Record<string, Record<string, CoverageRequest>>
+    }>) {
+      const { teams, coverageRequests } = action.payload;
+
+      // Update Teams
+      Object.entries(teams).forEach(([date, teamMap]) => {
         if (!state.entries[date]) {
           state.entries[date] = { id: date, date, teams: {}, absence: {}, orgId: "" };
         }
         state.entries[date].teams = { ...state.entries[date].teams, ...teamMap };
       });
+
+      // Update Coverage Requests
+      Object.entries(coverageRequests).forEach(([date, requests]) => {
+        if (state.entries[date]) {
+          state.entries[date].coverageRequests = { 
+            ...state.entries[date].coverageRequests, 
+            ...requests 
+          };
+        }
+      });
+
       state.loading = false;
       state.initialLoad = true;
     },

@@ -23,6 +23,8 @@ const TeamNeeds = memo(() => {
   const qualifiedRequests = useAppSelector(selectQualifiedCoverageRequests);
   const { userData } = useAppSelector((state) => state.auth);
   const { entries } = useAppSelector((state) => state.roster);
+  const { teams: allTeams } = useAppSelector((state) => state.teams);
+  const { positions: allPositions } = useAppSelector((state) => state.positions);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   if (qualifiedRequests.length === 0) return null;
@@ -100,49 +102,54 @@ const TeamNeeds = memo(() => {
         title="Team Coverage Needs"
       >
         <div className={styles.sheetContent}>
-          {qualifiedRequests.map(({ date, request, requestId }) => (
-            <div key={requestId} className={styles.card}>
-              <div 
-                className={`${styles.header} ${styles.clickableHeader}`}
-                onClick={() => {
-                  navigate(`/app/roster/${request.teamName}/${request.positionName}?date=${date}`);
-                  setIsSheetOpen(false);
-                }}
-              >
-                <div className={styles.dateInfo}>
-                  <span className={styles.date}>{formatDisplayDate(date)}</span>
-                  <span className={styles.teamPos}>{request.teamName} • {request.positionName}</span>
-                </div>
-              </div>
-              
-              <div className={styles.absentInfo}>
-                <span className={styles.absentName}>{request.absentUserName}</span> is absent.
-              </div>
+          {qualifiedRequests.map(({ date, request, requestId }) => {
+            const teamName = allTeams.find(t => t.id === request.teamName)?.name || request.teamName;
+            const posName = allPositions.find(p => p.id === request.positionName || p.name === request.positionName)?.name || request.positionName;
 
-              <div className={styles.actions}>
-                <button 
-                  className={styles.claimBtn}
+            return (
+              <div key={requestId} className={styles.card}>
+                <div 
+                  className={`${styles.header} ${styles.clickableHeader}`}
                   onClick={() => {
-                    handleClaim(date, request.teamName, request.positionName, requestId);
-                    if (qualifiedRequests.length <= 1) setIsSheetOpen(false);
+                    navigate(`/app/roster/${request.teamName}/${request.positionName}?date=${date}`);
+                    setIsSheetOpen(false);
                   }}
                 >
-                  Claim Shift
-                </button>
-                {userData?.isAdmin && (
+                  <div className={styles.dateInfo}>
+                    <span className={styles.date}>{formatDisplayDate(date)}</span>
+                    <span className={styles.teamPos}>{teamName} • {posName}</span>
+                  </div>
+                </div>
+                
+                <div className={styles.absentInfo}>
+                  <span className={styles.absentName}>{request.absentUserName}</span> is absent.
+                </div>
+
+                <div className={styles.actions}>
                   <button 
-                    className={styles.dismissBtn}
+                    className={styles.claimBtn}
                     onClick={() => {
-                      handleDismiss(date, requestId);
+                      handleClaim(date, request.teamName, request.positionName, requestId);
                       if (qualifiedRequests.length <= 1) setIsSheetOpen(false);
                     }}
                   >
-                    Dismiss
+                    Claim Shift
                   </button>
-                )}
+                  {userData?.isAdmin && (
+                    <button 
+                      className={styles.dismissBtn}
+                      onClick={() => {
+                        handleDismiss(date, requestId);
+                        if (qualifiedRequests.length <= 1) setIsSheetOpen(false);
+                      }}
+                    >
+                      Dismiss
+                    </button>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </ActionSheet>
     </>
