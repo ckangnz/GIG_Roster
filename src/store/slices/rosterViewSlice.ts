@@ -10,12 +10,25 @@ export const getUpcomingDates = (
   preferredDays: Weekday[],
   startYear?: number,
   endYear?: number,
+  team?: Team | null,
 ): string[] => {
   const dates: Date[] = [];
   const now = new Date();
-  now.setHours(0, 0, 0, 0);
+  
+  // Helper to check if today is expired for this team
+  const isTodayExpired = (t: Team) => {
+    const dayName = new Intl.DateTimeFormat("en-US", { weekday: "long" }).format(now) as Weekday;
+    const endTimeStr = t.dayEndTimes?.[dayName] || "23:59";
+    const [endH, endM] = endTimeStr.split(":").map(Number);
+    const nowH = now.getHours();
+    const nowM = now.getMinutes();
+    return nowH > endH || (nowH === endH && nowM >= endM);
+  };
 
-  const currentYear = now.getFullYear();
+  const today = new Date(now);
+  today.setHours(0, 0, 0, 0);
+
+  const currentYear = today.getFullYear();
   const effectiveStartYear = startYear || currentYear;
   const effectiveEndYear = endYear || currentYear;
 
@@ -31,10 +44,13 @@ export const getUpcomingDates = (
 
   const preferredDayNumbers = preferredDays.map((day) => weekdayMap[day]);
 
-  // Start from Jan 1st of the start year OR today if start year is current year
   let startDate: Date;
   if (effectiveStartYear === currentYear) {
-    startDate = new Date(now);
+    startDate = new Date(today);
+    // If today matches but is expired, start from tomorrow
+    if (team && preferredDayNumbers.includes(startDate.getDay()) && isTodayExpired(team)) {
+      startDate.setDate(startDate.getDate() + 1);
+    }
   } else {
     startDate = new Date(effectiveStartYear, 0, 1);
   }
@@ -222,7 +238,7 @@ const rosterViewSlice = createSlice({
     },
     resetToUpcomingDates(state) {
       if (state.currentTeamData?.preferredDays) {
-        state.rosterDates = getUpcomingDates(state.currentTeamData.preferredDays);
+        state.rosterDates = getUpcomingDates(state.currentTeamData.preferredDays, undefined, undefined, state.currentTeamData);
       }
     },
     loadNextYearDates(state) {
@@ -232,7 +248,8 @@ const rosterViewSlice = createSlice({
         const nextYearDates = getUpcomingDates(
           state.currentTeamData.preferredDays,
           nextYear,
-          nextYear
+          nextYear,
+          state.currentTeamData
         );
         state.rosterDates = [...state.rosterDates, ...nextYearDates];
       }
@@ -286,7 +303,7 @@ const rosterViewSlice = createSlice({
       .addCase(fetchTeamDataForRoster.fulfilled, (state, action: PayloadAction<Team | null>) => {
         state.currentTeamData = action.payload;
         if (action.payload?.preferredDays) {
-          state.rosterDates = getUpcomingDates(action.payload.preferredDays);
+          state.rosterDates = getUpcomingDates(action.payload.preferredDays, undefined, undefined, action.payload);
         }
         state.loadingTeam = false;
       })
