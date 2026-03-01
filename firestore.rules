@@ -39,16 +39,9 @@ service cloud.firestore {
       allow create, update, delete: if isSignedIn();
     }
 
-    // LEGACY FALLBACKS (Root level)
-    match /metadata/{document} {
-      allow read: if isSignedIn();
-      allow write: if isAdmin();
-    }
-    match /roster/{date} {
-      allow read, write: if isApproved() || isAdmin();
-    }
+    // Root-level thoughts (scoping is now handled inside organisations path)
     match /thoughts/{thoughtId} {
-      allow read, write: if isSignedIn();
+      allow read, write: if isAdmin(); // Only admins can touch root level now
     }
   }
 }

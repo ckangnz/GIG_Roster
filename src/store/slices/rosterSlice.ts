@@ -292,7 +292,8 @@ const rosterSlice = createSlice({
     }>) {
       const { date, teamName, userIdentifier, updatedAssignments, slotId } = action.payload;
       if (!state.entries[date]) {
-        const existingOrgId = Object.values(state.entries)[0]?.orgId || "legacy-org-id";
+        const existingOrgId = Object.values(state.entries)[0]?.orgId;
+        if (!existingOrgId) return; // Cannot update without org context
         state.entries[date] = { id: date, date, teams: {}, absence: {}, orgId: existingOrgId };
       }
       const entry = state.entries[date];
@@ -334,7 +335,8 @@ const rosterSlice = createSlice({
     }>) {
       const { date, userIdentifier, isAbsent, reason, clearedPositions, userName } = action.payload;
       if (!state.entries[date]) {
-        const existingOrgId = Object.values(state.entries)[0]?.orgId || "legacy-org-id";
+        const existingOrgId = Object.values(state.entries)[0]?.orgId;
+        if (!existingOrgId) return; // Cannot update without org context
         state.entries[date] = { id: date, date, teams: {}, absence: {}, orgId: existingOrgId };
       }
       const entry = state.entries[date];
@@ -381,7 +383,8 @@ const rosterSlice = createSlice({
     applyOptimisticEventName(state, action: PayloadAction<{ date: string; eventName: string }>) {
       const { date, eventName } = action.payload;
       if (!state.entries[date]) {
-        const existingOrgId = Object.values(state.entries)[0]?.orgId || "legacy-org-id";
+        const existingOrgId = Object.values(state.entries)[0]?.orgId;
+        if (!existingOrgId) return; // Cannot update without org context
         state.entries[date] = { id: date, date, teams: {}, absence: {}, orgId: existingOrgId };
       }
       state.entries[date].eventName = eventName;

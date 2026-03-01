@@ -34,7 +34,7 @@ export const initializeUserData = createAsyncThunk(
         const newData: AppUser = {
           name: authUser?.displayName || null,
           email: authUser?.email || null,
-          orgId: 'legacy-org-id', // Default for now
+          orgId: null, // No fallback
           isApproved: isAutoAdmin,
           isAdmin: isAutoAdmin,
           isActive: true,
