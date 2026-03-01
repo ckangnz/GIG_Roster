@@ -1,7 +1,9 @@
 import { memo } from "react";
 
+
 import { DragControls } from "framer-motion";
 import { CornerDownRight, Trash2, GripVertical } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import Button from "../../components/common/Button";
 import {
@@ -33,6 +35,7 @@ const PositionManagementRow = memo(({
   isDragDisabled = false,
   dragControls,
 }: PositionManagementRowProps) => {
+  const { t } = useTranslation();
   const isChild = !!position.parentId;
 
   return (
@@ -106,7 +109,7 @@ const PositionManagementRow = memo(({
           onClick={() => onDelete(index)}
         >
           <Trash2 size={14} style={{ marginRight: "4px" }} />
-          Delete
+          {t('common.delete')}
         </Button>
       </SettingsTableAnyCell>
     </tr>

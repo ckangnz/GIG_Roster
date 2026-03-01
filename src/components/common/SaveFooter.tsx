@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import styles from "./save-footer.module.css";
 
 interface SaveFooterProps {
@@ -11,31 +13,37 @@ interface SaveFooterProps {
 }
 
 const SaveFooter = ({
-  label = "You have unsaved changes",
+  label,
   onSave,
   onCancel,
   isSaving,
-  saveText = "Save",
-  discardText = "Discard",
+  saveText,
+  discardText,
 }: SaveFooterProps) => {
+  const { t } = useTranslation();
+  
+  const displayLabel = label || t('common.unsavedChanges', { defaultValue: 'You have unsaved changes' });
+  const displaySave = saveText || t('common.save');
+  const displayDiscard = discardText || t('common.cancel', { defaultValue: 'Discard' });
+
   return (
     <div className={styles.rosterSaveFooter}>
       <div className={styles.saveFooterContent}>
-        <span className={styles.changesLabel}>{label}</span>
+        <span className={styles.changesLabel}>{displayLabel}</span>
         <div className={styles.saveFooterActions}>
           <button
             className={styles.cancelBtn}
             onClick={onCancel}
             disabled={isSaving}
           >
-            {discardText}
+            {displayDiscard}
           </button>
           <button
             className={styles.saveBtn}
             onClick={onSave}
             disabled={isSaving}
           >
-            {isSaving ? "Saving..." : saveText}
+            {isSaving ? t('common.loading') : displaySave}
           </button>
         </div>
       </div>

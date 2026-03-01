@@ -8,6 +8,7 @@ import {
 } from "react";
 
 import { CopyIcon, CheckCircle2, CalendarPlus } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
 
 import ActionSheet from "../../components/common/ActionSheet";
@@ -38,6 +39,7 @@ import styles from "./dashboard-page.module.css";
 
 const DashboardPage = () => {
   const dispatch = useAppDispatch();
+  const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const targetDate = searchParams.get("date");
 
@@ -534,8 +536,8 @@ const DashboardPage = () => {
   if (rosterDates.length === 0 && !loadingRoster) {
     return (
       <div className={styles.dashboardEmpty}>
-        <h2>No upcoming events found</h2>
-        <p>You are not rostered for any upcoming team events.</p>
+        <h2>{t('dashboard.noEvents', { defaultValue: 'No upcoming events found' })}</h2>
+        <p>{t('dashboard.noAssignments')}</p>
       </div>
     );
   }
@@ -543,7 +545,9 @@ const DashboardPage = () => {
   const currentEntry = entries[currentEventDate] || { eventName: "" };
   const showSpinner = loadingRoster || !isInitialized;
 
-  const pageTitle = isPast ? "Previous Event" : "Upcoming Events";
+  const pageTitle = isPast 
+    ? t('common.previousEvent', { defaultValue: 'Previous Event' }) 
+    : t('dashboard.title');
 
   const formatDate = (dateStr: string) => {
     const dateObj = new Date(dateStr);
@@ -607,7 +611,7 @@ const DashboardPage = () => {
                               positionName: teamData.myPositionName,
                             });
                           }}
-                          title="Add to calendar"
+                          title={t('dashboard.addToCalendar')}
                         >
                           <CalendarPlus size={16} />
                         </button>
@@ -624,15 +628,15 @@ const DashboardPage = () => {
                           eventName,
                         )
                       }
-                      title="Copy to clipboard"
+                      title={t('dashboard.copyToClipboard')}
                     >
                       {isRecentlyCopied ? (
                         <>
-                          <CheckCircle2 size={16} /> Copied
+                          <CheckCircle2 size={16} /> {t('dashboard.copied')}
                         </>
                       ) : (
                         <>
-                          <CopyIcon size={16} /> Copy
+                          <CopyIcon size={16} /> {t('common.copy', { defaultValue: 'Copy' })}
                         </>
                       )}
                     </button>
@@ -678,7 +682,7 @@ const DashboardPage = () => {
                               </Fragment>
                             ))
                           ) : (!isQualified || matchingRequests.length === 0) ? (
-                            "Unassigned"
+                            t('common.unassigned')
                           ) : null}
 
                           {/* Show Claim button inline if qualified, not assigned, and there's a request */}
@@ -690,10 +694,10 @@ const DashboardPage = () => {
                                 onClick={() => handleClaim(dateStr, teamData.teamId, group.posId, requestId)}
                                 style={{ marginLeft: "4px", padding: "2px 8px", height: "auto", fontSize: "0.65rem" }}
                               >
-                                Claim Shift
+                                {t('dashboard.claimShift')}
                               </Button>
                               <span className={styles.inlineClaimInfo}>
-                                &nbsp;({request.absentUserName} unavailable)
+                                ({request.absentUserName} {t('dashboard.unavailable')})
                               </span>
                               {idx < matchingRequests.length - 1 ? ", " : ""}
                             </Fragment>
@@ -720,12 +724,12 @@ const DashboardPage = () => {
         <div className={styles.dashboardHeaderActions}>
           {needsReplacementDates.length > 0 && (
             <button className={styles.needsReplacementAlert} onClick={handleScrollToNeeds}>
-              🚨 Replacement Needed
+              🚨 {t('dashboard.replacementNeeded')}
             </button>
           )}
           {isPast && (
             <button className={styles.clearPastBtn} onClick={handleClearDate}>
-              Reset to upcoming
+              {t('dashboard.resetToUpcoming')}
             </button>
           )}
         </div>
@@ -735,7 +739,7 @@ const DashboardPage = () => {
         <input
           type="text"
           className={`${styles.dashboardEventNameInput} ${currentEntry.eventName ? styles.dashboardEventNameInputHasEvent : ""}`}
-          placeholder="Event name (e.g. Easter Sunday)"
+          placeholder={t('dashboard.eventNamePlaceholder')}
           value={currentEntry.eventName || ""}
           onChange={(e) =>
             handleEventNameChange(currentEventDate, e.target.value)
@@ -773,7 +777,7 @@ const DashboardPage = () => {
       <ActionSheet
         isOpen={!!activeCalendarTeam}
         onClose={() => setActiveCalendarTeam(null)}
-        title="Add to Calendar"
+        title={t('dashboard.addToCalendar')}
       >
         {activeCalendarTeam && (
           <>
@@ -813,7 +817,7 @@ const DashboardPage = () => {
                   )
                 }
               >
-                <span>Add All Events</span>
+                <span>{t('dashboard.addAllEvents')}</span>
                 <CalendarPlus size={18} className={styles.calendarActionIcon} />
               </button>
             )}

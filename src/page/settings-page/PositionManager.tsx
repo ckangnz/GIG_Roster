@@ -1,7 +1,9 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 
+
 import { Reorder, useDragControls } from "framer-motion";
 import { Plus } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import NewPositionModal from "./NewPositionModal";
 import PositionManagementRow from "./PositionManagementRow";
@@ -70,6 +72,7 @@ const DraggableRowBlock = ({
 };
 
 const PositionManagement = () => {
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const { userData } = useAppSelector((state) => state.auth);
   const orgId = userData?.orgId;
@@ -179,9 +182,9 @@ const PositionManagement = () => {
 
   const deletePosition = (index: number) => {
     dispatch(showAlert({
-      title: "Delete Position",
-      message: "Delete this position? This will remove it from all teams and delete any associated child positions.",
-      confirmText: "Delete",
+      title: t('management.position.deleteTitle'),
+      message: t('management.position.deleteConfirm'),
+      confirmText: t('common.delete'),
       onConfirm: async () => {
         const positionToDelete = positions[index];
         const positionId = positionToDelete.id;
@@ -277,16 +280,16 @@ const PositionManagement = () => {
       <SettingsTable
         headers={[
           {
-            text: "Name",
+            text: t('management.position.name'),
             minWidth: 150,
             width: 250,
             textAlign: "center",
           },
-          { text: "Emoji", width: 30, textAlign: "center" },
-          { text: "Colour", minWidth: 100, textAlign: "center" },
-          { text: "Sort by Gender", width: 100, textAlign: "center" },
-          { text: "Custom Headings", width: 100, textAlign: "center" },
-          { text: "Delete", width: 60, textAlign: "center" },
+          { text: t('management.position.emoji'), width: 80, textAlign: "center" },
+          { text: t('management.position.color'), minWidth: 100, textAlign: "center" },
+          { text: t('management.position.genderSort'), width: 100, textAlign: "center" },
+          { text: t('management.position.custom'), width: 100, textAlign: "center" },
+          { text: t('common.delete'), width: 60, textAlign: "center" },
         ]}
         tableAs={Reorder.Group}
         tableProps={{
@@ -321,7 +324,7 @@ const PositionManagement = () => {
       <div style={{ display: "flex", justifyContent: "flex-end" }}>
         <Button variant="primary" onClick={() => setIsModalOpen(true)}>
           <Plus size={18} style={{ marginRight: "8px" }} />
-          New Position
+          {t('management.position.newPosition')}
         </Button>
       </div>
 
@@ -334,8 +337,8 @@ const PositionManagement = () => {
 
       {hasChanges && (
         <SaveFooter
-          label="Unsaved position changes"
-          saveText="Save Positions"
+          label={t('management.position.unsavedChanges')}
+          saveText={t('management.position.saveAll')}
           onSave={saveToFirebase}
           onCancel={handleCancel}
           isSaving={status === "saving"}

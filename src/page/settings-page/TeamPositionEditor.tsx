@@ -1,5 +1,6 @@
 import { Reorder, useDragControls } from "framer-motion";
 import { GripVertical } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import Pill, { PillGroup } from "../../components/common/Pill";
 import { SettingsGroup } from "../../components/common/SettingsGroup";
@@ -29,6 +30,7 @@ const ReorderableTeamItem = ({
   teamPositions: Record<string, string[]>;
   onTogglePosition: (teamName: string, posName: string) => void;
 }) => {
+  const { t } = useTranslation();
   const dragControls = useDragControls();
   const selectedPositions = teamPositions[teamName] || [];
 
@@ -88,7 +90,7 @@ const ReorderableTeamItem = ({
               fontStyle: "italic"
             }}
           >
-            No assignable positions for this team.
+            {t('management.user.noPositions', { defaultValue: 'No assignable positions for this team.' })}
           </p>
         )}
       </SettingsGroup>
@@ -105,10 +107,11 @@ const TeamPositionEditor = ({
   availableTeams,
   globalPositions,
 }: TeamPositionEditorProps) => {
+  const { t } = useTranslation();
   return (
     <>
       <div className={commonStyles.formGroup}>
-        <label className={commonStyles.sectionLabel}>Teams</label>
+        <label className={commonStyles.sectionLabel}>{t('management.user.teams')}</label>
         <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
           {availableTeams.map((team) => {
             const teamIdentifier = team.id;
@@ -129,7 +132,7 @@ const TeamPositionEditor = ({
       {selectedTeams.length > 0 && (
         <div className={commonStyles.settingsSection}>
           <label className={commonStyles.sectionLabel}>
-            Positions per Team
+            {t('management.user.positionsPerTeam')}
           </label>
           <Reorder.Group
             axis="y"

@@ -37,6 +37,7 @@ export interface AppUser {
   teamPositions?: Record<string, string[]>; // teamId -> positionIds[]
   indexedAssignments?: string[]; // ["TeamId|PositionId", ...]
   gender: string;
+  preferredLanguage?: string; // 'en-NZ' | 'ko'
   isApproved: boolean;
   isAdmin: boolean;
   isActive: boolean;

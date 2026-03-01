@@ -1,6 +1,8 @@
 import { memo } from "react";
 
 import { X } from "lucide-react";
+import { useTranslation } from "react-i18next";
+
 
 import BaseRosterCell from "./BaseRosterCell";
 import absenceStyles from "../AbsenceRoster/absence-roster.module.css";
@@ -31,6 +33,7 @@ const AbsenceCell = memo(({
   handleAbsenceReasonChange,
   disabled = false,
 }: AbsenceCellProps) => {
+  const { t } = useTranslation();
   const className = [
     !disabled ? styles.clickable : styles.disabled, 
     absenceStyles.absenceRosterCell, 
@@ -55,7 +58,7 @@ const AbsenceCell = memo(({
             type="text"
             className={absenceStyles.absenceReasonInput}
             value={absenceReason}
-            placeholder="Reason..."
+            placeholder={`${t('roster.reason')}...`}
             maxLength={20}
             autoFocus={isFocused && !disabled}
             disabled={disabled}
@@ -69,7 +72,7 @@ const AbsenceCell = memo(({
                 e.stopPropagation();
                 onClick?.();
               }}
-              title="Mark as present"
+              title={t('common.confirm', { defaultValue: 'Mark as present' })}
             >
               <X size={14} />
             </button>

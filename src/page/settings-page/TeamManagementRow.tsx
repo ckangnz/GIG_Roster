@@ -1,5 +1,6 @@
 import { Reorder, useDragControls } from "framer-motion";
 import { Trash2, GripVertical } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import Button from "../../components/common/Button";
 import {
@@ -27,11 +28,12 @@ const TeamManagementRow = ({
   onDelete,
   onEdit,
 }: TeamManagementRowProps) => {
+  const { t } = useTranslation();
   const dragControls = useDragControls();
 
   const getPositionsSummary = () => {
     if (!team.positions || team.positions.length === 0) {
-      return "No positions";
+      return t('common.none');
     }
 
     const displayEmojis = (team.positions || [])
@@ -58,7 +60,7 @@ const TeamManagementRow = ({
 
   const getDaysSummary = () => {
     if (!team.preferredDays || team.preferredDays.length === 0)
-      return "No days";
+      return t('common.none');
     return team.preferredDays.map((d) => d.substring(0, 3)).join(", ");
   };
 
@@ -114,7 +116,7 @@ const TeamManagementRow = ({
             className={formStyles.formInput}
             value={team.maxConflict?.toString() || "1"}
             type="number"
-            title="Maximum number of simultaneous positions a member can be assigned to within this team."
+            title={t('management.team.maxConflictHint', { defaultValue: 'Maximum number of simultaneous positions a member can be assigned to within this team.' })}
             onChange={(e) =>
               onUpdate(teamIndex, "maxConflict", parseInt(e.target.value) || 1)
             }
@@ -134,7 +136,7 @@ const TeamManagementRow = ({
             onClick={() => onDelete(teamIndex)}
           >
             <Trash2 size={14} style={{ marginRight: "6px" }} />
-            Delete
+            {t('common.delete')}
           </Button>
         </SettingsTableAnyCell>
       </Reorder.Item>

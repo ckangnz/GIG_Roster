@@ -1,7 +1,9 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 
+
 import { Reorder } from "framer-motion";
 import { Plus } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import TeamConfigModal from "./TeamConfigModal";
 import TeamManagementRow from "./TeamManagementRow";
@@ -18,6 +20,7 @@ import { cleanupUsersAfterDeletion } from "../../store/slices/userManagementSlic
 import styles from "./settings-page.module.css";
 
 const TeamManagement = () => {
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const { userData } = useAppSelector((state) => state.auth);
   const orgId = userData?.orgId;
@@ -95,9 +98,9 @@ const TeamManagement = () => {
 
   const deleteTeam = (index: number) => {
     dispatch(showAlert({
-      title: "Delete Team",
-      message: "Are you sure you want to delete this team?",
-      confirmText: "Delete",
+      title: t('management.team.deleteTitle'),
+      message: t('management.team.deleteConfirm'),
+      confirmText: t('common.delete'),
       onConfirm: () => {
         setTeams(teams.filter((_, i) => i !== index));
       }
@@ -162,14 +165,14 @@ const TeamManagement = () => {
       <SettingsTable
         headers={[
           {
-            text: "Name",
+            text: t('management.team.name'),
             minWidth: 150,
             width: 250,
             textAlign: "center",
           },
-          { text: "Emoji", width: 30, textAlign: "center" },
-          { text: "Max Pos", width: 60, textAlign: "center" },
-          { text: "Config", minWidth: 180, textAlign: "center" },
+          { text: t('management.team.emoji'), width: 30, textAlign: "center" },
+          { text: t('management.team.maxPos'), width: 60, textAlign: "center" },
+          { text: t('management.team.config'), minWidth: 180, textAlign: "center" },
           { text: "", width: 50 },
         ]}
         customBody={
@@ -194,7 +197,7 @@ const TeamManagement = () => {
       <div style={{ display: "flex", justifyContent: "flex-end" }}>
         <Button variant="primary" onClick={() => setIsNewTeamModalOpen(true)}>
           <Plus size={18} style={{ marginRight: "8px" }} />
-          New Team
+          {t('management.team.newTeam')}
         </Button>
       </div>
 
@@ -211,8 +214,8 @@ const TeamManagement = () => {
 
       {hasChanges && (
         <SaveFooter
-          label="Unsaved team changes"
-          saveText="Save All Team Changes"
+          label={t('management.team.unsavedChanges')}
+          saveText={t('management.team.saveAll')}
           onSave={() => saveToFirebase()}
           onCancel={handleCancel}
           isSaving={status === "saving"}

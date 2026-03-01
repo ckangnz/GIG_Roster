@@ -25,6 +25,7 @@
 ### 🎯 Goals
 - [x] **Organisation Entity**: Created `Organisation` model and scoped all data (Teams, Positions, Users, Thoughts).
 - [x] **Atomic Roster Structure**: Refactored monolithic date documents into per-team-per-date documents (`organisations/{orgId}/roster/{teamId}_{date}`).
+- [x] **Internationalization (i18n)**: Multi-language support (English NZ, Korean) with user preference.
 - [ ] **Organisation Onboarding**:
     - **Step 1: Profile Setup**: User provides Name and Gender (Male/Female/Undefined).
     - **Step 2: Selection**: "Join Organisation" (Search with autocomplete, min 3 chars) or "Create Organisation" (Disabled).

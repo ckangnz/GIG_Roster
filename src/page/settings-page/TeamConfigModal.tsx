@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 
+
 import { Reorder, useDragControls } from "framer-motion";
 import { 
   Plus, 
@@ -12,6 +13,7 @@ import {
   ChevronUp, 
   Eraser 
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import Button from "../../components/common/Button";
 import { InputField, SelectField } from "../../components/common/InputField";
@@ -74,6 +76,7 @@ const SlotItem = ({
   onUpdate: (id: string, field: keyof RosterSlot, value: string) => void;
   onRemove: (id: string) => void;
 }) => {
+  const { t } = useTranslation();
   const dragControls = useDragControls();
 
   return (
@@ -92,7 +95,7 @@ const SlotItem = ({
 
       <div className={localStyles.eventInputLabel}>
         <InputField
-          label="Label"
+          label={t('management.team.label')}
           value={slot.label}
           placeholder="e.g. 08:00 - 08:15"
           onChange={(e) => onUpdate(slot.id, "label", e.target.value)}
@@ -100,7 +103,7 @@ const SlotItem = ({
       </div>
       <div className={localStyles.eventInputStart}>
         <InputField
-          label="Start"
+          label={t('management.team.start')}
           type="time"
           value={slot.startTime}
           onChange={(e) => onUpdate(slot.id, "startTime", e.target.value)}
@@ -108,7 +111,7 @@ const SlotItem = ({
       </div>
       <div className={localStyles.eventInputEnd}>
         <InputField
-          label="End"
+          label={t('management.team.end')}
           type="time"
           value={slot.endTime}
           onChange={(e) => onUpdate(slot.id, "endTime", e.target.value)}
@@ -136,6 +139,7 @@ const EventItem = ({
   onUpdate: (id: string, field: keyof RecurringEvent, value: string | number) => void;
   onRemove: (id: string) => void;
 }) => {
+  const { t } = useTranslation();
   const dragControls = useDragControls();
 
   return (
@@ -154,7 +158,7 @@ const EventItem = ({
 
       <div className={localStyles.eventInputLabel}>
         <InputField
-          label="Event Name"
+          label={t('management.team.eventName')}
           value={ev.label}
           placeholder="e.g. Practice"
           onChange={(e) => onUpdate(ev.id, "label", e.target.value)}
@@ -162,7 +166,7 @@ const EventItem = ({
       </div>
       <div className={localStyles.eventInputDay}>
         <SelectField
-          label="Week Day"
+          label={t('management.team.weekDay')}
           value={ev.day}
           onChange={(e) =>
             onUpdate(ev.id, "day", e.target.value as Weekday)
@@ -170,14 +174,14 @@ const EventItem = ({
         >
           {WEEK_DAYS.map((d) => (
             <option key={d} value={d}>
-              {d}
+              {t(`common.weekdays.${d.toLowerCase()}`, { defaultValue: d })}
             </option>
           ))}
         </SelectField>
       </div>
       <div className={localStyles.eventInputStart}>
         <InputField
-          label="Starts"
+          label={t('management.team.starts')}
           type="time"
           value={ev.startTime}
           onChange={(e) => onUpdate(ev.id, "startTime", e.target.value)}
@@ -185,7 +189,7 @@ const EventItem = ({
       </div>
       <div className={localStyles.eventInputEnd}>
         <InputField
-          label="Finishes"
+          label={t('management.team.finishes')}
           type="time"
           value={ev.endTime}
           onChange={(e) => onUpdate(ev.id, "endTime", e.target.value)}
@@ -211,6 +215,7 @@ const TeamConfigModal = ({
   onSave, 
   availablePositions 
 }: TeamConfigModalProps) => {
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const { userData } = useAppSelector((state) => state.auth);
   const orgId = userData?.orgId;
@@ -225,9 +230,12 @@ const TeamConfigModal = ({
 
   useEffect(() => {
     if (isOpen) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setDraft(team ? JSON.parse(JSON.stringify(team)) : { ...defaultTeam, id: crypto.randomUUID() });
-      setShowGenerator(false);
+      const draftData = team ? JSON.parse(JSON.stringify(team)) : { ...defaultTeam, id: crypto.randomUUID() };
+      const timer = setTimeout(() => {
+        setDraft(draftData);
+        setShowGenerator(false);
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, [isOpen, team]);
 
@@ -281,9 +289,9 @@ const TeamConfigModal = ({
 
   const handleClearSlots = () => {
     dispatch(showAlert({
-      title: "Clear All Slots?",
-      message: "This will remove all current time slots for this team. This action cannot be undone.",
-      confirmText: "Clear All",
+      title: t('management.team.clearSlotsTitle'),
+      message: t('management.team.clearSlotsConfirm'),
+      confirmText: t('common.delete'),
       onConfirm: () => updateDraft({ slots: [] })
     }));
   };
@@ -314,7 +322,7 @@ const TeamConfigModal = ({
   const footer = (
     <div style={{ display: "flex", gap: "12px", width: "100%" }}>
       <Button variant="secondary" onClick={onClose} style={{ flex: 1 }}>
-        Cancel
+        {t('common.cancel')}
       </Button>
       <Button 
         variant="primary" 
@@ -331,7 +339,7 @@ const TeamConfigModal = ({
         disabled={!isFormValid}
         style={{ flex: 2 }}
       >
-        {team ? "Apply Changes" : "Create Team"}
+        {team ? t('management.team.applyChanges') : t('management.team.createTeam')}
       </Button>
     </div>
   );
@@ -340,31 +348,31 @@ const TeamConfigModal = ({
     <Modal 
       isOpen={isOpen} 
       onClose={onClose} 
-      title={team ? `Edit Team: ${team.name}` : "Create New Team"}
+      title={team ? t('management.team.editTitle', { name: team.name }) : t('management.team.createTitle')}
       footer={footer}
     >
       <div style={{ display: "flex", flexDirection: "column", gap: "24px", padding: "10px 0" }}>
         
         {/* Basic Info */}
-        <SettingsGroup label="General Information">
+        <SettingsGroup label={t('management.team.generalInfo')}>
           <InputField
-            label="Team Name"
+            label={t('management.team.teamName')}
             value={draft.name}
             placeholder="e.g. Production"
             onChange={(e) => updateDraft({ name: e.target.value })}
           />
           
           <InputField
-            label="Team Emoji"
+            label={t('management.team.teamEmoji')}
             value={draft.emoji}
-            placeholder="Select emoji"
+            placeholder={t('onboarding.searchPlaceholder')}
             onChange={(e) => handleEmojiChange(e.target.value)}
             maxLength={10}
           />
 
           <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
             <span style={{ fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "1.2px", color: "var(--color-text-dim)", fontWeight: 700 }}>
-              Max Concurrent Conflicts
+              {t('management.team.maxConflict')}
             </span>
             <input
               type="number"
@@ -374,13 +382,13 @@ const TeamConfigModal = ({
               style={{ width: "100px" }}
             />
             <p style={{ fontSize: "0.75rem", color: "var(--color-text-dim)", margin: 0 }}>
-              Maximum simultaneous positions a member can have.
+              {t('management.team.maxConflictDesc')}
             </p>
           </div>
         </SettingsGroup>
 
         {/* Roster Mode Section */}
-        <SettingsGroup label="Roster Accuracy" description="How precise should the schedule be?">
+        <SettingsGroup label={t('management.team.rosterAccuracy')} description={t('management.team.rosterAccuracyDesc')}>
           <div className={localStyles.rosterModeContainer}>
             <button 
               className={`${localStyles.modeBtn} ${draft.rosterMode !== 'slotted' ? localStyles.modeBtnActive : ""}`}
@@ -388,8 +396,8 @@ const TeamConfigModal = ({
             >
               <CalendarPlus size={20} />
               <div style={{ textAlign: 'left' }}>
-                <div style={{ fontWeight: 700 }}>Daily</div>
-                <div style={{ fontSize: '0.75rem', opacity: 0.7 }}>Simple once-a-day roster</div>
+                <div style={{ fontWeight: 700 }}>{t('management.team.daily')}</div>
+                <div style={{ fontSize: '0.75rem', opacity: 0.7 }}>{t('management.team.dailyDesc')}</div>
               </div>
             </button>
             <button 
@@ -401,8 +409,8 @@ const TeamConfigModal = ({
             >
               <Clock size={20} />
               <div style={{ textAlign: 'left' }}>
-                <div style={{ fontWeight: 700 }}>Slotted (Coming Soon)</div>
-                <div style={{ fontSize: '0.75rem', opacity: 0.7 }}>Time-slots & Shifts</div>
+                <div style={{ fontWeight: 700 }}>{t('management.team.slotted')} ({t('onboarding.comingSoon')})</div>
+                <div style={{ fontSize: '0.75rem', opacity: 0.7 }}>{t('management.team.slottedDesc')}</div>
               </div>
             </button>
           </div>
@@ -410,7 +418,7 @@ const TeamConfigModal = ({
 
         {/* Slotted Mode Management */}
         {draft.rosterMode === 'slotted' && (
-          <SettingsGroup label="Time Slots Configuration" description="Define the timing pattern for this team">
+          <SettingsGroup label={t('management.team.timeSlotsConfig')} description={t('management.team.timeSlotsDesc')}>
             <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
               <Button 
                 variant="secondary" 
@@ -420,7 +428,7 @@ const TeamConfigModal = ({
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <Sparkles size={16} />
-                  Auto-Generate Slots
+                  {t('management.team.autoGenerate')}
                 </div>
                 {showGenerator ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
               </Button>
@@ -428,7 +436,7 @@ const TeamConfigModal = ({
                 variant="delete" 
                 size="small" 
                 onClick={handleClearSlots}
-                title="Clear all slots"
+                title={t('management.team.clearSlots')}
                 isIcon
               >
                 <Eraser size={18} />
@@ -439,14 +447,14 @@ const TeamConfigModal = ({
               <div className={localStyles.slotGeneratorCard}>
                 <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', alignItems: 'flex-end' }}>
                   <div style={{ flex: 1 }}>
-                    <InputField label="From" type="time" value={genStart} onChange={(e) => setGenStart(e.target.value)} />
+                    <InputField label={t('management.team.from')} type="time" value={genStart} onChange={(e) => setGenStart(e.target.value)} />
                   </div>
                   <div style={{ flex: 1 }}>
-                    <InputField label="To" type="time" value={genEnd} onChange={(e) => setGenEnd(e.target.value)} />
+                    <InputField label={t('management.team.to')} type="time" value={genEnd} onChange={(e) => setGenEnd(e.target.value)} />
                   </div>
                   <div style={{ flex: 1 }}>
                     <InputField 
-                      label="Every (mins)" 
+                      label={t('management.team.everyMins')} 
                       type="number" 
                       value={genInterval} 
                       onChange={(e) => setGenInterval(Number(e.target.value))} 
@@ -459,7 +467,7 @@ const TeamConfigModal = ({
                     disabled={genInterval <= 0}
                     style={{ height: '36px' }}
                   >
-                    Generate
+                    {t('management.team.generate')}
                   </Button>
                 </div>
               </div>
@@ -494,13 +502,13 @@ const TeamConfigModal = ({
               variant="secondary"
               style={{ width: '100%', marginTop: '12px' }}
             >
-              <Plus size={16} style={{ marginRight: 8 }} /> Add custom slot
+              <Plus size={16} style={{ marginRight: 8 }} /> {t('management.team.addCustomSlot')}
             </Button>
           </SettingsGroup>
         )}
 
         {/* Positions */}
-        <SettingsGroup label="Allowed Positions" description="Select which positions are available for this team">
+        <SettingsGroup label={t('management.team.allowedPositions')} description={t('management.team.allowedPositionsDesc')}>
           <PillGroup>
             {availablePositions
               ?.filter((pos) => !pos.parentId)
@@ -527,7 +535,7 @@ const TeamConfigModal = ({
         </SettingsGroup>
 
         {/* Preferred Days */}
-        <SettingsGroup label="Preferred Days & End Times" description="Operating days and cut-off times">
+        <SettingsGroup label={t('management.team.preferredDays')} description={t('management.team.preferredDaysDesc')}>
           <div className={localStyles.preferredDaysGrid}>
             {WEEK_DAYS.map((day) => {
               const isActive = draft.preferredDays?.includes(day);
@@ -537,7 +545,7 @@ const TeamConfigModal = ({
                   className={`${localStyles.preferredDayItem} ${isActive ? localStyles.preferredDayItemActive : ""}`}
                 >
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
-                    <span className={localStyles.dayLabel}>{day}</span>
+                    <span className={localStyles.dayLabel}>{t(`common.weekdays.${day.toLowerCase()}`, { defaultValue: day })}</span>
                     <Toggle
                       isOn={!!isActive}
                       onToggle={(isOn) => {
@@ -552,7 +560,7 @@ const TeamConfigModal = ({
                   {isActive && (
                     <InputField
                       type="time"
-                      label="End Time"
+                      label={t('management.team.endTime')}
                       value={draft.dayEndTimes?.[day] || ""}
                       onChange={(e) => {
                         const currentEndTimes = draft.dayEndTimes || {};
@@ -568,9 +576,9 @@ const TeamConfigModal = ({
         </SettingsGroup>
 
         {/* Calendar Setup */}
-        <SettingsGroup label="Calendar Setup" description="Recurring events for calendar export">
+        <SettingsGroup label={t('management.team.calendarSetup')} description={t('management.team.calendarSetupDesc')}>
           <div className={localStyles.sectionHeader} style={{ marginTop: 0, border: "none", paddingTop: 0 }}>
-            <span style={{ fontSize: "0.85rem", color: "var(--color-text-dim)" }}>Events configuration</span>
+            <span style={{ fontSize: "0.85rem", color: "var(--color-text-dim)" }}>{t('management.team.eventConfig')}</span>
             <Button variant="primary" size="small" onClick={handleAddEvent}>
               <Plus size={16} />
             </Button>
@@ -602,11 +610,11 @@ const TeamConfigModal = ({
 
         {/* Absence */}
         <SettingsGroup 
-          label="Absence Settings" 
-          description="Enable users to mark themselves as absent for this team"
+          label={t('management.team.absenceSettings')} 
+          description={t('management.team.absenceSettingsDesc')}
         >
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "8px" }}>
-            <span style={{ fontSize: "0.95rem", fontWeight: 500 }}>Allow Member Absences</span>
+            <span style={{ fontSize: "0.95rem", fontWeight: 500 }}>{t('management.team.allowAbsence')}</span>
             <Toggle
               isOn={draft.allowAbsence !== false}
               onToggle={(isOn) => updateDraft({ allowAbsence: isOn })}

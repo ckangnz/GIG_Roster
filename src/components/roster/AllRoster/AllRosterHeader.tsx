@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { memo, useMemo } from "react";
 
 import { useAppDispatch, useAppSelector } from "../../../hooks/redux";
 import { Position } from "../../../model/model";
@@ -48,6 +48,42 @@ export const AllRosterHeader = memo(
       navigate(`/app/roster/${teamName}/${posName}`);
     };
 
+    const allViewPositions = useMemo(() => {
+      if (rosterAllViewMode !== "position" || !currentTeamData) return [];
+      
+      const teamPositionIds = currentTeamData.positions || [];
+      const activePosIdSet = new Set<string>(teamPositionIds);
+
+      // Also ensure children of these positions are included
+      teamPositionIds.forEach(pId => {
+        allPositions.forEach(p => {
+          if (p.parentId === pId) activePosIdSet.add(p.id);
+        });
+      });
+
+      return Array.from(activePosIdSet).sort((aId, bId) => {
+        const posA = allPositions.find(p => p.id === aId || p.name === aId);
+        const posB = allPositions.find(p => p.id === bId || p.name === bId);
+        
+        const effectiveParentA = posA?.parentId || aId;
+        const effectiveParentB = posB?.parentId || bId;
+
+        if (effectiveParentA === effectiveParentB) {
+          if (!posA?.parentId) return -1;
+          if (!posB?.parentId) return 1;
+          return (posA.name || "").localeCompare(posB.name || "");
+        }
+
+        const indexA = teamPositionIds.indexOf(effectiveParentA);
+        const indexB = teamPositionIds.indexOf(effectiveParentB);
+        
+        if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+        if (indexA !== -1) return -1;
+        if (indexB !== -1) return 1;
+        return (posA?.name || "").localeCompare(posB?.name || "");
+      });
+    }, [rosterAllViewMode, currentTeamData, allPositions]);
+
     return (
       <RosterHeader>
         {rosterAllViewMode === "user"
@@ -69,7 +105,7 @@ export const AllRosterHeader = memo(
                 </th>
               );
             })
-          : (currentTeamData?.positions || []).map((posId) => {
+          : allViewPositions.map((posId) => {
               const pos = allPositions.find(p => p.id === posId || p.name === posId);
               return (
                 <th

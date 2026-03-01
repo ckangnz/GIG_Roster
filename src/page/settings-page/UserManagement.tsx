@@ -1,5 +1,7 @@
 import { useMemo } from "react";
 
+import { useTranslation } from "react-i18next";
+
 import UserManagementRow from "./UserManagementRow";
 import SaveFooter from "../../components/common/SaveFooter";
 import SettingsTable, { SettingsTableHeaderProps } from "../../components/common/SettingsTable";
@@ -14,6 +16,7 @@ import {
 import styles from "./settings-page.module.css";
 
 const UserManagement = () => {
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const { userData } = useAppSelector((state) => state.auth);
   const orgId = userData?.orgId;
@@ -65,13 +68,13 @@ const UserManagement = () => {
   const approvedUsers = allUsers.filter((u) => u.isApproved && u.orgId === orgId);
 
   const tableHeaders: SettingsTableHeaderProps[] = [
-    { text: "Name", minWidth: 70, width: 100, textAlign: "center" },
-    { text: "Email", minWidth: 170, textAlign: "center" },
-    { text: "Gender", minWidth: 90, textAlign: "center" },
-    { text: "Assignments", minWidth: 150, textAlign: "center" },
-    { text: "Active", minWidth: 95, textAlign: "center" },
-    { text: "Approved", minWidth: 95, textAlign: "center" },
-    { text: "Admin", minWidth: 95, textAlign: "center" },
+    { text: t('management.user.name'), minWidth: 70, width: 100, textAlign: "center" },
+    { text: t('management.user.email'), minWidth: 170, textAlign: "center" },
+    { text: t('management.user.gender'), minWidth: 90, textAlign: "center" },
+    { text: t('management.user.teams'), minWidth: 150, textAlign: "center" },
+    { text: t('settings.active'), minWidth: 95, textAlign: "center" },
+    { text: t('management.user.approve'), minWidth: 95, textAlign: "center" },
+    { text: t('management.user.admin'), minWidth: 95, textAlign: "center" },
   ];
 
   return (
@@ -79,7 +82,7 @@ const UserManagement = () => {
       {pendingUsers.length > 0 && (
         <div className={styles.pendingSection}>
           <h2 className={styles.pendingTitle}>
-            Pending Approval ({pendingUsers.length})
+            {t('management.user.pending')} ({pendingUsers.length})
           </h2>
           <SettingsTable headers={tableHeaders}>
             {pendingUsers.map((u) => (
@@ -96,7 +99,7 @@ const UserManagement = () => {
 
       <div className={styles.approvedSection}>
         <h2 className={styles.sectionTitle}>
-          Approved Users ({approvedUsers.length})
+          {t('management.user.approved')} ({approvedUsers.length})
         </h2>
         <SettingsTable headers={tableHeaders}>
           {approvedUsers.map((u) => (
@@ -112,8 +115,8 @@ const UserManagement = () => {
 
       {hasChanges && (
         <SaveFooter
-          label="Unsaved user changes"
-          saveText="Save All User Changes"
+          label={t('management.user.unsavedChanges')}
+          saveText={t('management.user.saveAll')}
           onSave={handleSaveChanges}
           onCancel={handleCancelChanges}
           isSaving={saving}

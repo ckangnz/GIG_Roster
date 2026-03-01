@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
 import { SETTINGS_NAV_ITEMS } from "../../constants/navigation";
@@ -20,6 +21,7 @@ const OnlineUsers = ({
   variant = "top-bar",
   showText = false,
 }: OnlineUsersProps) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const onlineUsers = useOnlineUsers();
   const { firebaseUser, userData } = useAppSelector((state) => state.auth);
@@ -111,7 +113,7 @@ const OnlineUsers = ({
       ref={dropdownRef}
       onClick={() => setShowDropdown(!showDropdown)}
     >
-      {showText && <span className={styles.onlineLabel}>Online</span>}
+      {showText && <span className={styles.onlineLabel}>{t('common.online', { defaultValue: 'Online' })}</span>}
       <div className={styles.avatarStack}>
         {remainingCount > 0 && (
           <div className={`${styles.avatarCircle} ${styles.moreCircle}`}>
@@ -136,7 +138,7 @@ const OnlineUsers = ({
       {showDropdown && (
         <div className={dropdownClasses}>
           <div className={styles.dropdownTitle}>
-            Online Now ({onlineUsers.length})
+            {t('common.onlineNow', { defaultValue: 'Online Now' })} ({onlineUsers.length})
           </div>
           <div className={styles.userListScroll}>
             {onlineUsers.map((user) => {

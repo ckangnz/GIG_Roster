@@ -1,5 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 
+import { useTranslation } from "react-i18next";
+
 import TeamPositionEditor from "./TeamPositionEditor";
 import Button from "../../components/common/Button";
 import Pill, { PillGroup } from "../../components/common/Pill";
@@ -20,6 +22,7 @@ const ProfileSettings = ({
   showExtendedInfo?: boolean 
 }) => {
   const dispatch = useAppDispatch();
+  const { t } = useTranslation();
   const { userData, firebaseUser } = useAppSelector((state) => state.auth);
   const orgId = userData?.orgId;
   const { teams: allTeams } = useAppSelector((state) => state.teams);
@@ -38,6 +41,7 @@ const ProfileSettings = ({
     teams: [] as string[],
     teamPositions: {} as Record<string, string[]>,
     orgId: null as string | null,
+    preferredLanguage: "en-NZ",
   });
 
   const [status, setStatus] = useState("idle");
@@ -68,6 +72,7 @@ const ProfileSettings = ({
           teams: userData.teams || [],
           teamPositions: userData.teamPositions || {},
           orgId: userData.orgId || null,
+          preferredLanguage: userData.preferredLanguage || "en-NZ",
         };
       }
       return prev;
@@ -83,6 +88,7 @@ const ProfileSettings = ({
       teams: userData.teams || [],
       teamPositions: userData.teamPositions || {},
       orgId: userData.orgId || null,
+      preferredLanguage: userData.preferredLanguage || "en-NZ",
     };
     return JSON.stringify(formState) !== JSON.stringify(originalData);
   }, [formState, userData]);
@@ -111,6 +117,7 @@ const ProfileSettings = ({
       teams: userData.teams || [],
       teamPositions: userData.teamPositions || {},
       orgId: userData.orgId || null,
+      preferredLanguage: userData.preferredLanguage || "en-NZ",
     });
   };
 
@@ -176,7 +183,7 @@ const ProfileSettings = ({
       </div>
 
       <div className={formStyles.formGroup}>
-        <label>Name</label>
+        <label>{t('settings.name')}</label>
         <input
           type="text"
           value={formState.name}
@@ -188,12 +195,13 @@ const ProfileSettings = ({
         />
       </div>
       <div className={formStyles.formGroup}>
-        <label>Gender</label>
+        <label>{t('settings.gender')}</label>
         <PillGroup>
           {[
-            { value: "Male", colour: "var(--color-male)" },
-            { value: "Female", colour: "var(--color-female)" },
-          ].map((g: { value: string; colour: string }) => (
+            { value: "Male", label: t('settings.male'), colour: "var(--color-male)" },
+            { value: "Female", label: t('settings.female'), colour: "var(--color-female)" },
+            { value: "Undefined", label: t('settings.undefined'), colour: "var(--color-text-dim)" },
+          ].map((g) => (
             <Pill
               key={g.value}
               colour={g.colour}
@@ -205,7 +213,30 @@ const ProfileSettings = ({
               isActive={formState.gender === g.value}
               isDisabled={isLocked}
             >
-              {g.value}
+              {g.label}
+            </Pill>
+          ))}
+        </PillGroup>
+      </div>
+
+      <div className={formStyles.formGroup}>
+        <label>{t('settings.language')}</label>
+        <PillGroup>
+          {[
+            { value: "en-NZ", label: t('settings.english') },
+            { value: "ko", label: t('settings.korean') },
+          ].map((l) => (
+            <Pill
+              key={l.value}
+              onClick={() => {
+                if (!isLocked) {
+                  setFormState((prev) => ({ ...prev, preferredLanguage: l.value }));
+                }
+              }}
+              isActive={formState.preferredLanguage === l.value}
+              isDisabled={isLocked}
+            >
+              {l.label}
             </Pill>
           ))}
         </PillGroup>
@@ -238,7 +269,7 @@ const ProfileSettings = ({
 
       {!isLocked && (
         <div className={formStyles.formGroup} style={{ marginTop: "24px" }}>
-          <label>Availability Status</label>
+          <label>{t('settings.availability')}</label>
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
             <span
               style={{
@@ -246,7 +277,7 @@ const ProfileSettings = ({
                 color: "var(--color-text-secondary)",
               }}
             >
-              {formState.isActive ? "ACTIVE & AVAILABLE" : "INACTIVE / AWAY"}
+              {formState.isActive ? t('settings.active') : t('settings.inactive')}
             </span>
             <Toggle
               isOn={formState.isActive}
@@ -282,14 +313,14 @@ const ProfileSettings = ({
 
       <div className={styles.actionContainer}>
         <Button variant="delete" onClick={() => auth.signOut()}>
-          Logout
+          {t('common.logout')}
         </Button>
       </div>
 
       {hasChanges && !isLocked && (
         <SaveFooter
-          label="Unsaved profile changes"
-          saveText="Update Profile"
+          label={t('common.unsavedChanges', { defaultValue: 'Unsaved profile changes' })}
+          saveText={t('common.save')}
           onSave={handleSave}
           onCancel={handleCancel}
           isSaving={status === "saving"}

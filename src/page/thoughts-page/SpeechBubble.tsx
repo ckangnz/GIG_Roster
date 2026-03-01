@@ -1,7 +1,9 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 
+
 import { motion, AnimatePresence } from "framer-motion";
 import { Heart } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { ThoughtExpiry } from "./ThoughtExpiry";
 import { ThoughtEntry } from "../../model/model";
@@ -36,6 +38,7 @@ const SpeechBubble = ({
   onDragStart,
   onDragEnd,
 }: SpeechBubbleProps) => {
+  const { t } = useTranslation();
   const [isTruncated, setIsTruncated] = useState(false);
   const textRef = useRef<HTMLDivElement>(null);
   const clickTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -204,7 +207,7 @@ const SpeechBubble = ({
           {entry.text}
         </div>
         {isTruncated && !isExpanded && (
-          <div className={styles.readMore}>... read more</div>
+          <div className={styles.readMore}>... {t('thoughts.readMore', { defaultValue: 'read more' })}</div>
         )}
 
         {(isExpanded || heartCount > 0) && (

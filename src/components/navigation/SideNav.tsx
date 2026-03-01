@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate, matchPath } from "react-router-dom";
 
 import OnlineUsers from "./OnlineUsers";
@@ -37,6 +38,7 @@ interface SideNavProps {
 }
 
 const SideNav = ({ isVisible = true }: SideNavProps) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useAppDispatch();
@@ -67,23 +69,34 @@ const SideNav = ({ isVisible = true }: SideNavProps) => {
   const isMobile = windowWidth <= 767;
   const shouldShowLabels = isMobile || isDesktopSidebarExpanded;
 
-  const rosterFullMatch = matchPath("/app/roster/:teamName/:positionName", location.pathname);
+  const rosterFullMatch = matchPath(
+    "/app/roster/:teamName/:positionName",
+    location.pathname,
+  );
   const rosterTeamMatch = matchPath("/app/roster/:teamName", location.pathname);
-  const thoughtsFullMatch = matchPath("/app/thoughts/:teamName", location.pathname);
-  const settingsFullMatch = matchPath("/app/settings/:section", location.pathname);
+  const thoughtsFullMatch = matchPath(
+    "/app/thoughts/:teamName",
+    location.pathname,
+  );
+  const settingsFullMatch = matchPath(
+    "/app/settings/:section",
+    location.pathname,
+  );
 
-  const activeTeamName = safeDecode(
-    rosterFullMatch?.params.teamName || 
-    rosterTeamMatch?.params.teamName || 
-    thoughtsFullMatch?.params.teamName || 
-    ""
-  ).trim() || undefined;
-                         
-  const activeSideItem = safeDecode(
-    rosterFullMatch?.params.positionName || 
-    settingsFullMatch?.params.section || 
-    ""
-  ).trim() || undefined;
+  const activeTeamName =
+    safeDecode(
+      rosterFullMatch?.params.teamName ||
+        rosterTeamMatch?.params.teamName ||
+        thoughtsFullMatch?.params.teamName ||
+        "",
+    ).trim() || undefined;
+
+  const activeSideItem =
+    safeDecode(
+      rosterFullMatch?.params.positionName ||
+        settingsFullMatch?.params.section ||
+        "",
+    ).trim() || undefined;
 
   const activeTab: AppTab = location.pathname.includes("/settings")
     ? AppTab.SETTINGS
@@ -121,34 +134,70 @@ const SideNav = ({ isVisible = true }: SideNavProps) => {
     const currentTabInfo = BOTTOM_NAV_ITEMS.find(
       (item) => item.id === activeTab,
     );
-    const tabLabel = currentTabInfo ? currentTabInfo.label : "GIG ROSTER";
+    const tabLabel = currentTabInfo
+      ? t(`nav.${currentTabInfo.id.toLowerCase()}`, {
+          defaultValue: currentTabInfo.label,
+        })
+      : "GIG ROSTER";
 
     // Resolve display names from IDs/Identifiers
-    const foundTeam = allTeams.find(t => t.id === activeTeamName || t.name === activeTeamName);
-    const foundPos = allPositions.find(p => p.id === activeSideItem || p.name === activeSideItem);
+    const foundTeam = allTeams.find(
+      (t) => t.id === activeTeamName || t.name === activeTeamName,
+    );
+    const foundPos = allPositions.find(
+      (p) => p.id === activeSideItem || p.name === activeSideItem,
+    );
 
     // If metadata isn't fetched yet and the param looks like an ID, show Loading
     const isTeamId = activeTeamName?.includes("-");
     const isPosId = activeSideItem?.includes("-");
 
     if ((isTeamId && !teamsFetched) || (isPosId && !positionsFetched)) {
-      return `${tabLabel} • Loading...`;
+      return `${tabLabel} • ${t("common.loading")}`;
     }
 
     const resolvedTeamName = foundTeam?.name || activeTeamName;
-    const resolvedSideItem = foundPos?.name || activeSideItem;
+    const resolvedSideItem =
+      activeSideItem === "All"
+        ? t("nav.all")
+        : foundPos?.name || activeSideItem;
 
     if (activeTab === AppTab.THOUGHTS && resolvedTeamName) {
       return `${tabLabel} • ${resolvedTeamName}`;
     }
 
     if (resolvedTeamName && resolvedSideItem) {
-      return `${resolvedTeamName} • ${resolvedSideItem}`;
+      // Resolve Settings Section label if needed
+      let sideLabel = resolvedSideItem;
+      if (activeTab === AppTab.SETTINGS && activeSideItem) {
+        // Try all-lowercase and underscore versions for the key
+        const key = activeSideItem.toLowerCase().replace(/-/g, "_");
+        sideLabel = t(`settings.${key}`, { defaultValue: resolvedSideItem });
+      }
+      return `${resolvedTeamName} • ${sideLabel}`;
     }
     if (resolvedTeamName) {
       return resolvedTeamName;
     }
-    return resolvedSideItem ? `${tabLabel} • ${resolvedSideItem}` : tabLabel;
+
+    let sideLabel = resolvedSideItem;
+    if (activeTab === AppTab.SETTINGS && activeSideItem) {
+      // Map old/mismatched IDs to the new underscore-based keys
+      const keyMap: Record<string, string> = {
+        Users: "user_management",
+        Positions: "position_management",
+        Teams: "team_management",
+        Profile: "profile",
+      };
+      const normalizedKey =
+        keyMap[activeSideItem] ||
+        activeSideItem.toLowerCase().replace(/-/g, "_");
+      sideLabel = t(`settings.${normalizedKey}`, {
+        defaultValue: resolvedSideItem,
+      });
+    }
+
+    return sideLabel ? `${tabLabel} • ${sideLabel}` : tabLabel;
   };
 
   const renderLocationIndicators = (teamName: string, viewName?: string) => {
@@ -166,7 +215,13 @@ const SideNav = ({ isVisible = true }: SideNavProps) => {
           <span
             key={u.uid}
             className={styles.locationDot}
-            style={{ backgroundColor: resolvePresenceColor(u.colorIndex, u.color, isDark) }}
+            style={{
+              backgroundColor: resolvePresenceColor(
+                u.colorIndex,
+                u.color,
+                isDark,
+              ),
+            }}
             title={`${u.name} is in ${u.focus?.viewName || teamName}`}
           />
         ))}
@@ -185,7 +240,13 @@ const SideNav = ({ isVisible = true }: SideNavProps) => {
           <span
             key={u.uid}
             className={styles.locationDot}
-            style={{ backgroundColor: resolvePresenceColor(u.colorIndex, u.color, isDark) }}
+            style={{
+              backgroundColor: resolvePresenceColor(
+                u.colorIndex,
+                u.color,
+                isDark,
+              ),
+            }}
             title={`${u.name} is on this page`}
           />
         ))}
@@ -234,7 +295,9 @@ const SideNav = ({ isVisible = true }: SideNavProps) => {
 
           {activeTab === AppTab.ROSTER &&
             userData?.teams?.map((teamIdentifier) => {
-              const team = allTeams.find((t) => t.id === teamIdentifier || t.name === teamIdentifier);
+              const team = allTeams.find(
+                (t) => t.id === teamIdentifier || t.name === teamIdentifier,
+              );
               if (!team) return null;
 
               const hasOneTeam = userData.teams.length === 1;
@@ -264,8 +327,7 @@ const SideNav = ({ isVisible = true }: SideNavProps) => {
                     <div className={styles.sideNavSubItems}>
                       <button
                         className={`${styles.sideNavItem} ${styles.sideNavItemSub} ${
-                          activeSideItem === "All" &&
-                          activeTeamName === team.id
+                          activeSideItem === "All" && activeTeamName === team.id
                             ? styles.sideNavItemActive
                             : ""
                         }`}
@@ -276,16 +338,20 @@ const SideNav = ({ isVisible = true }: SideNavProps) => {
                       >
                         <span className={styles.sideEmoji}>📋</span>
                         <span className={styles.navItemLabel}>
-                          {shouldShowLabels && "All"}
+                          {shouldShowLabels && t("nav.all")}
                         </span>
                         {renderLocationIndicators(team.id, "All")}
                       </button>
                       {team.positions
                         ?.map((posId) => {
-                          const pos = allPositions.find(p => p.id === posId || p.name === posId);
+                          const pos = allPositions.find(
+                            (p) => p.id === posId || p.name === posId,
+                          );
                           return pos;
                         })
-                        .filter((pos): pos is Position => !!pos && !pos.parentId)
+                        .filter(
+                          (pos): pos is Position => !!pos && !pos.parentId,
+                        )
                         ?.map((pos) => {
                           const isActive =
                             activeSideItem === pos.id &&
@@ -356,7 +422,9 @@ const SideNav = ({ isVisible = true }: SideNavProps) => {
 
           {activeTab === AppTab.THOUGHTS &&
             userData?.teams?.map((teamIdentifier) => {
-              const team = allTeams.find((t) => t.id === teamIdentifier || t.name === teamIdentifier);
+              const team = allTeams.find(
+                (t) => t.id === teamIdentifier || t.name === teamIdentifier,
+              );
               if (!team) return null;
 
               const hasOneTeam = userData.teams.length === 1;
@@ -400,7 +468,11 @@ const SideNav = ({ isVisible = true }: SideNavProps) => {
                     <Icon size={18} />
                   </span>
                   <span className={styles.navItemLabel}>
-                    {shouldShowLabels && item.label}
+                    {shouldShowLabels &&
+                      t(
+                        `settings.${item.id.toLowerCase().replace(/-/g, "_")}`,
+                        { defaultValue: item.label },
+                      )}
                   </span>
                   {renderLocationIndicatorsByUrl(`/app/settings/${item.id}`)}
                 </button>
@@ -410,7 +482,7 @@ const SideNav = ({ isVisible = true }: SideNavProps) => {
         {userData?.isAdmin && activeTab === AppTab.SETTINGS && (
           <div className={styles.adminOnlySectionWrapper}>
             <div className={styles.sidenavMenuSubheading}>
-              {shouldShowLabels && <h4>Admin Only</h4>}
+              {shouldShowLabels && <h4>{t("management.user.adminOnly")}</h4>}
             </div>
             <nav className={styles.sideMenuList}>
               {SETTINGS_NAV_ITEMS.filter((item) => item.adminOnly).map(
@@ -433,9 +505,15 @@ const SideNav = ({ isVisible = true }: SideNavProps) => {
                         <Icon size={18} />
                       </span>
                       <span className={styles.navItemLabel}>
-                        {shouldShowLabels && item.label}
+                        {shouldShowLabels &&
+                          t(
+                            `settings.${item.id.toLowerCase().replace(/-/g, "_")}`,
+                            { defaultValue: item.label },
+                          )}
                       </span>
-                      {renderLocationIndicatorsByUrl(`/app/settings/${item.id}`)}
+                      {renderLocationIndicatorsByUrl(
+                        `/app/settings/${item.id}`,
+                      )}
                     </button>
                   );
                 },

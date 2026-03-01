@@ -10,6 +10,7 @@ import { ThemeProvider } from './hooks/useTheme.tsx';
 import { routes } from './router/routes';
 import { store } from './store';
 
+import './i18n/config';
 import './index.css';
 
 const router = createHashRouter(routes);

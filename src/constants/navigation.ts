@@ -18,10 +18,10 @@ export enum AppTab {
 }
 
 export enum SettingsSection {
-  PROFILE = "Profile",
-  USER_MANAGEMENT = "Users",
-  POSITIONS = "Positions",
-  TEAMS = "Teams",
+  PROFILE = "profile",
+  USER_MANAGEMENT = "user_management",
+  POSITIONS = "position_management",
+  TEAMS = "team_management",
 }
 
 export interface NavItem {

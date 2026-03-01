@@ -1,6 +1,8 @@
 import { useState } from "react";
 
 import { Plus } from "lucide-react";
+import { useTranslation } from "react-i18next";
+
 
 import Button from "../../components/common/Button";
 import { InputField, SelectField } from "../../components/common/InputField";
@@ -34,6 +36,7 @@ const defaultPosition: Partial<Position> = {
 const EMOJI_REGEX = /(\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])/g;
 
 const NewPositionModal = ({ isOpen, onClose, onAdd, availableParents }: NewPositionModalProps) => {
+  const { t } = useTranslation();
   const { userData } = useAppSelector((state) => state.auth);
   const orgId = userData?.orgId;
 
@@ -65,10 +68,10 @@ const NewPositionModal = ({ isOpen, onClose, onAdd, availableParents }: NewPosit
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Add New Position">
+    <Modal isOpen={isOpen} onClose={onClose} title={t('management.position.newPositionModal')}>
       <div style={{ display: "flex", flexDirection: "column", gap: "20px", padding: "10px 0" }}>
         <InputField
-          label="Position Name"
+          label={t('management.position.positionName')}
           value={newPos.name}
           placeholder=""
           onChange={(e) => setNewPos({ ...newPos, name: e.target.value })}
@@ -76,16 +79,16 @@ const NewPositionModal = ({ isOpen, onClose, onAdd, availableParents }: NewPosit
         />
         
         <InputField
-          label="Emoji Symbol"
+          label={t('management.position.emojiSymbol')}
           value={newPos.emoji}
-          placeholder="Select an emoji"
+          placeholder={t('onboarding.searchPlaceholder')}
           onChange={(e) => handleEmojiChange(e.target.value)}
           maxLength={10} // Emojis can be long in terms of characters
         />
 
         <div className={styles.addNewField}>
           <label style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--color-text-dim)", marginBottom: "8px", display: "block" }}>
-            Brand Colour
+            {t('management.position.brandColour')}
           </label>
           <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
             <input
@@ -107,8 +110,8 @@ const NewPositionModal = ({ isOpen, onClose, onAdd, availableParents }: NewPosit
 
         <SettingsGroup>
           <SettingsRow 
-            label="Is Child Position" 
-            description="Nested under a parent position"
+            label={t('management.position.isChild')}
+            description={t('management.position.isChildDesc')}
             action={
               <Toggle
                 isOn={isChild}
@@ -124,7 +127,7 @@ const NewPositionModal = ({ isOpen, onClose, onAdd, availableParents }: NewPosit
             {isChild && (
               <div style={{ marginTop: "12px" }}>
                 <SelectField
-                  label="Select Parent Position"
+                  label={t('management.position.selectParent')}
                   value={newPos.parentId || ""}
                   onChange={(e) => setNewPos({ ...newPos, parentId: e.target.value })}
                 >
@@ -140,8 +143,8 @@ const NewPositionModal = ({ isOpen, onClose, onAdd, availableParents }: NewPosit
         {!isChild && (
           <SettingsGroup>
             <SettingsRow 
-              label="Sort by Gender" 
-              description="Group males together in columns"
+              label={t('management.position.genderSort')}
+              description={t('management.position.genderSortDesc')}
               action={
                 <Toggle
                   isOn={!!newPos.sortByGender}
@@ -154,8 +157,8 @@ const NewPositionModal = ({ isOpen, onClose, onAdd, availableParents }: NewPosit
             <div style={{ height: "1px", background: "var(--border-color-table)", margin: "4px 0" }} />
 
             <SettingsRow 
-              label="Custom Headings" 
-              description="Use custom text instead of user names"
+              label={t('management.position.customHeadings')}
+              description={t('management.position.customHeadingsDesc')}
               action={
                 <Toggle
                   isOn={!!newPos.isCustom}
@@ -178,7 +181,7 @@ const NewPositionModal = ({ isOpen, onClose, onAdd, availableParents }: NewPosit
             style={{ width: "100%", height: "48px" }}
           >
             <Plus size={20} style={{ marginRight: "8px" }} />
-            Create Position
+            {t('management.position.createPosition')}
           </Button>
         </div>
       </div>

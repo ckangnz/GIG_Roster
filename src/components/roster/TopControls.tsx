@@ -1,4 +1,5 @@
 import { Users, LayoutGrid, Plus, X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { AppUser } from "../../model/model";
@@ -25,6 +26,7 @@ const TopControls = ({
   allUsers,
   onToggleVisibility,
 }: TopControlsProps) => {
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const { filterUserId, highlightedUserId } = useAppSelector(state => state.rosterView);
   
@@ -50,7 +52,7 @@ const TopControls = ({
                 onClick={handleClearFilter}
                 className={styles.toggleButtonGap}
               >
-                <X size={18} /> <span>Clear View Filter</span>
+                <X size={18} /> <span>{t('roster.clearFilter', { defaultValue: 'Clear View Filter' })}</span>
               </Button>
             ) : (
               <>
@@ -60,7 +62,7 @@ const TopControls = ({
                   onClick={() => dispatch(setRosterAllViewMode("user"))}
                   className={styles.toggleButtonGap}
                 >
-                  <Users size={18} /> <span>User View</span>
+                  <Users size={18} /> <span>{t('roster.userView', { defaultValue: 'User View' })}</span>
                 </Button>
                 <Button
                   variant={
@@ -70,7 +72,7 @@ const TopControls = ({
                   onClick={() => dispatch(setRosterAllViewMode("position"))}
                   className={styles.toggleButtonGap}
                 >
-                  <LayoutGrid size={18} /> <span>Position View</span>
+                  <LayoutGrid size={18} /> <span>{t('roster.positionView', { defaultValue: 'Position View' })}</span>
                 </Button>
               </>
             )}
@@ -79,7 +81,7 @@ const TopControls = ({
 
         {hasHidden && (
           <div className={styles.hiddenMembersBar}>
-            <span className={styles.hiddenMembersLabel}>Hidden Members:</span>
+            <span className={styles.hiddenMembersLabel}>{t('roster.hiddenMembers', { defaultValue: 'Hidden Members:' })}</span>
             <div className={styles.hiddenMembersList}>
               {hiddenUserList.map((email) => {
                 const user = allUsers.find((u) => u.email === email);

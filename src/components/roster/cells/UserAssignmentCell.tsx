@@ -1,5 +1,7 @@
 import { memo, ReactNode } from "react";
 
+import { useTranslation } from "react-i18next";
+
 import BaseRosterCell from "./BaseRosterCell";
 import { AppUser, Team } from "../../../model/model";
 import styles from "../roster-cell.module.css";
@@ -42,6 +44,7 @@ const UserAssignmentCell = memo(({
   userData,
   hasOpenPositionRequest = false,
 }: UserAssignmentCellProps) => {
+  const { t } = useTranslation();
   const hasContent = !!content || absent;
   const isMe = identifier === userData?.email;
   const isAdmin = !!userData?.isAdmin;
@@ -86,7 +89,7 @@ const UserAssignmentCell = memo(({
           content
         ) : canClaim ? (
           <div className={`${styles.claimButtonContainer} ${styles.permanentClaim}`}>
-            <span className={styles.claimText}>Claim</span>
+            <span className={styles.claimText}>{t('roster.claim')}</span>
           </div>
         ) : null}
       </div>

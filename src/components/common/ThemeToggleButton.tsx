@@ -1,6 +1,8 @@
 import { useState } from "react";
 
 import { Sun, Moon, Laptop, Palette } from "lucide-react";
+import { useTranslation } from "react-i18next";
+
 
 import ActionSheet from "./ActionSheet";
 import { useTheme } from "../../hooks/useThemeHook";
@@ -16,13 +18,14 @@ const ThemeToggleButton = ({
   className?: string;
   iconClassName?: string;
 }) => {
+  const { t } = useTranslation();
   const { setTheme } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
 
   const options = [
-    { id: "light", label: "Light", icon: Sun },
-    { id: "dark", label: "Dark", icon: Moon },
-    { id: "system", label: "System", icon: Laptop },
+    { id: "light", label: t('settings.light', { defaultValue: 'Light' }), icon: Sun },
+    { id: "dark", label: t('settings.dark', { defaultValue: 'Dark' }), icon: Moon },
+    { id: "system", label: t('settings.system', { defaultValue: 'System' }), icon: Laptop },
   ] as const;
 
   const handleSelect = (id: "light" | "dark" | "system") => {
@@ -46,7 +49,7 @@ const ThemeToggleButton = ({
       <ActionSheet
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
-        title="Choose Theme"
+        title={t('settings.chooseTheme', { defaultValue: 'Choose Theme' })}
       >
         <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
           {options.map((opt) => {

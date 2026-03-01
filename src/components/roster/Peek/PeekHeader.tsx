@@ -1,5 +1,6 @@
 import { memo, useMemo } from "react";
 
+import { useTranslation } from "react-i18next";
 import { useParams } from "react-router-dom";
 
 import { useAppDispatch, useAppSelector } from "../../../hooks/redux";
@@ -9,6 +10,7 @@ import { setPeekPositionName } from "../../../store/slices/uiSlice";
 import styles from "./peek.module.css";
 
 export const PeekHeader = memo(() => {
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const { positionName: activePosition } = useParams();
   const { peekPositionName } = useAppSelector((state) => state.ui);
@@ -32,7 +34,7 @@ export const PeekHeader = memo(() => {
         value={peekPositionName || ""}
         onChange={(e) => dispatch(setPeekPositionName(e.target.value || null))}
       >
-        <option value="">Peek Position...</option>
+        <option value="">{t('roster.peekPosition', { defaultValue: 'Peek Position...' })}</option>
         {peekOptions.map((opt) => (
           <option key={opt.id} value={opt.id}>
             {opt.emoji} {opt.name}

@@ -32,6 +32,7 @@ interface AllRosterRowProps {
   ) => string[];
   navigate: (path: string) => void;
   teamName?: string;
+  allViewPositions?: string[];
   isUserAbsent: (dateString: string, userEmail: string) => boolean;
   getAbsenceReason: (dateString: string, userEmail: string) => string;
   isHighlightedCell: (dateString: string, identifier: string, type: 'user' | 'position') => boolean;
@@ -55,13 +56,13 @@ export const AllRosterRow = memo(
     closestNextDate,
     rosterAllViewMode,
     allViewColumns,
-    currentTeamData,
     allPositions,
     getAllViewUserCellContent,
     getAllViewPositionCellContent,
     getAssignmentsForIdentifier,
     navigate,
     teamName,
+    allViewPositions = [],
     isUserAbsent,
     getAbsenceReason,
     isHighlightedCell,
@@ -120,7 +121,7 @@ export const AllRosterRow = memo(
                 }}
               />
             ))
-          : (currentTeamData?.positions || []).map((posId, colIndex) => {
+          : allViewPositions.map((posId, colIndex) => {
               const pos = allPositions.find(p => p.id === posId || p.name === posId);
               return (
                 <RosterCell

@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import TeamPositionEditor from "./TeamPositionEditor";
 import Modal from "../../components/common/Modal";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
@@ -12,6 +14,7 @@ interface UserEditModalProps {
 }
 
 const UserEditModal = ({ isOpen, onClose, user, availableTeams }: UserEditModalProps) => {
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const { positions: globalPositions } = useAppSelector((state) => state.positions);
 
@@ -28,7 +31,7 @@ const UserEditModal = ({ isOpen, onClose, user, availableTeams }: UserEditModalP
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={`Edit Assignments: ${user.name}`}>
+    <Modal isOpen={isOpen} onClose={onClose} title={t('management.user.editTitle', { name: user.name })}>
       <TeamPositionEditor
         selectedTeams={user.teams || []}
         teamPositions={user.teamPositions || {}}

@@ -40,6 +40,43 @@ const AllRosterTable = () => {
 
   const visualRows = useRosterVisualRows(rosterDates, currentTeam || null, !!isSlotted);
 
+  // Positions to display in Position View (including children)
+  const allViewPositions = useMemo(() => {
+    if (rosterAllViewMode !== "position" || !currentTeamData) return [];
+    
+    const teamPositionIds = currentTeamData.positions || [];
+    const activePosIdSet = new Set<string>(teamPositionIds);
+
+    // Also ensure children of these positions are included
+    teamPositionIds.forEach(pId => {
+      allPositions.forEach(p => {
+        if (p.parentId === pId) activePosIdSet.add(p.id);
+      });
+    });
+
+    return Array.from(activePosIdSet).sort((aId, bId) => {
+      const posA = allPositions.find(p => p.id === aId || p.name === aId);
+      const posB = allPositions.find(p => p.id === bId || p.name === bId);
+      
+      const effectiveParentA = posA?.parentId || aId;
+      const effectiveParentB = posB?.parentId || bId;
+
+      if (effectiveParentA === effectiveParentB) {
+        if (!posA?.parentId) return -1;
+        if (!posB?.parentId) return 1;
+        return (posA.name || "").localeCompare(posB.name || "");
+      }
+
+      const indexA = teamPositionIds.indexOf(effectiveParentA);
+      const indexB = teamPositionIds.indexOf(effectiveParentB);
+      
+      if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+      if (indexA !== -1) return -1;
+      if (indexB !== -1) return 1;
+      return (posA?.name || "").localeCompare(posB?.name || "");
+    });
+  }, [rosterAllViewMode, currentTeamData, allPositions]);
+
   // Re-implementing view-specific logic
   const filteredAllTeamUsers = useMemo(() => {
     return allTeamUsers.filter((u) => {
@@ -293,7 +330,7 @@ const AllRosterTable = () => {
       colCount={
         rosterAllViewMode === "user"
           ? allViewColumns.length
-          : currentTeamData?.positions.length || 0
+          : allViewPositions.length
       }
       rowCount={visualRows.length}
       onCellClick={handleKeyboardAllCellClick}
@@ -319,6 +356,7 @@ const AllRosterTable = () => {
               allViewColumns={allViewColumns}
               currentTeamData={currentTeamData}
               allPositions={allPositions}
+              allViewPositions={allViewPositions}
               getAllViewUserCellContent={getAllViewUserCellContent}
               getAllViewPositionCellContent={getAllViewPositionCellContent}
               getAssignmentsForIdentifier={getAssignmentsForIdentifier}

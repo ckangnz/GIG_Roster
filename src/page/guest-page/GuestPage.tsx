@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 
 import { Search, PlusCircle, ArrowRight, ArrowLeft } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Navigate } from "react-router-dom";
 
 import Button from "../../components/common/Button";
@@ -16,6 +17,7 @@ import styles from "./guest-page.module.css";
 import wizardStyles from "./onboarding-wizard.module.css";
 
 const GuestPage = () => {
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const { userData, firebaseUser, loading } = useAppSelector(
     (state) => state.auth,
@@ -96,24 +98,23 @@ const GuestPage = () => {
           <div className={wizardStyles.stepHeader}>
             <div className={styles.lockedBadge}>
               <span className={styles.lockedPulse} />
-              Application Submitted
+              {t('onboarding.submitted')}
             </div>
-            <h3 className={wizardStyles.stepTitle}>Pending Approval</h3>
+            <h3 className={wizardStyles.stepTitle}>{t('onboarding.pendingTitle')}</h3>
             <p className={wizardStyles.stepDescription}>
-              Your request to join has been sent to the organisation administrator. 
-              You'll get access once they approve your account.
+              {t('onboarding.pendingDesc')}
             </p>
           </div>
 
           <div className={wizardStyles.wizardActions} style={{ marginTop: '2rem' }}>
             <Button variant="secondary" onClick={handleWithdraw} style={{ width: '100%' }}>
-              Withdraw & Choose Different Org
+              {t('onboarding.withdraw')}
             </Button>
           </div>
           
           <div className={styles.actionContainer} style={{ marginTop: '1rem' }}>
             <Button variant="delete" onClick={() => auth.signOut()} style={{ width: '100%' }}>
-              Logout
+              {t('common.logout')}
             </Button>
           </div>
         </div>
@@ -149,25 +150,25 @@ const GuestPage = () => {
         {step === 1 && (
           <>
             <div className={wizardStyles.stepHeader}>
-              <h3 className={wizardStyles.stepTitle}>Setup Your Profile</h3>
-              <p className={wizardStyles.stepDescription}>Tell us a bit about yourself to get started.</p>
+              <h3 className={wizardStyles.stepTitle}>{t('onboarding.profileTitle')}</h3>
+              <p className={wizardStyles.stepDescription}>{t('onboarding.profileDesc')}</p>
             </div>
 
             <div className={wizardStyles.form}>
               <InputField
-                label="Full Name"
-                placeholder="Enter your name"
+                label={t('settings.name')}
+                placeholder={t('settings.name')}
                 value={profile.name}
                 onChange={(e) => setProfile({ ...profile, name: e.target.value })}
               />
 
               <div className={styles.formGroup}>
-                <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', fontWeight: 600 }}>Gender</label>
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', fontWeight: 600 }}>{t('settings.gender')}</label>
                 <PillGroup>
                   {[
-                    { label: "Male", value: "Male", colour: "var(--color-male)" },
-                    { label: "Female", value: "Female", colour: "var(--color-female)" },
-                    { label: "Prefer not to say", value: "Undefined", colour: "var(--color-text-dim)" },
+                    { label: t('settings.male'), value: "Male", colour: "var(--color-male)" },
+                    { label: t('settings.female'), value: "Female", colour: "var(--color-female)" },
+                    { label: t('settings.undefined'), value: "Undefined", colour: "var(--color-text-dim)" },
                   ].map((g) => (
                     <Pill
                       key={g.value}
@@ -187,7 +188,7 @@ const GuestPage = () => {
                   disabled={!profile.name.trim() || !profile.gender}
                   onClick={() => setStep(2)}
                 >
-                  Continue <ArrowRight size={18} style={{ marginLeft: 8 }} />
+                  {t('onboarding.continue')} <ArrowRight size={18} style={{ marginLeft: 8 }} />
                 </Button>
               </div>
             </div>
@@ -197,24 +198,24 @@ const GuestPage = () => {
         {step === 2 && !isJoining && (
           <>
             <div className={wizardStyles.stepHeader}>
-              <h3 className={wizardStyles.stepTitle}>Choose Your Path</h3>
-              <p className={wizardStyles.stepDescription}>Join an existing organisation or create a new one.</p>
+              <h3 className={wizardStyles.stepTitle}>{t('onboarding.pathTitle')}</h3>
+              <p className={wizardStyles.stepDescription}>{t('onboarding.pathDesc')}</p>
             </div>
 
             <div className={wizardStyles.choiceContainer}>
               <button className={wizardStyles.choiceCard} onClick={() => setIsJoining(true)}>
                 <div className={wizardStyles.choiceTitle}>
-                  <Search size={20} /> Join Organisation
+                  <Search size={20} /> {t('onboarding.joinTitle')}
                 </div>
-                <p className={wizardStyles.choiceSubtitle}>Search for your church or group to request access.</p>
+                <p className={wizardStyles.choiceSubtitle}>{t('onboarding.joinDesc')}</p>
               </button>
 
               <button className={`${wizardStyles.choiceCard} ${wizardStyles.disabled}`} disabled>
                 <div className={wizardStyles.choiceTitle}>
-                  <PlusCircle size={20} /> Create Organisation
-                  <span className={wizardStyles.disabledBadge}>COMING SOON</span>
+                  <PlusCircle size={20} /> {t('onboarding.createTitle')}
+                  <span className={wizardStyles.disabledBadge}>{t('onboarding.comingSoon')}</span>
                 </div>
-                <p className={wizardStyles.choiceSubtitle}>Start a new GIG Roster instance for your own team.</p>
+                <p className={wizardStyles.choiceSubtitle}>{t('onboarding.createDesc')}</p>
               </button>
             </div>
           </>
@@ -223,17 +224,17 @@ const GuestPage = () => {
         {step === 2 && isJoining && (
           <>
             <div className={wizardStyles.stepHeader}>
-              <h3 className={wizardStyles.stepTitle}>Find Organisation</h3>
+              <h3 className={wizardStyles.stepTitle}>{t('onboarding.findTitle')}</h3>
               <p className={wizardStyles.stepDescription}>
                 {selectedOrg 
-                  ? "Confirm your selection to request access." 
-                  : "Type at least 3 characters to search."}
+                  ? t('onboarding.confirmDesc')
+                  : t('onboarding.findDesc')}
               </p>
             </div>
 
             <div className={wizardStyles.searchContainer}>
               <InputField
-                placeholder="Search by name..."
+                placeholder={t('onboarding.searchPlaceholder')}
                 value={selectedOrg ? selectedOrg.name : searchTerm}
                 onChange={(e) => {
                   setSearchTerm(e.target.value);
@@ -252,11 +253,11 @@ const GuestPage = () => {
                         onClick={() => setSelectedOrg(org)}
                       >
                         <span className={wizardStyles.orgName}>{org.name}</span>
-                        <span className={wizardStyles.orgMeta}>Click to select this organisation</span>
+                        <span className={wizardStyles.orgMeta}>{t('onboarding.clickToJoin')}</span>
                       </button>
                     ))
                   ) : (
-                    <div className={wizardStyles.noResults}>No organisations found</div>
+                    <div className={wizardStyles.noResults}>{t('onboarding.noOrgs')}</div>
                   )}
                 </div>
               )}
@@ -268,7 +269,7 @@ const GuestPage = () => {
                   className={wizardStyles.fullWidthBtn}
                   onClick={handleJoin}
                 >
-                  Request Access <ArrowRight size={18} style={{ marginLeft: 8 }} />
+                  {t('onboarding.requestAccess')} <ArrowRight size={18} style={{ marginLeft: 8 }} />
                 </Button>
               </div>
             )}

@@ -1,5 +1,7 @@
 import { ReactNode, memo, useMemo } from "react";
 
+import { useTranslation } from "react-i18next";
+
 import { PeekCell } from "./Peek/PeekCell";
 import { RosterEntry, formatDisplayDate, RosterSlot, getAssignmentsForTeam, isTeamRosterData } from "../../model/model";
 
@@ -36,6 +38,7 @@ const RosterRow = memo(
     isFirstSlot = true,
     isLastSlot = true,
   }: RosterRowProps) => {
+    const { t } = useTranslation();
     const dateKey = dateString.split("T")[0];
 
     const entry = entries[dateKey];
@@ -87,7 +90,7 @@ const RosterRow = memo(
               <>
                 {eventName && <span className={styles.specialEventDot} />}
                 {isToday && (
-                  <span className={styles.rosterTodayDot} title="Today" />
+                  <span className={styles.rosterTodayDot} title={t('common.today')} />
                 )}
                 {formatDisplayDate(dateKey)}
               </>

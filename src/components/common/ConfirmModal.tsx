@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import Modal from "./Modal";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { hideAlert } from "../../store/slices/uiSlice";
@@ -5,6 +7,7 @@ import { hideAlert } from "../../store/slices/uiSlice";
 import styles from "./confirm-modal.module.css";
 
 const ConfirmModal = () => {
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const { alertConfig } = useAppSelector((state) => state.ui);
 
@@ -25,11 +28,11 @@ const ConfirmModal = () => {
     <div className={styles.footer}>
       {alertConfig.showCancel !== false && (
         <button className={styles.cancelButton} onClick={handleClose}>
-          {alertConfig.cancelText || "Cancel"}
+          {alertConfig.cancelText || t('common.cancel')}
         </button>
       )}
       <button className={styles.confirmButton} onClick={handleConfirm}>
-        {alertConfig.confirmText || "OK"}
+        {alertConfig.confirmText || t('common.confirm', { defaultValue: 'OK' })}
       </button>
     </div>
   );

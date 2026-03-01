@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 
+import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate, Outlet, matchPath } from "react-router-dom";
 
 import MobileHeader from "./Mobile-Header";
@@ -28,6 +29,7 @@ const safeDecode = (str: string | undefined) => {
 };
 
 const MainLayout = () => {
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const location = useLocation();
@@ -147,7 +149,7 @@ const MainLayout = () => {
     const currentTabInfo = BOTTOM_NAV_ITEMS.find(
       (item) => item.id === activeTab,
     );
-    const tabLabel = currentTabInfo ? currentTabInfo.label : "GIG ROSTER";
+    const tabLabel = currentTabInfo ? t(`nav.${currentTabInfo.id.toLowerCase()}`, { defaultValue: currentTabInfo.label }) : "GIG ROSTER";
 
     // Resolve display names from IDs/Identifiers
     const foundTeam = allTeams.find(t => t.id === activeTeamName || t.name === activeTeamName);
@@ -158,23 +160,44 @@ const MainLayout = () => {
     const isPosId = activeSideItem?.includes("-");
 
     if ((isTeamId && !teamsFetched) || (isPosId && !positionsFetched)) {
-      return `${tabLabel} • Loading...`;
+      return `${tabLabel} • ${t('common.loading')}`;
     }
 
     const resolvedTeamName = foundTeam?.name || activeTeamName;
-    const resolvedSideItem = foundPos?.name || activeSideItem;
+    const resolvedSideItem = activeSideItem === "All" ? t('nav.all') : (foundPos?.name || activeSideItem);
 
     if (activeTab === AppTab.THOUGHTS && resolvedTeamName) {
       return `${tabLabel} • ${resolvedTeamName}`;
     }
 
     if (resolvedTeamName && resolvedSideItem) {
-      return `${resolvedTeamName} • ${resolvedSideItem}`;
+      // Resolve Settings Section label if needed
+      let sideLabel = resolvedSideItem;
+      if (activeTab === AppTab.SETTINGS && activeSideItem) {
+        // Try all-lowercase and underscore versions for the key
+        const key = activeSideItem.toLowerCase().replace(/-/g, '_');
+        sideLabel = t(`settings.${key}`, { defaultValue: resolvedSideItem });
+      }
+      return `${resolvedTeamName} • ${sideLabel}`;
     }
     if (resolvedTeamName) {
       return resolvedTeamName;
     }
-    return resolvedSideItem ? `${tabLabel} • ${resolvedSideItem}` : tabLabel;
+    
+    let sideLabel = resolvedSideItem;
+    if (activeTab === AppTab.SETTINGS && activeSideItem) {
+      // Map old/mismatched IDs to the new underscore-based keys
+      const keyMap: Record<string, string> = {
+        "Users": "user_management",
+        "Positions": "position_management",
+        "Teams": "team_management",
+        "Profile": "profile"
+      };
+      const normalizedKey = keyMap[activeSideItem] || activeSideItem.toLowerCase().replace(/-/g, '_');
+      sideLabel = t(`settings.${normalizedKey}`, { defaultValue: resolvedSideItem });
+    }
+
+    return sideLabel ? `${tabLabel} • ${sideLabel}` : tabLabel;
   };
 
   return (

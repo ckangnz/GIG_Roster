@@ -1,5 +1,7 @@
 import { useCallback } from "react";
 
+import { useTranslation } from "react-i18next";
+
 import {
   Position,
   Team,
@@ -37,6 +39,7 @@ export const useRosterActions = (
   allTeamUsers: AppUser[] = [],
   userData: { email?: string | null; isAdmin?: boolean } | null = null,
 ) => {
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
 
   const isUserAbsent = useCallback(
@@ -310,9 +313,9 @@ export const useRosterActions = (
           const absentUserNameForAlert = allTeamUsers.find(u => u.email === userEmail)?.name || userEmail;
           dispatch(
             showAlert({
-              title: "Clear Existing Assignments?",
-              message: `${absentUserNameForAlert} is already assigned to: ${formattedAssignments}. Marking them as absent will remove these assignments. Continue?`,
-              confirmText: "Mark Absent",
+              title: t('roster.clearAssignments'),
+              message: t('roster.alreadyAssigned', { name: absentUserNameForAlert, assignments: formattedAssignments }),
+              confirmText: t('roster.markAbsent'),
               onConfirm: () => {
                 dispatch(
                   applyOptimisticAbsence({
@@ -360,11 +363,12 @@ export const useRosterActions = (
 
       if (!isMe && !isAdmin) {
         const targetUser = allTeamUsers.find((u) => u.email === userEmail);
+        const targetStatus = isUserAbsent(dateString, userEmail) ? t('roster.present') : t('roster.absent').toLowerCase();
         dispatch(
           showAlert({
-            title: "Update Teammate's Absence?",
-            message: `You are about to mark ${targetUser?.name || userEmail} as ${isUserAbsent(dateString, userEmail) ? "present" : "absent"}. Confirm if this was requested.`,
-            confirmText: "Update Absence",
+            title: t('roster.updateTeammateAbsence'),
+            message: t('roster.updateTeammateAbsenceDesc', { name: targetUser?.name || userEmail, status: targetStatus }),
+            confirmText: t('common.save'),
             onConfirm: performUpdate,
           }),
         );
@@ -372,7 +376,7 @@ export const useRosterActions = (
         performUpdate();
       }
     },
-    [isUserAbsent, entries, dispatch, userData, allTeamUsers, getAbsenceReason, allPositions, allTeams],
+    [isUserAbsent, entries, dispatch, userData, allTeamUsers, getAbsenceReason, allPositions, allTeams, t],
   );
 
   const handleAbsenceReasonChange = useCallback(

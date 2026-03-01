@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useNavigate, useLocation } from "react-router-dom";
 
 import { BOTTOM_NAV_ITEMS, AppTab } from "../../constants/navigation";
@@ -7,6 +8,7 @@ import { selectQualifiedCoverageRequests } from "../../store/selectors/rosterSel
 import styles from "./bottom-nav.module.css";
 
 const BottomNav = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const { lastVisitedPaths } = useAppSelector((state) => state.ui);
@@ -57,7 +59,7 @@ const BottomNav = () => {
                 <Icon size={20} />
                 {showBadge && <div className={styles.navBadge} />}
               </div>
-              <span>{item.label}</span>
+              <span>{t(`nav.${item.id.toLowerCase()}`, { defaultValue: item.label })}</span>
             </button>
           );
         })}

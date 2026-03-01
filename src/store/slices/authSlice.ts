@@ -10,6 +10,7 @@ import {
 } from 'firebase/firestore';
 
 import { db } from '../../firebase';
+import i18n from '../../i18n/config';
 import { AppUser, Organisation, generateIndexedAssignments } from '../../model/model';
 
 interface AuthState {
@@ -35,7 +36,11 @@ export const initializeUserData = createAsyncThunk(
       const userSnap = await getDoc(userDocRef);
 
       if (userSnap.exists()) {
-        return userSnap.data() as AppUser;
+        const data = userSnap.data() as AppUser;
+        if (data.preferredLanguage) {
+          i18n.changeLanguage(data.preferredLanguage);
+        }
+        return data;
       } else {
         const isAutoAdmin = authUser.email === 'cksdud12345@gmail.com';
         const newData: AppUser = {
@@ -73,6 +78,10 @@ export const updateUserProfile = createAsyncThunk(
 
       if (finalData.teamPositions) {
         finalData.indexedAssignments = generateIndexedAssignments(finalData.teamPositions);
+      }
+
+      if (finalData.preferredLanguage) {
+        i18n.changeLanguage(finalData.preferredLanguage);
       }
 
       await updateDoc(userRef, finalData);
@@ -119,6 +128,11 @@ export const joinOrganisation = createAsyncThunk(
         isApproved: false, // Must be approved by Org Admin
         updatedAt: Date.now()
       };
+
+      if (update.preferredLanguage) {
+        i18n.changeLanguage(update.preferredLanguage);
+      }
+
       await updateDoc(userRef, update);
       return update;
     } catch (error) {

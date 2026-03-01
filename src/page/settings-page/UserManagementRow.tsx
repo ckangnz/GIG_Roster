@@ -1,5 +1,7 @@
 import { useState } from "react";
 
+import { useTranslation } from "react-i18next";
+
 import UserEditModal from "./UserEditModal";
 import {
   SettingsTableAnyCell,
@@ -24,6 +26,7 @@ const UserManagementRow = ({
   availableTeams,
   adminEmail,
 }: UserManagementRowProps) => {
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const { positions: globalPositions } = useAppSelector((state) => state.positions);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -37,7 +40,7 @@ const UserManagementRow = ({
 
   const getTeamSummary = () => {
     if (!user.teams || user.teams.length === 0) {
-      return "No teams";
+      return t('common.none');
     }
 
     const teamEmojis = user.teams
@@ -100,8 +103,8 @@ const UserManagementRow = ({
             onChange={(e) => handleUpdate("gender", e.target.value as Gender)}
           >
             <option value="">-</option>
-            <option value="Male">Male</option>
-            <option value="Female">Female</option>
+            <option value="Male">{t('settings.male')}</option>
+            <option value="Female">{t('settings.female')}</option>
           </select>
         </SettingsTableAnyCell>
         <SettingsTableAnyCell>

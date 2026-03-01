@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 
+
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { AnimatePresence, motion } from "framer-motion";
 import { 
@@ -14,6 +15,7 @@ import {
   Heart, 
   MessageSquare 
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { ThoughtExpiry } from "./ThoughtExpiry";
@@ -37,19 +39,6 @@ import { showAlert } from "../../store/slices/uiSlice";
 
 import styles from "./thoughts-page.module.css";
 
-const formatRelativeTime = (timestamp: number) => {
-  const diff = Date.now() - timestamp;
-  const seconds = Math.floor(diff / 1000);
-  const minutes = Math.floor(seconds / 60);
-  const hours = Math.floor(minutes / 60);
-  const days = Math.floor(hours / 24);
-
-  if (seconds < 60) return "just now";
-  if (minutes < 60) return `${minutes}m ago`;
-  if (hours < 24) return `${hours}h ago`;
-  return `${days}d ago`;
-};
-
 const safeDecode = (str: string | undefined) => {
   if (!str) return "";
   try {
@@ -60,6 +49,7 @@ const safeDecode = (str: string | undefined) => {
 };
 
 const ThoughtsPage = () => {
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { teamName: rawTeamName } = useParams();
@@ -115,6 +105,23 @@ const ThoughtsPage = () => {
   const targetThought = managementUser
     ? thoughts[`${managementUser.id}_${teamId}`]
     : null;
+
+  const formatRelativeTimeLocal = useCallback(
+    (timestamp: number) => {
+      const diff = Date.now() - timestamp;
+      const seconds = Math.floor(diff / 1000);
+      const minutes = Math.floor(seconds / 60);
+      const hours = Math.floor(minutes / 60);
+      const days = Math.floor(hours / 24);
+
+      if (seconds < 60)
+        return t("common.justNow", { defaultValue: "just now" });
+      if (minutes < 60) return `${minutes}m ago`;
+      if (hours < 24) return `${hours}h ago`;
+      return `${days}d ago`;
+    },
+    [t],
+  );
 
   const handleOpenManagement = () => {
     if (userData?.isAdmin) {
@@ -279,14 +286,14 @@ const ThoughtsPage = () => {
         const user = allUsers.find((u) => u.id === uid);
         return {
           name: user?.name || "Unknown User",
-          time: formatRelativeTime(timestamp),
+          time: formatRelativeTimeLocal(timestamp),
           timestamp,
         };
       });
       list.sort((a, b) => b.timestamp - a.timestamp);
       setLikerList(list.map((l) => ({ name: l.name, time: l.time })));
     },
-    [allUsers],
+    [allUsers, formatRelativeTimeLocal],
   );
 
   const handleShareMyThoughts = () => {
@@ -394,8 +401,8 @@ const ThoughtsPage = () => {
 
   const displayTeamName = allTeams.find(t => t.id === teamId || t.name === teamId)?.name || teamId;
   const displayTitle = teamId
-    ? `Thoughts • ${displayTeamName}`
-    : "Team Thoughts";
+    ? `${t('nav.thoughts')} • ${displayTeamName}`
+    : t('thoughts.title');
 
   return (
     <>
@@ -423,9 +430,9 @@ const ThoughtsPage = () => {
 
         <div className={styles.focusedUserInfo}>
           <div className={styles.instructions}>
-            <span>Share what's on your mind</span>
-            <span>Tap to read • Double-tap to love</span>
-            <span style={{ color: "var(--color-text-dim)", fontSize: "0.7rem" }}>Thoughts expire in 7 days • Revive anytime</span>
+            <span>{t('thoughts.shareAThought')}</span>
+            <span>{t('thoughts.instructions', { defaultValue: 'Tap to read • Double-tap to love' })}</span>
+            <span style={{ color: "var(--color-text-dim)", fontSize: "0.7rem" }}>{t('thoughts.expiryInfo')}</span>
           </div>
         </div>
 
@@ -439,17 +446,17 @@ const ThoughtsPage = () => {
             >
               {showAdminControls
                 ? focusedThought
-                  ? `Moderate ${focusedUser?.name}'s thoughts`
-                  : `Share for ${focusedUser?.name}`
+                  ? `${t('common.edit')} ${focusedUser?.name}${t('thoughts.possessive', { defaultValue: "'s" })} ${t('nav.thoughts').toLowerCase()}`
+                  : `${t('common.add')} for ${focusedUser?.name}`
                 : myThought?.entries?.length
-                  ? "Manage my thoughts"
-                  : "Share a thought"}
+                  ? t('thoughts.manageMyThoughts')
+                  : t('thoughts.shareAThought')}
             </Button>
             <Button
               variant="secondary"
               className={styles.exportIconButton}
               onClick={() => setIsShareSheetOpen(true)}
-              title="Share thoughts"
+              title={t('thoughts.shareThoughts')}
               style={{ height: "48px" }}
             >
               <ExternalLink size={20} />
@@ -474,7 +481,7 @@ const ThoughtsPage = () => {
       <ActionSheet
         isOpen={isShareSheetOpen}
         onClose={() => setIsShareSheetOpen(false)}
-        title="Share Thoughts"
+        title={t('thoughts.shareThoughts')}
       >
         <button 
           className={styles.shareOptionItem}
@@ -483,8 +490,8 @@ const ThoughtsPage = () => {
           style={{ opacity: !myThought?.entries?.length ? 0.5 : 1 }}
         >
           <div className={styles.shareOptionText}>
-            <span className={styles.shareOptionLabel}>Share My Thoughts</span>
-            <span className={styles.shareOptionSubtext}>Copy your active thoughts and total likes</span>
+            <span className={styles.shareOptionLabel}>{t('thoughts.shareMyThoughts')}</span>
+            <span className={styles.shareOptionSubtext}>{t('thoughts.shareMyThoughtsSub')}</span>
           </div>
           <User className={styles.shareOptionIcon} size={20} />
         </button>
@@ -494,8 +501,8 @@ const ThoughtsPage = () => {
           onClick={() => setIsEveryoneOptionsOpen(true)}
         >
           <div className={styles.shareOptionText}>
-            <span className={styles.shareOptionLabel}>Share Everyone's Thoughts</span>
-            <span className={styles.shareOptionSubtext}>Export all active team thoughts</span>
+            <span className={styles.shareOptionLabel}>{t('thoughts.shareEveryonesThoughts')}</span>
+            <span className={styles.shareOptionSubtext}>{t('thoughts.shareEveryonesThoughtsSub')}</span>
           </div>
           <Users className={styles.shareOptionIcon} size={20} />
         </button>
@@ -504,52 +511,52 @@ const ThoughtsPage = () => {
       <ActionSheet
         isOpen={isEveryoneOptionsOpen}
         onClose={() => setIsEveryoneOptionsOpen(false)}
-        title="Export Order"
+        title={t('thoughts.exportOrder')}
       >
         <button className={styles.shareOptionItem} onClick={() => handleShareEveryone("alpha-asc")}>
           <div className={styles.shareOptionText}>
-            <span className={styles.shareOptionLabel}>Alphabetical (A-Z)</span>
-            <span className={styles.shareOptionSubtext}>Order by member name ascending</span>
+            <span className={styles.shareOptionLabel}>{t('thoughts.alphaAsc')}</span>
+            <span className={styles.shareOptionSubtext}>{t('thoughts.alphaAscSub', { defaultValue: 'Order by member name ascending' })}</span>
           </div>
           <ArrowUpAZ className={styles.shareOptionIcon} size={20} />
         </button>
 
         <button className={styles.shareOptionItem} onClick={() => handleShareEveryone("alpha-desc")}>
           <div className={styles.shareOptionText}>
-            <span className={styles.shareOptionLabel}>Alphabetical (Z-A)</span>
-            <span className={styles.shareOptionSubtext}>Order by member name descending</span>
+            <span className={styles.shareOptionLabel}>{t('thoughts.alphaDesc')}</span>
+            <span className={styles.shareOptionSubtext}>{t('thoughts.alphaDescSub', { defaultValue: 'Order by member name descending' })}</span>
           </div>
           <ArrowDownAZ className={styles.shareOptionIcon} size={20} />
         </button>
 
         <button className={styles.shareOptionItem} onClick={() => handleShareEveryone("likes-desc")}>
           <div className={styles.shareOptionText}>
-            <span className={styles.shareOptionLabel}>Most Liked</span>
-            <span className={styles.shareOptionSubtext}>Order by total hearts received</span>
+            <span className={styles.shareOptionLabel}>{t('thoughts.mostLiked')}</span>
+            <span className={styles.shareOptionSubtext}>{t('thoughts.mostLikedSub', { defaultValue: 'Order by total hearts received' })}</span>
           </div>
           <Heart className={styles.shareOptionIcon} size={20} />
         </button>
 
         <button className={styles.shareOptionItem} onClick={() => handleShareEveryone("likes-asc")}>
           <div className={styles.shareOptionText}>
-            <span className={styles.shareOptionLabel}>Least Liked</span>
-            <span className={styles.shareOptionSubtext}>Order by fewest hearts received</span>
+            <span className={styles.shareOptionLabel}>{t('thoughts.leastLiked')}</span>
+            <span className={styles.shareOptionSubtext}>{t('thoughts.leastLikedSub', { defaultValue: 'Order by fewest hearts received' })}</span>
           </div>
           <Heart className={styles.shareOptionIcon} size={20} style={{ opacity: 0.5 }} />
         </button>
 
         <button className={styles.shareOptionItem} onClick={() => handleShareEveryone("thoughts-desc")}>
           <div className={styles.shareOptionText}>
-            <span className={styles.shareOptionLabel}>Most Thoughts</span>
-            <span className={styles.shareOptionSubtext}>Members with most active thoughts first</span>
+            <span className={styles.shareOptionLabel}>{t('thoughts.mostThoughts')}</span>
+            <span className={styles.shareOptionSubtext}>{t('thoughts.mostThoughtsSub', { defaultValue: 'Members with most active thoughts first' })}</span>
           </div>
           <MessageSquare className={styles.shareOptionIcon} size={20} />
         </button>
 
         <button className={styles.shareOptionItem} onClick={() => handleShareEveryone("thoughts-asc")}>
           <div className={styles.shareOptionText}>
-            <span className={styles.shareOptionLabel}>Least Thoughts</span>
-            <span className={styles.shareOptionSubtext}>Members with fewest active thoughts first</span>
+            <span className={styles.shareOptionLabel}>{t('thoughts.leastThoughts')}</span>
+            <span className={styles.shareOptionSubtext}>{t('thoughts.leastThoughtsSub', { defaultValue: 'Members with fewest active thoughts first' })}</span>
           </div>
           <MessageSquare className={styles.shareOptionIcon} size={20} style={{ opacity: 0.5 }} />
         </button>
@@ -560,8 +567,8 @@ const ThoughtsPage = () => {
         onClose={() => setIsManagementOpen(false)}
         title={
           managementUser?.id === firebaseUser?.uid
-            ? "My Thoughts"
-            : `Acting on behalf of ${managementUser?.name}`
+            ? t('thoughts.myThoughts')
+            : `${t('common.edit')} for ${managementUser?.name}`
         }
       >
         <div className={styles.managementList}>
@@ -578,7 +585,7 @@ const ThoughtsPage = () => {
                     className={styles.expiryLabel}
                   />
                   {entry.isExpired && (
-                    <span className={styles.expiredBadge}>Need revival</span>
+                    <span className={styles.expiredBadge}>{t('thoughts.expired')}</span>
                   )}
                 </div>
               </div>
@@ -610,13 +617,12 @@ const ThoughtsPage = () => {
                 className={styles.addEntryBtn}
                 variant="secondary"
               >
-                <Plus size={16} style={{ marginRight: 8 }} /> Add another
-                thought
+                <Plus size={16} style={{ marginRight: 8 }} /> {t('thoughts.addAnotherThought')}
               </Button>
             )}
 
           {!targetThought?.entries?.length && (
-            <p className={styles.emptyThoughts}>No thoughts shared yet.</p>
+            <p className={styles.emptyThoughts}>{t('thoughts.noThoughts')}</p>
           )}
         </div>
       </ActionSheet>
@@ -624,13 +630,13 @@ const ThoughtsPage = () => {
       <ActionSheet
         isOpen={isEditorOpen}
         onClose={handleCloseEditor}
-        title={editingEntryId ? "Edit Thought" : "Add Thought"}
+        title={editingEntryId ? t('thoughts.editThought') : t('thoughts.addThought')}
       >
         <div className={styles.inputContainer}>
           <TextAreaField
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
-            placeholder="What's on your mind?"
+            placeholder={t('thoughts.shareAThought')}
             autoFocus
             aria-label="Your thought"
             onKeyDown={(e) => {
@@ -645,7 +651,7 @@ const ThoughtsPage = () => {
               disabled={!inputText.trim()}
               className={styles.saveBtn}
             >
-              Save Thought
+              {t('thoughts.saveThought')}
             </Button>
           </div>
         </div>
@@ -654,7 +660,7 @@ const ThoughtsPage = () => {
       <ActionSheet
         isOpen={!!likerList}
         onClose={() => setLikerList(null)}
-        title="Liked By"
+        title={t('thoughts.likedBy')}
       >
         <div className={styles.likerList}>
           {likerList?.map((user, idx) => (
@@ -664,7 +670,7 @@ const ThoughtsPage = () => {
             </div>
           ))}
           {likerList?.length === 0 && (
-            <p className={styles.emptyThoughts}>No likes yet.</p>
+            <p className={styles.emptyThoughts}>{t('thoughts.noLikes')}</p>
           )}
         </div>
       </ActionSheet>
