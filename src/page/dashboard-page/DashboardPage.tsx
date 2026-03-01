@@ -7,7 +7,6 @@ import {
   Fragment,
 } from "react";
 
-import { collection, query, where, getDocs } from "firebase/firestore";
 import { CopyIcon, CheckCircle2, CalendarPlus } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 
@@ -16,7 +15,6 @@ import Button from "../../components/common/Button";
 import ExpiryTimer from "../../components/common/ExpiryTimer";
 import NameTag from "../../components/common/NameTag";
 import Spinner from "../../components/common/Spinner";
-import { db } from "../../firebase";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { Weekday, AppUser, getTodayKey, RecurringEvent, Team, getAssignmentsForTeam } from "../../model/model";
 import {
@@ -59,7 +57,8 @@ const DashboardPage = () => {
     (positionsState?.positions || []).filter(p => p.orgId === orgId), 
   [positionsState?.positions, orgId]);
 
-  const [teamUsers, setTeamUsers] = useState<AppUser[]>([]);
+  const { allUsers } = useAppSelector((state) => state.userManagement);
+
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [activeCalendarTeam, setActiveCalendarTeam] = useState<{
     teamName: string;
@@ -192,28 +191,6 @@ const DashboardPage = () => {
     setSearchParams({}, { replace: true });
   };
 
-  useEffect(() => {
-    const fetchMyTeamsUsers = async () => {
-      if (!userData?.teams || userData.teams.length === 0 || !orgId) return;
-      try {
-        const usersRef = collection(db, "users");
-        const q = query(
-          usersRef,
-          where("teams", "array-contains-any", userData.teams),
-          where("orgId", "==", orgId)
-        );
-        const snap = await getDocs(q);
-        const users: AppUser[] = [];
-        snap.forEach((doc) => users.push(doc.data() as AppUser));
-        setTeamUsers(users);
-      } catch (err) {
-        console.error("Error fetching users for dashboard:", err);
-      }
-    };
-
-    fetchMyTeamsUsers();
-  }, [userData?.teams, orgId]);
-
   const getDashboardDataForDate = useCallback(
     (dateStr: string | null) => {
       if (!dateStr || !userData?.teams || allTeams.length === 0) return null;
@@ -299,11 +276,11 @@ const DashboardPage = () => {
 
           Object.entries(teamAssignments).forEach(([email, posList]) => {
             if (Array.isArray(posList) && (posList.includes(posInfo.id) || posList.includes(posInfo.name))) {
-              const user = teamUsers.find((u) => u.email === email);
+              const user = allUsers.find((u) => u.email === email);
               if (user) {
                 assignedUsers.push(user);
               } else {
-                assignedUsers.push({ email, name: email, gender: "" } as AppUser);
+                assignedUsers.push({ email, name: "...", gender: "" } as AppUser);
               }
               totalAssignedInTeam++;
               if (email === userData.email) {
@@ -357,7 +334,7 @@ const DashboardPage = () => {
       const filtered = data.filter((t) => t.hasAssignments && !t.isExpired);
       return filtered.length > 0 ? filtered : null;
     },
-    [entries, userData, allTeams, allPositions, teamUsers, isTeamExpired, getTeamEndTime],
+    [entries, userData, allTeams, allPositions, allUsers, isTeamExpired, getTeamEndTime],
   );
 
   const handleCalendarAction = (
