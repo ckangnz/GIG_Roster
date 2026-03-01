@@ -32,7 +32,11 @@ const safeDecode = (str: string | undefined) => {
   }
 };
 
-const SideNav = () => {
+interface SideNavProps {
+  isVisible?: boolean;
+}
+
+const SideNav = ({ isVisible = true }: SideNavProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useAppDispatch();
@@ -183,6 +187,8 @@ const SideNav = () => {
   ]
     .filter(Boolean)
     .join(" ");
+
+  if (!isVisible) return null;
 
   return (
     <aside className={sideNavClasses}>

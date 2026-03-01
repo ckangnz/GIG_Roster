@@ -6,10 +6,10 @@
   height: 64px;
   z-index: 1100;
   box-sizing: border-box;
+  isolation: isolate; /* Create new stacking context */
 
   background: var(--background-mobile-header);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  /* Remove backdrop-filter on mobile to fix rendering glitches */
   border-bottom: 1px solid var(--border-color-secondary);
   position: sticky;
   top: 0;

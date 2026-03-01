@@ -171,10 +171,14 @@ const MainLayout = () => {
     <div
       className={`${styles.layoutWrapper} ${isMobileSidebarOpen ? styles.menuOpen : ""} ${!isDesktopSidebarExpanded ? styles.sidebarCollapsed : styles.sidebarExpanded}`}
     >
-      {hasSideNav && <SideNav />}
+      <SideNav isVisible={hasSideNav} />
 
       <div className={styles.innerWrapper}>
-        <MobileHeader title={getHeaderTitle()} hasSideNav={hasSideNav} />
+        <MobileHeader 
+          key={activeTab} 
+          title={getHeaderTitle()} 
+          hasSideNav={hasSideNav} 
+        />
 
         <main className={styles.mainContent}>
           <Outlet />
