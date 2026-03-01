@@ -300,13 +300,21 @@ export const useRosterActions = (
           description: `${targetAbsence ? 'Marked' : 'Removed'} absence for ${userName}`
         }));
 
-        if (targetAbsence && clearedTeams.length > 0) {
-          const teamList = clearedTeams.join(", ");
+        if (targetAbsence && Object.keys(clearedPositions).length > 0) {
+          const formattedAssignments = Object.entries(clearedPositions).map(([tId, posIds]) => {
+            const team = allTeams.find(t => t.id === tId);
+            const positionNames = posIds.map(pId => {
+              const pos = allPositions.find(p => p.id === pId || p.name === pId);
+              return pos?.name || pId;
+            }).join(", ");
+            return `${team?.name || tId} (${positionNames})`;
+          }).join(", ");
+
           const absentUserNameForAlert = allTeamUsers.find(u => u.email === userEmail)?.name || userEmail;
           dispatch(
             showAlert({
               title: "Clear Existing Assignments?",
-              message: `User is already assigned to: ${teamList}. Marking them as absent will remove these assignments. Continue?`,
+              message: `${absentUserNameForAlert} is already assigned to: ${formattedAssignments}. Marking them as absent will remove these assignments. Continue?`,
               confirmText: "Mark Absent",
               onConfirm: () => {
                 dispatch(
@@ -367,7 +375,7 @@ export const useRosterActions = (
         performUpdate();
       }
     },
-    [isUserAbsent, entries, dispatch, userData, allTeamUsers, getAbsenceReason],
+    [isUserAbsent, entries, dispatch, userData, allTeamUsers, getAbsenceReason, allPositions, allTeams],
   );
 
   const handleAbsenceReasonChange = useCallback(

@@ -283,6 +283,39 @@ const rosterSlice = createSlice({
     setLoading(state, action: PayloadAction<boolean>) {
       state.loading = action.payload;
     },
+    updateRosterTeams(state, action: PayloadAction<Record<string, Record<string, TeamRosterData | Record<string, string[]>>>>) {
+      // action.payload is { date: { teamId: data } }
+      Object.entries(action.payload).forEach(([date, teamMap]) => {
+        if (!state.entries[date]) {
+          state.entries[date] = { id: date, date, teams: {}, absence: {}, orgId: "" };
+        }
+        state.entries[date].teams = { ...state.entries[date].teams, ...teamMap };
+      });
+      state.loading = false;
+      state.initialLoad = true;
+    },
+    updateRosterAbsences(state, action: PayloadAction<Record<string, Record<string, { reason: string }>>>) {
+      // action.payload is { date: { userId: { reason } } }
+      // First, clear all absences so we can rebuild from snapshot (simplest for sync)
+      Object.values(state.entries).forEach(entry => {
+        entry.absence = {};
+      });
+      
+      Object.entries(action.payload).forEach(([date, absenceMap]) => {
+        if (!state.entries[date]) {
+          state.entries[date] = { id: date, date, teams: {}, absence: {}, orgId: "" };
+        }
+        state.entries[date].absence = absenceMap;
+      });
+    },
+    updateRosterCalendar(state, action: PayloadAction<Record<string, string>>) {
+      // action.payload is { date: eventName }
+      Object.entries(action.payload).forEach(([date, eventName]) => {
+        if (state.entries[date]) {
+          state.entries[date].eventName = eventName;
+        }
+      });
+    },
     applyOptimisticAssignment(state, action: PayloadAction<{
       date: string;
       teamName: string;
@@ -460,6 +493,9 @@ export const {
   clearError,
   setRosterEntries,
   setLoading,
+  updateRosterTeams,
+  updateRosterAbsences,
+  updateRosterCalendar,
   applyOptimisticAssignment,
   applyOptimisticAbsence,
   applyOptimisticEventName,

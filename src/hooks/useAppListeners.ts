@@ -5,12 +5,14 @@ import { collection, onSnapshot, query, doc, where } from "firebase/firestore";
 import { useAppDispatch, useAppSelector } from "./redux";
 import { db } from "../firebase";
 import { useTrackPresence, usePresenceListener } from "./usePresence";
-import { RosterEntry, AppUser, Team, Position } from "../model/model";
+import { AppUser, Team, Position } from "../model/model";
 import { setUserData } from "../store/slices/authSlice";
 import { setPositions } from "../store/slices/positionsSlice";
 import {
-  setRosterEntries,
   setLoading as setRosterLoading,
+  updateRosterTeams,
+  updateRosterAbsences,
+  updateRosterCalendar,
 } from "../store/slices/rosterSlice";
 import { setTeams } from "../store/slices/teamsSlice";
 import { setAllUsers } from "../store/slices/userManagementSlice";
@@ -31,27 +33,26 @@ export const useAppListeners = () => {
   useEffect(() => {
     if (!orgId) return;
 
-    // We store unsubs to clean up
     let unsubRoster: (() => void) | null = null;
     let unsubAbsences: (() => void) | null = null;
+    let unsubCalendar: (() => void) | null = null;
 
-    // 1. Roster & Absences (Permission-Locked)
+    // 1. Roster, Absences & Calendar (Permission-Locked)
     if (isApproved) {
       dispatch(setRosterLoading(true));
       
+      // a) Team-Date Roster Documents
       unsubRoster = onSnapshot(
         query(collection(db, "organisations", orgId, "roster")),
         (snap) => {
-          const entries: Record<string, RosterEntry> = {};
+          const teamUpdates: Record<string, Record<string, Record<string, string[]> | { type: "slotted"; slots: Record<string, Record<string, string[]>> }>> = {};
           snap.docs.forEach(d => {
             const data = d.data();
-            const { date, teamId, data: rosterData, orgId: docOrgId } = data;
-            if (!entries[date]) {
-              entries[date] = { id: date, date, teams: {}, absence: {}, orgId: docOrgId || orgId };
-            }
-            entries[date].teams[teamId] = rosterData;
+            const { date, teamId, data: rosterData } = data;
+            if (!teamUpdates[date]) teamUpdates[date] = {};
+            teamUpdates[date][teamId] = rosterData;
           });
-          dispatch(setRosterEntries(entries));
+          dispatch(updateRosterTeams(teamUpdates));
         },
         (err) => {
           console.error("Roster Listener Error:", err.message);
@@ -59,14 +60,35 @@ export const useAppListeners = () => {
         }
       );
 
+      // b) Absences Listener
       unsubAbsences = onSnapshot(
         query(collection(db, "organisations", orgId, "absences")),
         (snap) => {
-          // Future: Logic to merge absences into Redux state
-          // For now, we rely on the initial fetch + manual syncs if needed
-          void snap;
+          const absenceUpdates: Record<string, Record<string, { reason: string }>> = {};
+          snap.docs.forEach(d => {
+            const data = d.data();
+            const { date, userId, reason } = data;
+            if (!absenceUpdates[date]) absenceUpdates[date] = {};
+            absenceUpdates[date][userId] = { reason: reason || "" };
+          });
+          dispatch(updateRosterAbsences(absenceUpdates));
         },
         (err) => console.error("Absences Listener Error:", err.message)
+      );
+
+      // c) Calendar Events Listener
+      unsubCalendar = onSnapshot(
+        query(collection(db, "organisations", orgId, "metadata", "calendar", "events")),
+        (snap) => {
+          const calendarUpdates: Record<string, string> = {};
+          snap.docs.forEach(d => {
+            const data = d.data();
+            const { date, eventName } = data;
+            calendarUpdates[date] = eventName || "";
+          });
+          dispatch(updateRosterCalendar(calendarUpdates));
+        },
+        (err) => console.error("Calendar Listener Error:", err.message)
       );
     }
 
@@ -118,6 +140,7 @@ export const useAppListeners = () => {
     return () => {
       if (unsubRoster) unsubRoster();
       if (unsubAbsences) unsubAbsences();
+      if (unsubCalendar) unsubCalendar();
       unsubTeams();
       unsubPositions();
       unsubAllUsers();
