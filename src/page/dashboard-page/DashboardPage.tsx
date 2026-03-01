@@ -230,6 +230,7 @@ const DashboardPage = () => {
 
       const data = userTeams.map((team) => {
         const teamAssignments = entry ? getAssignmentsForTeam(entry, team.id) : {};
+        const coverageRequests = entry?.coverageRequests || {};
 
         const positionGroups: {
           posId: string;
@@ -237,9 +238,57 @@ const DashboardPage = () => {
           emoji: string;
           assignedUsers: { name: string; isMe: boolean; gender?: string | null }[];
         }[] = [];
-        const teamPositionIds = team.positions || [];
+        
+        // 1. Gather all unique position IDs that have data or are configured
+        const activePosIdSet = new Set<string>(team.positions || []);
+        
+        // Add positions from assignments
+        Object.values(teamAssignments).forEach(posList => {
+          if (Array.isArray(posList)) posList.forEach(pId => activePosIdSet.add(pId));
+        });
+
+        // Add positions from coverage requests
+        Object.values(coverageRequests).forEach(req => {
+          if (req.teamName === team.id && req.status === "open") {
+            activePosIdSet.add(req.positionName);
+          }
+        });
+
+        // Ensure parent positions are also in the set if a child is active
+        const allActiveIds = Array.from(activePosIdSet);
+        allActiveIds.forEach(pId => {
+          const pos = allPositions.find(p => p.id === pId || p.name === pId);
+          if (pos?.parentId) activePosIdSet.add(pos.parentId);
+        });
+
+        // 2. Sort positions: Parents first, then their children
+        // We use the team's preferred position list as the primary sort order
+        const teamPositionIds = Array.from(activePosIdSet).sort((aId, bId) => {
+          const posA = allPositions.find(p => p.id === aId || p.name === aId);
+          const posB = allPositions.find(p => p.id === bId || p.name === bId);
+          
+          const effectiveParentA = posA?.parentId || aId;
+          const effectiveParentB = posB?.parentId || bId;
+
+          // If they share the same parent group
+          if (effectiveParentA === effectiveParentB) {
+            if (!posA?.parentId) return -1; // a is the parent
+            if (!posB?.parentId) return 1;  // b is the parent
+            return (posA.name || "").localeCompare(posB.name || ""); // both are children
+          }
+
+          // Different groups: sort by team's configured position order
+          const indexA = (team.positions || []).indexOf(effectiveParentA);
+          const indexB = (team.positions || []).indexOf(effectiveParentB);
+          
+          if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+          if (indexA !== -1) return -1;
+          if (indexB !== -1) return 1;
+          return (posA?.name || "").localeCompare(posB?.name || "");
+        });
 
         let totalAssignedInTeam = 0;
+        let totalRequestsInTeam = 0;
         let myPositionName = "";
 
         teamPositionIds.forEach((posId) => {
@@ -262,6 +311,12 @@ const DashboardPage = () => {
               }
             }
           });
+
+          // Check if this specific position has an open request
+          const hasRequest = Object.values(coverageRequests).some(
+            req => req.teamName === team.id && req.positionName === posId && req.status === "open"
+          );
+          if (hasRequest) totalRequestsInTeam++;
 
           const sortedAssignedUsers = [...assignedUsers].sort((a, b) => {
             if (posInfo?.sortByGender) {
@@ -291,7 +346,7 @@ const DashboardPage = () => {
           teamName: team.name,
           teamEmoji: team.emoji,
           positions: positionGroups,
-          hasAssignments: totalAssignedInTeam > 0,
+          hasAssignments: totalAssignedInTeam > 0 || totalRequestsInTeam > 0,
           recurringEvents: team.recurringEvents || [],
           myPositionName,
           isExpired: isTeamExpired(team, dateKey),
