@@ -23,10 +23,13 @@ const SaveFooter = ({
   discardText,
 }: SaveFooterProps) => {
   const { t } = useTranslation();
-  
-  const displayLabel = label || t('common.unsavedChanges', { defaultValue: 'You have unsaved changes' });
-  const displaySave = saveText || t('common.save');
-  const displayDiscard = discardText || t('common.cancel', { defaultValue: 'Discard' });
+
+  const displayLabel =
+    label ||
+    t("common.unsavedChanges", { defaultValue: "You have unsaved changes" });
+  const displaySave = saveText || t("common.save");
+  const displayDiscard =
+    discardText || t("common.cancel", { defaultValue: "Discard" });
 
   return (
     <div className={styles.rosterSaveFooter}>
@@ -45,7 +48,7 @@ const SaveFooter = ({
             onClick={onSave}
             disabled={isSaving || isDisabled}
           >
-            {isSaving ? t('common.loading') : displaySave}
+            {isSaving ? t("common.loading") : displaySave}
           </button>
         </div>
       </div>

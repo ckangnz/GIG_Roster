@@ -3,7 +3,6 @@ import React, { useEffect } from "react";
 import { X } from "lucide-react";
 import { createPortal } from "react-dom";
 
-
 import styles from "./modal.module.css";
 
 interface ModalProps {
@@ -15,7 +14,6 @@ interface ModalProps {
 }
 
 const Modal = ({ isOpen, onClose, title, children, footer }: ModalProps) => {
-  // Prevent scrolling on the body when modal is open
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";

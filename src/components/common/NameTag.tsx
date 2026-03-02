@@ -9,18 +9,30 @@ interface NameTagProps {
   gender?: string | null;
 }
 
-const NameTag = ({ displayName, isMe, isHighlighted, gender }: NameTagProps) => {
+const NameTag = ({
+  displayName,
+  isMe,
+  isHighlighted,
+  gender,
+}: NameTagProps) => {
   const isFemale = gender === "Female";
 
   return (
     <Fragment>
       <span
-        className={[isMe ? styles.isMe : "", isHighlighted ? styles.isHighlighted : ""].filter(Boolean).join(" ")}
+        className={[
+          isMe ? styles.isMe : "",
+          isHighlighted ? styles.isHighlighted : "",
+        ]
+          .filter(Boolean)
+          .join(" ")}
       >
         {displayName}
       </span>
       {isMe && (
-        <span className={`${styles.meTag} ${isFemale ? styles.meTagFemale : ""}`}>
+        <span
+          className={`${styles.meTag} ${isFemale ? styles.meTagFemale : ""}`}
+        >
           Me
         </span>
       )}

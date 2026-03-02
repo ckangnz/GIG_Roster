@@ -1,4 +1,4 @@
-import styles from './spinner.module.css';
+import styles from "./spinner.module.css";
 
 interface SpinnerProps {
   container?: boolean;

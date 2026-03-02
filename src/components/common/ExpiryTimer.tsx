@@ -3,7 +3,7 @@ import { useState, useEffect, useMemo } from "react";
 import styles from "./expiry-timer.module.css";
 
 interface ExpiryTimerProps {
-  endTimeStr: string; // "HH:mm"
+  endTimeStr: string;
   showText?: boolean;
   className?: string;
   onExpire?: () => void;
@@ -33,21 +33,19 @@ const ExpiryTimer = ({
 
     const [endH, endM] = endTimeStr.split(":").map(Number);
     const endTotalSecs = endH * 3600 + endM * 60;
-    
-    const nowTotalSecs = 
-      currentTime.getHours() * 3600 + 
-      currentTime.getMinutes() * 60 + 
+
+    const nowTotalSecs =
+      currentTime.getHours() * 3600 +
+      currentTime.getMinutes() * 60 +
       currentTime.getSeconds();
-    
+
     const diff = endTotalSecs - nowTotalSecs;
 
-    // If time has passed
     if (diff <= 0) {
       if (onExpire) onExpire();
       return null;
     }
 
-    // Only show if expiring within 1 hour
     if (diff > 3600) return null;
 
     const mm = Math.floor(diff / 60);
@@ -58,8 +56,8 @@ const ExpiryTimer = ({
   if (!timeRemaining) return null;
 
   return (
-    <div 
-      className={`${styles.expiryTimer} ${className}`} 
+    <div
+      className={`${styles.expiryTimer} ${className}`}
       title="This event is about to conclude and will be archived soon."
     >
       <span style={{ fontSize: "0.8rem" }}>⏳</span>

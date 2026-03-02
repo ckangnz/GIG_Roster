@@ -28,11 +28,11 @@ const ConfirmModal = () => {
     <div className={styles.footer}>
       {alertConfig.showCancel !== false && (
         <button className={styles.cancelButton} onClick={handleClose}>
-          {alertConfig.cancelText || t('common.cancel')}
+          {alertConfig.cancelText || t("common.cancel")}
         </button>
       )}
       <button className={styles.confirmButton} onClick={handleConfirm}>
-        {alertConfig.confirmText || t('common.confirm', { defaultValue: 'OK' })}
+        {alertConfig.confirmText || t("common.confirm", { defaultValue: "OK" })}
       </button>
     </div>
   );

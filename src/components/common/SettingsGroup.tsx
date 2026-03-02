@@ -18,7 +18,9 @@ export const SettingsGroup = ({
   return (
     <div className={`${styles.settingsGroup} ${className}`}>
       {label && <h4 className={styles.settingsGroupTitle}>{label}</h4>}
-      {description && <p className={styles.settingsGroupDescription}>{description}</p>}
+      {description && (
+        <p className={styles.settingsGroupDescription}>{description}</p>
+      )}
       {children}
     </div>
   );

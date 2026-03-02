@@ -12,40 +12,44 @@ interface ActionSheetProps {
   children: React.ReactNode;
 }
 
-const ActionSheet = ({ isOpen, onClose, title, children }: ActionSheetProps) => {
+const ActionSheet = ({
+  isOpen,
+  onClose,
+  title,
+  children,
+}: ActionSheetProps) => {
   const contentRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
-      
+
       const handleFocus = () => {
         if (contentRef.current) {
-          // If something is already focused (like via native autoFocus), don't override it
-          if (document.activeElement && contentRef.current.contains(document.activeElement)) {
+          if (
+            document.activeElement &&
+            contentRef.current.contains(document.activeElement)
+          ) {
             return;
           }
 
           const focusable = contentRef.current.querySelector(
-            "textarea[autofocus], input[autofocus], textarea, input, select, button"
+            "textarea[autofocus], input[autofocus], textarea, input, select, button",
           ) as HTMLElement;
-          
+
           if (focusable) {
             focusable.focus();
-            // Ensure the focused element is scrolled into view (crucial for mobile keyboards)
             focusable.scrollIntoView({ behavior: "smooth", block: "center" });
           }
         }
       };
 
-      const timer = setTimeout(handleFocus, 400); // Slightly longer delay for stability
-      
-      // Handle visual viewport changes (keyboard opening)
+      const timer = setTimeout(handleFocus, 400);
+
       const handleViewportChange = () => {
         if (window.visualViewport && overlayRef.current) {
           overlayRef.current.style.height = `${window.visualViewport.height}px`;
-          // Removed window.scrollTo(0, 0) as it can cause focus loss on some browsers
         }
       };
 
@@ -57,8 +61,14 @@ const ActionSheet = ({ isOpen, onClose, title, children }: ActionSheetProps) => 
       return () => {
         clearTimeout(timer);
         if (window.visualViewport) {
-          window.visualViewport.removeEventListener("resize", handleViewportChange);
-          window.visualViewport.removeEventListener("scroll", handleViewportChange);
+          window.visualViewport.removeEventListener(
+            "resize",
+            handleViewportChange,
+          );
+          window.visualViewport.removeEventListener(
+            "scroll",
+            handleViewportChange,
+          );
         }
       };
     } else {
@@ -70,8 +80,8 @@ const ActionSheet = ({ isOpen, onClose, title, children }: ActionSheetProps) => 
 
   return createPortal(
     <div className={styles.overlay} onClick={onClose} ref={overlayRef}>
-      <div 
-        className={styles.sheet} 
+      <div
+        className={styles.sheet}
         onClick={(e) => e.stopPropagation()}
         ref={contentRef}
       >
@@ -84,7 +94,7 @@ const ActionSheet = ({ isOpen, onClose, title, children }: ActionSheetProps) => 
         <div className={styles.content}>{children}</div>
       </div>
     </div>,
-    document.body
+    document.body,
   );
 };
 

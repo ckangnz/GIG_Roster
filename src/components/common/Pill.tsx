@@ -23,7 +23,9 @@ export const PillGroup = ({
   children: React.ReactNode;
   nowrap?: boolean;
 }) => (
-  <div className={`${styles.pillGroup} ${nowrap ? styles.pillGroupNowrap : ""}`}>
+  <div
+    className={`${styles.pillGroup} ${nowrap ? styles.pillGroupNowrap : ""}`}
+  >
     {children}
   </div>
 );
