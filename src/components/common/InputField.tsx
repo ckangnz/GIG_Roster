@@ -9,7 +9,14 @@ interface InputFieldProps extends InputHTMLAttributes<HTMLInputElement> {
 export const InputField = ({ label, className, ...props }: InputFieldProps) => {
   return (
     <div className={styles.inputWrapper}>
-      {label && <label className={styles.label}>{label}</label>}
+      {label && (
+        <label
+          className={styles.label}
+          aria-required={props["aria-required"] ? "true" : "false"}
+        >
+          {label}
+        </label>
+      )}
       <input className={`${styles.input} ${className || ""}`} {...props} />
     </div>
   );
@@ -20,7 +27,12 @@ interface SelectFieldProps extends InputHTMLAttributes<HTMLSelectElement> {
   children: React.ReactNode;
 }
 
-export const SelectField = ({ label, className, children, ...props }: SelectFieldProps) => {
+export const SelectField = ({
+  label,
+  className,
+  children,
+  ...props
+}: SelectFieldProps) => {
   return (
     <div className={styles.inputWrapper}>
       {label && <label className={styles.label}>{label}</label>}
@@ -31,15 +43,23 @@ export const SelectField = ({ label, className, children, ...props }: SelectFiel
   );
 };
 
-interface TextAreaFieldProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+interface TextAreaFieldProps
+  extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   label?: string;
 }
 
-export const TextAreaField = ({ label, className, ...props }: TextAreaFieldProps) => {
+export const TextAreaField = ({
+  label,
+  className,
+  ...props
+}: TextAreaFieldProps) => {
   return (
     <div className={styles.inputWrapper}>
       {label && <label className={styles.label}>{label}</label>}
-      <textarea className={`${styles.textarea} ${className || ""}`} {...props} />
+      <textarea
+        className={`${styles.textarea} ${className || ""}`}
+        {...props}
+      />
     </div>
   );
 };

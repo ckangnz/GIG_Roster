@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 
-
 import { Reorder, useDragControls } from "framer-motion";
 import { Plus } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -14,7 +13,10 @@ import Spinner from "../../components/common/Spinner";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { Position } from "../../model/model";
 import { updatePositions } from "../../store/slices/positionsSlice";
-import { removePositionFromAllTeams, updateTeams } from "../../store/slices/teamsSlice";
+import {
+  removePositionFromAllTeams,
+  updateTeams,
+} from "../../store/slices/teamsSlice";
 import { showAlert } from "../../store/slices/uiSlice";
 import { cleanupUsersAfterDeletion } from "../../store/slices/userManagementSlice";
 
@@ -34,7 +36,11 @@ const DraggableRowBlock = ({
 }: {
   block: PositionBlock;
   indexInPositions: number;
-  onUpdate: (index: number, field: keyof Position, value: Position[keyof Position]) => void;
+  onUpdate: (
+    index: number,
+    field: keyof Position,
+    value: Position[keyof Position],
+  ) => void;
   onDelete: (index: number) => void;
 }) => {
   const dragControls = useDragControls();
@@ -79,14 +85,14 @@ const PositionManagement = () => {
   const { positions: reduxPositions, loading: positionsLoading } =
     useAppSelector((state) => state.positions);
   const { teams: reduxTeams } = useAppSelector((state) => state.teams);
-    
+
   const [positions, setPositions] = useState<Position[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [status, setStatus] = useState("idle");
 
   useEffect(() => {
     if (orgId) {
-      setPositions(reduxPositions.filter(p => p.orgId === orgId));
+      setPositions(reduxPositions.filter((p) => p.orgId === orgId));
     }
   }, [reduxPositions, orgId]);
 
@@ -109,7 +115,7 @@ const PositionManagement = () => {
 
   useEffect(() => {
     if (orgId) {
-      setPositions(reduxPositions.filter(p => p.orgId === orgId));
+      setPositions(reduxPositions.filter((p) => p.orgId === orgId));
     }
   }, [reduxPositions, orgId]);
 
@@ -139,29 +145,28 @@ const PositionManagement = () => {
     setPositions(flattened);
   };
 
-  const handleUpdate = useCallback((
-    index: number,
-    field: keyof Position,
-    value: Position[keyof Position],
-  ) => {
-    setPositions((prev) => {
-      const updated = [...prev];
-      updated[index] = { ...updated[index], [field]: value };
+  const handleUpdate = useCallback(
+    (index: number, field: keyof Position, value: Position[keyof Position]) => {
+      setPositions((prev) => {
+        const updated = [...prev];
+        updated[index] = { ...updated[index], [field]: value };
 
-      if (field === "isCustom" && value === true) {
-        updated[index].sortByGender = false;
-      }
+        if (field === "isCustom" && value === true) {
+          updated[index].sortByGender = false;
+        }
 
-      return updated;
-    });
-  }, []);
+        return updated;
+      });
+    },
+    [],
+  );
 
   const addPosition = (newPos: Position) => {
     if (newPos.parentId) {
       setPositions((prev) => {
-        const parentIndex = prev.findIndex(p => p.id === newPos.parentId);
+        const parentIndex = prev.findIndex((p) => p.id === newPos.parentId);
         if (parentIndex === -1) return [...prev, newPos];
-        
+
         let insertIndex = parentIndex;
         while (
           insertIndex + 1 < prev.length &&
@@ -172,7 +177,7 @@ const PositionManagement = () => {
         return [
           ...prev.slice(0, insertIndex + 1),
           newPos,
-          ...prev.slice(insertIndex + 1)
+          ...prev.slice(insertIndex + 1),
         ];
       });
     } else {
@@ -181,47 +186,55 @@ const PositionManagement = () => {
   };
 
   const deletePosition = (index: number) => {
-    dispatch(showAlert({
-      title: t('management.position.deleteTitle'),
-      message: t('management.position.deleteConfirm'),
-      confirmText: t('common.delete'),
-      onConfirm: async () => {
-        const positionToDelete = positions[index];
-        const positionId = positionToDelete.id;
+    dispatch(
+      showAlert({
+        title: t("management.position.deleteTitle"),
+        message: t("management.position.deleteConfirm"),
+        confirmText: t("common.delete"),
+        onConfirm: async () => {
+          const positionToDelete = positions[index];
+          const positionId = positionToDelete.id;
 
-        // 1. Filter local positions state
-        let updatedPositions = positions.filter((_, i) => i !== index);
-        if (!positionToDelete.parentId) {
-          updatedPositions = updatedPositions.filter(
-            (p) => p.parentId !== positionId,
-          );
-        }
-        setPositions(updatedPositions);
+          // 1. Filter local positions state
+          let updatedPositions = positions.filter((_, i) => i !== index);
+          if (!positionToDelete.parentId) {
+            updatedPositions = updatedPositions.filter(
+              (p) => p.parentId !== positionId,
+            );
+          }
+          setPositions(updatedPositions);
 
-        // 2. Remove from all teams in Redux
-        dispatch(removePositionFromAllTeams(positionId));
+          // 2. Remove from all teams in Redux
+          dispatch(removePositionFromAllTeams(positionId));
 
-        // 3. Persist Team changes to Firebase immediately
-        const currentTeams = reduxTeams.map(team => ({
-          ...team,
-          positions: (team.positions || []).filter(pId => pId !== positionId)
-        }));
-        
-        await dispatch(updateTeams(currentTeams)).unwrap();
+          // 3. Persist Team changes to Firebase immediately
+          const currentTeams = reduxTeams.map((team) => ({
+            ...team,
+            positions: (team.positions || []).filter(
+              (pId) => pId !== positionId,
+            ),
+          }));
 
-        // 4. Cleanup users
-        const idsToCleanup = [positionId];
-        if (!positionToDelete.parentId) {
-          // If it's a parent, also cleanup child assignments
-          const childIds = positions.filter(p => p.parentId === positionId).map(p => p.id);
-          idsToCleanup.push(...childIds);
-        }
+          await dispatch(updateTeams(currentTeams)).unwrap();
 
-        for (const id of idsToCleanup) {
-          await dispatch(cleanupUsersAfterDeletion({ positionId: id })).unwrap();
-        }
-      }
-    }));
+          // 4. Cleanup users
+          const idsToCleanup = [positionId];
+          if (!positionToDelete.parentId) {
+            // If it's a parent, also cleanup child assignments
+            const childIds = positions
+              .filter((p) => p.parentId === positionId)
+              .map((p) => p.id);
+            idsToCleanup.push(...childIds);
+          }
+
+          for (const id of idsToCleanup) {
+            await dispatch(
+              cleanupUsersAfterDeletion({ positionId: id }),
+            ).unwrap();
+          }
+        },
+      }),
+    );
   };
 
   const saveToFirebase = async () => {
@@ -245,20 +258,19 @@ const PositionManagement = () => {
       });
       await dispatch(updatePositions(positionsToSave)).unwrap();
 
-      // 2. CASCADING RENAME: Sync position names to all teams
-      // Because teams store position objects (including names), we must update them.
-      // (Wait, teams now only store IDs, so we don't need to update team.positions!)
-      // Actually, we should still trigger an update to teams if they were holding objects.
-      
       setStatus("success");
       setTimeout(() => setStatus("idle"), 2000);
     } catch (e) {
       console.error("Save Error:", e);
-      dispatch(showAlert({
-        title: "Save Error",
-        message: "Error saving: " + (e instanceof Error ? e.message : "Unknown error"),
-        showCancel: false
-      }));
+      dispatch(
+        showAlert({
+          title: "Save Error",
+          message:
+            "Error saving: " +
+            (e instanceof Error ? e.message : "Unknown error"),
+          showCancel: false,
+        }),
+      );
       setStatus("idle");
     }
   };
@@ -268,11 +280,13 @@ const PositionManagement = () => {
   };
 
   const availableParents = useMemo(() => {
-    return positions.filter(p => !p.parentId);
+    return positions.filter((p) => !p.parentId);
   }, [positions]);
 
   const isFormValid = useMemo(() => {
-    return positions.every(p => (p.name || "").trim() !== "" && (p.emoji || "").trim() !== "");
+    return positions.every(
+      (p) => (p.name || "").trim() !== "" && (p.emoji || "").trim() !== "",
+    );
   }, [positions]);
 
   if (positionsLoading) {
@@ -284,16 +298,35 @@ const PositionManagement = () => {
       <SettingsTable
         headers={[
           {
-            text: t('management.position.name'),
+            text: t("management.position.name"),
             minWidth: 150,
             width: 250,
             textAlign: "center",
+            isRequired: true,
           },
-          { text: t('management.position.emoji'), width: 80, textAlign: "center" },
-          { text: t('management.position.color'), minWidth: 100, textAlign: "center" },
-          { text: t('management.position.genderSort'), width: 100, textAlign: "center" },
-          { text: t('management.position.custom'), width: 100, textAlign: "center" },
-          { text: t('common.delete'), width: 60, textAlign: "center" },
+          {
+            text: t("management.position.emoji"),
+            width: 80,
+            textAlign: "center",
+            isRequired: true,
+          },
+          {
+            text: t("management.position.color"),
+            minWidth: 100,
+            textAlign: "center",
+            isRequired: true,
+          },
+          {
+            text: t("management.position.genderSort"),
+            width: 100,
+            textAlign: "center",
+          },
+          {
+            text: t("management.position.custom"),
+            width: 100,
+            textAlign: "center",
+          },
+          { text: t("common.delete"), width: 60, textAlign: "center" },
         ]}
         tableAs={Reorder.Group}
         tableProps={{
@@ -328,7 +361,7 @@ const PositionManagement = () => {
       <div style={{ display: "flex", justifyContent: "flex-end" }}>
         <Button variant="primary" onClick={() => setIsModalOpen(true)}>
           <Plus size={18} style={{ marginRight: "8px" }} />
-          {t('management.position.newPosition')}
+          {t("management.position.newPosition")}
         </Button>
       </div>
 
@@ -341,8 +374,8 @@ const PositionManagement = () => {
 
       {hasChanges && (
         <SaveFooter
-          label={t('management.position.unsavedChanges')}
-          saveText={t('management.position.saveAll')}
+          label={t("management.position.unsavedChanges")}
+          saveText={t("management.position.saveAll")}
           onSave={saveToFirebase}
           onCancel={handleCancel}
           isSaving={status === "saving"}

@@ -14,21 +14,22 @@ import formStyles from "../../styles/form.module.css";
 
 import styles from "./profile-settings.module.css";
 
-const ProfileSettings = ({ 
-  className, 
-  showExtendedInfo = true 
-}: { 
-  className?: string; 
-  showExtendedInfo?: boolean 
+const ProfileSettings = ({
+  className,
+  showExtendedInfo = true,
+}: {
+  className?: string;
+  showExtendedInfo?: boolean;
 }) => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
   const { userData, firebaseUser } = useAppSelector((state) => state.auth);
   const orgId = userData?.orgId;
   const { teams: allTeams } = useAppSelector((state) => state.teams);
-  const availableTeams = useMemo(() => 
-    allTeams.filter(t => t.orgId === orgId), 
-  [allTeams, orgId]);
+  const availableTeams = useMemo(
+    () => allTeams.filter((t) => t.orgId === orgId),
+    [allTeams, orgId],
+  );
 
   const { positions: globalPositions } = useAppSelector(
     (state) => state.positions,
@@ -129,9 +130,9 @@ const ProfileSettings = ({
     try {
       // Clearing the name and gender unlocks the profile
       await dispatch(
-        updateUserProfile({ 
-          uid: firebaseUser.uid, 
-          data: { ...formState, name: "", gender: "" } 
+        updateUserProfile({
+          uid: firebaseUser.uid,
+          data: { ...formState, name: "", gender: "" },
         }),
       ).unwrap();
       setStatus("idle");
@@ -185,8 +186,9 @@ const ProfileSettings = ({
       </div>
 
       <div className={formStyles.formGroup}>
-        <label>{t('settings.name')}</label>
+        <label aria-required>{t("settings.name")}</label>
         <input
+          required
           type="text"
           value={formState.name}
           disabled={isLocked}
@@ -197,12 +199,24 @@ const ProfileSettings = ({
         />
       </div>
       <div className={formStyles.formGroup}>
-        <label>{t('settings.gender')}</label>
+        <label>{t("settings.gender")}</label>
         <PillGroup>
           {[
-            { value: "Male", label: t('settings.male'), colour: "var(--color-male)" },
-            { value: "Female", label: t('settings.female'), colour: "var(--color-female)" },
-            { value: "Undefined", label: t('settings.undefined'), colour: "var(--color-text-dim)" },
+            {
+              value: "Male",
+              label: t("settings.male"),
+              colour: "var(--color-male)",
+            },
+            {
+              value: "Female",
+              label: t("settings.female"),
+              colour: "var(--color-female)",
+            },
+            {
+              value: "Undefined",
+              label: t("settings.undefined"),
+              colour: "var(--color-text-dim)",
+            },
           ].map((g) => (
             <Pill
               key={g.value}
@@ -222,17 +236,20 @@ const ProfileSettings = ({
       </div>
 
       <div className={formStyles.formGroup}>
-        <label>{t('settings.language')}</label>
+        <label>{t("settings.language")}</label>
         <PillGroup>
           {[
-            { value: "en-NZ", label: t('settings.english') },
-            { value: "ko", label: t('settings.korean') },
+            { value: "en-NZ", label: t("settings.english") },
+            { value: "ko", label: t("settings.korean") },
           ].map((l) => (
             <Pill
               key={l.value}
               onClick={() => {
                 if (!isLocked) {
-                  setFormState((prev) => ({ ...prev, preferredLanguage: l.value }));
+                  setFormState((prev) => ({
+                    ...prev,
+                    preferredLanguage: l.value,
+                  }));
                 }
               }}
               isActive={formState.preferredLanguage === l.value}
@@ -261,8 +278,9 @@ const ProfileSettings = ({
           ) : (
             <div className={styles.approvalNotice}>
               <p>
-                Your account is pending approval. Once approved by an administrator, 
-                you will be able to select your teams and positions.
+                Your account is pending approval. Once approved by an
+                administrator, you will be able to select your teams and
+                positions.
               </p>
             </div>
           )}
@@ -271,7 +289,7 @@ const ProfileSettings = ({
 
       {!isLocked && (
         <div className={formStyles.formGroup} style={{ marginTop: "24px" }}>
-          <label>{t('settings.availability')}</label>
+          <label>{t("settings.availability")}</label>
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
             <span
               style={{
@@ -279,7 +297,9 @@ const ProfileSettings = ({
                 color: "var(--color-text-secondary)",
               }}
             >
-              {formState.isActive ? t('settings.active') : t('settings.inactive')}
+              {formState.isActive
+                ? t("settings.active")
+                : t("settings.inactive")}
             </span>
             <Toggle
               isOn={formState.isActive}
@@ -301,10 +321,11 @@ const ProfileSettings = ({
             Application Submitted
           </div>
           <p className={styles.lockedHint}>
-            Your profile is currently being reviewed. You will receive access once approved by an administrator.
+            Your profile is currently being reviewed. You will receive access
+            once approved by an administrator.
           </p>
-          <button 
-            className={styles.withdrawBtn} 
+          <button
+            className={styles.withdrawBtn}
             onClick={handleWithdraw}
             disabled={status === "saving"}
           >
@@ -315,14 +336,16 @@ const ProfileSettings = ({
 
       <div className={styles.actionContainer}>
         <Button variant="delete" onClick={() => auth.signOut()}>
-          {t('common.logout')}
+          {t("common.logout")}
         </Button>
       </div>
 
       {hasChanges && !isLocked && (
         <SaveFooter
-          label={t('common.unsavedChanges', { defaultValue: 'Unsaved profile changes' })}
-          saveText={t('common.save')}
+          label={t("common.unsavedChanges", {
+            defaultValue: "Unsaved profile changes",
+          })}
+          saveText={t("common.save")}
           onSave={handleSave}
           onCancel={handleCancel}
           isSaving={status === "saving"}

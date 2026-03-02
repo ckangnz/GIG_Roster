@@ -4,7 +4,9 @@ import { useTranslation } from "react-i18next";
 
 import UserManagementRow from "./UserManagementRow";
 import SaveFooter from "../../components/common/SaveFooter";
-import SettingsTable, { SettingsTableHeaderProps } from "../../components/common/SettingsTable";
+import SettingsTable, {
+  SettingsTableHeaderProps,
+} from "../../components/common/SettingsTable";
 import Spinner from "../../components/common/Spinner";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { AppUser } from "../../model/model";
@@ -49,7 +51,7 @@ const UserManagement = () => {
   }, [allUsers, originalUsers]);
 
   const isFormValid = useMemo(() => {
-    return allUsers.every(u => (u.name || "").trim() !== "");
+    return allUsers.every((u) => (u.name || "").trim() !== "");
   }, [allUsers]);
 
   const handleSaveChanges = () => {
@@ -68,17 +70,27 @@ const UserManagement = () => {
     return <div>Error: {error}</div>;
   }
 
-  const pendingUsers = allUsers.filter((u) => !u.isApproved && u.orgId === orgId);
-  const approvedUsers = allUsers.filter((u) => u.isApproved && u.orgId === orgId);
+  const pendingUsers = allUsers.filter(
+    (u) => !u.isApproved && u.orgId === orgId,
+  );
+  const approvedUsers = allUsers.filter(
+    (u) => u.isApproved && u.orgId === orgId,
+  );
 
   const tableHeaders: SettingsTableHeaderProps[] = [
-    { text: t('management.user.name'), minWidth: 70, width: 100, textAlign: "center" },
-    { text: t('management.user.email'), minWidth: 170, textAlign: "center" },
-    { text: t('management.user.gender'), minWidth: 90, textAlign: "center" },
-    { text: t('management.user.teams'), minWidth: 150, textAlign: "center" },
-    { text: t('settings.active'), minWidth: 95, textAlign: "center" },
-    { text: t('management.user.approve'), minWidth: 95, textAlign: "center" },
-    { text: t('management.user.admin'), minWidth: 95, textAlign: "center" },
+    {
+      text: t("management.user.name"),
+      minWidth: 70,
+      width: 100,
+      textAlign: "center",
+      isRequired: true,
+    },
+    { text: t("management.user.email"), minWidth: 170, textAlign: "center" },
+    { text: t("management.user.gender"), minWidth: 90, textAlign: "center" },
+    { text: t("management.user.teams"), minWidth: 150, textAlign: "center" },
+    { text: t("settings.active"), minWidth: 95, textAlign: "center" },
+    { text: t("management.user.approve"), minWidth: 95, textAlign: "center" },
+    { text: t("management.user.admin"), minWidth: 95, textAlign: "center" },
   ];
 
   return (
@@ -86,7 +98,7 @@ const UserManagement = () => {
       {pendingUsers.length > 0 && (
         <div className={styles.pendingSection}>
           <h2 className={styles.pendingTitle}>
-            {t('management.user.pending')} ({pendingUsers.length})
+            {t("management.user.pending")} ({pendingUsers.length})
           </h2>
           <SettingsTable headers={tableHeaders}>
             {pendingUsers.map((u) => (
@@ -103,7 +115,7 @@ const UserManagement = () => {
 
       <div className={styles.approvedSection}>
         <h2 className={styles.sectionTitle}>
-          {t('management.user.approved')} ({approvedUsers.length})
+          {t("management.user.approved")} ({approvedUsers.length})
         </h2>
         <SettingsTable headers={tableHeaders}>
           {approvedUsers.map((u) => (
@@ -119,8 +131,8 @@ const UserManagement = () => {
 
       {hasChanges && (
         <SaveFooter
-          label={t('management.user.unsavedChanges')}
-          saveText={t('management.user.saveAll')}
+          label={t("management.user.unsavedChanges")}
+          saveText={t("management.user.saveAll")}
           onSave={handleSaveChanges}
           onCancel={handleCancelChanges}
           isSaving={saving}

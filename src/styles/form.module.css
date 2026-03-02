@@ -13,6 +13,11 @@
   font-weight: 700;
 }
 
+label[aria-required="true"]::after {
+  content: " *";
+  color: var(--color-error);
+}
+
 .formInput {
   background: var(--background-input);
   border: 1px solid var(--border-color-input);

@@ -10,6 +10,7 @@ export interface SettingsTableHeaderProps {
   width?: number;
   minWidth?: number;
   isSticky?: boolean;
+  isRequired?: boolean;
 }
 
 export const SettingsTableHeader = ({
@@ -18,10 +19,11 @@ export const SettingsTableHeader = ({
   width,
   minWidth,
   isSticky = false,
+  isRequired = false,
 }: SettingsTableHeaderProps) => {
   return (
     <th
-      className={isSticky ? styles.stickyCol : ""}
+      className={`${isSticky ? styles.stickyCol : ""} ${isRequired ? styles.requiredHeader : ""}`}
       style={{
         textAlign: textAlign,
         width: width ? `${width}px` : "auto",
@@ -163,6 +165,7 @@ const SettingsTable = ({
               <SettingsTableHeader
                 key={i}
                 {...headerProps}
+                isRequired={headerProps.isRequired ?? false}
                 isSticky={headerProps.isSticky ?? i === 0}
               />
             ))}

@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 
-
 import { Reorder } from "framer-motion";
 import { Plus } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -26,16 +25,19 @@ const TeamManagement = () => {
   const orgId = userData?.orgId;
 
   const teamsState = useAppSelector((state) => state.teams);
-  const reduxTeams = useMemo(() => 
-    (teamsState?.teams || []).filter(t => t.orgId === orgId), 
-  [teamsState?.teams, orgId]);
-  
-  const { positions: allPositions, loading: positionsLoading } =
-    useAppSelector((state) => state.positions);
-    
-  const availablePositions = useMemo(() => 
-    allPositions.filter(p => p.orgId === orgId), 
-  [allPositions, orgId]);
+  const reduxTeams = useMemo(
+    () => (teamsState?.teams || []).filter((t) => t.orgId === orgId),
+    [teamsState?.teams, orgId],
+  );
+
+  const { positions: allPositions, loading: positionsLoading } = useAppSelector(
+    (state) => state.positions,
+  );
+
+  const availablePositions = useMemo(
+    () => allPositions.filter((p) => p.orgId === orgId),
+    [allPositions, orgId],
+  );
 
   const [teams, setTeams] = useState<Team[]>(reduxTeams);
   const [editingTeamIndex, setEditingTeamIndex] = useState<number | null>(null);
@@ -54,14 +56,19 @@ const TeamManagement = () => {
         allowAbsence: t.allowAbsence !== false,
         dayEndTimes: t.dayEndTimes || {},
         rosterMode: t.rosterMode || "daily",
-        slots: [...(t.slots || [])].map(s => ({ id: s.id, label: s.label, startTime: s.startTime, endTime: s.endTime })),
-        recurringEvents: (t.recurringEvents || []).map(ev => ({
+        slots: [...(t.slots || [])].map((s) => ({
+          id: s.id,
+          label: s.label,
+          startTime: s.startTime,
+          endTime: s.endTime,
+        })),
+        recurringEvents: (t.recurringEvents || []).map((ev) => ({
           id: ev.id,
           label: ev.label,
           day: ev.day,
           startTime: ev.startTime,
-          endTime: ev.endTime
-        }))
+          endTime: ev.endTime,
+        })),
       }));
     return (
       JSON.stringify(normalize(teams)) !== JSON.stringify(normalize(reduxTeams))
@@ -72,39 +79,40 @@ const TeamManagement = () => {
     setTeams(reduxTeams);
   }, [reduxTeams]);
 
-  const handleUpdate = useCallback((
-    index: number,
-    field: keyof Team,
-    value: Team[keyof Team],
-  ) => {
-    setTeams(prev => {
-      const updated = [...prev];
-      updated[index] = { ...updated[index], [field]: value };
-      return updated;
-    });
-  }, []);
+  const handleUpdate = useCallback(
+    (index: number, field: keyof Team, value: Team[keyof Team]) => {
+      setTeams((prev) => {
+        const updated = [...prev];
+        updated[index] = { ...updated[index], [field]: value };
+        return updated;
+      });
+    },
+    [],
+  );
 
   const handleApplyTeamConfig = (updatedTeam: Team) => {
     if (editingTeamIndex !== null) {
-      setTeams(prev => {
+      setTeams((prev) => {
         const updated = [...prev];
         updated[editingTeamIndex] = updatedTeam;
         return updated;
       });
     } else {
-      setTeams(prev => [...prev, updatedTeam]);
+      setTeams((prev) => [...prev, updatedTeam]);
     }
   };
 
   const deleteTeam = (index: number) => {
-    dispatch(showAlert({
-      title: t('management.team.deleteTitle'),
-      message: t('management.team.deleteConfirm'),
-      confirmText: t('common.delete'),
-      onConfirm: () => {
-        setTeams(teams.filter((_, i) => i !== index));
-      }
-    }));
+    dispatch(
+      showAlert({
+        title: t("management.team.deleteTitle"),
+        message: t("management.team.deleteConfirm"),
+        confirmText: t("common.delete"),
+        onConfirm: () => {
+          setTeams(teams.filter((_, i) => i !== index));
+        },
+      }),
+    );
   };
 
   const saveToFirebase = async () => {
@@ -112,8 +120,8 @@ const TeamManagement = () => {
     try {
       if (!orgId) throw new Error("Org ID missing");
       // 1. Identify which teams are being removed
-      const currentIds = new Set(teams.map(t => t.id));
-      const deletedTeams = reduxTeams.filter(t => !currentIds.has(t.id));
+      const currentIds = new Set(teams.map((t) => t.id));
+      const deletedTeams = reduxTeams.filter((t) => !currentIds.has(t.id));
 
       const teamsToSave: Team[] = teams.map((t) => ({
         id: t.id,
@@ -133,21 +141,27 @@ const TeamManagement = () => {
 
       // 2. Cleanup users for deleted teams
       for (const team of deletedTeams) {
-        await dispatch(cleanupUsersAfterDeletion({ 
-          teamId: team.id,
-          teamName: team.name
-        })).unwrap();
+        await dispatch(
+          cleanupUsersAfterDeletion({
+            teamId: team.id,
+            teamName: team.name,
+          }),
+        ).unwrap();
       }
 
       setStatus("success");
       setTimeout(() => setStatus("idle"), 2000);
     } catch (e) {
       console.error("Save Error:", e);
-      dispatch(showAlert({
-        title: "Save Error",
-        message: "Error saving: " + (e instanceof Error ? e.message : "Unknown error"),
-        showCancel: false
-      }));
+      dispatch(
+        showAlert({
+          title: "Save Error",
+          message:
+            "Error saving: " +
+            (e instanceof Error ? e.message : "Unknown error"),
+          showCancel: false,
+        }),
+      );
       setStatus("idle");
     }
   };
@@ -157,10 +171,12 @@ const TeamManagement = () => {
   };
 
   const isFormValid = useMemo(() => {
-    return teams.every(t => 
-      (t.name || "").trim() !== "" && 
-      (t.emoji || "").trim() !== "" && 
-      (t.maxConflict !== undefined && t.maxConflict > 0)
+    return teams.every(
+      (t) =>
+        (t.name || "").trim() !== "" &&
+        (t.emoji || "").trim() !== "" &&
+        t.maxConflict !== undefined &&
+        t.maxConflict > 0,
     );
   }, [teams]);
 
@@ -173,18 +189,33 @@ const TeamManagement = () => {
       <SettingsTable
         headers={[
           {
-            text: t('management.team.name'),
+            text: t("management.team.name"),
             minWidth: 150,
             width: 250,
             textAlign: "center",
+            isRequired: true,
           },
-          { text: t('management.team.emoji'), width: 30, textAlign: "center" },
-          { text: t('management.team.maxPos'), width: 60, textAlign: "center" },
-          { text: t('management.team.config'), minWidth: 180, textAlign: "center" },
+          {
+            text: t("management.team.emoji"),
+            width: 30,
+            textAlign: "center",
+            isRequired: true,
+          },
+          { text: t("management.team.maxPos"), width: 60, textAlign: "center" },
+          {
+            text: t("management.team.config"),
+            minWidth: 180,
+            textAlign: "center",
+          },
           { text: "", width: 50 },
         ]}
         customBody={
-          <Reorder.Group axis="y" values={teams} onReorder={setTeams} as="tbody">
+          <Reorder.Group
+            axis="y"
+            values={teams}
+            onReorder={setTeams}
+            as="tbody"
+          >
             {teams.map((team, teamIndex) => (
               <TeamManagementRow
                 key={team.id}
@@ -205,7 +236,7 @@ const TeamManagement = () => {
       <div style={{ display: "flex", justifyContent: "flex-end" }}>
         <Button variant="primary" onClick={() => setIsNewTeamModalOpen(true)}>
           <Plus size={18} style={{ marginRight: "8px" }} />
-          {t('management.team.newTeam')}
+          {t("management.team.newTeam")}
         </Button>
       </div>
 
@@ -222,8 +253,8 @@ const TeamManagement = () => {
 
       {hasChanges && (
         <SaveFooter
-          label={t('management.team.unsavedChanges')}
-          saveText={t('management.team.saveAll')}
+          label={t("management.team.unsavedChanges")}
+          saveText={t("management.team.saveAll")}
           onSave={() => saveToFirebase()}
           onCancel={handleCancel}
           isSaving={status === "saving"}

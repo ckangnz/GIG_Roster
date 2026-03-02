@@ -34,6 +34,11 @@
   white-space: nowrap;
 }
 
+.settingsTable th.requiredHeader::after {
+  content: " *";
+  color: var(--color-error);
+}
+
 .settingsTable thead tr th:first-child {
   z-index: 70;
 }

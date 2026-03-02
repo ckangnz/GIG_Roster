@@ -1,7 +1,5 @@
 @import "./animation.css";
 @import "./styles/theme.css";
-@import "./styles/form.css";
-@import "./styles/button.css";
 
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
