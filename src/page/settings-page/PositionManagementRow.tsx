@@ -68,25 +68,28 @@ const PositionManagementRow = memo(({
           )}
           <input
             name={`name-${index}`}
-            className={formStyles.formInput}
+            className={`${formStyles.formInput} ${!position.name?.trim() ? formStyles.inputError : ""}`}
             value={position.name}
             onChange={(e) => onUpdate(index, "name", e.target.value)}
             style={{ width: "100%" }}
+            title={!position.name?.trim() ? t('management.position.nameRequired') : ""}
           />
         </div>
       </SettingsTableAnyCell>
       <SettingsTableAnyCell>
         <input
           name={`emoji-${index}`}
-          className={formStyles.formInput}
+          className={`${formStyles.formInput} ${!position.emoji?.trim() ? formStyles.inputError : ""}`}
           value={position.emoji}
           onChange={(e) => onUpdate(index, "emoji", e.target.value)}
+          title={!position.emoji?.trim() ? t('management.position.nameRequired') : ""}
         />
       </SettingsTableAnyCell>
       <SettingsTableColourInputCell
         name={`colour-${index}`}
         value={position.colour}
         onChange={(e) => onUpdate(index, "colour", e.target.value)}
+        error={!position.colour?.trim()}
       />
       <SettingsTableAnyCell textAlign="center">
         <Toggle

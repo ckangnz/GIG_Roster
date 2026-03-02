@@ -65,6 +65,7 @@ export const useUndo = () => {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (!e.key) return;
       const isZ = e.key.toLowerCase() === 'z';
       const isCmdOrCtrl = e.metaKey || e.ctrlKey;
 

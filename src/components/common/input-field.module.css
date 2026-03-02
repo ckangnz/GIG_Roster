@@ -100,3 +100,14 @@
   background: var(--background-card);
   box-shadow: 0 0 0 2px var(--background-primary-subtle);
 }
+
+.inputError {
+  border-color: var(--color-error) !important;
+}
+
+.errorText {
+  color: var(--color-error);
+  font-size: 0.7rem;
+  margin-top: 2px;
+  display: block;
+}

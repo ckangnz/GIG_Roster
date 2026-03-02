@@ -89,6 +89,8 @@ const UserManagementRow = ({
           value={user.name || ""}
           onChange={(e) => handleUpdate("name", e.target.value)}
           isSticky
+          error={!(user.name || "").trim()}
+          style={{ width: "100%" }}
         />
         <SettingsTableInputCell
           name={`email-${user.id}`}

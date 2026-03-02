@@ -186,7 +186,7 @@ const ProfileSettings = ({
       </div>
 
       <div className={formStyles.formGroup}>
-        <label aria-required>{t("settings.name")}</label>
+        <label aria-required="true">{t("settings.name")}</label>
         <input
           required
           type="text"
@@ -195,8 +195,11 @@ const ProfileSettings = ({
           onChange={(e) =>
             setFormState((prev) => ({ ...prev, name: e.target.value }))
           }
-          className={formStyles.formInput}
+          className={`${formStyles.formInput} ${!isFormValid ? formStyles.inputError : ""}`}
         />
+        {!isFormValid && (
+          <span className={formStyles.errorText}>{t("settings.nameRequired")}</span>
+        )}
       </div>
       <div className={formStyles.formGroup}>
         <label>{t("settings.gender")}</label>

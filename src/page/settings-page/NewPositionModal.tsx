@@ -102,6 +102,8 @@ const NewPositionModal = ({
           onChange={(e) => setNewPos({ ...newPos, name: e.target.value })}
           autoFocus
           required
+          error={newPos.name !== undefined && !newPos.name.trim()}
+          errorText={t("management.position.nameRequired")}
         />
 
         <InputField
@@ -112,6 +114,7 @@ const NewPositionModal = ({
           onChange={(e) => handleEmojiChange(e.target.value)}
           maxLength={10} // Emojis can be long in terms of characters
           required
+          error={newPos.emoji !== undefined && !newPos.emoji.trim()}
         />
 
         <div className={styles.addNewField}>

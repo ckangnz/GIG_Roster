@@ -364,6 +364,8 @@ const TeamConfigModal = ({
             value={draft.name}
             placeholder="e.g. Production"
             onChange={(e) => updateDraft({ name: e.target.value })}
+            error={draft.name !== undefined && !draft.name.trim()}
+            errorText={t('management.team.nameRequired')}
           />
           
           <InputField
@@ -372,6 +374,7 @@ const TeamConfigModal = ({
             placeholder={t('onboarding.searchPlaceholder')}
             onChange={(e) => handleEmojiChange(e.target.value)}
             maxLength={10}
+            error={draft.emoji !== undefined && !draft.emoji.trim()}
           />
 
           <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
@@ -380,7 +383,7 @@ const TeamConfigModal = ({
             </span>
             <input
               type="number"
-              className={formStyles.formInput}
+              className={`${formStyles.formInput} ${(!draft.maxConflict || draft.maxConflict < 1) ? formStyles.inputError : ""}`}
               value={draft.maxConflict?.toString() || "1"}
               onChange={(e) => updateDraft({ maxConflict: parseInt(e.target.value) || 1 })}
               style={{ width: "100px" }}

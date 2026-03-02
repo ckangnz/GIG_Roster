@@ -95,17 +95,18 @@ const TeamManagementRow = ({
             </div>
             <input
               name={`team-name-${teamIndex}`}
-              className={formStyles.formInput}
+              className={`${formStyles.formInput} ${!team.name?.trim() ? formStyles.inputError : ""}`}
               value={team.name}
               onChange={(e) => onUpdate(teamIndex, "name", e.target.value)}
               style={{ width: "100%" }}
+              title={!team.name?.trim() ? t('management.team.nameRequired') : ""}
             />
           </div>
         </SettingsTableAnyCell>
         <SettingsTableAnyCell>
           <input
             name={`team-emoji-${teamIndex}`}
-            className={formStyles.formInput}
+            className={`${formStyles.formInput} ${!team.emoji?.trim() ? formStyles.inputError : ""}`}
             value={team.emoji}
             onChange={(e) => onUpdate(teamIndex, "emoji", e.target.value)}
           />
@@ -113,7 +114,7 @@ const TeamManagementRow = ({
         <SettingsTableAnyCell>
           <input
             name={`team-maxConflict-${teamIndex}`}
-            className={formStyles.formInput}
+            className={`${formStyles.formInput} ${(!team.maxConflict || team.maxConflict < 1) ? formStyles.inputError : ""}`}
             value={team.maxConflict?.toString() || "1"}
             type="number"
             title={t('management.team.maxConflictHint', { defaultValue: 'Maximum number of simultaneous positions a member can be assigned to within this team.' })}

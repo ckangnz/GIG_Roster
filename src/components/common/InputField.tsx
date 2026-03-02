@@ -4,9 +4,17 @@ import styles from "./input-field.module.css";
 
 interface InputFieldProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
+  error?: boolean;
+  errorText?: string;
 }
 
-export const InputField = ({ label, className, ...props }: InputFieldProps) => {
+export const InputField = ({
+  label,
+  className,
+  error,
+  errorText,
+  ...props
+}: InputFieldProps) => {
   return (
     <div className={styles.inputWrapper}>
       {label && (
@@ -17,7 +25,11 @@ export const InputField = ({ label, className, ...props }: InputFieldProps) => {
           {label}
         </label>
       )}
-      <input className={`${styles.input} ${className || ""}`} {...props} />
+      <input
+        className={`${styles.input} ${error ? styles.inputError : ""} ${className || ""}`}
+        {...props}
+      />
+      {error && errorText && <span className={styles.errorText}>{errorText}</span>}
     </div>
   );
 };
