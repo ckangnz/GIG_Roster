@@ -93,8 +93,10 @@ const ProfileSettings = ({
     return JSON.stringify(formState) !== JSON.stringify(originalData);
   }, [formState, userData]);
 
+  const isFormValid = !!formState.name.trim();
+
   const handleSave = async () => {
-    if (!firebaseUser) return;
+    if (!firebaseUser || !isFormValid) return;
     setStatus("saving");
     try {
       await dispatch(
@@ -324,6 +326,7 @@ const ProfileSettings = ({
           onSave={handleSave}
           onCancel={handleCancel}
           isSaving={status === "saving"}
+          isDisabled={!isFormValid}
         />
       )}
     </section>

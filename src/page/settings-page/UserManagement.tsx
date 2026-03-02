@@ -48,6 +48,10 @@ const UserManagement = () => {
     );
   }, [allUsers, originalUsers]);
 
+  const isFormValid = useMemo(() => {
+    return allUsers.every(u => (u.name || "").trim() !== "");
+  }, [allUsers]);
+
   const handleSaveChanges = () => {
     dispatch(saveAllUserChanges(allUsers));
   };
@@ -120,6 +124,7 @@ const UserManagement = () => {
           onSave={handleSaveChanges}
           onCancel={handleCancelChanges}
           isSaving={saving}
+          isDisabled={!isFormValid}
         />
       )}
     </div>

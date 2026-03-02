@@ -156,6 +156,14 @@ const TeamManagement = () => {
     setTeams(reduxTeams);
   };
 
+  const isFormValid = useMemo(() => {
+    return teams.every(t => 
+      (t.name || "").trim() !== "" && 
+      (t.emoji || "").trim() !== "" && 
+      (t.maxConflict !== undefined && t.maxConflict > 0)
+    );
+  }, [teams]);
+
   if (teamsState?.loading || positionsLoading) {
     return <Spinner />;
   }
@@ -219,6 +227,7 @@ const TeamManagement = () => {
           onSave={() => saveToFirebase()}
           onCancel={handleCancel}
           isSaving={status === "saving"}
+          isDisabled={!isFormValid}
         />
       )}
     </div>

@@ -317,7 +317,11 @@ const TeamConfigModal = ({
     updateDraft({ recurringEvents: [...(draft.recurringEvents || []), newEvent] });
   };
 
-  const isFormValid = (draft.name || "").trim() !== "" && (draft.emoji || "").trim() !== "" && !!orgId;
+  const isFormValid = 
+    (draft.name || "").trim() !== "" && 
+    (draft.emoji || "").trim() !== "" && 
+    (draft.maxConflict !== undefined && draft.maxConflict > 0) &&
+    !!orgId;
 
   const footer = (
     <div style={{ display: "flex", gap: "12px", width: "100%" }}>

@@ -67,6 +67,12 @@ const NewPositionModal = ({ isOpen, onClose, onAdd, availableParents }: NewPosit
     setNewPos({ ...newPos, emoji: limited });
   };
 
+  const isFormValid = 
+    (newPos.name || "").trim() !== "" && 
+    (newPos.emoji || "").trim() !== "" && 
+    (!isChild || (isChild && !!newPos.parentId)) &&
+    !!orgId;
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={t('management.position.newPositionModal')}>
       <div style={{ display: "flex", flexDirection: "column", gap: "20px", padding: "10px 0" }}>
@@ -76,6 +82,7 @@ const NewPositionModal = ({ isOpen, onClose, onAdd, availableParents }: NewPosit
           placeholder=""
           onChange={(e) => setNewPos({ ...newPos, name: e.target.value })}
           autoFocus
+          required
         />
         
         <InputField
@@ -84,6 +91,7 @@ const NewPositionModal = ({ isOpen, onClose, onAdd, availableParents }: NewPosit
           placeholder={t('onboarding.searchPlaceholder')}
           onChange={(e) => handleEmojiChange(e.target.value)}
           maxLength={10} // Emojis can be long in terms of characters
+          required
         />
 
         <div className={styles.addNewField}>
@@ -177,7 +185,7 @@ const NewPositionModal = ({ isOpen, onClose, onAdd, availableParents }: NewPosit
           <Button
             variant="primary"
             onClick={handleAdd}
-            disabled={!newPos.name?.trim() || !newPos.emoji?.trim() || (isChild && !newPos.parentId)}
+            disabled={!isFormValid}
             style={{ width: "100%", height: "48px" }}
           >
             <Plus size={20} style={{ marginRight: "8px" }} />

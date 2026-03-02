@@ -7,6 +7,7 @@ interface SaveFooterProps {
   onSave: () => void;
   onCancel: () => void;
   isSaving: boolean;
+  isDisabled?: boolean;
   saveText?: string;
   discardText?: string;
   hasSideNav?: boolean;
@@ -17,6 +18,7 @@ const SaveFooter = ({
   onSave,
   onCancel,
   isSaving,
+  isDisabled = false,
   saveText,
   discardText,
 }: SaveFooterProps) => {
@@ -41,7 +43,7 @@ const SaveFooter = ({
           <button
             className={styles.saveBtn}
             onClick={onSave}
-            disabled={isSaving}
+            disabled={isSaving || isDisabled}
           >
             {isSaving ? t('common.loading') : displaySave}
           </button>

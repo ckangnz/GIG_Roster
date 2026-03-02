@@ -271,6 +271,10 @@ const PositionManagement = () => {
     return positions.filter(p => !p.parentId);
   }, [positions]);
 
+  const isFormValid = useMemo(() => {
+    return positions.every(p => (p.name || "").trim() !== "" && (p.emoji || "").trim() !== "");
+  }, [positions]);
+
   if (positionsLoading) {
     return <Spinner />;
   }
@@ -342,6 +346,7 @@ const PositionManagement = () => {
           onSave={saveToFirebase}
           onCancel={handleCancel}
           isSaving={status === "saving"}
+          isDisabled={!isFormValid}
         />
       )}
     </div>
