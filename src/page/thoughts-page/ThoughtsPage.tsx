@@ -1,19 +1,18 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 
-
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { AnimatePresence, motion } from "framer-motion";
-import { 
-  Plus, 
-  Trash2, 
-  Edit2, 
-  ExternalLink, 
-  User, 
-  Users, 
-  ArrowUpAZ, 
-  ArrowDownAZ, 
-  Heart, 
-  MessageSquare 
+import {
+  Plus,
+  Trash2,
+  Edit2,
+  Share,
+  User,
+  Users,
+  ArrowUpAZ,
+  ArrowDownAZ,
+  Heart,
+  MessageSquare,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
@@ -56,13 +55,17 @@ const ThoughtsPage = () => {
   const teamNameFromUrl = safeDecode(rawTeamName).trim();
 
   const { userData, firebaseUser } = useAppSelector((state) => state.auth);
-  const { teams: allTeams, loading: teamsLoading } = useAppSelector((state) => state.teams);
+  const { teams: allTeams, loading: teamsLoading } = useAppSelector(
+    (state) => state.teams,
+  );
   const { allUsers } = useAppSelector((state) => state.userManagement);
   const { thoughts } = useAppSelector((state) => state.thoughts);
 
   // Resolve UUID for data fetching
   const teamId = useMemo(() => {
-    const found = allTeams.find(t => t.id === teamNameFromUrl || t.name === teamNameFromUrl);
+    const found = allTeams.find(
+      (t) => t.id === teamNameFromUrl || t.name === teamNameFromUrl,
+    );
     return found?.id || teamNameFromUrl || userData?.teams?.[0] || "";
   }, [allTeams, teamNameFromUrl, userData?.teams]);
 
@@ -87,16 +90,16 @@ const ThoughtsPage = () => {
   useEffect(() => {
     if (!teamNameFromUrl && userData?.teams?.[0]) {
       const firstTeamId = userData.teams[0];
-      const firstTeam = allTeams.find(t => t.id === firstTeamId || t.name === firstTeamId);
+      const firstTeam = allTeams.find(
+        (t) => t.id === firstTeamId || t.name === firstTeamId,
+      );
       if (firstTeam) {
         navigate(`/app/thoughts/${firstTeam.id}`, { replace: true });
       }
     }
   }, [teamNameFromUrl, userData, navigate, allTeams]);
 
-  const focusedThoughtId = focusedUser
-    ? `${focusedUser.id}_${teamId}`
-    : "";
+  const focusedThoughtId = focusedUser ? `${focusedUser.id}_${teamId}` : "";
   const focusedThought = thoughts[focusedThoughtId];
 
   const myThoughtId = firebaseUser ? `${firebaseUser.uid}_${teamId}` : "";
@@ -298,8 +301,11 @@ const ThoughtsPage = () => {
 
   const handleShareMyThoughts = () => {
     if (!myThought?.entries?.length) return;
-    
-    const totalLikes = myThought.entries.reduce((sum, entry) => sum + Object.keys(entry.hearts || {}).length, 0);
+
+    const totalLikes = myThought.entries.reduce(
+      (sum, entry) => sum + Object.keys(entry.hearts || {}).length,
+      0,
+    );
     let text = `My Thoughts (Total Likes: ${totalLikes})\n`;
     myThought.entries.forEach((entry, i) => {
       text += `${i + 1}. ${entry.text} (${Object.keys(entry.hearts || {}).length} ❤️)\n`;
@@ -312,36 +318,66 @@ const ThoughtsPage = () => {
     });
   };
 
-  type SortOption = "alpha-asc" | "alpha-desc" | "likes-desc" | "likes-asc" | "thoughts-desc" | "thoughts-asc";
+  type SortOption =
+    | "alpha-asc"
+    | "alpha-desc"
+    | "likes-desc"
+    | "likes-asc"
+    | "thoughts-desc"
+    | "thoughts-asc";
 
   const handleShareEveryone = (sortOption: SortOption) => {
-    const teamName = allTeams.find(t => t.id === teamId || t.name === teamId)?.name || "Team";
+    const teamName =
+      allTeams.find((t) => t.id === teamId || t.name === teamId)?.name ||
+      "Team";
     let text = `Team Thoughts: ${teamName}\n\n`;
 
     const usersWithThoughts = teamUsers
-      .map(user => {
+      .map((user) => {
         const userThought = thoughts[`${user.id}_${teamId}`];
         const entries = userThought?.entries || [];
-        const totalLikes = entries.reduce((sum, e) => sum + Object.keys(e.hearts || {}).length, 0);
+        const totalLikes = entries.reduce(
+          (sum, e) => sum + Object.keys(e.hearts || {}).length,
+          0,
+        );
         return { user, entries, totalLikes, count: entries.length };
       })
-      .filter(u => u.count > 0);
+      .filter((u) => u.count > 0);
 
     usersWithThoughts.sort((a, b) => {
       switch (sortOption) {
-        case "alpha-asc": return (a.user.name || "").localeCompare(b.user.name || "");
-        case "alpha-desc": return (b.user.name || "").localeCompare(a.user.name || "");
-        case "likes-desc": return b.totalLikes - a.totalLikes || (a.user.name || "").localeCompare(b.user.name || "");
-        case "likes-asc": return a.totalLikes - b.totalLikes || (a.user.name || "").localeCompare(b.user.name || "");
-        case "thoughts-desc": return b.count - a.count || (a.user.name || "").localeCompare(b.user.name || "");
-        case "thoughts-asc": return a.count - b.count || (a.user.name || "").localeCompare(b.user.name || "");
-        default: return 0;
+        case "alpha-asc":
+          return (a.user.name || "").localeCompare(b.user.name || "");
+        case "alpha-desc":
+          return (b.user.name || "").localeCompare(a.user.name || "");
+        case "likes-desc":
+          return (
+            b.totalLikes - a.totalLikes ||
+            (a.user.name || "").localeCompare(b.user.name || "")
+          );
+        case "likes-asc":
+          return (
+            a.totalLikes - b.totalLikes ||
+            (a.user.name || "").localeCompare(b.user.name || "")
+          );
+        case "thoughts-desc":
+          return (
+            b.count - a.count ||
+            (a.user.name || "").localeCompare(b.user.name || "")
+          );
+        case "thoughts-asc":
+          return (
+            a.count - b.count ||
+            (a.user.name || "").localeCompare(b.user.name || "")
+          );
+        default:
+          return 0;
       }
     });
 
-    usersWithThoughts.forEach(u => {
+    usersWithThoughts.forEach((u) => {
       text += `${u.user.name} (${u.totalLikes} ❤️)\n`;
-      u.entries.forEach(entry => {
+      u.entries.forEach((entry) => {
         text += `- ${entry.text}\n`;
       });
       text += "\n";
@@ -399,10 +435,11 @@ const ThoughtsPage = () => {
   const isMyProfileFocused = focusedUser?.id === firebaseUser?.uid;
   const showAdminControls = userData?.isAdmin && !isMyProfileFocused;
 
-  const displayTeamName = allTeams.find(t => t.id === teamId || t.name === teamId)?.name || teamId;
+  const displayTeamName =
+    allTeams.find((t) => t.id === teamId || t.name === teamId)?.name || teamId;
   const displayTitle = teamId
-    ? `${t('nav.thoughts')} • ${displayTeamName}`
-    : t('thoughts.title');
+    ? `${t("nav.thoughts")} • ${displayTeamName}`
+    : t("thoughts.title");
 
   return (
     <>
@@ -430,9 +467,17 @@ const ThoughtsPage = () => {
 
         <div className={styles.focusedUserInfo}>
           <div className={styles.instructions}>
-            <span>{t('thoughts.shareAThought')}</span>
-            <span>{t('thoughts.instructions', { defaultValue: 'Tap to read • Double-tap to love' })}</span>
-            <span style={{ color: "var(--color-text-dim)", fontSize: "0.7rem" }}>{t('thoughts.expiryInfo')}</span>
+            <span>{t("thoughts.shareAThought")}</span>
+            <span>
+              {t("thoughts.instructions", {
+                defaultValue: "Tap to read • Double-tap to love",
+              })}
+            </span>
+            <span
+              style={{ color: "var(--color-text-dim)", fontSize: "0.7rem" }}
+            >
+              {t("thoughts.expiryInfo")}
+            </span>
           </div>
         </div>
 
@@ -446,20 +491,20 @@ const ThoughtsPage = () => {
             >
               {showAdminControls
                 ? focusedThought
-                  ? `${t('common.edit')} ${focusedUser?.name}${t('thoughts.possessive', { defaultValue: "'s" })} ${t('nav.thoughts').toLowerCase()}`
-                  : `${t('common.add')} for ${focusedUser?.name}`
+                  ? `${t("common.edit")} ${focusedUser?.name}${t("thoughts.possessive", { defaultValue: "'s" })} ${t("nav.thoughts").toLowerCase()}`
+                  : `${t("common.add")} for ${focusedUser?.name}`
                 : myThought?.entries?.length
-                  ? t('thoughts.manageMyThoughts')
-                  : t('thoughts.shareAThought')}
+                  ? t("thoughts.manageMyThoughts")
+                  : t("thoughts.shareAThought")}
             </Button>
             <Button
               variant="secondary"
               className={styles.exportIconButton}
               onClick={() => setIsShareSheetOpen(true)}
-              title={t('thoughts.shareThoughts')}
+              title={t("thoughts.shareThoughts")}
               style={{ height: "48px" }}
             >
-              <ExternalLink size={20} />
+              <Share size={20} />
             </Button>
           </div>
         </div>
@@ -467,7 +512,7 @@ const ThoughtsPage = () => {
 
       <AnimatePresence>
         {showCopiedToast && (
-          <motion.div 
+          <motion.div
             className={styles.toast}
             initial={{ opacity: 0, y: 20, x: "-50%" }}
             animate={{ opacity: 1, y: 0, x: "-50%" }}
@@ -481,28 +526,36 @@ const ThoughtsPage = () => {
       <ActionSheet
         isOpen={isShareSheetOpen}
         onClose={() => setIsShareSheetOpen(false)}
-        title={t('thoughts.shareThoughts')}
+        title={t("thoughts.shareThoughts")}
       >
-        <button 
+        <button
           className={styles.shareOptionItem}
           onClick={handleShareMyThoughts}
           disabled={!myThought?.entries?.length}
           style={{ opacity: !myThought?.entries?.length ? 0.5 : 1 }}
         >
           <div className={styles.shareOptionText}>
-            <span className={styles.shareOptionLabel}>{t('thoughts.shareMyThoughts')}</span>
-            <span className={styles.shareOptionSubtext}>{t('thoughts.shareMyThoughtsSub')}</span>
+            <span className={styles.shareOptionLabel}>
+              {t("thoughts.shareMyThoughts")}
+            </span>
+            <span className={styles.shareOptionSubtext}>
+              {t("thoughts.shareMyThoughtsSub")}
+            </span>
           </div>
           <User className={styles.shareOptionIcon} size={20} />
         </button>
 
-        <button 
+        <button
           className={styles.shareOptionItem}
           onClick={() => setIsEveryoneOptionsOpen(true)}
         >
           <div className={styles.shareOptionText}>
-            <span className={styles.shareOptionLabel}>{t('thoughts.shareEveryonesThoughts')}</span>
-            <span className={styles.shareOptionSubtext}>{t('thoughts.shareEveryonesThoughtsSub')}</span>
+            <span className={styles.shareOptionLabel}>
+              {t("thoughts.shareEveryonesThoughts")}
+            </span>
+            <span className={styles.shareOptionSubtext}>
+              {t("thoughts.shareEveryonesThoughtsSub")}
+            </span>
           </div>
           <Users className={styles.shareOptionIcon} size={20} />
         </button>
@@ -511,54 +564,116 @@ const ThoughtsPage = () => {
       <ActionSheet
         isOpen={isEveryoneOptionsOpen}
         onClose={() => setIsEveryoneOptionsOpen(false)}
-        title={t('thoughts.exportOrder')}
+        title={t("thoughts.exportOrder")}
       >
-        <button className={styles.shareOptionItem} onClick={() => handleShareEveryone("alpha-asc")}>
+        <button
+          className={styles.shareOptionItem}
+          onClick={() => handleShareEveryone("alpha-asc")}
+        >
           <div className={styles.shareOptionText}>
-            <span className={styles.shareOptionLabel}>{t('thoughts.alphaAsc')}</span>
-            <span className={styles.shareOptionSubtext}>{t('thoughts.alphaAscSub', { defaultValue: 'Order by member name ascending' })}</span>
+            <span className={styles.shareOptionLabel}>
+              {t("thoughts.alphaAsc")}
+            </span>
+            <span className={styles.shareOptionSubtext}>
+              {t("thoughts.alphaAscSub", {
+                defaultValue: "Order by member name ascending",
+              })}
+            </span>
           </div>
           <ArrowUpAZ className={styles.shareOptionIcon} size={20} />
         </button>
 
-        <button className={styles.shareOptionItem} onClick={() => handleShareEveryone("alpha-desc")}>
+        <button
+          className={styles.shareOptionItem}
+          onClick={() => handleShareEveryone("alpha-desc")}
+        >
           <div className={styles.shareOptionText}>
-            <span className={styles.shareOptionLabel}>{t('thoughts.alphaDesc')}</span>
-            <span className={styles.shareOptionSubtext}>{t('thoughts.alphaDescSub', { defaultValue: 'Order by member name descending' })}</span>
+            <span className={styles.shareOptionLabel}>
+              {t("thoughts.alphaDesc")}
+            </span>
+            <span className={styles.shareOptionSubtext}>
+              {t("thoughts.alphaDescSub", {
+                defaultValue: "Order by member name descending",
+              })}
+            </span>
           </div>
           <ArrowDownAZ className={styles.shareOptionIcon} size={20} />
         </button>
 
-        <button className={styles.shareOptionItem} onClick={() => handleShareEveryone("likes-desc")}>
+        <button
+          className={styles.shareOptionItem}
+          onClick={() => handleShareEveryone("likes-desc")}
+        >
           <div className={styles.shareOptionText}>
-            <span className={styles.shareOptionLabel}>{t('thoughts.mostLiked')}</span>
-            <span className={styles.shareOptionSubtext}>{t('thoughts.mostLikedSub', { defaultValue: 'Order by total hearts received' })}</span>
+            <span className={styles.shareOptionLabel}>
+              {t("thoughts.mostLiked")}
+            </span>
+            <span className={styles.shareOptionSubtext}>
+              {t("thoughts.mostLikedSub", {
+                defaultValue: "Order by total hearts received",
+              })}
+            </span>
           </div>
           <Heart className={styles.shareOptionIcon} size={20} />
         </button>
 
-        <button className={styles.shareOptionItem} onClick={() => handleShareEveryone("likes-asc")}>
+        <button
+          className={styles.shareOptionItem}
+          onClick={() => handleShareEveryone("likes-asc")}
+        >
           <div className={styles.shareOptionText}>
-            <span className={styles.shareOptionLabel}>{t('thoughts.leastLiked')}</span>
-            <span className={styles.shareOptionSubtext}>{t('thoughts.leastLikedSub', { defaultValue: 'Order by fewest hearts received' })}</span>
+            <span className={styles.shareOptionLabel}>
+              {t("thoughts.leastLiked")}
+            </span>
+            <span className={styles.shareOptionSubtext}>
+              {t("thoughts.leastLikedSub", {
+                defaultValue: "Order by fewest hearts received",
+              })}
+            </span>
           </div>
-          <Heart className={styles.shareOptionIcon} size={20} style={{ opacity: 0.5 }} />
+          <Heart
+            className={styles.shareOptionIcon}
+            size={20}
+            style={{ opacity: 0.5 }}
+          />
         </button>
 
-        <button className={styles.shareOptionItem} onClick={() => handleShareEveryone("thoughts-desc")}>
+        <button
+          className={styles.shareOptionItem}
+          onClick={() => handleShareEveryone("thoughts-desc")}
+        >
           <div className={styles.shareOptionText}>
-            <span className={styles.shareOptionLabel}>{t('thoughts.mostThoughts')}</span>
-            <span className={styles.shareOptionSubtext}>{t('thoughts.mostThoughtsSub', { defaultValue: 'Members with most active thoughts first' })}</span>
+            <span className={styles.shareOptionLabel}>
+              {t("thoughts.mostThoughts")}
+            </span>
+            <span className={styles.shareOptionSubtext}>
+              {t("thoughts.mostThoughtsSub", {
+                defaultValue: "Members with most active thoughts first",
+              })}
+            </span>
           </div>
           <MessageSquare className={styles.shareOptionIcon} size={20} />
         </button>
 
-        <button className={styles.shareOptionItem} onClick={() => handleShareEveryone("thoughts-asc")}>
+        <button
+          className={styles.shareOptionItem}
+          onClick={() => handleShareEveryone("thoughts-asc")}
+        >
           <div className={styles.shareOptionText}>
-            <span className={styles.shareOptionLabel}>{t('thoughts.leastThoughts')}</span>
-            <span className={styles.shareOptionSubtext}>{t('thoughts.leastThoughtsSub', { defaultValue: 'Members with fewest active thoughts first' })}</span>
+            <span className={styles.shareOptionLabel}>
+              {t("thoughts.leastThoughts")}
+            </span>
+            <span className={styles.shareOptionSubtext}>
+              {t("thoughts.leastThoughtsSub", {
+                defaultValue: "Members with fewest active thoughts first",
+              })}
+            </span>
           </div>
-          <MessageSquare className={styles.shareOptionIcon} size={20} style={{ opacity: 0.5 }} />
+          <MessageSquare
+            className={styles.shareOptionIcon}
+            size={20}
+            style={{ opacity: 0.5 }}
+          />
         </button>
       </ActionSheet>
 
@@ -567,25 +682,29 @@ const ThoughtsPage = () => {
         onClose={() => setIsManagementOpen(false)}
         title={
           managementUser?.id === firebaseUser?.uid
-            ? t('thoughts.myThoughts')
-            : `${t('common.edit')} for ${managementUser?.name}`
+            ? t("thoughts.myThoughts")
+            : `${t("common.edit")} for ${managementUser?.name}`
         }
       >
         <div className={styles.managementList}>
           {targetThought?.entries?.map((entry) => (
-            <div 
-              key={entry.id} 
+            <div
+              key={entry.id}
               className={`${styles.managementItem} ${entry.isExpired ? styles.managementItemExpired : ""}`}
             >
               <div className={styles.entryContent}>
                 <div className={styles.entryText}>{entry.text}</div>
-                <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                <div
+                  style={{ display: "flex", gap: "8px", alignItems: "center" }}
+                >
                   <ThoughtExpiry
                     updatedAt={entry.updatedAt}
                     className={styles.expiryLabel}
                   />
                   {entry.isExpired && (
-                    <span className={styles.expiredBadge}>{t('thoughts.expired')}</span>
+                    <span className={styles.expiredBadge}>
+                      {t("thoughts.expired")}
+                    </span>
                   )}
                 </div>
               </div>
@@ -617,12 +736,13 @@ const ThoughtsPage = () => {
                 className={styles.addEntryBtn}
                 variant="secondary"
               >
-                <Plus size={16} style={{ marginRight: 8 }} /> {t('thoughts.addAnotherThought')}
+                <Plus size={16} style={{ marginRight: 8 }} />{" "}
+                {t("thoughts.addAnotherThought")}
               </Button>
             )}
 
           {!targetThought?.entries?.length && (
-            <p className={styles.emptyThoughts}>{t('thoughts.noThoughts')}</p>
+            <p className={styles.emptyThoughts}>{t("thoughts.noThoughts")}</p>
           )}
         </div>
       </ActionSheet>
@@ -630,13 +750,15 @@ const ThoughtsPage = () => {
       <ActionSheet
         isOpen={isEditorOpen}
         onClose={handleCloseEditor}
-        title={editingEntryId ? t('thoughts.editThought') : t('thoughts.addThought')}
+        title={
+          editingEntryId ? t("thoughts.editThought") : t("thoughts.addThought")
+        }
       >
         <div className={styles.inputContainer}>
           <TextAreaField
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
-            placeholder={t('thoughts.shareAThought')}
+            placeholder={t("thoughts.shareAThought")}
             autoFocus
             aria-label="Your thought"
             onKeyDown={(e) => {
@@ -651,7 +773,7 @@ const ThoughtsPage = () => {
               disabled={!inputText.trim()}
               className={styles.saveBtn}
             >
-              {t('thoughts.saveThought')}
+              {t("thoughts.saveThought")}
             </Button>
           </div>
         </div>
@@ -660,7 +782,7 @@ const ThoughtsPage = () => {
       <ActionSheet
         isOpen={!!likerList}
         onClose={() => setLikerList(null)}
-        title={t('thoughts.likedBy')}
+        title={t("thoughts.likedBy")}
       >
         <div className={styles.likerList}>
           {likerList?.map((user, idx) => (
@@ -670,7 +792,7 @@ const ThoughtsPage = () => {
             </div>
           ))}
           {likerList?.length === 0 && (
-            <p className={styles.emptyThoughts}>{t('thoughts.noLikes')}</p>
+            <p className={styles.emptyThoughts}>{t("thoughts.noLikes")}</p>
           )}
         </div>
       </ActionSheet>
