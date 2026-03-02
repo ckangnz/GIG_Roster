@@ -101,6 +101,10 @@
   transition: all 0.2s;
 }
 
+.loadNextYearBtn * {
+  vertical-align: middle;
+}
+
 .loadNextYearBtn:hover {
   background: var(--background-button-secondary);
   border-color: var(--color-link);

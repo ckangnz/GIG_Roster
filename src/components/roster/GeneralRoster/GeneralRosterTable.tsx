@@ -2,7 +2,6 @@ import { useMemo, useCallback } from "react";
 
 import { motion } from "framer-motion";
 
-
 import { GeneralRosterHeader } from "./GeneralRosterHeader";
 import { GeneralRosterRow } from "./GeneralRosterRow";
 import { useRosterBaseLogic } from "../../../hooks/useRosterBaseLogic";
@@ -31,10 +30,17 @@ const GeneralRosterTable = () => {
     hasPositionCoverageRequest,
   } = logic;
 
-  const currentTeam = useMemo(() => allTeams.find(t => t.id === teamId), [allTeams, teamId]);
+  const currentTeam = useMemo(
+    () => allTeams.find((t) => t.id === teamId),
+    [allTeams, teamId],
+  );
   const isSlotted = currentTeam?.rosterMode === "slotted";
 
-  const visualRows = useRosterVisualRows(rosterDates, currentTeam || null, !!isSlotted);
+  const visualRows = useRosterVisualRows(
+    rosterDates,
+    currentTeam || null,
+    !!isSlotted,
+  );
 
   const currentPosition = useMemo(
     () => allPositions.find((p) => p.id === activePositionId),
@@ -69,7 +75,9 @@ const GeneralRosterTable = () => {
 
   const genderDividerIndex = useMemo(() => {
     if (!currentPosition?.sortByGender || sortedUsers.length === 0) return -1;
-    const firstFemaleIndex = sortedUsers.findIndex((u) => u.gender === "Female");
+    const firstFemaleIndex = sortedUsers.findIndex(
+      (u) => u.gender === "Female",
+    );
     return firstFemaleIndex > 0 && firstFemaleIndex < sortedUsers.length
       ? firstFemaleIndex
       : -1;
@@ -82,23 +90,30 @@ const GeneralRosterTable = () => {
     if (!entry || !entry.teams[teamId]) return [];
 
     const teamAssignments = getAssignmentsForTeam(entry, teamId);
-    const children = allPositions.filter((p) => p.parentId === activePositionId);
+    const children = allPositions.filter(
+      (p) => p.parentId === activePositionId,
+    );
     const positionGroupIds = [activePositionId, ...children.map((c) => c.id)];
 
     return Object.entries(teamAssignments)
-      .filter(([, positions]) =>
-        Array.isArray(positions) && (positions as string[]).some((p) => positionGroupIds.includes(p)),
+      .filter(
+        ([, positions]) =>
+          Array.isArray(positions) &&
+          (positions as string[]).some((p) => positionGroupIds.includes(p)),
       )
       .map(([email]) => email);
   }, [closestNextDate, teamId, activePositionId, entries, allPositions]);
 
-  const handleKeyboardCellClick = useCallback((rowIdx: number, col: number) => {
-    const row = visualRows[rowIdx];
-    const user = sortedUsers[col];
-    if (row && user?.email) {
-      handleCellClick(row.dateString, user.email, rowIdx, col, row.slot?.id);
-    }
-  }, [visualRows, sortedUsers, handleCellClick]);
+  const handleKeyboardCellClick = useCallback(
+    (rowIdx: number, col: number) => {
+      const row = visualRows[rowIdx];
+      const user = sortedUsers[col];
+      if (row && user?.email) {
+        handleCellClick(row.dateString, user.email, rowIdx, col, row.slot?.id);
+      }
+    },
+    [visualRows, sortedUsers, handleCellClick],
+  );
 
   const getCellContent = useCallback(
     (dateString: string, userEmail: string, slotId?: string) => {
@@ -109,14 +124,20 @@ const GeneralRosterTable = () => {
       let currentTeamAssignments: string[] = [];
 
       if (teamData) {
-        if (isTeamRosterData(teamData) && teamData.type === 'slotted' && slotId) {
+        if (
+          isTeamRosterData(teamData) &&
+          teamData.type === "slotted" &&
+          slotId
+        ) {
           currentTeamAssignments = teamData.slots?.[slotId]?.[userEmail] || [];
         } else {
-          currentTeamAssignments = getAssignmentsForTeam(entry, teamId)[userEmail] || [];
+          currentTeamAssignments =
+            getAssignmentsForTeam(entry, teamId)[userEmail] || [];
         }
       }
 
-      const otherTeamsAssignments: { teamId: string; positions: string[] }[] = [];
+      const otherTeamsAssignments: { teamId: string; positions: string[] }[] =
+        [];
       Object.entries(entry.teams).forEach(([tId]) => {
         if (tId !== teamId) {
           const assignments = getAssignmentsForTeam(entry, tId)[userEmail];
@@ -126,21 +147,27 @@ const GeneralRosterTable = () => {
         }
       });
 
-      if (currentTeamAssignments.length === 0 && otherTeamsAssignments.length === 0) return "";
+      if (
+        currentTeamAssignments.length === 0 &&
+        otherTeamsAssignments.length === 0
+      )
+        return "";
 
       return (
         <>
           <div className={cellStyles.currentTeamContainer}>
             {currentTeamAssignments.map((posId) => {
-              const pos = allPositions.find((p) => p.id === posId || p.name === posId);
-              const team = allTeams.find(t => t.id === teamId);
+              const pos = allPositions.find(
+                (p) => p.id === posId || p.name === posId,
+              );
+              const team = allTeams.find((t) => t.id === teamId);
               return (
                 <motion.span
                   key={posId}
                   initial={{ scale: 0, rotate: -30 }}
                   animate={{ scale: 1, rotate: 0 }}
                   transition={{ duration: 0.3, ease: "easeOut" }}
-                  title={`${team?.name || 'Team'}: ${pos?.name || posId}`}
+                  title={`${team?.name || "Team"}: ${pos?.name || posId}`}
                   className={cellStyles.currentTeamEmoji}
                 >
                   {pos?.emoji || "❓"}
@@ -152,12 +179,14 @@ const GeneralRosterTable = () => {
             <div className={cellStyles.otherTeamsIndicator}>
               {otherTeamsAssignments.map((ota) =>
                 ota.positions.map((posId) => {
-                  const pos = allPositions.find((p) => p.id === posId || p.name === posId);
-                  const oTeam = allTeams.find(t => t.id === ota.teamId);
+                  const pos = allPositions.find(
+                    (p) => p.id === posId || p.name === posId,
+                  );
+                  const oTeam = allTeams.find((t) => t.id === ota.teamId);
                   return (
                     <span
                       key={`${ota.teamId}-${posId}`}
-                      title={`${oTeam?.name || 'Team'}: ${pos?.name || posId}`}
+                      title={`${oTeam?.name || "Team"}: ${pos?.name || posId}`}
                       className={cellStyles.otherTeamEmoji}
                     >
                       {pos?.emoji || "❓"}
@@ -193,7 +222,7 @@ const GeneralRosterTable = () => {
       hiddenUserList={hiddenUserList}
       renderHeader={renderHeader}
       onLoadNextYear={logic.handleLoadNextYear}
-      colCount={sortedUsers.length}
+      colCount={sortedUsers.length + (genderDividerIndex >= 0 ? 1 : 0)}
       rowCount={visualRows.length}
       onCellClick={handleKeyboardCellClick}
       hasPastDates={hasPastDates}
@@ -213,8 +242,12 @@ const GeneralRosterTable = () => {
             onDateClick={logic.handleDateClick}
             focusedCell={logic.focusedCell}
             setFocusedCell={logic.setFocusedCell}
-            handleCellClick={(date, email, r, c) => handleCellClick(date, email, r, c, row.slot?.id)}
-            getCellContent={(date, email) => getCellContent(date, email, row.slot?.id)}
+            handleCellClick={(date, email, r, c) =>
+              handleCellClick(date, email, r, c, row.slot?.id)
+            }
+            getCellContent={(date, email) =>
+              getCellContent(date, email, row.slot?.id)
+            }
             sortedUsers={sortedUsers}
             genderDividerIndex={genderDividerIndex}
             isCellDisabled={logic.isCellDisabled}

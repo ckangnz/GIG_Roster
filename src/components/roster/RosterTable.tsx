@@ -1,7 +1,8 @@
 import { ReactNode, useEffect, RefObject } from "react";
 
 import { motion } from "framer-motion";
-import { RefreshCw } from "lucide-react";
+import { ArrowDown } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import TopControls from "./TopControls";
 import { useAppDispatch } from "../../hooks/redux";
@@ -93,6 +94,7 @@ const RosterTable = ({
   rowCount,
 }: RosterTableProps) => {
   const dispatch = useAppDispatch();
+  const { t } = useTranslation();
 
   useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
@@ -109,7 +111,8 @@ const RosterTable = ({
       if (!focusedCell) return;
 
       const { row, col, table } = focusedCell;
-      const effectiveRowCount = rowCount !== undefined ? rowCount : rosterDates.length;
+      const effectiveRowCount =
+        rowCount !== undefined ? rowCount : rosterDates.length;
 
       switch (e.key) {
         case "ArrowUp":
@@ -118,7 +121,8 @@ const RosterTable = ({
           break;
         case "ArrowDown":
           e.preventDefault();
-          if (row < effectiveRowCount - 1) setFocusedCell({ row: row + 1, col, table });
+          if (row < effectiveRowCount - 1)
+            setFocusedCell({ row: row + 1, col, table });
           break;
         case "ArrowLeft":
           e.preventDefault();
@@ -191,7 +195,14 @@ const RosterTable = ({
 
       <div className={styles.rosterSection}>
         {isLoading ? (
-          <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div
+            style={{
+              flex: 1,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
             <Spinner />
           </div>
         ) : (
@@ -210,21 +221,12 @@ const RosterTable = ({
                   <tr className={headerStyles.resetRow}>
                     <td
                       className={`${rowStyles.dateCell} ${rowStyles.stickyCol} ${headerStyles.resetCell}`}
-                    >
-                      <button
-                        className={headerStyles.loadPrevBtn}
-                        onClick={() => dispatch(resetToUpcomingDates())}
-                        title="Reset to upcoming dates"
-                      >
-                        <RefreshCw size={16} />
-                      </button>
-                    </td>
+                    ></td>
                     <td
-                      colSpan={colCount + (isAllView ? 0 : 1)} // +1 for Peek column
+                      colSpan={colCount + (isAllView ? 0 : 1)}
                       className={cellStyles.rosterCell}
                       style={{
-                        textAlign: "left",
-                        paddingLeft: "12px",
+                        textAlign: "center",
                         fontSize: "0.85rem",
                         color: "var(--color-primary)",
                         fontWeight: "500",
@@ -232,7 +234,7 @@ const RosterTable = ({
                       }}
                       onClick={() => dispatch(resetToUpcomingDates())}
                     >
-                      Past dates loaded. Click to reset to today.
+                      {t("roster.resetDates")}
                     </td>
                   </tr>
                 )}
@@ -244,7 +246,7 @@ const RosterTable = ({
                 className={styles.loadNextYearBtn}
                 onClick={onLoadNextYear}
               >
-                Load Next Year ↓
+                {t("roster.loadNextYear")} <ArrowDown size={"16px"} />
               </button>
             </div>
           </motion.div>

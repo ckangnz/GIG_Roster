@@ -54,7 +54,7 @@
   },
   "roster": {
     "loadPrevious": "Load Previous Dates",
-    "resetDates": "Reset to upcoming",
+    "resetDates": "Click to collapse previous dates",
     "loadNextYear": "Load Next Year",
     "claim": "Claim",
     "absent": "Absent",
@@ -74,6 +74,8 @@
   "thoughts": {
     "title": "Team Thoughts",
     "manageMyThoughts": "Manage my thoughts",
+    "manageOtherThoughts": "Share for {{name}}",
+    "editOtherThoughts": "Edit {{name}}'s thoughts",
     "shareAThought": "Share a thought",
     "shareThoughts": "Share Thoughts",
     "shareMyThoughts": "Share My Thoughts",
@@ -88,6 +90,7 @@
     "mostThoughts": "Most Thoughts",
     "leastThoughts": "Least Thoughts",
     "myThoughts": "My Thoughts",
+    "otherThoughts": "{{name}}'s Thoughts",
     "addAnotherThought": "Add another thought",
     "noThoughts": "No thoughts shared yet.",
     "editThought": "Edit Thought",

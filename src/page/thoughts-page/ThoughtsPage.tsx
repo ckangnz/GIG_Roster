@@ -491,8 +491,12 @@ const ThoughtsPage = () => {
             >
               {showAdminControls
                 ? focusedThought
-                  ? `${t("common.edit")} ${focusedUser?.name}${t("thoughts.possessive", { defaultValue: "'s" })} ${t("nav.thoughts").toLowerCase()}`
-                  : `${t("common.add")} for ${focusedUser?.name}`
+                  ? `${t("thoughts.editOtherThoughts", {
+                      name: focusedUser?.name,
+                    })} `
+                  : `${t("thoughts.manageOtherThoughts", {
+                      name: focusedUser?.name,
+                    })}`
                 : myThought?.entries?.length
                   ? t("thoughts.manageMyThoughts")
                   : t("thoughts.shareAThought")}
@@ -683,7 +687,7 @@ const ThoughtsPage = () => {
         title={
           managementUser?.id === firebaseUser?.uid
             ? t("thoughts.myThoughts")
-            : `${t("common.edit")} for ${managementUser?.name}`
+            : t("thoughts.otherThoughts", { name: managementUser?.name })
         }
       >
         <div className={styles.managementList}>

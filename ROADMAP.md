@@ -57,6 +57,26 @@
 - [ ] **UX Update**:
     - Replace "Pill Cloud" in `TeamPositionEditor` and `ProfileSettings` with a Searchable Multi-select.
 
+- [ ] Organisation selection
+  - the user should be able to click on Organisation identifier button on the sidenav title.
+    - the side nav title should be 
+    - tablet: [OrgIcon] [Tab.NavName] [Collapse (if on tablet view)]
+    - mobile: [OrgIcon] [Tab.NavName] [ThemeSelector] [OnlineIndicator]
+  - on clicking OrgIcon, it should show a popover, showing list of orgs the user is listed in. (max 3)
+      - on selecting org from the popover, it should change their org
+      - it should have 'show all' button if more than 3. This should take the user to a page that shows all orgs they're enrolled in a table view. Clicking Change button changes their current org
+      - it should also have manage org button. This should take the user to either join or create org(Disabled for now)
+
+- [ ] Online indicator is scoped to organisation > team. it should only show the users that are within the same org and have been assigned/enrolled to the same team. 
+  - if A is assigned to TeamA and TeamB, and B is only assigned to TeamA, both should see each other
+  - if A is assigned to TeamA and B is assigned to TeamB, they shouldn't see each other
+  - if A is assigned to OrgA.TeamA and B is assigned to OrgB.TeamB, they shouldn't see each other
+  - if A is assigned to TeamA and TeamB, and B is only assigned to TeamA, and if B clicks on A when he's in TeamA roster, B should not be able to see A anymore (because A is in a place B is not allowed)
+  - if A is an admin, and is on admin only page, and B is not an admin, B shouldn't be able to see A anymore.
+  - if A is an admin, and B is also an admin, they should be able to see each other when they're on admin only settings page
+
+
+
 ---
 
 ## 🛡 Phase 3: Team Governance & Discovery
