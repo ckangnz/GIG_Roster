@@ -69,7 +69,10 @@
     "clearFilter": "필터 초기화",
     "userView": "사용자별 보기",
     "positionView": "포지션별 보기",
-    "hiddenMembers": "숨겨진 멤버:"
+    "hiddenMembers": "숨겨진 멤버:",
+    "editTeammateTitle": "팀원 로스터 수정",
+    "editTeammateDesc": "{{name}}님의 배정을 변경하려고 합니다. 해당 팀원과 사전에 조율되었는지 확인해 주세요.",
+    "changeAssignment": "배정 변경"
   },
   "thoughts": {
     "title": "팀의 마음의 소리",

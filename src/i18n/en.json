@@ -69,7 +69,10 @@
     "clearFilter": "Clear View Filter",
     "userView": "User View",
     "positionView": "Position View",
-    "hiddenMembers": "Hidden Members:"
+    "hiddenMembers": "Hidden Members:",
+    "editTeammateTitle": "Edit Teammate's Roster?",
+    "editTeammateDesc": "You are about to change {{name}}'s assignment. Please ensure you have coordinated this swap with them.",
+    "changeAssignment": "Change Assignment"
   },
   "thoughts": {
     "title": "Team Thoughts",

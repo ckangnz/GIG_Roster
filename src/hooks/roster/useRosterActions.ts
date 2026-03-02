@@ -78,7 +78,7 @@ export const useRosterActions = (
       const teamData = entry.teams[teamId];
       let userAssignments: string[] = [];
 
-      if (isTeamRosterData(teamData) && teamData.type === 'slotted' && slotId) {
+      if (isTeamRosterData(teamData) && teamData.type === "slotted" && slotId) {
         userAssignments = teamData.slots?.[slotId]?.[userEmail] || [];
       } else {
         const teamAssignments = getAssignmentsForTeam(entry, teamId);
@@ -90,10 +90,7 @@ export const useRosterActions = (
       const children = allPositions.filter(
         (p) => p.parentId === activePositionId,
       );
-      const positionGroupIds = [
-        activePositionId,
-        ...children.map((c) => c.id),
-      ];
+      const positionGroupIds = [activePositionId, ...children.map((c) => c.id)];
 
       if (userAssignments.some((p) => positionGroupIds.includes(p)))
         return false;
@@ -103,7 +100,13 @@ export const useRosterActions = (
   );
 
   const handleCellClick = useCallback(
-    (dateString: string, userEmail: string, row: number, col: number, slotId?: string) => {
+    (
+      dateString: string,
+      userEmail: string,
+      row: number,
+      col: number,
+      slotId?: string,
+    ) => {
       if (
         activePositionId === "Absence" ||
         activePositionId === "All" ||
@@ -129,28 +132,38 @@ export const useRosterActions = (
         const teamData = entry?.teams[teamId];
         let userAssignments: string[] = [];
 
-        if (teamData && isTeamRosterData(teamData) && teamData.type === 'slotted' && slotId) {
+        if (
+          teamData &&
+          isTeamRosterData(teamData) &&
+          teamData.type === "slotted" &&
+          slotId
+        ) {
           userAssignments = teamData.slots?.[slotId]?.[userEmail] || [];
         } else {
-          const teamAssignments = entry ? getAssignmentsForTeam(entry, teamId) : {};
+          const teamAssignments = entry
+            ? getAssignmentsForTeam(entry, teamId)
+            : {};
           userAssignments = teamAssignments[userEmail] || [];
         }
 
         // --- UNDO INTEGRATION ---
-        const targetUserName = allTeamUsers.find(u => u.email === userEmail)?.name || userEmail;
-        dispatch(pushAction({
-          id: crypto.randomUUID(),
-          type: 'assignment',
-          timestamp: Date.now(),
-          payload: {
-            date: dateString,
-            teamName: teamId,
-            userEmail,
-            previousAssignments: userAssignments,
-            slotId, // Pass slotId to undo payload
-          },
-          description: `Updated assignment for ${targetUserName}`
-        }));
+        const targetUserName =
+          allTeamUsers.find((u) => u.email === userEmail)?.name || userEmail;
+        dispatch(
+          pushAction({
+            id: crypto.randomUUID(),
+            type: "assignment",
+            timestamp: Date.now(),
+            payload: {
+              date: dateString,
+              teamName: teamId,
+              userEmail,
+              previousAssignments: userAssignments,
+              slotId, // Pass slotId to undo payload
+            },
+            description: `Updated assignment for ${targetUserName}`,
+          }),
+        );
 
         const children = allPositions.filter(
           (p) => p.parentId === activePositionId,
@@ -213,9 +226,11 @@ export const useRosterActions = (
         const targetUser = allTeamUsers.find((u) => u.email === userEmail);
         dispatch(
           showAlert({
-            title: "Edit Teammate's Roster?",
-            message: `You are about to change ${targetUser?.name || userEmail}'s assignment. Please ensure you have coordinated this swap with them.`,
-            confirmText: "Change Assignment",
+            title: t("roster.editTeammateTitle"),
+            message: t("roster.editTeammateDesc", {
+              name: targetUser?.name || userEmail,
+            }),
+            confirmText: t("roster.changeAssignment"),
             onConfirm: performUpdate,
           }),
         );
@@ -232,6 +247,7 @@ export const useRosterActions = (
       dispatch,
       userData,
       allTeamUsers,
+      t,
     ],
   );
 
@@ -248,7 +264,7 @@ export const useRosterActions = (
         const entry = entries[dateString];
         const clearedTeams: string[] = [];
         const clearedPositions: Record<string, string[]> = {};
-        
+
         if (targetAbsence && entry) {
           // Marking absent: find current assignments to clear
           Object.keys(entry.teams).forEach((tId) => {
@@ -263,7 +279,7 @@ export const useRosterActions = (
           });
         } else if (!targetAbsence && entry?.coverageRequests) {
           // Removing absent: find coverage requests to restore assignments
-          Object.values(entry.coverageRequests).forEach(req => {
+          Object.values(entry.coverageRequests).forEach((req) => {
             if (req.status === "open" && req.absentUserEmail === userEmail) {
               if (!clearedPositions[req.teamName]) {
                 clearedPositions[req.teamName] = [];
@@ -281,41 +297,55 @@ export const useRosterActions = (
           userIdentifier: userEmail,
           isAbsent: targetAbsence,
           clearedTeams,
-          absentUserName: allTeamUsers.find(u => u.email === userEmail)?.name || userEmail,
+          absentUserName:
+            allTeamUsers.find((u) => u.email === userEmail)?.name || userEmail,
           clearedPositions,
         };
 
-        const userName = allTeamUsers.find(u => u.email === userEmail)?.name || userEmail;
-        dispatch(pushAction({
-          id: crypto.randomUUID(),
-          type: 'absence',
-          timestamp: Date.now(),
-          payload: {
-            date: dateString,
-            userEmail,
-            previousIsAbsent: isCurrentlyAbsent,
-            previousReason: getAbsenceReason(dateString, userEmail),
-            restoredAssignments: clearedPositions, // Always pass these for bidirectional undo
-          },
-          description: `${targetAbsence ? 'Marked' : 'Removed'} absence for ${userName}`
-        }));
+        const userName =
+          allTeamUsers.find((u) => u.email === userEmail)?.name || userEmail;
+        dispatch(
+          pushAction({
+            id: crypto.randomUUID(),
+            type: "absence",
+            timestamp: Date.now(),
+            payload: {
+              date: dateString,
+              userEmail,
+              previousIsAbsent: isCurrentlyAbsent,
+              previousReason: getAbsenceReason(dateString, userEmail),
+              restoredAssignments: clearedPositions, // Always pass these for bidirectional undo
+            },
+            description: `${targetAbsence ? "Marked" : "Removed"} absence for ${userName}`,
+          }),
+        );
 
         if (targetAbsence && Object.keys(clearedPositions).length > 0) {
-          const formattedAssignments = Object.entries(clearedPositions).map(([tId, posIds]) => {
-            const team = allTeams.find(t => t.id === tId);
-            const positionNames = posIds.map(pId => {
-              const pos = allPositions.find(p => p.id === pId || p.name === pId);
-              return pos?.name || pId;
-            }).join(", ");
-            return `${team?.name || tId} (${positionNames})`;
-          }).join(", ");
+          const formattedAssignments = Object.entries(clearedPositions)
+            .map(([tId, posIds]) => {
+              const team = allTeams.find((t) => t.id === tId);
+              const positionNames = posIds
+                .map((pId) => {
+                  const pos = allPositions.find(
+                    (p) => p.id === pId || p.name === pId,
+                  );
+                  return pos?.name || pId;
+                })
+                .join(", ");
+              return `${team?.name || tId} (${positionNames})`;
+            })
+            .join(", ");
 
-          const absentUserNameForAlert = allTeamUsers.find(u => u.email === userEmail)?.name || userEmail;
+          const absentUserNameForAlert =
+            allTeamUsers.find((u) => u.email === userEmail)?.name || userEmail;
           dispatch(
             showAlert({
-              title: t('roster.clearAssignments'),
-              message: t('roster.alreadyAssigned', { name: absentUserNameForAlert, assignments: formattedAssignments }),
-              confirmText: t('roster.markAbsent'),
+              title: t("roster.clearAssignments"),
+              message: t("roster.alreadyAssigned", {
+                name: absentUserNameForAlert,
+                assignments: formattedAssignments,
+              }),
+              confirmText: t("roster.markAbsent"),
               onConfirm: () => {
                 dispatch(
                   applyOptimisticAbsence({
@@ -333,7 +363,8 @@ export const useRosterActions = (
           return;
         }
 
-        const currentUserName = allTeamUsers.find(u => u.email === userEmail)?.name || userEmail;
+        const currentUserName =
+          allTeamUsers.find((u) => u.email === userEmail)?.name || userEmail;
         dispatch(
           applyOptimisticAbsence({
             date: dateString,
@@ -363,12 +394,17 @@ export const useRosterActions = (
 
       if (!isMe && !isAdmin) {
         const targetUser = allTeamUsers.find((u) => u.email === userEmail);
-        const targetStatus = isUserAbsent(dateString, userEmail) ? t('roster.present') : t('roster.absent').toLowerCase();
+        const targetStatus = isUserAbsent(dateString, userEmail)
+          ? t("roster.present")
+          : t("roster.absent").toLowerCase();
         dispatch(
           showAlert({
-            title: t('roster.updateTeammateAbsence'),
-            message: t('roster.updateTeammateAbsenceDesc', { name: targetUser?.name || userEmail, status: targetStatus }),
-            confirmText: t('common.save'),
+            title: t("roster.updateTeammateAbsence"),
+            message: t("roster.updateTeammateAbsenceDesc", {
+              name: targetUser?.name || userEmail,
+              status: targetStatus,
+            }),
+            confirmText: t("common.save"),
             onConfirm: performUpdate,
           }),
         );
@@ -376,7 +412,17 @@ export const useRosterActions = (
         performUpdate();
       }
     },
-    [isUserAbsent, entries, dispatch, userData, allTeamUsers, getAbsenceReason, allPositions, allTeams, t],
+    [
+      isUserAbsent,
+      entries,
+      dispatch,
+      userData,
+      allTeamUsers,
+      getAbsenceReason,
+      allPositions,
+      allTeams,
+      t,
+    ],
   );
 
   const handleAbsenceReasonChange = useCallback(
@@ -399,16 +445,18 @@ export const useRosterActions = (
       const entry = entries[dateString];
       const previousEventName = entry?.eventName || "";
 
-      dispatch(pushAction({
-        id: crypto.randomUUID(),
-        type: 'eventName',
-        timestamp: Date.now(),
-        payload: {
-          date: dateString,
-          previousEventName,
-        },
-        description: `Updated event name for ${dateString}`
-      }));
+      dispatch(
+        pushAction({
+          id: crypto.randomUUID(),
+          type: "eventName",
+          timestamp: Date.now(),
+          payload: {
+            date: dateString,
+            previousEventName,
+          },
+          description: `Updated event name for ${dateString}`,
+        }),
+      );
 
       const payload = { date: dateString, eventName };
       dispatch(applyOptimisticEventName(payload));
@@ -418,7 +466,7 @@ export const useRosterActions = (
   );
 
   const handleSave = useCallback(() => {
-    // Note: updatePositions handles orgId internally via getState(), 
+    // Note: updatePositions handles orgId internally via getState(),
     // but we can pass it if we update the thunk signature later.
     // For now, the existing thunk reads from state.
     dispatch(updatePositions(allPositions));
@@ -479,10 +527,11 @@ export const useRosterActions = (
       });
 
       return {
-        hasConflict: teamCount > 1 || overLimitInAnyTeam || totalAssignments > 1,
+        hasConflict:
+          teamCount > 1 || overLimitInAnyTeam || totalAssignments > 1,
         teamCount,
         totalAssignments,
-        overLimit: overLimitInAnyTeam
+        overLimit: overLimitInAnyTeam,
       };
     },
     [entries, allTeams],
@@ -494,17 +543,17 @@ export const useRosterActions = (
       if (!entry?.coverageRequests) return false;
 
       // Find children of this position to handle parent groups
-      const children = allPositions.filter(p => p.parentId === pId);
-      const groupIds = [pId, ...children.map(c => c.id)];
+      const children = allPositions.filter((p) => p.parentId === pId);
+      const groupIds = [pId, ...children.map((c) => c.id)];
 
       return Object.values(entry.coverageRequests).some(
-        (req) => 
-          req.teamName === tId && 
-          groupIds.includes(req.positionName) && 
-          req.status === "open"
+        (req) =>
+          req.teamName === tId &&
+          groupIds.includes(req.positionName) &&
+          req.status === "open",
       );
     },
-    [entries, allPositions]
+    [entries, allPositions],
   );
 
   return {
