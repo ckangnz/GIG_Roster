@@ -141,6 +141,25 @@ export const joinOrganisation = createAsyncThunk(
   }
 );
 
+export const leaveOrganisation = createAsyncThunk(
+  'auth/leaveOrganisation',
+  async (uid: string, { rejectWithValue }) => {
+    try {
+      const userRef = doc(db, 'users', uid);
+      const update = {
+        orgId: null,
+        isApproved: false,
+        updatedAt: Date.now()
+      };
+
+      await updateDoc(userRef, update);
+      return update;
+    } catch (error) {
+      return rejectWithValue(error instanceof Error ? error.message : 'Leave failed');
+    }
+  }
+);
+
 const authSlice = createSlice({
   name: 'auth',
   initialState,
@@ -189,6 +208,11 @@ const authSlice = createSlice({
         state.error = action.payload as string;
       })
       .addCase(joinOrganisation.fulfilled, (state, action: PayloadAction<Partial<AppUser>>) => {
+        if (state.userData) {
+          state.userData = { ...state.userData, ...action.payload };
+        }
+      })
+      .addCase(leaveOrganisation.fulfilled, (state, action: PayloadAction<Partial<AppUser>>) => {
         if (state.userData) {
           state.userData = { ...state.userData, ...action.payload };
         }
