@@ -181,7 +181,7 @@ const ProfileSettings = ({
     <section className={`${styles.profileCard} ${className || ""}`}>
       <div className={styles.profileReadonly}>
         <p>
-          <strong>Email:</strong> {userData.email}
+          <strong>{t("management.user.email")}:</strong> {userData.email}
         </p>
       </div>
 
@@ -309,7 +309,7 @@ const ProfileSettings = ({
             />
           </div>
           <p className={formStyles.fieldHint}>
-            Turn off if you want to be hidden from the roster.
+            {t("settings.availabilityHint")}
           </p>
         </div>
       )}

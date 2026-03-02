@@ -205,8 +205,7 @@
       "adminOnly": "관리자 전용",
       "editTitle": "배정 관리: {{name}}",
       "positionsPerTeam": "팀별 포지션 배정",
-      "noPositions": "이 팀에 배정 가능한 포지션이 없습니다.",
-      "teams": "소속 팀"
+      "noPositions": "이 팀에 배정 가능한 포지션이 없습니다."
     }
   },
   "settings": {
@@ -222,6 +221,7 @@
     "availability": "활동 상태",
     "active": "활동 중 & 배정 가능",
     "inactive": "비활성 / 부재 중",
+    "availabilityHint": "로스터에서 숨기려면 비활성으로 설정하세요",
     "language": "선호 언어",
     "light": "라이트 모드",
     "dark": "다크 모드",

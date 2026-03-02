@@ -220,6 +220,7 @@
     "availability": "Availability Status",
     "active": "ACTIVE & AVAILABLE",
     "inactive": "INACTIVE / AWAY",
+    "availabilityHint": "Turn off if you want to be hidden from the roster",
     "language": "Preferred Language",
     "light": "Light",
     "dark": "Dark",
