@@ -54,13 +54,13 @@
   --color-text-muted: var(--neutral-300);
   --color-text-dim: var(--neutral-400);
   --color-text-faded: var(--neutral-500);
-  
+
   --color-primary: var(--primary-400);
   --color-link: var(--primary-400);
   --color-link-hover: var(--primary-200);
-  
+
   --color-secondary: var(--secondary-400);
-  
+
   --color-error: var(--error);
   --color-success-light: var(--success);
   --color-warning-light: var(--warning);
@@ -75,21 +75,21 @@
   --background-app-shell: #000000;
   --background-sidebar: #1c1c1e;
   --background-card: #1c1c1e;
-  
+
   --background-button-primary: var(--primary-500);
   --background-button-primary-hover: var(--primary-400);
   --background-primary-subtle: rgba(94, 92, 230, 0.28);
-  
+
   --background-button-secondary: var(--neutral-800);
   --background-button-secondary-hover: var(--neutral-700);
-  
+
   --background-input: #1c1c1e;
   --background-table-header: #1c1c1e;
   --background-mobile-header: #1c1c1e;
   --background-bottom-nav: #1c1c1e;
   --background-order-controls: var(--neutral-800);
   --background-new-row: #1c1c1e;
-  
+
   --background-secondary-subtle: rgba(100, 210, 255, 0.22); /* Cyan/Teal Tint */
   --background-pill-active: var(--neutral-800);
   --background-occupied: var(--neutral-800);
@@ -153,7 +153,7 @@
   --color-text-muted: #2c2c2e;
   --color-text-dim: #3a3a3c;
   --color-text-faded: #48484a;
-  
+
   --color-primary: #007aff; /* iOS Blue */
   --color-link: #007aff;
   --color-link-hover: #0056b3;
@@ -174,25 +174,25 @@
   --background-app-shell: #f2f2f7;
   --background-sidebar: #ffffff;
   --background-card: #ffffff;
-  
+
   --background-button-primary: #007aff;
   --background-button-primary-hover: #0062d1;
   --background-primary-subtle: rgba(0, 122, 255, 0.1);
-  
+
   --background-button-secondary: #e5e5ea;
   --background-button-secondary-hover: #d1d1d6;
-  
+
   --background-input: #ffffff;
   --background-table-header: #f2f2f7;
   --background-mobile-header: #ffffff;
   --background-bottom-nav: #ffffff;
   --background-new-row: #f0f7ff;
-  
+
   --background-secondary-subtle: rgba(255, 149, 0, 0.1);
   --background-pill-active: #d1d1d6;
   --background-occupied: #e5e5ea;
   --background-hover: rgba(0, 0, 0, 0.04);
-  
+
   --border-color-primary: #007aff;
   --border-color-secondary: #c7c7cc;
   --border-color-input: #aeaeb2;

@@ -248,7 +248,7 @@
 
 .copyRosterBtnSuccess {
   background-color: var(--color-success-dark) !important;
-  color: white !important;
+  color: var(--color-text-primary) !important;
   border-color: var(--color-success-dark) !important;
 }
 
