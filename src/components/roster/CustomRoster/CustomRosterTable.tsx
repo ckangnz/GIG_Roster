@@ -1,7 +1,5 @@
 import { useMemo, useCallback } from "react";
 
-import { motion } from "framer-motion";
-
 import { CustomRosterHeader } from "./CustomRosterHeader";
 import { CustomRosterRow } from "./CustomRosterRow";
 import { useRosterBaseLogic } from "../../../hooks/useRosterBaseLogic";
@@ -9,6 +7,7 @@ import { useRosterHeaderLogic } from "../../../hooks/useRosterHeaderLogic";
 import { useRosterVisualRows } from "../../../hooks/useRosterVisualRows";
 import { isTeamRosterData } from "../../../model/model";
 import { updatePositionCustomLabels } from "../../../store/slices/positionsSlice";
+import cellStyles from "../roster-cell.module.css";
 import RosterTable from "../RosterTable";
 
 const CustomRosterTable = () => {
@@ -28,10 +27,17 @@ const CustomRosterTable = () => {
     allTeams,
   } = logic;
 
-  const currentTeam = useMemo(() => allTeams.find(t => t.id === teamId), [allTeams, teamId]);
+  const currentTeam = useMemo(
+    () => allTeams.find((t) => t.id === teamId),
+    [allTeams, teamId],
+  );
   const isSlotted = currentTeam?.rosterMode === "slotted";
 
-  const visualRows = useRosterVisualRows(rosterDates, currentTeam || null, !!isSlotted);
+  const visualRows = useRosterVisualRows(
+    rosterDates,
+    currentTeam || null,
+    !!isSlotted,
+  );
 
   const currentPosition = useMemo(
     () => allPositions.find((p) => p.name === activePosition),
@@ -98,13 +104,16 @@ const CustomRosterTable = () => {
     );
   }, [dispatch, currentPosition, activePosition]);
 
-  const handleKeyboardCustomCellClick = useCallback((rowIdx: number, col: number) => {
-    const row = visualRows[rowIdx];
-    const label = currentPosition?.customLabels?.[col];
-    if (row && label) {
-      handleCellClick(row.dateString, label, rowIdx, col, row.slot?.id);
-    }
-  }, [visualRows, currentPosition, handleCellClick]);
+  const handleKeyboardCustomCellClick = useCallback(
+    (rowIdx: number, col: number) => {
+      const row = visualRows[rowIdx];
+      const label = currentPosition?.customLabels?.[col];
+      if (row && label) {
+        handleCellClick(row.dateString, label, rowIdx, col, row.slot?.id);
+      }
+    },
+    [visualRows, currentPosition, handleCellClick],
+  );
 
   const getCellContent = useCallback(
     (dateString: string, label: string, slotId?: string) => {
@@ -115,25 +124,23 @@ const CustomRosterTable = () => {
       let assignments: string[] = [];
 
       if (teamData) {
-        if (isTeamRosterData(teamData) && teamData.type === 'slotted' && slotId) {
+        if (
+          isTeamRosterData(teamData) &&
+          teamData.type === "slotted" &&
+          slotId
+        ) {
           assignments = teamData.slots?.[slotId]?.[label] || [];
         } else if (!isTeamRosterData(teamData)) {
           assignments = teamData[label] || [];
         }
       }
-      
+
       if (assignments.length === 0) return "";
 
       return (
-        <motion.span
-          key="assigned"
-          initial={{ scale: 0, rotate: -20 }}
-          animate={{ scale: 1, rotate: 0 }}
-          transition={{ type: "spring", stiffness: 260, damping: 20 }}
-          style={{ display: "inline-block" }}
-        >
+        <span key="assigned" className={cellStyles.currentTeamEmoji}>
           {currentPosition?.emoji || "✅"}
-        </motion.span>
+        </span>
       );
     },
     [entries, teamId, currentPosition],
@@ -180,8 +187,12 @@ const CustomRosterTable = () => {
             focusedCell={logic.focusedCell}
             setFocusedCell={logic.setFocusedCell}
             currentPosition={currentPosition}
-            handleCellClick={(date, email, r, c) => handleCellClick(date, email, r, c, row.slot?.id)}
-            getCellContent={(date, email) => getCellContent(date, email, row.slot?.id)}
+            handleCellClick={(date, email, r, c) =>
+              handleCellClick(date, email, r, c, row.slot?.id)
+            }
+            getCellContent={(date, email) =>
+              getCellContent(date, email, row.slot?.id)
+            }
             showPeek={true}
             isToday={isToday}
             isPast={isPast}

@@ -1,7 +1,5 @@
 import { useMemo, useCallback } from "react";
 
-import { motion } from "framer-motion";
-
 import { GeneralRosterHeader } from "./GeneralRosterHeader";
 import { GeneralRosterRow } from "./GeneralRosterRow";
 import { useRosterBaseLogic } from "../../../hooks/useRosterBaseLogic";
@@ -168,16 +166,13 @@ const GeneralRosterTable = () => {
               );
               const team = allTeams.find((t) => t.id === teamId);
               return (
-                <motion.span
+                <span
                   key={posId}
-                  initial={{ scale: 0, rotate: -30 }}
-                  animate={{ scale: 1, rotate: 0 }}
-                  transition={{ duration: 0.3, ease: "easeOut" }}
                   title={`${team?.name || "Team"}: ${pos?.name || posId}`}
                   className={cellStyles.currentTeamEmoji}
                 >
                   {pos?.emoji || "❓"}
-                </motion.span>
+                </span>
               );
             })}
           </div>

@@ -31,6 +31,25 @@
 .currentTeamEmoji {
   display: inline-block;
   will-change: transform;
+  animation: emojiPop 0.4s ease-out;
+}
+
+@keyframes emojiPop {
+  0% {
+    transform: scale(0) rotate(-45deg);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.25) rotate(10deg);
+    opacity: 1;
+  }
+  80% {
+    transform: scale(0.9) rotate(-5deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
 }
 
 /* Default Clickable Cell */
