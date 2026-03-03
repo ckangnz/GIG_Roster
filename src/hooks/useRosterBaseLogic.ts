@@ -4,8 +4,8 @@ import { useRosterUI } from "./roster/useRosterUI";
 
 /**
  * useRosterBaseLogic (Facade Hook)
- * 
- * This hook acts as a central coordinator for the roster system. 
+ *
+ * This hook acts as a central coordinator for the roster system.
  * Refactored (Phase 1) to delegate responsibilities to specialized sub-hooks:
  * - useRosterData: State selectors and fetching
  * - useRosterUI: Interaction states (focus, visibility, navigation)
@@ -23,11 +23,10 @@ export const useRosterBaseLogic = () => {
     allTeamUsers,
     rosterDates,
     positionsDirty,
-    visualRows,
   } = data;
 
   // 2. UI Layer
-  const ui = useRosterUI(teamId, activePositionId, rosterDates, entries, visualRows);
+  const ui = useRosterUI(teamId, activePositionId, rosterDates, entries);
 
   // 3. Actions Layer
   const actions = useRosterActions(
@@ -37,7 +36,7 @@ export const useRosterBaseLogic = () => {
     allTeams,
     entries,
     allTeamUsers,
-    data.userData
+    data.userData,
   );
 
   // Maintain existing unified API
@@ -47,7 +46,10 @@ export const useRosterBaseLogic = () => {
     ...actions,
     hasDirtyChanges: positionsDirty,
     // Specialized action wrapper for peek
-    getPeekAssignedUsers: (dateString: string) => 
-      actions.getPeekAssignedUsers(dateString, ui.peekPositionName || undefined),
+    getPeekAssignedUsers: (dateString: string) =>
+      actions.getPeekAssignedUsers(
+        dateString,
+        ui.peekPositionName || undefined,
+      ),
   };
 };

@@ -133,12 +133,16 @@ const RosterTable = ({
           if (col < colCount - 1) setFocusedCell({ row, col: col + 1, table });
           break;
         case "Tab":
-          e.preventDefault();
           if (e.shiftKey) {
-            if (row > 0) setFocusedCell({ row: row - 1, col, table });
+            if (row > 0) {
+              e.preventDefault();
+              setFocusedCell({ row: row - 1, col, table });
+            }
           } else {
-            if (row < effectiveRowCount - 1)
+            if (row < effectiveRowCount - 1) {
+              e.preventDefault();
               setFocusedCell({ row: row + 1, col, table });
+            }
           }
           break;
         case " ":
