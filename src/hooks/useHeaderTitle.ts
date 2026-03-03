@@ -119,6 +119,7 @@ export const useHeaderTitle = () => {
         Positions: "position_management",
         Teams: "team_management",
         Profile: "profile",
+        Organisations: "organisations",
       };
       const normalizedKey =
         keyMap[activeSideItem] ||

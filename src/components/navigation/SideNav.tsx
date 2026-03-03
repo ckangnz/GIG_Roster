@@ -296,7 +296,7 @@ const SideNav = ({ isVisible = true }: SideNavProps) => {
                         >
                           <span className={styles.sideEmoji}>🏥</span>
                           <span className={styles.navItemLabel}>
-                            {shouldShowLabels && "Absence"}
+                            {shouldShowLabels && t("nav.absence")}
                           </span>
                           {renderLocationIndicators(team.id, "Absence")}
                         </button>

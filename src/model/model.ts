@@ -15,6 +15,10 @@ export interface Organisation {
   name: string;
   ownerId: string; // userUid of the creator
   createdAt: number;
+  subscription?: {
+    plan: "free" | "pro" | "enterprise" | "super";
+    expiresAt?: number;
+  };
   settings?: {
     allowUserRegistration?: boolean;
     requireApproval?: boolean;

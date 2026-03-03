@@ -24,11 +24,31 @@
       "thursday": "Thursday",
       "friday": "Friday",
       "saturday": "Saturday",
-      "sunday": "Sunday"
+      "sunday": "Sunday",
+      "mon": "Mon",
+      "tue": "Tue",
+      "wed": "Wed",
+      "thu": "Thu",
+      "fri": "Fri",
+      "sat": "Sat",
+      "sun": "Sun"
     },
     "online": "Online",
     "onlineNow": "Online Now",
-    "none": "None"
+    "none": "None",
+    "roles": {
+      "owner": "Owner",
+      "admin": "Admin",
+      "member": "Member"
+    },
+    "status": {
+      "approved": "Approved",
+      "pending": "Pending",
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "switch": "Switch",
+    "comingSoon": "Coming Soon"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -36,7 +56,8 @@
     "thoughts": "Thoughts",
     "settings": "Settings",
     "all": "All",
-    "absence": "Absence"
+    "absence": "Absence",
+    "organisations": "Organisations"
   },
   "dashboard": {
     "title": "Upcoming Events",
@@ -215,6 +236,31 @@
   },
   "settings": {
     "profile": "Profile",
+    "organisations": "Organisations",
+    "myOrganisations": "My Organisations",
+    "manageOrgs": "Manage Organisations",
+    "selectOrg": "Select Organisation",
+    "manageOrg": "Manage Organisation",
+    "leaveOrg": "Leave Organisation",
+    "deleteOrg": "Delete Organisation",
+    "leaveOrgTitle": "Leave Organisation",
+    "leaveOrgConfirm": "Are you sure you want to leave {{name}}?",
+    "deleteOrgTitle": "Delete Organisation",
+    "deleteOrgConfirm": "Are you sure you want to delete {{name}}?",
+    "deleteOrgWarning": "This action is permanent and will delete all data associated with this organisation.",
+    "deleteOrgVerification": "Please type {{name}} to confirm deletion:",
+    "criticalAction": "Critical Action",
+    "orgName": "Organisation Name",
+    "orgNamePlaceholder": "Enter organisation name",
+    "subscription": "Subscription",
+    "freeTier": "Free Tier",
+    "proTier": "Pro Tier",
+    "enterpriseTier": "Enterprise Tier",
+    "superTier": "Super Plan (Unlimited)",
+    "freeTierUntil": "Free tier ends on {{date}}",
+    "subscriptionEnds": "Subscription ends on {{date}}",
+    "noOrganisations": "You don't belong to any organisations yet.",
+    "joinNewOrg": "Join New Organisation",
     "team_management": "Teams",
     "position_management": "Positions",
     "user_management": "Members",
@@ -258,6 +304,14 @@
     "noOrgs": "No organisations found",
     "clickToJoin": "Click to select this organisation",
     "continue": "Continue",
-    "comingSoon": "COMING SOON"
+    "comingSoon": "COMING SOON",
+    "selectOrgTitle": "Select Organisation",
+    "selectOrgDesc": "Choose an organisation to continue",
+    "joinOrganisation": "Join Organisation",
+    "createOrganisation": "Create Organisation",
+    "addOrg": "Add Organisation",
+    "alreadyMember": "You are already a member of this organisation",
+    "selectTier": "Select a Tier",
+    "paymentInfo": "Payment Information"
   }
 }

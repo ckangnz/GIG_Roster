@@ -96,7 +96,7 @@ const JoinOrgStep = ({ onJoin, selectedOrg, onSelectOrg }: JoinOrgStepProps) => 
           {isAlreadyMember ? (
             <div className={wizardStyles.alreadyMemberNotice}>
               <Check size={18} style={{ marginRight: 8 }} />
-              {t('onboarding.alreadyMember', "You are already a member of this organisation")}
+              {t('onboarding.alreadyMember')}
             </div>
           ) : (
             <Button 

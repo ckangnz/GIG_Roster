@@ -39,7 +39,7 @@ const JoinOrCreateOrgModal = ({ isOpen, onClose, onJoin }: JoinOrCreateOrgModalP
       isOpen={isOpen} 
       onClose={handleClose} 
       title={
-        mode === "choice" ? t("onboarding.addOrg", "Add Organisation") :
+        mode === "choice" ? t("onboarding.addOrg") :
         mode === "join" ? t("onboarding.joinTitle") :
         t("onboarding.createTitle")
       }
@@ -66,7 +66,7 @@ const JoinOrCreateOrgModal = ({ isOpen, onClose, onJoin }: JoinOrCreateOrgModalP
             <div style={{ textAlign: 'left' }}>
               <div style={{ fontWeight: 700, fontSize: '1.1rem' }}>
                 {t("onboarding.createTitle")}
-                <span className={styles.comingSoonBadge}>{t("common.comingSoon", "Coming Soon")}</span>
+                <span className={styles.comingSoonBadge}>{t("common.comingSoon")}</span>
               </div>
               <div style={{ fontSize: '0.85rem', color: 'var(--color-text-dim)' }}>{t("onboarding.createDesc")}</div>
             </div>
@@ -100,7 +100,7 @@ const JoinOrCreateOrgModal = ({ isOpen, onClose, onJoin }: JoinOrCreateOrgModalP
 
       {mode === "create" && (
         <div style={{ paddingTop: '12px' }}>
-          <h4 style={{ marginBottom: '16px' }}>{t("onboarding.selectTier", "Select a Tier")}</h4>
+          <h4 style={{ marginBottom: '16px' }}>{t("onboarding.selectTier")}</h4>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {tiers.map(tier => (
               <div key={tier.id} className={styles.tierCard}>
@@ -117,7 +117,7 @@ const JoinOrCreateOrgModal = ({ isOpen, onClose, onJoin }: JoinOrCreateOrgModalP
           
           <div style={{ marginTop: '24px', opacity: 0.6 }}>
             <h4 style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-              <CreditCard size={18} /> {t("onboarding.paymentInfo", "Payment Information")}
+              <CreditCard size={18} /> {t("onboarding.paymentInfo")}
             </h4>
             <div className={formStyles.formGroup}>
               <InputField label="Card Number" placeholder="**** **** **** ****" disabled />

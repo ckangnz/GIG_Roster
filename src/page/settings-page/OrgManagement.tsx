@@ -190,7 +190,7 @@ const OrgManagement = ({
         {loading ? (
           <p>{t("common.loading")}</p>
         ) : orgs.length === 0 ? (
-          <p>{t("settings.noOrganisations", "You don't belong to any organisations yet.")}</p>
+          <p>{t("settings.noOrganisations")}</p>
         ) : (
           orgs.map((org) => {
             const isOwner = org.ownerId === firebaseUser?.uid;
@@ -210,14 +210,14 @@ const OrgManagement = ({
                   <div className={styles.orgMeta}>
                     <span className={styles.orgRole}>
                       {isOwner 
-                        ? t("common.roles.owner", "Owner") 
+                        ? t("common.roles.owner") 
                         : org.isAdmin 
-                          ? t("common.roles.admin", "Admin") 
-                          : t("common.roles.member", "Member")}
+                          ? t("common.roles.admin") 
+                          : t("common.roles.member")}
                     </span>
                     {!isOwner && (
                       <span className={`${styles.statusBadge} ${org.isApproved ? styles.statusApproved : styles.statusPending}`}>
-                        {org.isApproved ? t("common.status.approved", "Approved") : t("common.status.pending", "Pending")}
+                        {org.isApproved ? t("common.status.approved") : t("common.status.pending")}
                       </span>
                     )}
                   </div>
@@ -227,11 +227,11 @@ const OrgManagement = ({
                   {isActive ? (
                     <div className={styles.activeLabel}>
                       <Check size={16} />
-                      {t("common.active", "Active")}
+                      {t("common.status.active")}
                     </div>
                   ) : org.isApproved ? (
                     <Button variant="secondary" size="small" onClick={() => handleSwitch(org.id)}>
-                      {t("common.switch", "Switch")}
+                      {t("common.switch")}
                     </Button>
                   ) : null}
                   
@@ -248,7 +248,7 @@ const OrgManagement = ({
       <div className={styles.addOrgActions}>
         <Button variant="secondary" className={styles.addBtn} onClick={() => setIsJoinModalOpen(true)} style={{ width: '100%' }}>
           <UserPlus size={18} style={{ marginRight: 8 }} />
-          {t("settings.joinNewOrg", "Join New Organisation")}
+          {t("settings.joinNewOrg")}
         </Button>
       </div>
 
@@ -274,7 +274,7 @@ const OrgManagement = ({
     return (
       <div className={styles.standaloneContainer}>
         <div className={styles.standaloneHeader}>
-          <h2 className={styles.standaloneTitle}>{t("settings.myOrganisations", "My Organisations")}</h2>
+          <h2 className={styles.standaloneTitle}>{t("settings.myOrganisations")}</h2>
         </div>
         {renderContent()}
       </div>
@@ -282,7 +282,7 @@ const OrgManagement = ({
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={t("settings.myOrganisations", "My Organisations")}>
+    <Modal isOpen={isOpen} onClose={onClose} title={t("settings.myOrganisations")}>
       {renderContent()}
     </Modal>
   );

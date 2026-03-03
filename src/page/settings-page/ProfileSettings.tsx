@@ -49,38 +49,25 @@ const ProfileSettings = ({
   });
 
   const [status, setStatus] = useState("idle");
+  const [isInitialized, setIsInitialized] = useState(false);
 
   const isLocked = !userData?.isApproved && !!userData?.name;
 
-  // Initial and real-time sync from Redux
+  // Initial sync from Redux
   useEffect(() => {
-    if (!userData || status === "saving") return;
+    if (!userData || isInitialized || status === "saving") return;
 
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setFormState((prev) => {
-      const isDirty =
-        prev.name !== (userData.name || "") ||
-        prev.gender !== (userData.gender || "") ||
-        prev.isActive !== (userData.isActive ?? true) ||
-        JSON.stringify(prev.teams) !== JSON.stringify(userData.teams || []) ||
-        JSON.stringify(prev.teamPositions) !==
-          JSON.stringify(userData.teamPositions || {});
-
-      // Only sync if we haven't drifted from the server
-      // OR if this is the first load
-      if (!isDirty || status === "idle") {
-        return {
-          name: userData.name || "",
-          gender: userData.gender || "",
-          isActive: userData.isActive ?? true,
-          teams: userData.teams || [],
-          teamPositions: userData.teamPositions || {},
-          preferredLanguage: userData.preferredLanguage || "en-NZ",
-        };
-      }
-      return prev;
+    setFormState({
+      name: userData.name || "",
+      gender: userData.gender || "",
+      isActive: userData.isActive ?? true,
+      teams: userData.teams || [],
+      teamPositions: userData.teamPositions || {},
+      preferredLanguage: userData.preferredLanguage || "en-NZ",
     });
-  }, [userData, status]);
+    setIsInitialized(true);
+  }, [userData, isInitialized, status]);
 
   const hasChanges = useMemo(() => {
     if (!userData) return false;

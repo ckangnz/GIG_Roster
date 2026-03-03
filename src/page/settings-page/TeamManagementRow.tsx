@@ -61,7 +61,7 @@ const TeamManagementRow = ({
   const getDaysSummary = () => {
     if (!team.preferredDays || team.preferredDays.length === 0)
       return t('common.none');
-    return team.preferredDays.map((d) => d.substring(0, 3)).join(", ");
+    return team.preferredDays.map((d) => t(`common.weekdays.${d.toLowerCase().substring(0, 3)}`)).join(", ");
   };
 
   return (
