@@ -1,5 +1,3 @@
-import { Fragment } from "react";
-
 import styles from "./name-tag.module.css";
 
 interface NameTagProps {
@@ -18,7 +16,9 @@ const NameTag = ({
   const isFemale = gender === "Female";
 
   return (
-    <Fragment>
+    <span
+      style={{ display: "inline-flex", alignItems: "center", gap: ".5rem" }}
+    >
       <span
         className={[
           isMe ? styles.isMe : "",
@@ -36,7 +36,7 @@ const NameTag = ({
           Me
         </span>
       )}
-    </Fragment>
+    </span>
   );
 };
 

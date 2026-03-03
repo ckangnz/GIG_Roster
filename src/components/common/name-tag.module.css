@@ -11,7 +11,7 @@
   --tag-color: var(--color-primary);
   --tag-bg: var(--tag-color);
   --tag-shimmer: rgba(255, 255, 255, 0.7);
-  
+
   display: inline-flex;
   align-items: center;
   /* Premium Vibrant Look for Light Theme */
@@ -31,8 +31,6 @@
   font-weight: 800;
   padding: 1px 6px;
   border-radius: 4px;
-  margin-left: 6px;
-  vertical-align: text-top;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   border: 1px solid var(--tag-color);
@@ -63,7 +61,6 @@
 .isMe {
   color: var(--color-primary) !important;
   font-weight: 700 !important;
-  vertical-align: top;
 }
 
 [data-theme="dark"] .isMe {
