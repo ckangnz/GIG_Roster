@@ -110,7 +110,7 @@ export const syncThoughtEntriesRemote = createAsyncThunk(
 
     try {
       const state = getState() as { auth: { userData: AppUser | null } };
-      const orgId = state.auth.userData?.orgId;
+      const orgId = state.auth.userData?.activeOrgId;
       if (!orgId) throw new Error("Org ID missing");
 
       const docRef = doc(db, "organisations", orgId, "thoughts", id);
@@ -151,7 +151,7 @@ export const removeThoughtRemote = createAsyncThunk(
   async (payload: { id: string }, { rejectWithValue, getState }) => {
     try {
       const state = getState() as { auth: { userData: AppUser | null } };
-      const orgId = state.auth.userData?.orgId;
+      const orgId = state.auth.userData?.activeOrgId;
       if (!orgId) throw new Error("Org ID missing");
 
       const docRef = doc(db, "organisations", orgId, "thoughts", payload.id);
@@ -179,7 +179,7 @@ export const syncHeartEntryRemote = createAsyncThunk(
     const { thoughtId, updatedEntries } = payload;
     try {
       const state = getState() as { auth: { userData: AppUser | null } };
-      const orgId = state.auth.userData?.orgId;
+      const orgId = state.auth.userData?.activeOrgId;
       if (!orgId) throw new Error("Org ID missing");
 
       const docRef = doc(db, "organisations", orgId, "thoughts", thoughtId);

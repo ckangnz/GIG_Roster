@@ -11,6 +11,7 @@ import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { useHeaderTitle } from "../../hooks/useHeaderTitle";
 import { useTheme } from "../../hooks/useThemeHook";
 import { Position } from "../../model/model";
+import { selectUserData } from "../../store/slices/authSlice";
 import {
   setDesktopSidebarExpanded,
   setMobileSidebarOpen,
@@ -33,7 +34,7 @@ const SideNav = ({ isVisible = true }: SideNavProps) => {
   const { headerTitle, activeTab, activeTeamName, activeSideItem } =
     useHeaderTitle();
 
-  const { userData } = useAppSelector((state) => state.auth);
+  const userData = useAppSelector(selectUserData);
   const { isDesktopSidebarExpanded, isMobileSidebarOpen, expandedTeams } =
     useAppSelector((state) => state.ui);
   const { teams: allTeams, loading: teamsLoading } = useAppSelector(

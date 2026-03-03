@@ -36,20 +36,49 @@ export const initializeUserData = createAsyncThunk(
       const userSnap = await getDoc(userDocRef);
 
       if (userSnap.exists()) {
-        const data = userSnap.data() as AppUser;
+        const rawData = userSnap.data();
+        let data = rawData as AppUser;
+        
+        // Migration logic: handle old structure
+        const oldOrgId = rawData.orgId;
+        if (oldOrgId && !data.organisations) {
+          const isActive = rawData.isActive ?? true;
+          const isAdmin = rawData.isAdmin ?? false;
+          const isApproved = rawData.isApproved ?? false;
+          
+          const migratedData: Partial<AppUser> = {
+            activeOrgId: oldOrgId,
+            organisations: {
+              [oldOrgId]: {
+                isActive,
+                isAdmin,
+                isApproved
+              }
+            }
+          };
+          
+          await updateDoc(userDocRef, migratedData);
+          data = { ...data, ...migratedData };
+        } else if (!data.organisations) {
+          // No organisations at all
+          const migratedData: Partial<AppUser> = {
+            activeOrgId: null,
+            organisations: {}
+          };
+          await updateDoc(userDocRef, migratedData);
+          data = { ...data, ...migratedData };
+        }
+
         if (data.preferredLanguage) {
           i18n.changeLanguage(data.preferredLanguage);
         }
         return data;
       } else {
-        const isAutoAdmin = authUser.email === 'cksdud12345@gmail.com';
         const newData: AppUser = {
           name: authUser?.displayName || null,
           email: authUser?.email || null,
-          orgId: null, // No fallback
-          isApproved: isAutoAdmin,
-          isAdmin: isAutoAdmin,
-          isActive: true,
+          activeOrgId: null, // No fallback
+          organisations: {},
           teams: [],
           teamPositions: {},
           indexedAssignments: [],
@@ -69,23 +98,32 @@ export const initializeUserData = createAsyncThunk(
 export const updateUserProfile = createAsyncThunk(
   'auth/updateUserProfile',
   async (
-    { uid, data }: { uid: string; data: Partial<AppUser> },
-    { rejectWithValue },
+    { uid, data }: { uid: string; data: Partial<AppUser> & { isActive?: boolean } },
+    { rejectWithValue, getState },
   ) => {
     try {
+      const state = getState() as { auth: AuthState };
+      const activeOrgId = state.auth.userData?.activeOrgId;
+      
       const userRef = doc(db, 'users', uid);
-      const finalData = { ...data };
+      const updatePayload: Record<string, unknown> = { ...data };
 
-      if (finalData.teamPositions) {
-        finalData.indexedAssignments = generateIndexedAssignments(finalData.teamPositions);
+      if (updatePayload.teamPositions) {
+        updatePayload.indexedAssignments = generateIndexedAssignments(updatePayload.teamPositions as Record<string, string[]>);
       }
 
-      if (finalData.preferredLanguage) {
-        i18n.changeLanguage(finalData.preferredLanguage);
+      if (updatePayload.preferredLanguage) {
+        i18n.changeLanguage(updatePayload.preferredLanguage as string);
       }
 
-      await updateDoc(userRef, finalData);
-      return finalData;
+      // Handle isActive migration to nested structure
+      if (activeOrgId && updatePayload.isActive !== undefined) {
+        updatePayload[`organisations.${activeOrgId}.isActive`] = updatePayload.isActive;
+        delete updatePayload.isActive;
+      }
+
+      await updateDoc(userRef, updatePayload);
+      return data; // Return original data (with isActive at top level for easy slice merging)
     } catch (error) {
       return rejectWithValue(
         error instanceof Error ? error.message : 'Failed to update profile',
@@ -122,11 +160,17 @@ export const joinOrganisation = createAsyncThunk(
   async ({ uid, orgId, profileData }: { uid: string; orgId: string; profileData: Partial<AppUser> }, { rejectWithValue }) => {
     try {
       const userRef = doc(db, 'users', uid);
-      const update = {
+      const update: Partial<AppUser> = {
         ...profileData,
-        orgId,
-        isApproved: false, // Must be approved by Org Admin
-        updatedAt: Date.now()
+        activeOrgId: orgId,
+        organisations: {
+          [orgId]: {
+            isActive: true,
+            isAdmin: false,
+            isApproved: false // Must be approved by Org Admin
+          }
+        },
+        // updatedAt: Date.now() // AppUser doesn't have updatedAt in interface but it's okay to add if needed, though model says it doesn't
       };
 
       if (update.preferredLanguage) {
@@ -143,13 +187,16 @@ export const joinOrganisation = createAsyncThunk(
 
 export const leaveOrganisation = createAsyncThunk(
   'auth/leaveOrganisation',
-  async (uid: string, { rejectWithValue }) => {
+  async ({ uid, orgId }: { uid: string; orgId: string }, { rejectWithValue, getState }) => {
     try {
+      const state = getState() as { auth: AuthState };
+      const currentOrganisations = { ...state.auth.userData?.organisations };
+      delete currentOrganisations[orgId];
+      
       const userRef = doc(db, 'users', uid);
-      const update = {
-        orgId: null,
-        isApproved: false,
-        updatedAt: Date.now()
+      const update: Partial<AppUser> = {
+        activeOrgId: null,
+        organisations: currentOrganisations
       };
 
       await updateDoc(userRef, update);
@@ -198,9 +245,21 @@ const authSlice = createSlice({
       })
       .addCase(
         updateUserProfile.fulfilled,
-        (state, action: PayloadAction<Partial<AppUser>>) => {
+        (state, action: PayloadAction<Partial<AppUser> & { isActive?: boolean }>) => {
           if (state.userData) {
-            state.userData = { ...state.userData, ...action.payload };
+            const { isActive, ...otherData } = action.payload;
+            state.userData = { ...state.userData, ...otherData };
+            
+            if (isActive !== undefined && state.userData.activeOrgId) {
+              const activeOrgId = state.userData.activeOrgId;
+              state.userData.organisations = {
+                ...state.userData.organisations,
+                [activeOrgId]: {
+                  ...state.userData.organisations[activeOrgId],
+                  isActive
+                }
+              };
+            }
           }
         },
       )
@@ -222,3 +281,19 @@ const authSlice = createSlice({
 
 export const { setUser, setUserData, setLoading, logout } = authSlice.actions;
 export const authReducer = authSlice.reducer;
+
+export const selectUserData = (state: { auth: AuthState }) => {
+  const { userData } = state.auth;
+  if (!userData) return null;
+  
+  const activeOrgId = userData.activeOrgId;
+  const orgMembership = activeOrgId ? userData.organisations[activeOrgId] : null;
+  
+  return {
+    ...userData,
+    orgId: activeOrgId, // for backward compatibility
+    isAdmin: orgMembership?.isAdmin || false,
+    isApproved: orgMembership?.isApproved || false,
+    isActive: orgMembership?.isActive || false,
+  };
+};

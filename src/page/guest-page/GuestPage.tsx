@@ -7,7 +7,7 @@ import { Navigate } from "react-router-dom";
 import { auth } from "../../firebase";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { Organisation } from "../../model/model";
-import { joinOrganisation, leaveOrganisation } from "../../store/slices/authSlice";
+import { joinOrganisation, leaveOrganisation, selectUserData } from "../../store/slices/authSlice";
 import LoadingPage from "../loading-page/LoadingPage";
 import JoinOrgStep from "./components/JoinOrgStep";
 import PathSelectionStep from "./components/PathSelectionStep";
@@ -20,9 +20,10 @@ import wizardStyles from "./onboarding-wizard.module.css";
 const GuestPage = () => {
   const { i18n } = useTranslation();
   const dispatch = useAppDispatch();
-  const { userData, firebaseUser, loading } = useAppSelector(
+  const { firebaseUser, loading } = useAppSelector(
     (state) => state.auth,
   );
+  const userData = useAppSelector(selectUserData);
 
   const [step, setStep] = useState(1);
   const [profile, setProfile] = useState({
@@ -53,9 +54,9 @@ const GuestPage = () => {
   };
 
   const handleWithdraw = async () => {
-    if (!firebaseUser) return;
+    if (!firebaseUser || !userData.activeOrgId) return;
     try {
-      await dispatch(leaveOrganisation(firebaseUser.uid)).unwrap();
+      await dispatch(leaveOrganisation({ uid: firebaseUser.uid, orgId: userData.activeOrgId })).unwrap();
       setSelectedOrg(null);
       setStep(2);
       setIsJoining(false);
@@ -67,7 +68,7 @@ const GuestPage = () => {
   const handleLogout = () => auth.signOut();
 
   // If user already has an org but not approved, show pending screen
-  if (userData.orgId) {
+  if (userData.activeOrgId) {
     return (
       <div className={styles.guestContainer}>
         <PendingApprovalStep 

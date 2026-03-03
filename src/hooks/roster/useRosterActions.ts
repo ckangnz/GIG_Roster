@@ -473,12 +473,12 @@ export const useRosterActions = (
   }, [dispatch, allPositions]);
 
   const handleCancel = useCallback(() => {
+    dispatch(setFocusedCell(null));
     dispatch(resetPositionsDirty());
-    const orgId = (userData as AppUser)?.orgId;
+    const orgId = (userData as AppUser)?.activeOrgId;
     if (orgId) {
       dispatch(fetchPositions(orgId));
     }
-    dispatch(setFocusedCell(null));
   }, [dispatch, userData]);
 
   const getPeekAssignedUsers = useCallback(

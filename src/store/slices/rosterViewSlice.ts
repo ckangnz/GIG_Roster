@@ -138,16 +138,19 @@ export const fetchAllTeamUsers = createAsyncThunk(
     if (!teamId || !orgId) return [];
     try {
       const usersCollectionRef = collection(db, 'users');
-      // Query by UUID in the 'teams' array AND scoped by orgId
+      // Fetch all users in this org first to avoid composite index requirements
       const q = query(
         usersCollectionRef, 
-        where('teams', 'array-contains', teamId),
-        where('orgId', '==', orgId)
+        where(`organisations.${orgId}.isActive`, 'in', [true, false])
       );
       const querySnapshot = await getDocs(q);
       const fetchedUsers: AppUser[] = [];
       querySnapshot.forEach((doc) => {
-        fetchedUsers.push(doc.data() as AppUser);
+        const data = doc.data() as AppUser;
+        // Filter in memory
+        if (data.teams?.includes(teamId)) {
+          fetchedUsers.push(data);
+        }
       });
       return fetchedUsers.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
     } catch (err) {
@@ -176,16 +179,22 @@ export const fetchUsersByTeamAndPosition = createAsyncThunk(
       const indexedKeys = positionGroup.map((posId) => `${teamId}|${posId}`);
 
       const usersCollectionRef = collection(db, 'users');
+      // Fetch all users in this org first to avoid composite index requirements
       const q = query(
         usersCollectionRef,
-        where('indexedAssignments', 'array-contains-any', indexedKeys),
-        where('orgId', '==', orgId)
+        where(`organisations.${orgId}.isActive`, 'in', [true, false])
       );
       const querySnapshot = await getDocs(q);
       const fetchedUsers: AppUser[] = [];
       querySnapshot.forEach((doc) => {
-        fetchedUsers.push(doc.data() as AppUser);
+        const data = doc.data() as AppUser;
+        // Filter in memory to avoid composite index requirement
+        const hasAssignment = data.indexedAssignments?.some(ia => indexedKeys.includes(ia));
+        if (hasAssignment) {
+          fetchedUsers.push(data);
+        }
       });
+
       return fetchedUsers.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
     } catch (err) {
       console.error('Error fetching users:', err);

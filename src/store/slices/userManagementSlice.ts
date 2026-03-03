@@ -9,7 +9,7 @@ import {
 } from "firebase/firestore";
 
 import { db } from "../../firebase";
-import { AppUser, generateIndexedAssignments } from "../../model/model";
+import { OrgMembership, AppUser, generateIndexedAssignments } from "../../model/model";
 
 type AppUserWithId = AppUser & { id: string };
 
@@ -62,6 +62,11 @@ export const saveAllUserChanges = createAsyncThunk(
             data.teamPositions,
           );
         }
+        
+        // Ensure dot notation for nested objects if we want to be safe,
+        // but since we are overwriting the whole user doc in this management view,
+        // it's probably fine to just update the whole doc.
+        // However, we should be careful about 'organisations' map.
         batch.update(doc(db, "users", id), data);
       });
       await batch.commit();
@@ -190,6 +195,28 @@ const userManagementSlice = createSlice({
         (user as Record<keyof AppUser, AppUser[keyof AppUser]>)[field] = value;
       }
     },
+    updateUserOrgField(
+      state,
+      action: PayloadAction<{
+        userId: string;
+        orgId: string;
+        field: keyof OrgMembership;
+        value: boolean;
+      }>,
+    ) {
+      const { userId, orgId, field, value } = action.payload;
+      const user = state.allUsers.find((u) => u.id === userId);
+      if (user) {
+        if (!user.organisations) user.organisations = {};
+        if (!user.organisations[orgId]) {
+          user.organisations[orgId] = { isActive: true, isAdmin: false, isApproved: false };
+        }
+        user.organisations[orgId] = {
+          ...user.organisations[orgId],
+          [field]: value
+        };
+      }
+    },
     toggleUserTeam(
       state,
       action: PayloadAction<{ userId: string; teamName: string }>,
@@ -303,6 +330,7 @@ const userManagementSlice = createSlice({
 
 export const {
   updateUserField,
+  updateUserOrgField,
   toggleUserTeam,
   toggleUserTeamPosition,
   reorderUserTeams,

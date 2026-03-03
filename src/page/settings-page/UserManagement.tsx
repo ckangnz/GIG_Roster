@@ -10,6 +10,7 @@ import SettingsTable, {
 import Spinner from "../../components/common/Spinner";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { AppUser } from "../../model/model";
+import { selectUserData } from "../../store/slices/authSlice";
 import {
   saveAllUserChanges,
   resetUserChanges,
@@ -20,7 +21,7 @@ import styles from "./settings-page.module.css";
 const UserManagement = () => {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
-  const { userData } = useAppSelector((state) => state.auth);
+  const userData = useAppSelector(selectUserData);
   const orgId = userData?.orgId;
 
   const { allUsers, originalUsers, loading, saving, error } = useAppSelector(
@@ -30,25 +31,28 @@ const UserManagement = () => {
 
   const hasChanges = useMemo(() => {
     const normalize = (list: AppUser[]) =>
-      list.map((u) => ({
-        name: u.name || "",
-        gender: u.gender || "",
-        teams: [...(u.teams || [])].sort(),
-        teamPositions: Object.keys(u.teamPositions || {})
-          .sort()
-          .reduce((acc: Record<string, string[]>, team) => {
-            acc[team] = [...(u.teamPositions?.[team] || [])].sort();
-            return acc;
-          }, {}),
-        isActive: !!u.isActive,
-        isApproved: !!u.isApproved,
-        isAdmin: !!u.isAdmin,
-      }));
+      list.map((u) => {
+        const orgEntry = orgId ? u.organisations?.[orgId] : null;
+        return {
+          name: u.name || "",
+          gender: u.gender || "",
+          teams: [...(u.teams || [])].sort(),
+          teamPositions: Object.keys(u.teamPositions || {})
+            .sort()
+            .reduce((acc: Record<string, string[]>, team) => {
+              acc[team] = [...(u.teamPositions?.[team] || [])].sort();
+              return acc;
+            }, {}),
+          isActive: !!orgEntry?.isActive,
+          isApproved: !!orgEntry?.isApproved,
+          isAdmin: !!orgEntry?.isAdmin,
+        };
+      });
     return (
       JSON.stringify(normalize(allUsers)) !==
       JSON.stringify(normalize(originalUsers))
     );
-  }, [allUsers, originalUsers]);
+  }, [allUsers, originalUsers, orgId]);
 
   const isFormValid = useMemo(() => {
     return allUsers.every((u) => (u.name || "").trim() !== "");
@@ -70,12 +74,14 @@ const UserManagement = () => {
     return <div>Error: {error}</div>;
   }
 
-  const pendingUsers = allUsers.filter(
-    (u) => !u.isApproved && u.orgId === orgId,
-  );
-  const approvedUsers = allUsers.filter(
-    (u) => u.isApproved && u.orgId === orgId,
-  );
+  const pendingUsers = allUsers.filter((u) => {
+    const orgEntry = orgId ? u.organisations?.[orgId] : null;
+    return orgEntry && !orgEntry.isApproved;
+  });
+  const approvedUsers = allUsers.filter((u) => {
+    const orgEntry = orgId ? u.organisations?.[orgId] : null;
+    return orgEntry && orgEntry.isApproved;
+  });
 
   const tableHeaders: SettingsTableHeaderProps[] = [
     {

@@ -29,6 +29,7 @@ import {
   Weekday, 
   RosterSlot,
 } from "../../model/model";
+import { selectUserData } from "../../store/slices/authSlice";
 import { showAlert } from "../../store/slices/uiSlice";
 import formStyles from "../../styles/form.module.css";
 
@@ -217,7 +218,7 @@ const TeamConfigModal = ({
 }: TeamConfigModalProps) => {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
-  const { userData } = useAppSelector((state) => state.auth);
+  const userData = useAppSelector(selectUserData);
   const orgId = userData?.orgId;
 
   const [draft, setDraft] = useState<Partial<Team>>(defaultTeam);

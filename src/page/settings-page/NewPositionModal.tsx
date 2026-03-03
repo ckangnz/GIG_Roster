@@ -13,6 +13,7 @@ import {
 import Toggle from "../../components/common/Toggle";
 import { useAppSelector } from "../../hooks/redux";
 import { Position } from "../../model/model";
+import { selectUserData } from "../../store/slices/authSlice";
 import formStyles from "../../styles/form.module.css";
 
 import styles from "./settings-page.module.css";
@@ -44,7 +45,7 @@ const NewPositionModal = ({
   availableParents,
 }: NewPositionModalProps) => {
   const { t } = useTranslation();
-  const { userData } = useAppSelector((state) => state.auth);
+  const userData = useAppSelector(selectUserData);
   const orgId = userData?.orgId;
 
   const [newPos, setNewPos] = useState<Partial<Position>>(defaultPosition);

@@ -8,6 +8,7 @@ import { resolvePresenceColor } from "../../hooks/presenceUtils";
 import { useAppSelector } from "../../hooks/redux";
 import { useOnlineUsers, currentSessionId } from "../../hooks/usePresence";
 import { useTheme } from "../../hooks/useThemeHook";
+import { selectUserData } from "../../store/slices/authSlice";
 import NameTag from "../common/NameTag";
 
 import styles from "./online-users.module.css";
@@ -24,7 +25,8 @@ const OnlineUsers = ({
   const { t } = useTranslation();
   const navigate = useNavigate();
   const onlineUsers = useOnlineUsers();
-  const { firebaseUser, userData } = useAppSelector((state) => state.auth);
+  const { firebaseUser } = useAppSelector((state) => state.auth);
+  const userData = useAppSelector(selectUserData);
   const { theme } = useTheme();
   const isDark = theme === "dark";
   const currentSessionDocId = firebaseUser

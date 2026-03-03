@@ -11,7 +11,8 @@ import SummaryCell from "../../components/common/SummaryCell";
 import Toggle from "../../components/common/Toggle";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { AppUser, Gender, Team } from "../../model/model";
-import { updateUserField } from "../../store/slices/userManagementSlice";
+import { selectUserData } from "../../store/slices/authSlice";
+import { updateUserField, updateUserOrgField } from "../../store/slices/userManagementSlice";
 import formStyles from "../../styles/form.module.css";
 import styles from "../../styles/settings-common.module.css";
 
@@ -29,6 +30,9 @@ const UserManagementRow = ({
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const { positions: globalPositions } = useAppSelector((state) => state.positions);
+  const currentUser = useAppSelector(selectUserData);
+  const activeOrgId = currentUser?.activeOrgId;
+
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleUpdate = (
@@ -37,6 +41,20 @@ const UserManagementRow = ({
   ) => {
     dispatch(updateUserField({ id: user.id, field, value }));
   };
+
+  const handleOrgUpdate = (
+    field: 'isActive' | 'isApproved' | 'isAdmin',
+    value: boolean
+  ) => {
+    if (activeOrgId) {
+      dispatch(updateUserOrgField({ userId: user.id, orgId: activeOrgId, field, value }));
+    }
+  };
+
+  const orgMembership = activeOrgId ? user.organisations?.[activeOrgId] : null;
+  const isActive = orgMembership?.isActive ?? true;
+  const isApproved = orgMembership?.isApproved ?? false;
+  const isAdmin = orgMembership?.isAdmin ?? false;
 
   const getTeamSummary = () => {
     if (!user.teams || user.teams.length === 0) {
@@ -118,20 +136,20 @@ const UserManagementRow = ({
         </SettingsTableAnyCell>
         <SettingsTableAnyCell textAlign="center">
           <Toggle
-            isOn={user.isActive}
-            onToggle={(isOn) => handleUpdate("isActive", isOn)}
+            isOn={isActive}
+            onToggle={(isOn) => handleOrgUpdate("isActive", isOn)}
           />
         </SettingsTableAnyCell>
         <SettingsTableAnyCell textAlign="center">
           <Toggle
-            isOn={user.isApproved}
-            onToggle={(isOn) => handleUpdate("isApproved", isOn)}
+            isOn={isApproved}
+            onToggle={(isOn) => handleOrgUpdate("isApproved", isOn)}
           />
         </SettingsTableAnyCell>
         <SettingsTableAnyCell textAlign="center">
           <Toggle
-            isOn={user.isAdmin}
-            onToggle={(isOn) => handleUpdate("isAdmin", isOn)}
+            isOn={isAdmin}
+            onToggle={(isOn) => handleOrgUpdate("isAdmin", isOn)}
             disabled={user.email === adminEmail}
           />
         </SettingsTableAnyCell>

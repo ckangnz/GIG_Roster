@@ -18,8 +18,9 @@ const ProtectedRoute = () => {
   );
 
   useEffect(() => {
-    const orgId = userData?.orgId;
-    if (firebaseUser && userData?.isApproved && orgId) {
+    const orgId = userData?.activeOrgId;
+    const isApproved = orgId ? userData?.organisations[orgId]?.isApproved : false;
+    if (firebaseUser && isApproved && orgId) {
       if (!teamsFetched && !teamsLoading) {
         dispatch(fetchTeams(orgId));
       }
@@ -37,7 +38,10 @@ const ProtectedRoute = () => {
     return <Navigate to="/login" replace />;
   }
 
-  if (!userData.isApproved) {
+  const activeOrgId = userData.activeOrgId;
+  const isApproved = activeOrgId ? userData.organisations[activeOrgId]?.isApproved : false;
+
+  if (!isApproved) {
     return <Navigate to="/guest" replace />;
   }
 

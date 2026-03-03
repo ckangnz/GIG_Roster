@@ -9,7 +9,7 @@ import SaveFooter from "../../components/common/SaveFooter";
 import Toggle from "../../components/common/Toggle";
 import { auth } from "../../firebase";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
-import { updateUserProfile } from "../../store/slices/authSlice";
+import { updateUserProfile, selectUserData } from "../../store/slices/authSlice";
 import formStyles from "../../styles/form.module.css";
 
 import styles from "./profile-settings.module.css";
@@ -23,7 +23,8 @@ const ProfileSettings = ({
 }) => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
-  const { userData, firebaseUser } = useAppSelector((state) => state.auth);
+  const { firebaseUser } = useAppSelector((state) => state.auth);
+  const userData = useAppSelector(selectUserData);
   const orgId = userData?.orgId;
   const { teams: allTeams } = useAppSelector((state) => state.teams);
   const availableTeams = useMemo(

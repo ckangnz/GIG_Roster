@@ -48,8 +48,9 @@ const GeneralRosterTable = () => {
   );
 
   const sortedUsers = useMemo(() => {
+    const orgId = userData?.orgId;
     const list = users.filter(
-      (u) => u.email && !hiddenUserList.includes(u.email) && u.isActive,
+      (u) => u.email && !hiddenUserList.includes(u.email) && (orgId ? u.organisations?.[orgId]?.isActive : true),
     );
 
     const sortFn = (a: (typeof list)[0], b: (typeof list)[0]) => {

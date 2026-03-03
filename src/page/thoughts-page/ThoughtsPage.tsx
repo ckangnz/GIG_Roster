@@ -26,6 +26,7 @@ import Spinner from "../../components/common/Spinner";
 import { db } from "../../firebase";
 import { useAppSelector, useAppDispatch } from "../../hooks/redux";
 import { Thought, AppUser, ThoughtEntry } from "../../model/model";
+import { selectUserData } from "../../store/slices/authSlice";
 import {
   setThoughts,
   syncThoughtEntriesRemote,
@@ -46,7 +47,8 @@ const ThoughtsPage = () => {
   const { teamName: rawTeamName } = useParams();
   const teamNameFromUrl = safeDecode(rawTeamName).trim();
 
-  const { userData, firebaseUser } = useAppSelector((state) => state.auth);
+  const { firebaseUser } = useAppSelector((state) => state.auth);
+  const userData = useAppSelector(selectUserData);
   const { teams: allTeams, loading: teamsLoading } = useAppSelector(
     (state) => state.teams,
   );
@@ -385,7 +387,7 @@ const ThoughtsPage = () => {
 
   // Real-time thoughts listener (Query by UUID and Org scope)
   useEffect(() => {
-    const orgId = userData?.orgId;
+    const orgId = userData?.activeOrgId;
     if (!teamId || !orgId) return;
 
     const q = query(
@@ -412,15 +414,18 @@ const ThoughtsPage = () => {
     });
 
     return () => unsubscribe();
-  }, [teamId, dispatch, userData?.orgId]);
+  }, [teamId, dispatch, userData?.activeOrgId]);
 
   const teamUsers = useMemo(() => {
-    const orgId = userData?.orgId;
+    const orgId = userData?.activeOrgId;
     if (!teamId || !orgId) return [];
     return allUsers.filter(
-      (u) => u.teams?.includes(teamId) && u.isActive && u.orgId === orgId,
+      (u) => {
+        const orgEntry = u.organisations?.[orgId];
+        return u.teams?.includes(teamId) && orgEntry?.isActive;
+      }
     );
-  }, [allUsers, teamId, userData?.orgId]);
+  }, [allUsers, teamId, userData?.activeOrgId]);
 
   if (teamsLoading) return <Spinner />;
 

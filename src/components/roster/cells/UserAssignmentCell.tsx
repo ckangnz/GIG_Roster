@@ -20,7 +20,7 @@ interface UserAssignmentCellProps {
   isAssignedOnClosestDate?: boolean;
   isHighlighted?: boolean;
   hasConflict?: boolean;
-  userData?: AppUser | null;
+  userData?: (AppUser & { isAdmin?: boolean }) | null;
   allTeams?: Team[];
   teamName?: string;
   activePosition?: string;

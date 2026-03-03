@@ -6,11 +6,12 @@ import TeamManagement from "./TeamManagement";
 import UserManagement from "./UserManagement";
 import { SettingsSection } from "../../constants/navigation";
 import { useAppSelector } from "../../hooks/redux";
+import { selectUserData } from "../../store/slices/authSlice";
 
 import styles from "./settings-page.module.css";
 
 const SettingsPage = () => {
-  const { userData } = useAppSelector((state) => state.auth);
+  const userData = useAppSelector(selectUserData);
   const { section: activeSection } = useParams();
 
   if (!userData) return null;

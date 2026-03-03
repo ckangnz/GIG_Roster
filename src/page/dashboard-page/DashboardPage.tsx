@@ -25,6 +25,7 @@ import {
   Team,
   getAssignmentsForTeam,
 } from "../../model/model";
+import { selectUserData } from "../../store/slices/authSlice";
 import {
   applyOptimisticAssignment,
   applyOptimisticAbsence,
@@ -50,7 +51,7 @@ const DashboardPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const targetDate = searchParams.get("date");
 
-  const { userData } = useAppSelector((state) => state.auth);
+  const userData = useAppSelector(selectUserData);
   const orgId = userData?.orgId;
   const teamsState = useAppSelector((state) => state.teams);
   const allTeams = useMemo(

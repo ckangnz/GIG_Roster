@@ -44,7 +44,7 @@ export const updatePositions = createAsyncThunk(
   async (positions: Position[], { rejectWithValue, getState }) => {
     try {
       const state = getState() as { auth: { userData: AppUser | null } };
-      const orgId = state.auth.userData?.orgId;
+      const orgId = state.auth.userData?.activeOrgId;
       if (!orgId) throw new Error("Organisation ID missing");
 
       const docRef = doc(db, 'organisations', orgId, 'metadata', 'positions');

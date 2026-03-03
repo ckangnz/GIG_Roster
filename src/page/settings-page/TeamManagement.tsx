@@ -12,6 +12,7 @@ import SettingsTable from "../../components/common/SettingsTable";
 import Spinner from "../../components/common/Spinner";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { Team } from "../../model/model";
+import { selectUserData } from "../../store/slices/authSlice";
 import { updateTeams } from "../../store/slices/teamsSlice";
 import { showAlert } from "../../store/slices/uiSlice";
 import { cleanupUsersAfterDeletion } from "../../store/slices/userManagementSlice";
@@ -21,7 +22,7 @@ import styles from "./settings-page.module.css";
 const TeamManagement = () => {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
-  const { userData } = useAppSelector((state) => state.auth);
+  const userData = useAppSelector(selectUserData);
   const orgId = userData?.orgId;
 
   const teamsState = useAppSelector((state) => state.teams);

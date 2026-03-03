@@ -144,7 +144,7 @@ export const syncAssignmentRemote = createAsyncThunk(
         auth: { userData: AppUser | null };
         roster: RosterState;
       };
-      const orgId = state.auth.userData?.orgId;
+      const orgId = state.auth.userData?.activeOrgId;
       if (!orgId) throw new Error("Org ID missing");
 
       // With atomic docs, we replace the team-date doc with the latest state
@@ -204,7 +204,7 @@ export const syncAbsenceRemote = createAsyncThunk(
         auth: { userData: AppUser | null };
         roster: RosterState;
       };
-      const orgId = state.auth.userData?.orgId;
+      const orgId = state.auth.userData?.activeOrgId;
       if (!orgId) throw new Error("Org ID missing");
 
       const absenceDocId = `${userIdentifier}_${date}`;
@@ -304,7 +304,7 @@ export const syncEventNameRemote = createAsyncThunk(
     const { date, eventName } = payload;
     try {
       const state = getState() as { auth: { userData: AppUser | null } };
-      const orgId = state.auth.userData?.orgId;
+      const orgId = state.auth.userData?.activeOrgId;
       if (!orgId) throw new Error("Org ID missing");
 
       const docRef = doc(
@@ -348,7 +348,7 @@ export const resolveCoverageRequestRemote = createAsyncThunk(
         auth: { userData: AppUser | null };
         roster: RosterState;
       };
-      const orgId = state.auth.userData?.orgId;
+      const orgId = state.auth.userData?.activeOrgId;
       if (!orgId) throw new Error("Org ID missing");
 
       const entry = state.roster.entries[date];

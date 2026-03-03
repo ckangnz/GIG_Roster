@@ -28,19 +28,23 @@ export interface RosterSlot {
   endTime: string; // "HH:mm"
 }
 
+export interface OrgMembership {
+  isActive: boolean;
+  isAdmin: boolean;
+  isApproved: boolean;
+}
+
 export interface AppUser {
   id?: string;
   name: string | null;
   email: string | null;
-  orgId: string | null; // Multi-tenancy scoping
+  activeOrgId: string | null; // Multi-tenancy scoping
+  organisations: Record<string, OrgMembership>;
   teams: string[];
   teamPositions?: Record<string, string[]>; // teamId -> positionIds[]
   indexedAssignments?: string[]; // ["TeamId|PositionId", ...]
   gender: string;
   preferredLanguage?: string; // 'en-NZ' | 'ko'
-  isApproved: boolean;
-  isAdmin: boolean;
-  isActive: boolean;
 }
 
 export interface RecurringEvent {

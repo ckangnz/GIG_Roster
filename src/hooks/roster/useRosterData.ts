@@ -2,6 +2,7 @@ import { useEffect, useMemo } from "react";
 
 import { useParams } from "react-router-dom";
 
+import { selectUserData } from "../../store/slices/authSlice";
 import { fetchRosterEntries } from "../../store/slices/rosterSlice";
 import {
   fetchTeamDataForRoster,
@@ -11,12 +12,14 @@ import {
 import { useAppDispatch, useAppSelector } from "../redux";
 import { useRosterVisualRows } from "../useRosterVisualRows";
 
+
 export const useRosterData = () => {
   const dispatch = useAppDispatch();
   const { teamName, positionName: activePosition } = useParams();
 
-  const { userData } = useAppSelector((state) => state.auth);
-  const orgId = userData?.orgId;
+  const userData = useAppSelector(selectUserData);
+  const activeOrgId = userData?.activeOrgId;
+  const orgId = activeOrgId;
   
   // Roster View Selectors
   const {

@@ -20,7 +20,10 @@ const MainLoader = () => {
     return <LoadingPage />;
   }
 
-  if (!userData.isApproved) {
+  const activeOrgId = userData.activeOrgId;
+  const isApproved = activeOrgId ? userData.organisations[activeOrgId]?.isApproved : false;
+
+  if (!isApproved) {
     return <Navigate to="/guest" replace />;
   }
 

@@ -141,7 +141,8 @@ export const useTrackPresence = (firebaseUser: User | null, userData: AppUser | 
         if (currentPos?.isCustom) {
           identifier = currentPos.customLabels?.[focusedCell.col] || "";
         } else {
-          const sorted = users.filter(u => u.isActive); 
+          const orgId = userData?.activeOrgId;
+          const sorted = users.filter(u => orgId ? u.organisations?.[orgId]?.isActive : true); 
           identifier = sorted[focusedCell.col]?.email || "";
         }
       }
@@ -153,7 +154,7 @@ export const useTrackPresence = (firebaseUser: User | null, userData: AppUser | 
       teamName,
       viewName: activePosition || null // Use null instead of undefined for Firestore compatibility
     };
-  }, [focusedCell, rosterDates, users, allTeamUsers, allPositions, location.pathname]);
+  }, [focusedCell, rosterDates, users, allTeamUsers, allPositions, location.pathname, userData?.activeOrgId]);
 
   useEffect(() => {
     if (!firebaseUser?.uid || !userData?.email) return;

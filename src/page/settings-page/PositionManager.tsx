@@ -12,6 +12,7 @@ import SettingsTable from "../../components/common/SettingsTable";
 import Spinner from "../../components/common/Spinner";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { Position } from "../../model/model";
+import { selectUserData } from "../../store/slices/authSlice";
 import { updatePositions } from "../../store/slices/positionsSlice";
 import {
   removePositionFromAllTeams,
@@ -80,7 +81,7 @@ const DraggableRowBlock = ({
 const PositionManagement = () => {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
-  const { userData } = useAppSelector((state) => state.auth);
+  const userData = useAppSelector(selectUserData);
   const orgId = userData?.orgId;
   const { positions: reduxPositions, loading: positionsLoading } =
     useAppSelector((state) => state.positions);

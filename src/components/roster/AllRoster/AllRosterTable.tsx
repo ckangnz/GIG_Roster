@@ -79,12 +79,14 @@ const AllRosterTable = () => {
 
   // Re-implementing view-specific logic
   const filteredAllTeamUsers = useMemo(() => {
+    const orgId = userData?.orgId;
     return allTeamUsers.filter((u) => {
-      if (!u.isActive || !teamId) return false;
+      const orgEntry = orgId ? u.organisations?.[orgId] : null;
+      if (!orgEntry?.isActive || !teamId) return false;
       const userTeamPositions = u.teamPositions?.[teamId] || [];
       return userTeamPositions.length > 0;
     });
-  }, [allTeamUsers, teamId]);
+  }, [allTeamUsers, teamId, userData?.orgId]);
 
   const allViewColumns = useMemo(() => {
     let userCols = filteredAllTeamUsers.map((u) => ({
