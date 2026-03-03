@@ -6,6 +6,7 @@ import MainLayout from "../components/layout/MainLayout";
 import DashboardPage from "../page/dashboard-page/DashboardPage";
 import GuestPage from "../page/guest-page/GuestPage";
 import LoginPage from "../page/login-page/LoginPage";
+import OrgSelectionPage from "../page/org-selection-page/OrgSelectionPage";
 import RosterPage from "../page/roster-page/RosterPage";
 import SettingsPage from "../page/settings-page/SettingsPage";
 import ThoughtsPage from "../page/thoughts-page/ThoughtsPage";
@@ -22,6 +23,10 @@ export const routes: RouteObject[] = [
   {
     path: "/guest",
     element: <GuestPage />,
+  },
+  {
+    path: "/select-org",
+    element: <OrgSelectionPage />,
   },
   {
     path: "/app",

@@ -5,41 +5,72 @@ service cloud.firestore {
     // --- HELPER FUNCTIONS ---
     function isSignedIn() { return request.auth != null; }
 
-    function isAdmin() {
-      return isSignedIn() &&
-             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
     }
 
-    function isApproved() {
-      return isSignedIn() &&
-             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isApproved == true;
+    // Checks permissions in BOTH Root Map and Sub-collection
+    function isOrgAdmin(orgId) {
+      return isSignedIn() && (
+        // 1. Check Root Map (Transition)
+        (getUserData().get('organisations', null) != null &&
+         !(getUserData().organisations is list) &&
+         getUserData().organisations.keys().hasAny([orgId]) &&
+         getUserData().organisations[orgId].get('isAdmin', false) == true)
+        ||
+        // 2. Check Sub-collection (New Target)
+        (exists(/databases/$(database)/documents/organisations/$(orgId)/memberships/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/organisations/$(orgId)/memberships/$(request.auth.uid)).data.get('isAdmin', false) == true)
+      );
     }
 
-    function isOwner(userId) { return request.auth.uid == userId; }
+    function isOrgApproved(orgId) {
+      return isSignedIn() && (
+        // 1. Check Root Map (Transition)
+        (getUserData().get('organisations', null) != null &&
+         !(getUserData().organisations is list) &&
+         getUserData().organisations.keys().hasAny([orgId]) &&
+         getUserData().organisations[orgId].get('isApproved', false) == true)
+        ||
+        // 2. Check Sub-collection (New Target)
+        (exists(/databases/$(database)/documents/organisations/$(orgId)/memberships/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/organisations/$(orgId)/memberships/$(request.auth.uid)).data.get('isApproved', false) == true)
+      );
+    }
+
+    function isOrgOwner(orgId) {
+      return isSignedIn() &&
+             exists(/databases/$(database)/documents/organisations/$(orgId)) &&
+             get(/databases/$(database)/documents/organisations/$(orgId)).data.get('ownerId', '') == request.auth.uid;
+    }
 
     // --- RULES ---
 
-    match /organisations/{orgId}/{allPaths=**} {
-      // Allow searching organisations for unapproved users
+    match /organisations/{orgId} {
       allow read: if isSignedIn();
-      allow write: if isAdmin();
+      allow update: if isSignedIn() && (isOrgAdmin(orgId) || isOrgOwner(orgId));
+      allow create: if isSignedIn();
+      allow delete: if isSignedIn() && isOrgOwner(orgId);
+
+      match /memberships/{userId} {
+        allow read: if isSignedIn() && (isOrgApproved(orgId) || request.auth.uid == userId);
+        allow write: if isSignedIn() && (isOrgAdmin(orgId) || request.auth.uid == userId);
+      }
+
+      match /{allPaths=**} {
+        allow read: if isSignedIn() && isOrgApproved(orgId);
+        allow write: if isSignedIn() && isOrgAdmin(orgId);
+      }
     }
 
     match /users/{userId} {
-      // Admins can see all users.
-      // Approved users can see others in their org (implemented via queries usually, but let's allow read here).
       allow read: if isSignedIn();
-
-      allow create: if isSignedIn() && isOwner(userId);
-
+      allow create: if isSignedIn() && request.auth.uid == userId;
       allow update: if isSignedIn() && (
-        isAdmin() ||
-        isOwner(userId) // Owners can update their profile (onboarding)
+        request.auth.uid == userId ||
+        getUserData().get('organisations', null) != null
       );
-
-      allow delete: if isAdmin();
+      allow delete: if isSignedIn() && getUserData().get('organisations', null) != null;
     }
 
     match /presence/{docId} {

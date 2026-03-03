@@ -1,8 +1,8 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
+import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
 
 import { db } from '../../firebase';
-import { AppUser, Team, Weekday, formatToDateKey } from '../../model/model';
+import { AppUser, Team, Weekday, formatToDateKey, OrgMembership } from '../../model/model';
 import { RootState } from '../index';
 
 // Helper function from RosterTable.tsx
@@ -137,21 +137,30 @@ export const fetchAllTeamUsers = createAsyncThunk(
   async ({ teamId, orgId }: { teamId: string, orgId: string }, { rejectWithValue }) => {
     if (!teamId || !orgId) return [];
     try {
-      const usersCollectionRef = collection(db, 'users');
-      // Fetch all users in this org first to avoid composite index requirements
-      const q = query(
-        usersCollectionRef, 
-        where(`organisations.${orgId}.isActive`, 'in', [true, false])
-      );
-      const querySnapshot = await getDocs(q);
+      // 1. Fetch memberships from sub-collection
+      const memSnap = await getDocs(collection(db, 'organisations', orgId, 'memberships'));
+      const memberships: Record<string, OrgMembership> = {};
+      memSnap.forEach(doc => {
+        memberships[doc.id] = doc.data() as OrgMembership;
+      });
+
+      // 2. Fetch corresponding users
+      const usersSnap = await getDocs(collection(db, 'users'));
       const fetchedUsers: AppUser[] = [];
-      querySnapshot.forEach((doc) => {
-        const data = doc.data() as AppUser;
-        // Filter in memory
-        if (data.teams?.includes(teamId)) {
-          fetchedUsers.push(data);
+      
+      usersSnap.forEach((uDoc) => {
+        const memData = memberships[uDoc.id];
+        if (memData && memData.teams?.includes(teamId)) {
+          const userData = uDoc.data() as AppUser;
+          fetchedUsers.push({
+            ...userData,
+            id: uDoc.id,
+            // Inject virtual organisations map for component compatibility
+            organisations: { [orgId]: memData } as Record<string, OrgMembership>
+          });
         }
       });
+
       return fetchedUsers.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
     } catch (err) {
       console.error('Error fetching team users:', err);
@@ -178,20 +187,30 @@ export const fetchUsersByTeamAndPosition = createAsyncThunk(
       // Create indexed keys for all positions in the group (ID|ID)
       const indexedKeys = positionGroup.map((posId) => `${teamId}|${posId}`);
 
-      const usersCollectionRef = collection(db, 'users');
-      // Fetch all users in this org first to avoid composite index requirements
-      const q = query(
-        usersCollectionRef,
-        where(`organisations.${orgId}.isActive`, 'in', [true, false])
-      );
-      const querySnapshot = await getDocs(q);
+      // 1. Fetch memberships from sub-collection
+      const memSnap = await getDocs(collection(db, 'organisations', orgId, 'memberships'));
+      const memberships: Record<string, OrgMembership> = {};
+      memSnap.forEach(doc => {
+        memberships[doc.id] = doc.data() as OrgMembership;
+      });
+
+      // 2. Fetch corresponding users
+      const usersSnap = await getDocs(collection(db, 'users'));
       const fetchedUsers: AppUser[] = [];
-      querySnapshot.forEach((doc) => {
-        const data = doc.data() as AppUser;
-        // Filter in memory to avoid composite index requirement
-        const hasAssignment = data.indexedAssignments?.some(ia => indexedKeys.includes(ia));
-        if (hasAssignment) {
-          fetchedUsers.push(data);
+      
+      usersSnap.forEach((uDoc) => {
+        const memData = memberships[uDoc.id];
+        if (memData) {
+          const hasAssignment = memData.indexedAssignments?.some((ia: string) => indexedKeys.includes(ia));
+          if (hasAssignment) {
+            const userData = uDoc.data() as AppUser;
+            fetchedUsers.push({
+              ...userData,
+              id: uDoc.id,
+              // Inject virtual organisations map for component compatibility
+              organisations: { [orgId]: memData } as Record<string, OrgMembership>
+            });
+          }
         }
       });
 

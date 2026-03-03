@@ -2,12 +2,11 @@ import { useEffect, useMemo } from "react";
 
 import { useParams } from "react-router-dom";
 
+import { OrgMembership } from "../../model/model";
 import { selectUserData } from "../../store/slices/authSlice";
 import { fetchRosterEntries } from "../../store/slices/rosterSlice";
 import {
   fetchTeamDataForRoster,
-  fetchAllTeamUsers,
-  fetchUsersByTeamAndPosition,
 } from "../../store/slices/rosterViewSlice";
 import { useAppDispatch, useAppSelector } from "../redux";
 import { useRosterVisualRows } from "../useRosterVisualRows";
@@ -20,27 +19,6 @@ export const useRosterData = () => {
   const userData = useAppSelector(selectUserData);
   const activeOrgId = userData?.activeOrgId;
   const orgId = activeOrgId;
-  
-  // Roster View Selectors
-  const {
-    users,
-    allTeamUsers,
-    rosterDates,
-    currentTeamData,
-    loadingUsers,
-    loadingTeam,
-    loadingAllTeamUsers,
-    error: viewError,
-  } = useAppSelector((state) => state.rosterView);
-  
-  // Roster Data Selectors
-  const {
-    entries,
-    syncing,
-    loading: loadingRoster,
-    initialLoad,
-    error: rosterError,
-  } = useAppSelector((state) => state.roster);
   
   // Metadata Selectors
   const { positions: allPositions, isDirty: positionsDirty } = useAppSelector(
@@ -58,6 +36,52 @@ export const useRosterData = () => {
     allPositions.find(p => p.name === activePosition)?.id || activePosition, 
   [allPositions, activePosition]);
 
+  // Use globally synced users from userManagement slice for reliability
+  const { allUsers: globallySyncedUsers, loading: loadingGlobalUsers } = useAppSelector((state) => state.userManagement);
+  
+  const allTeamUsers = useMemo(() => {
+    if (!teamId) return [];
+    return globallySyncedUsers.filter(u => {
+      const orgs = u.organisations as Record<string, OrgMembership>;
+      const orgEntry = activeOrgId ? orgs?.[activeOrgId] : null;
+      return orgEntry?.teams?.includes(teamId);
+    });
+  }, [globallySyncedUsers, teamId, activeOrgId]);
+
+  const users = useMemo(() => {
+    if (!teamId || !activePositionId || ["Absence", "All"].includes(activePositionId)) {
+      return allTeamUsers;
+    }
+    
+    // Find children of this position
+    const children = allPositions.filter((p) => p.parentId === activePositionId);
+    const positionGroup = [activePositionId, ...children.map((c) => c.id)];
+    const indexedKeys = positionGroup.map((posId) => `${teamId}|${posId}`);
+
+    return allTeamUsers.filter(u => {
+      const orgs = u.organisations as Record<string, OrgMembership>;
+      const orgEntry = activeOrgId ? orgs?.[activeOrgId] : null;
+      return orgEntry?.indexedAssignments?.some((ia: string) => indexedKeys.includes(ia));
+    });
+  }, [allTeamUsers, teamId, activePositionId, allPositions, activeOrgId]);
+
+  // Roster View Selectors
+  const {
+    rosterDates,
+    currentTeamData,
+    loadingTeam,
+    error: viewError,
+  } = useAppSelector((state) => state.rosterView);
+  
+  // Roster Data Selectors
+  const {
+    entries,
+    syncing,
+    loading: loadingRoster,
+    initialLoad,
+    error: rosterError,
+  } = useAppSelector((state) => state.roster);
+  
   const currentTeam = useMemo(() => allTeams.find(t => t.id === teamId), [allTeams, teamId]);
   const isSlotted = currentTeam?.rosterMode === "slotted";
   const visualRows = useRosterVisualRows(rosterDates, currentTeam || null, !!isSlotted);
@@ -66,28 +90,13 @@ export const useRosterData = () => {
   useEffect(() => {
     if (teamId && orgId) {
       dispatch(fetchTeamDataForRoster({ teamId, orgId }));
-      dispatch(fetchAllTeamUsers({ teamId, orgId }));
       dispatch(fetchRosterEntries(orgId));
     }
   }, [teamId, orgId, dispatch]);
 
-  useEffect(() => {
-    if (
-      activePositionId &&
-      teamId &&
-      orgId &&
-      !["Absence", "All"].includes(activePositionId)
-    ) {
-      dispatch(
-        fetchUsersByTeamAndPosition({ teamId, positionId: activePositionId, orgId }),
-      );
-    }
-  }, [activePositionId, teamId, orgId, dispatch]);
-
   const isLoading = 
-    loadingUsers || 
+    loadingGlobalUsers || 
     loadingTeam || 
-    loadingAllTeamUsers || 
     (loadingRoster && !initialLoad);
     
   const error = viewError || rosterError;

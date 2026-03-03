@@ -9,7 +9,7 @@ import SettingsTable, {
 } from "../../components/common/SettingsTable";
 import Spinner from "../../components/common/Spinner";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
-import { AppUser } from "../../model/model";
+import { AppUser, OrgMembership } from "../../model/model";
 import { selectUserData } from "../../store/slices/authSlice";
 import {
   saveAllUserChanges,
@@ -32,15 +32,16 @@ const UserManagement = () => {
   const hasChanges = useMemo(() => {
     const normalize = (list: AppUser[]) =>
       list.map((u) => {
-        const orgEntry = orgId ? u.organisations?.[orgId] : null;
+        const orgs = u.organisations as Record<string, OrgMembership>;
+        const orgEntry = orgId ? orgs?.[orgId] : null;
         return {
           name: u.name || "",
           gender: u.gender || "",
-          teams: [...(u.teams || [])].sort(),
-          teamPositions: Object.keys(u.teamPositions || {})
+          teams: [...(orgEntry?.teams || [])].sort(),
+          teamPositions: Object.keys(orgEntry?.teamPositions || {})
             .sort()
             .reduce((acc: Record<string, string[]>, team) => {
-              acc[team] = [...(u.teamPositions?.[team] || [])].sort();
+              acc[team] = [...(orgEntry?.teamPositions?.[team] || [])].sort();
               return acc;
             }, {}),
           isActive: !!orgEntry?.isActive,
@@ -75,11 +76,13 @@ const UserManagement = () => {
   }
 
   const pendingUsers = allUsers.filter((u) => {
-    const orgEntry = orgId ? u.organisations?.[orgId] : null;
+    const orgs = u.organisations as Record<string, OrgMembership>;
+    const orgEntry = orgId ? orgs?.[orgId] : null;
     return orgEntry && !orgEntry.isApproved;
   });
   const approvedUsers = allUsers.filter((u) => {
-    const orgEntry = orgId ? u.organisations?.[orgId] : null;
+    const orgs = u.organisations as Record<string, OrgMembership>;
+    const orgEntry = orgId ? orgs?.[orgId] : null;
     return orgEntry && orgEntry.isApproved;
   });
 

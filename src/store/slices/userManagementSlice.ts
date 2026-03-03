@@ -2,12 +2,11 @@ import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import {
   collection,
   getDocs,
-  query,
   writeBatch,
   doc,
-  where,
 } from "firebase/firestore";
 
+import { AuthState } from "./authSlice";
 import { db } from "../../firebase";
 import { OrgMembership, AppUser, generateIndexedAssignments } from "../../model/model";
 
@@ -16,6 +15,8 @@ type AppUserWithId = AppUser & { id: string };
 interface UserManagementState {
   allUsers: AppUserWithId[];
   originalUsers: AppUserWithId[];
+  memberships: Record<string, OrgMembership>; // userId -> OrgMembership
+  profiles: Record<string, AppUser>; // userId -> AppUser
   loading: boolean;
   saving: boolean;
   error: string | null;
@@ -24,6 +25,8 @@ interface UserManagementState {
 const initialState: UserManagementState = {
   allUsers: [],
   originalUsers: [],
+  memberships: {},
+  profiles: {},
   loading: false,
   saving: false,
   error: null,
@@ -31,15 +34,40 @@ const initialState: UserManagementState = {
 
 export const fetchAllUsers = createAsyncThunk(
   "userManagement/fetchAllUsers",
-  async (_, { rejectWithValue }) => {
+  async (_, { rejectWithValue, getState }) => {
     try {
-      const usersCollectionRef = collection(db, "users");
-      const q = query(usersCollectionRef);
-      const querySnapshot = await getDocs(q);
-      const users: AppUserWithId[] = [];
-      querySnapshot.forEach((doc) => {
-        users.push({ ...(doc.data() as AppUser), id: doc.id });
+      const state = getState() as { auth: AuthState };
+      const activeOrgId = state.auth.activeOrgId;
+      if (!activeOrgId) return [];
+
+      // 1. Fetch all memberships for this org
+      const memSnap = await getDocs(collection(db, "organisations", activeOrgId, "memberships"));
+      const memberships: Record<string, OrgMembership> = {};
+      memSnap.forEach(d => {
+        memberships[d.id] = { ...(d.data() as OrgMembership), id: d.id };
       });
+
+      // 2. Fetch corresponding users
+      const userIds = Object.keys(memberships);
+      if (userIds.length === 0) return [];
+
+      const users: AppUserWithId[] = [];
+      const usersSnap = await getDocs(collection(db, "users"));
+      usersSnap.forEach(uDoc => {
+        if (memberships[uDoc.id]) {
+          const userData = uDoc.data() as AppUser;
+          users.push({
+            ...userData,
+            id: uDoc.id,
+            // TODO: Cleanup - After organisations root Map is removed, remove this virtual map injection
+            // Inject the specific membership into a virtual organisations map for UI compatibility
+            organisations: {
+              [activeOrgId]: memberships[uDoc.id]
+            } as Record<string, OrgMembership>
+          });
+        }
+      });
+
       return users.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
     } catch (error) {
       return rejectWithValue(
@@ -51,23 +79,30 @@ export const fetchAllUsers = createAsyncThunk(
 
 export const saveAllUserChanges = createAsyncThunk(
   "userManagement/saveAllChanges",
-  async (users: AppUserWithId[], { rejectWithValue }) => {
+  async (users: AppUserWithId[], { rejectWithValue, getState }) => {
     try {
+      const state = getState() as { auth: AuthState };
+      const activeOrgId = state.auth.activeOrgId;
+      if (!activeOrgId) throw new Error("Active Org ID missing");
+
       const batch = writeBatch(db);
       users.forEach((u) => {
-        const { id, ...data } = u;
-        // Recalculate indexedAssignments before saving
-        if (data.teamPositions) {
-          data.indexedAssignments = generateIndexedAssignments(
-            data.teamPositions,
-          );
-        }
+        const { id, name, gender, organisations } = u;
         
-        // Ensure dot notation for nested objects if we want to be safe,
-        // but since we are overwriting the whole user doc in this management view,
-        // it's probably fine to just update the whole doc.
-        // However, we should be careful about 'organisations' map.
-        batch.update(doc(db, "users", id), data);
+        // 1. Update Global User Data
+        batch.update(doc(db, "users", id), { name, gender });
+
+        // 2. Update Membership Data
+        const orgs = organisations as unknown as Record<string, OrgMembership>;
+        const memEntry = orgs?.[activeOrgId];
+        if (memEntry) {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { id: _unused, ...memData } = memEntry;
+          if (memData.teamPositions) {
+            memData.indexedAssignments = generateIndexedAssignments(memData.teamPositions);
+          }
+          batch.set(doc(db, "organisations", activeOrgId, "memberships", id), memData, { merge: true });
+        }
       });
       await batch.commit();
       return;
@@ -83,40 +118,33 @@ export const cleanupUsersAfterDeletion = createAsyncThunk(
   "userManagement/cleanupAfterDeletion",
   async (
     { teamId, teamName, positionId }: { teamId?: string; teamName?: string; positionId?: string },
-    { rejectWithValue },
+    { rejectWithValue, getState },
   ) => {
     try {
-      const usersCollectionRef = collection(db, "users");
-      let q;
+      const state = getState() as { auth: AuthState };
+      const activeOrgId = state.auth.activeOrgId;
+      if (!activeOrgId) return;
 
-      if (teamId) {
-        q = query(usersCollectionRef, where("teams", "array-contains", teamId));
-      } else if (positionId) {
-        // Since we can't easily query by position inside teamPositions Record maps,
-        // and indexedAssignments contains "TeamId|PositionId" which requires exact matches,
-        // we'll fetch all users for position cleanup. This is less frequent.
-        q = query(usersCollectionRef);
-      } else {
-        return;
-      }
-
-      const querySnapshot = await getDocs(q);
+      const memSnap = await getDocs(collection(db, "organisations", activeOrgId, "memberships"));
+      
       const batch = writeBatch(db);
       let count = 0;
 
-      querySnapshot.forEach((userDoc) => {
-        const userData = userDoc.data() as AppUser;
+      memSnap.forEach((memDoc) => {
+        const orgEntry = memDoc.data() as OrgMembership;
+        const userId = memDoc.id;
+
         let changed = false;
-        const updates: Partial<AppUser> = {};
+        const updatePayload: Partial<OrgMembership> = {};
 
         if (teamId) {
-          if (userData.teams?.includes(teamId) || (teamName && userData.teams?.includes(teamName))) {
-            updates.teams = userData.teams.filter((id) => id !== teamId && id !== teamName);
+          if (orgEntry.teams?.includes(teamId) || (teamName && orgEntry.teams?.includes(teamName))) {
+            updatePayload.teams = orgEntry.teams.filter((id) => id !== teamId && id !== teamName);
             changed = true;
           }
 
-          if (userData.teamPositions) {
-            const newTeamPositions = { ...userData.teamPositions };
+          if (orgEntry.teamPositions) {
+            const newTeamPositions = { ...orgEntry.teamPositions };
             let tpChanged = false;
             
             if (newTeamPositions[teamId]) {
@@ -129,37 +157,37 @@ export const cleanupUsersAfterDeletion = createAsyncThunk(
             }
 
             if (tpChanged) {
-              updates.teamPositions = newTeamPositions;
-              updates.indexedAssignments = generateIndexedAssignments(newTeamPositions);
+              updatePayload.teamPositions = newTeamPositions;
+              updatePayload.indexedAssignments = generateIndexedAssignments(newTeamPositions);
               changed = true;
             }
           }
         }
 
         if (positionId) {
-          if (userData.teamPositions) {
+          if (orgEntry.teamPositions) {
             let posChanged = false;
             const newTeamPositions: Record<string, string[]> = {};
 
-            Object.entries(userData.teamPositions).forEach(([tId, posIds]) => {
-              if (posIds.includes(positionId)) {
+            Object.entries(orgEntry.teamPositions).forEach(([tId, posIds]) => {
+              if (Array.isArray(posIds) && posIds.includes(positionId)) {
                 newTeamPositions[tId] = posIds.filter((id) => id !== positionId);
                 posChanged = true;
               } else {
-                newTeamPositions[tId] = posIds;
+                newTeamPositions[tId] = posIds as string[];
               }
             });
 
             if (posChanged) {
-              updates.teamPositions = newTeamPositions;
-              updates.indexedAssignments = generateIndexedAssignments(newTeamPositions);
+              updatePayload.teamPositions = newTeamPositions;
+              updatePayload.indexedAssignments = generateIndexedAssignments(newTeamPositions);
               changed = true;
             }
           }
         }
 
         if (changed) {
-          batch.update(userDoc.ref, updates);
+          batch.update(doc(db, "organisations", activeOrgId, "memberships", userId), updatePayload);
           count++;
         }
       });
@@ -192,7 +220,7 @@ const userManagementSlice = createSlice({
       const { id, field, value } = action.payload;
       const user = state.allUsers.find((u) => u.id === id);
       if (user) {
-        (user as Record<keyof AppUser, AppUser[keyof AppUser]>)[field] = value;
+        (user as Record<string, unknown>)[field] = value;
       }
     },
     updateUserOrgField(
@@ -207,35 +235,50 @@ const userManagementSlice = createSlice({
       const { userId, orgId, field, value } = action.payload;
       const user = state.allUsers.find((u) => u.id === userId);
       if (user) {
-        if (!user.organisations) user.organisations = {};
-        if (!user.organisations[orgId]) {
-          user.organisations[orgId] = { isActive: true, isAdmin: false, isApproved: false };
+        let orgs = user.organisations as unknown as Record<string, OrgMembership>;
+        if (!orgs || Array.isArray(orgs)) {
+           // TODO: Cleanup - After organisations root Map is removed, remove this transition case
+           orgs = {};
+           (user as Record<string, unknown>).organisations = orgs;
         }
-        user.organisations[orgId] = {
-          ...user.organisations[orgId],
-          [field]: value
-        };
+        
+        if (!orgs[orgId]) {
+          orgs[orgId] = { 
+            isActive: true, 
+            isAdmin: false, 
+            isApproved: false,
+            teams: [],
+            teamPositions: {},
+            indexedAssignments: []
+          };
+        }
+        const membership = orgs[orgId];
+        (membership as unknown as Record<string, unknown>)[field] = value;
       }
     },
     toggleUserTeam(
       state,
-      action: PayloadAction<{ userId: string; teamName: string }>,
+      action: PayloadAction<{ userId: string; orgId: string; teamName: string }>,
     ) {
-      const { userId, teamName } = action.payload;
+      const { userId, orgId, teamName } = action.payload;
       const user = state.allUsers.find((u) => u.id === userId);
       if (user) {
-        const currentTeams = user.teams || [];
-        const newTeams = currentTeams.includes(teamName)
-          ? currentTeams.filter((t) => t !== teamName)
-          : [...currentTeams, teamName];
-        user.teams = newTeams;
+        const orgs = user.organisations as unknown as Record<string, OrgMembership>;
+        if (orgs?.[orgId]) {
+          const org = orgs[orgId];
+          const currentTeams = org.teams || [];
+          const newTeams = currentTeams.includes(teamName)
+            ? currentTeams.filter((t: string) => t !== teamName)
+            : [...currentTeams, teamName];
+          org.teams = newTeams;
 
-        // Sync teamPositions
-        if (!user.teamPositions) user.teamPositions = {};
-        if (newTeams.includes(teamName)) {
-          if (!user.teamPositions[teamName]) user.teamPositions[teamName] = [];
-        } else {
-          delete user.teamPositions[teamName];
+          if (!org.teamPositions) org.teamPositions = {};
+          if (newTeams.includes(teamName)) {
+            if (!org.teamPositions[teamName]) org.teamPositions[teamName] = [];
+          } else {
+            delete org.teamPositions[teamName];
+          }
+          org.indexedAssignments = generateIndexedAssignments(org.teamPositions);
         }
       }
     },
@@ -243,34 +286,44 @@ const userManagementSlice = createSlice({
       state,
       action: PayloadAction<{
         userId: string;
+        orgId: string;
         teamName: string;
         posName: string;
       }>,
     ) {
-      const { userId, teamName, posName } = action.payload;
+      const { userId, orgId, teamName, posName } = action.payload;
       const user = state.allUsers.find((u) => u.id === userId);
       if (user) {
-        if (!user.teamPositions) user.teamPositions = {};
-        if (!user.teamPositions[teamName]) user.teamPositions[teamName] = [];
+        const orgs = user.organisations as unknown as Record<string, OrgMembership>;
+        if (orgs?.[orgId]) {
+          const org = orgs[orgId];
+          if (!org.teamPositions) org.teamPositions = {};
+          if (!org.teamPositions[teamName]) org.teamPositions[teamName] = [];
 
-        const currentPos = user.teamPositions[teamName];
-        const newPos = currentPos.includes(posName)
-          ? currentPos.filter((p) => p !== posName)
-          : [...currentPos, posName];
-        user.teamPositions[teamName] = newPos;
+          const currentPos = org.teamPositions[teamName];
+          const newPos = currentPos.includes(posName)
+            ? currentPos.filter((p: string) => p !== posName)
+            : [...currentPos, posName];
+          org.teamPositions[teamName] = newPos;
+          org.indexedAssignments = generateIndexedAssignments(org.teamPositions);
+        }
       }
     },
     reorderUserTeams(
       state,
       action: PayloadAction<{
         userId: string;
+        orgId: string;
         newOrder: string[];
       }>,
     ) {
-      const { userId, newOrder } = action.payload;
+      const { userId, orgId, newOrder } = action.payload;
       const user = state.allUsers.find((u) => u.id === userId);
       if (user) {
-        user.teams = newOrder;
+        const orgs = user.organisations as unknown as Record<string, OrgMembership>;
+        if (orgs?.[orgId]) {
+          orgs[orgId].teams = newOrder;
+        }
       }
     },
     resetUserChanges(state) {
@@ -278,10 +331,14 @@ const userManagementSlice = createSlice({
     },
     setAllUsers(state, action: PayloadAction<AppUserWithId[]>) {
       state.allUsers = action.payload;
-      // Only update originalUsers if we are NOT currently saving/editing
-      // but actually, for read-only sync, we want to update the "committed" state
       state.originalUsers = JSON.parse(JSON.stringify(action.payload));
       state.loading = false;
+    },
+    setAllMemberships(state, action: PayloadAction<Record<string, OrgMembership>>) {
+      state.memberships = action.payload;
+    },
+    setAllUserProfiles(state, action: PayloadAction<Record<string, AppUser>>) {
+      state.profiles = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -336,5 +393,7 @@ export const {
   reorderUserTeams,
   resetUserChanges,
   setAllUsers,
+  setAllMemberships,
+  setAllUserProfiles,
 } = userManagementSlice.actions;
 export const userManagementReducer = userManagementSlice.reducer;

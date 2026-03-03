@@ -8,7 +8,7 @@ import { useAppDispatch, useAppSelector } from "../../../hooks/redux";
 import { useRosterBaseLogic } from "../../../hooks/useRosterBaseLogic";
 import { useRosterHeaderLogic } from "../../../hooks/useRosterHeaderLogic";
 import { useRosterVisualRows } from "../../../hooks/useRosterVisualRows";
-import { getAssignmentsForTeam } from "../../../model/model";
+import { getAssignmentsForTeam, OrgMembership } from "../../../model/model";
 import { setHighlightedUserId } from "../../../store/slices/rosterViewSlice";
 import NameTag from "../../common/NameTag";
 import RosterTable from "../RosterTable";
@@ -81,10 +81,14 @@ const AllRosterTable = () => {
   const filteredAllTeamUsers = useMemo(() => {
     const orgId = userData?.orgId;
     return allTeamUsers.filter((u) => {
-      const orgEntry = orgId ? u.organisations?.[orgId] : null;
-      if (!orgEntry?.isActive || !teamId) return false;
-      const userTeamPositions = u.teamPositions?.[teamId] || [];
-      return userTeamPositions.length > 0;
+      const orgs = u.organisations as Record<string, OrgMembership>;
+      if (orgs && !Array.isArray(orgs) && orgId) {
+        const orgEntry = orgs[orgId];
+        if (!orgEntry?.isActive || !teamId) return false;
+        const userTeamPositions = orgEntry.teamPositions?.[teamId] || [];
+        return userTeamPositions.length > 0;
+      }
+      return false;
     });
   }, [allTeamUsers, teamId, userData?.orgId]);
 

@@ -11,11 +11,11 @@ import {
   deleteField,
 } from "firebase/firestore";
 
+import { AuthState } from "./authSlice";
 import { db } from "../../firebase";
 import {
   RosterEntry,
   TeamRosterData,
-  AppUser,
   CoverageRequest,
   UserAssignments,
 } from "../../model/model";
@@ -141,10 +141,10 @@ export const syncAssignmentRemote = createAsyncThunk(
 
     try {
       const state = getState() as {
-        auth: { userData: AppUser | null };
+        auth: AuthState;
         roster: RosterState;
       };
-      const orgId = state.auth.userData?.activeOrgId;
+      const orgId = state.auth.activeOrgId;
       if (!orgId) throw new Error("Org ID missing");
 
       // With atomic docs, we replace the team-date doc with the latest state
@@ -201,10 +201,10 @@ export const syncAbsenceRemote = createAsyncThunk(
 
     try {
       const state = getState() as {
-        auth: { userData: AppUser | null };
+        auth: AuthState;
         roster: RosterState;
       };
-      const orgId = state.auth.userData?.activeOrgId;
+      const orgId = state.auth.activeOrgId;
       if (!orgId) throw new Error("Org ID missing");
 
       const absenceDocId = `${userIdentifier}_${date}`;
@@ -303,8 +303,8 @@ export const syncEventNameRemote = createAsyncThunk(
   ) => {
     const { date, eventName } = payload;
     try {
-      const state = getState() as { auth: { userData: AppUser | null } };
-      const orgId = state.auth.userData?.activeOrgId;
+      const state = getState() as { auth: AuthState };
+      const orgId = state.auth.activeOrgId;
       if (!orgId) throw new Error("Org ID missing");
 
       const docRef = doc(
@@ -345,10 +345,10 @@ export const resolveCoverageRequestRemote = createAsyncThunk(
     const { date, requestId } = payload;
     try {
       const state = getState() as {
-        auth: { userData: AppUser | null };
+        auth: AuthState;
         roster: RosterState;
       };
-      const orgId = state.auth.userData?.activeOrgId;
+      const orgId = state.auth.activeOrgId;
       if (!orgId) throw new Error("Org ID missing");
 
       const entry = state.roster.entries[date];
@@ -408,7 +408,7 @@ const rosterSlice = createSlice({
           date,
           teams: {},
           absence: {},
-          orgId: "",
+          orgId: "", // orgId will be set by the fetch logic or the listener data itself
           coverageRequests: {},
         };
         newEntries[date] = {

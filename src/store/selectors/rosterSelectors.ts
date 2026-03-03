@@ -2,12 +2,13 @@ import { createSelector } from "@reduxjs/toolkit";
 
 import { CoverageRequest } from "../../model/model";
 import { RootState } from "../index";
+import { selectUserData } from "../slices/authSlice";
 
 /**
  * Selects all open coverage requests across all dates that the current user is qualified to fill.
  */
 export const selectQualifiedCoverageRequests = createSelector(
-  [(state: RootState) => state.roster.entries, (state: RootState) => state.auth.userData],
+  [(state: RootState) => state.roster.entries, selectUserData],
   (entries, userData) => {
     if (!userData || !userData.email) return [];
 

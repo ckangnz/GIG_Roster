@@ -29,6 +29,18 @@ export interface RosterSlot {
 }
 
 export interface OrgMembership {
+  id?: string; // userId
+  isActive: boolean;
+  isAdmin: boolean;
+  isApproved: boolean;
+  teams: string[];
+  teamPositions?: Record<string, string[]>; // teamId -> positionIds[]
+  indexedAssignments?: string[]; // ["TeamId|PositionId", ...]
+  preferredLanguage?: string; // 'en-NZ' | 'ko'
+}
+
+// Lightweight membership stored on the user document for fast permission checks
+export interface UserOrgMetadata {
   isActive: boolean;
   isAdmin: boolean;
   isApproved: boolean;
@@ -38,13 +50,20 @@ export interface AppUser {
   id?: string;
   name: string | null;
   email: string | null;
-  activeOrgId: string | null; // Multi-tenancy scoping
-  organisations: Record<string, OrgMembership>;
-  teams: string[];
-  teamPositions?: Record<string, string[]>; // teamId -> positionIds[]
-  indexedAssignments?: string[]; // ["TeamId|PositionId", ...]
+  organisations: Record<string, UserOrgMetadata> | string[]; // Can be Map during transition or Array after cleanup
   gender: string;
-  preferredLanguage?: string; // 'en-NZ' | 'ko'
+}
+
+export interface AppUserWithMembership extends AppUser {
+  activeOrgId: string | null;
+  orgId: string | null; // backward compatibility
+  isAdmin: boolean;
+  isApproved: boolean;
+  isActive: boolean;
+  teams: string[];
+  teamPositions: Record<string, string[]>;
+  indexedAssignments: string[];
+  preferredLanguage: string;
 }
 
 export interface RecurringEvent {

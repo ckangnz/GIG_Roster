@@ -7,6 +7,7 @@ import { AppTab, SettingsSection } from "../../constants/navigation";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { useAppListeners } from "../../hooks/useAppListeners";
 import { useHeaderTitle } from "../../hooks/useHeaderTitle";
+import { selectUserData } from "../../store/slices/authSlice";
 import { setLastVisitedPath } from "../../store/slices/uiSlice";
 import ConfirmModal from "../common/ConfirmModal";
 import UndoToast from "../common/UndoToast";
@@ -23,7 +24,7 @@ const MainLayout = () => {
   const { headerTitle, activeTab, activeTeamName, activeSideItem } =
     useHeaderTitle();
 
-  const { userData } = useAppSelector((state) => state.auth);
+  const userData = useAppSelector(selectUserData);
 
   // Dynamic Gender Theme Sync
   useEffect(() => {

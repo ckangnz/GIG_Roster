@@ -7,7 +7,7 @@ import { GeneralRosterRow } from "./GeneralRosterRow";
 import { useRosterBaseLogic } from "../../../hooks/useRosterBaseLogic";
 import { useRosterHeaderLogic } from "../../../hooks/useRosterHeaderLogic";
 import { useRosterVisualRows } from "../../../hooks/useRosterVisualRows";
-import { getAssignmentsForTeam, isTeamRosterData } from "../../../model/model";
+import { getAssignmentsForTeam, isTeamRosterData, OrgMembership } from "../../../model/model";
 import cellStyles from "../roster-cell.module.css";
 import RosterTable from "../RosterTable";
 
@@ -49,9 +49,14 @@ const GeneralRosterTable = () => {
 
   const sortedUsers = useMemo(() => {
     const orgId = userData?.orgId;
-    const list = users.filter(
-      (u) => u.email && !hiddenUserList.includes(u.email) && (orgId ? u.organisations?.[orgId]?.isActive : true),
-    );
+    const list = users.filter((u) => {
+      const orgs = u.organisations as Record<string, OrgMembership>;
+      let isActive = true;
+      if (orgs && !Array.isArray(orgs) && orgId) {
+        isActive = orgs[orgId]?.isActive ?? true;
+      }
+      return u.email && !hiddenUserList.includes(u.email) && isActive;
+    });
 
     const sortFn = (a: (typeof list)[0], b: (typeof list)[0]) => {
       const isMeA = a.email === userData?.email;

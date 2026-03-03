@@ -1,12 +1,14 @@
-import { Navigate } from 'react-router-dom';
+import { Navigate } from "react-router-dom";
 
-import { useAppSelector } from '../hooks/redux';
-import LoadingPage from '../page/loading-page/LoadingPage';
+import { useAppSelector } from "../hooks/redux";
+import LoadingPage from "../page/loading-page/LoadingPage";
 
 const MainLoader = () => {
   const firebaseUser = useAppSelector((state) => state.auth.firebaseUser);
   const userData = useAppSelector((state) => state.auth.userData);
   const loading = useAppSelector((state) => state.auth.loading);
+  const activeOrgId = useAppSelector((state) => state.auth.activeOrgId);
+  const membership = useAppSelector((state) => state.auth.membership);
 
   if (loading) {
     return <LoadingPage />;
@@ -20,8 +22,18 @@ const MainLoader = () => {
     return <LoadingPage />;
   }
 
-  const activeOrgId = userData.activeOrgId;
-  const isApproved = activeOrgId ? userData.organisations[activeOrgId]?.isApproved : false;
+  const orgIds = userData.organisations || [];
+  const hasOrgs = Array.isArray(orgIds) ? orgIds.length > 0 : Object.keys(orgIds).length > 0;
+
+  if (!hasOrgs) {
+    return <Navigate to="/guest" replace />;
+  }
+
+  if (!activeOrgId) {
+    return <Navigate to="/select-org" replace />;
+  }
+
+  const isApproved = membership?.isApproved;
 
   if (!isApproved) {
     return <Navigate to="/guest" replace />;

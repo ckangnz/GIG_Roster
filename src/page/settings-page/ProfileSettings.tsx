@@ -9,7 +9,10 @@ import SaveFooter from "../../components/common/SaveFooter";
 import Toggle from "../../components/common/Toggle";
 import { auth } from "../../firebase";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
-import { updateUserProfile, selectUserData } from "../../store/slices/authSlice";
+import {
+  updateUserProfile,
+  selectUserData,
+} from "../../store/slices/authSlice";
 import formStyles from "../../styles/form.module.css";
 
 import styles from "./profile-settings.module.css";
@@ -42,7 +45,6 @@ const ProfileSettings = ({
     isActive: true,
     teams: [] as string[],
     teamPositions: {} as Record<string, string[]>,
-    orgId: null as string | null,
     preferredLanguage: "en-NZ",
   });
 
@@ -73,7 +75,6 @@ const ProfileSettings = ({
           isActive: userData.isActive ?? true,
           teams: userData.teams || [],
           teamPositions: userData.teamPositions || {},
-          orgId: userData.orgId || null,
           preferredLanguage: userData.preferredLanguage || "en-NZ",
         };
       }
@@ -89,7 +90,6 @@ const ProfileSettings = ({
       isActive: userData.isActive ?? true,
       teams: userData.teams || [],
       teamPositions: userData.teamPositions || {},
-      orgId: userData.orgId || null,
       preferredLanguage: userData.preferredLanguage || "en-NZ",
     };
     return JSON.stringify(formState) !== JSON.stringify(originalData);
@@ -120,7 +120,6 @@ const ProfileSettings = ({
       isActive: userData.isActive ?? true,
       teams: userData.teams || [],
       teamPositions: userData.teamPositions || {},
-      orgId: userData.orgId || null,
       preferredLanguage: userData.preferredLanguage || "en-NZ",
     });
   };
@@ -199,7 +198,9 @@ const ProfileSettings = ({
           className={`${formStyles.formInput} ${!isFormValid ? formStyles.inputError : ""}`}
         />
         {!isFormValid && (
-          <span className={formStyles.errorText}>{t("settings.nameRequired")}</span>
+          <span className={formStyles.errorText}>
+            {t("settings.nameRequired")}
+          </span>
         )}
       </div>
       <div className={formStyles.formGroup}>

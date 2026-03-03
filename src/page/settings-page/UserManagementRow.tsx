@@ -10,7 +10,7 @@ import {
 import SummaryCell from "../../components/common/SummaryCell";
 import Toggle from "../../components/common/Toggle";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
-import { AppUser, Gender, Team } from "../../model/model";
+import { AppUser, Gender, Team, OrgMembership } from "../../model/model";
 import { selectUserData } from "../../store/slices/authSlice";
 import { updateUserField, updateUserOrgField } from "../../store/slices/userManagementSlice";
 import formStyles from "../../styles/form.module.css";
@@ -51,24 +51,26 @@ const UserManagementRow = ({
     }
   };
 
-  const orgMembership = activeOrgId ? user.organisations?.[activeOrgId] : null;
+  const orgs = user.organisations as Record<string, OrgMembership>;
+  const orgMembership = activeOrgId ? orgs?.[activeOrgId] : null;
   const isActive = orgMembership?.isActive ?? true;
   const isApproved = orgMembership?.isApproved ?? false;
   const isAdmin = orgMembership?.isAdmin ?? false;
 
   const getTeamSummary = () => {
-    if (!user.teams || user.teams.length === 0) {
+    const teams = orgMembership?.teams || [];
+    if (teams.length === 0) {
       return t('common.none');
     }
 
-    const teamEmojis = user.teams
-      .map((tId) => {
+    const teamEmojis = teams
+      .map((tId: string) => {
         const team = availableTeams.find((t) => t.id === tId || t.name === tId);
         return team?.emoji || "";
       })
       .filter(Boolean);
 
-    const displayEmojis = teamEmojis.slice(0, 3).map((emoji, i) => (
+    const displayEmojis = teamEmojis.slice(0, 3).map((emoji: string, i: number) => (
       <span key={i} className={styles.summaryEmoji}>
         {emoji}
       </span>
@@ -86,10 +88,11 @@ const UserManagementRow = ({
   };
 
   const getPositionCount = () => {
-    if (!user.teamPositions) return 0;
-    return Object.entries(user.teamPositions).reduce(
+    const teamPositions = orgMembership?.teamPositions || {};
+    return Object.entries(teamPositions).reduce(
       (acc, [, posList]) => {
-        const nonCustomPosList = posList.filter(posId => {
+        const positions = posList as string[];
+        const nonCustomPosList = positions.filter((posId: string) => {
           const gp = globalPositions.find(p => p.id === posId || p.name === posId);
           return !gp?.isCustom;
         });

@@ -1,0 +1,189 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 20px;
+  background-color: var(--color-bg-main);
+}
+
+.card {
+  width: 100%;
+  max-width: 500px;
+  background: var(--color-bg-secondary);
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--border-color-table);
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--color-text-primary);
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  font-size: 0.95rem;
+  color: var(--color-text-dim);
+}
+
+.orgList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.orgItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  background: var(--color-bg-main);
+  border: 1px solid var(--border-color-table);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+  text-align: left;
+}
+
+.orgItem:hover {
+  border-color: var(--color-accent);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.orgInfo {
+  flex: 1;
+  min-width: 0;
+  margin-right: 12px;
+}
+
+.orgName {
+  display: block;
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.orgMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.orgRole {
+  font-size: 0.75rem;
+  color: var(--color-text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 700;
+}
+
+.statusBadge {
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.statusApproved {
+  background: rgba(52, 199, 89, 0.1);
+  color: #34c759;
+}
+
+.statusPending {
+  background: rgba(255, 149, 0, 0.1);
+  color: #ff9500;
+}
+
+.actionsContainer {
+  margin-top: 24px;
+}
+
+.choiceCard {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 24px;
+  background: var(--background-card);
+  border: 2px solid var(--border-color-secondary);
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.choiceCard:not(.disabled):hover {
+  border-color: var(--color-accent);
+  background: var(--background-hover);
+  transform: translateY(-2px);
+}
+
+.choiceCard.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: var(--background-body);
+}
+
+.comingSoonBadge {
+  margin-left: 8px;
+  font-size: 0.65rem;
+  background: var(--background-toggle-off-transparent);
+  color: var(--color-text-dim);
+  padding: 2px 8px;
+  border-radius: 10px;
+  vertical-align: middle;
+}
+
+.backLink {
+  background: none;
+  border: none;
+  color: var(--color-text-dim);
+  font-size: 0.9rem;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.backLink:hover {
+  color: var(--color-text-primary);
+}
+
+.tierCard {
+  padding: 16px;
+  background: var(--background-app-shell);
+  border: 1px solid var(--border-color-table);
+  border-radius: 12px;
+}
+
+.footer {
+  margin-top: 32px;
+  text-align: center;
+}
+
+.logoutBtn {
+  background: none;
+  border: none;
+  color: var(--color-text-dim);
+  font-size: 0.9rem;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.logoutBtn:hover {
+  color: var(--color-text-primary);
+}

@@ -17,18 +17,20 @@ const ProtectedRoute = () => {
     (state) => state.positions,
   );
 
+  const activeOrgId = useAppSelector((state) => state.auth.activeOrgId);
+  const membership = useAppSelector((state) => state.auth.membership);
+  const isApproved = membership?.isApproved || false;
+
   useEffect(() => {
-    const orgId = userData?.activeOrgId;
-    const isApproved = orgId ? userData?.organisations[orgId]?.isApproved : false;
-    if (firebaseUser && isApproved && orgId) {
+    if (firebaseUser && isApproved && activeOrgId) {
       if (!teamsFetched && !teamsLoading) {
-        dispatch(fetchTeams(orgId));
+        dispatch(fetchTeams(activeOrgId));
       }
       if (!positionsFetched && !positionsLoading) {
-        dispatch(fetchPositions(orgId));
+        dispatch(fetchPositions(activeOrgId));
       }
     }
-  }, [dispatch, firebaseUser, userData, teamsFetched, teamsLoading, positionsFetched, positionsLoading]);
+  }, [dispatch, firebaseUser, isApproved, activeOrgId, teamsFetched, teamsLoading, positionsFetched, positionsLoading]);
 
   if (loading || !userData) {
     return <LoadingPage />;
@@ -38,8 +40,9 @@ const ProtectedRoute = () => {
     return <Navigate to="/login" replace />;
   }
 
-  const activeOrgId = userData.activeOrgId;
-  const isApproved = activeOrgId ? userData.organisations[activeOrgId]?.isApproved : false;
+  if (!activeOrgId) {
+    return <Navigate to="/select-org" replace />;
+  }
 
   if (!isApproved) {
     return <Navigate to="/guest" replace />;

@@ -8,8 +8,9 @@ import {
   deleteField,
 } from "firebase/firestore";
 
+import { AuthState } from "./authSlice";
 import { db } from "../../firebase";
-import { Thought, ThoughtEntry, AppUser } from "../../model/model";
+import { Thought, ThoughtEntry } from "../../model/model";
 
 interface ThoughtsState {
   thoughts: Record<string, Thought>; // id ({userUid}_{teamName}) -> Thought
@@ -109,8 +110,8 @@ export const syncThoughtEntriesRemote = createAsyncThunk(
     const id = `${userUid}_${teamName}`;
 
     try {
-      const state = getState() as { auth: { userData: AppUser | null } };
-      const orgId = state.auth.userData?.activeOrgId;
+      const state = getState() as { auth: AuthState };
+      const orgId = state.auth.activeOrgId;
       if (!orgId) throw new Error("Org ID missing");
 
       const docRef = doc(db, "organisations", orgId, "thoughts", id);
@@ -150,8 +151,8 @@ export const removeThoughtRemote = createAsyncThunk(
   "thoughts/removeThoughtRemote",
   async (payload: { id: string }, { rejectWithValue, getState }) => {
     try {
-      const state = getState() as { auth: { userData: AppUser | null } };
-      const orgId = state.auth.userData?.activeOrgId;
+      const state = getState() as { auth: AuthState };
+      const orgId = state.auth.activeOrgId;
       if (!orgId) throw new Error("Org ID missing");
 
       const docRef = doc(db, "organisations", orgId, "thoughts", payload.id);
@@ -178,8 +179,8 @@ export const syncHeartEntryRemote = createAsyncThunk(
   ) => {
     const { thoughtId, updatedEntries } = payload;
     try {
-      const state = getState() as { auth: { userData: AppUser | null } };
-      const orgId = state.auth.userData?.activeOrgId;
+      const state = getState() as { auth: AuthState };
+      const orgId = state.auth.activeOrgId;
       if (!orgId) throw new Error("Org ID missing");
 
       const docRef = doc(db, "organisations", orgId, "thoughts", thoughtId);

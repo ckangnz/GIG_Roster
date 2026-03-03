@@ -130,10 +130,21 @@ const DashboardPage = () => {
 
   const rosterDates = useMemo(() => {
     const todayKey = getTodayKey();
-    if (!userData?.teams || allTeams.length === 0) return [];
+    if (!userData || allTeams.length === 0) return [];
+
+    const orgs = userData.organisations;
+    let userTeamsList: string[] = [];
+    if (orgs && !Array.isArray(orgs) && userData.activeOrgId) {
+      // In hybrid model, teams might be in sub-collection membership, 
+      // but selectUserData should have already merged it into root if using selectUserData.
+      // However, userData.organisations might still be a Map.
+      userTeamsList = userData.teams || [];
+    } else {
+      userTeamsList = userData.teams || [];
+    }
 
     const userTeams = allTeams.filter(
-      (t) => userData.teams.includes(t.id) || userData.teams.includes(t.name),
+      (t) => userTeamsList.includes(t.id) || userTeamsList.includes(t.name),
     );
     const dateSet = new Set<string>();
 
@@ -214,21 +225,23 @@ const DashboardPage = () => {
 
   const getDashboardDataForDate = useCallback(
     (dateStr: string | null) => {
-      if (!dateStr || !userData?.teams || allTeams.length === 0) return null;
+      if (!dateStr || !userData || allTeams.length === 0) return null;
       const dateKey = dateStr;
       const entry = entries[dateKey];
+
+      const userTeamsList = userData.teams || [];
 
       const userTeams = allTeams
         .filter(
           (t) =>
-            userData.teams.includes(t.id) || userData.teams.includes(t.name),
+            userTeamsList.includes(t.id) || userTeamsList.includes(t.name),
         )
         .sort((a, b) => {
-          const indexA = userData.teams.findIndex(
-            (id) => id === a.id || id === a.name,
+          const indexA = userTeamsList.findIndex(
+            (id: string) => id === a.id || id === a.name,
           );
-          const indexB = userData.teams.findIndex(
-            (id) => id === b.id || id === b.name,
+          const indexB = userTeamsList.findIndex(
+            (id: string) => id === b.id || id === b.name,
           );
           return indexA - indexB;
         });
@@ -568,6 +581,8 @@ const DashboardPage = () => {
     if (!userData) return [];
     const results: string[] = [];
 
+    const userTeamPositions = userData.teamPositions || {};
+
     rosterDates.forEach((date) => {
       const entry = entries[date];
       if (!entry?.coverageRequests) return;
@@ -576,7 +591,7 @@ const DashboardPage = () => {
         (req) => {
           if (req.status !== "open") return false;
           const userQualifiedPositions =
-            userData.teamPositions?.[req.teamName] || [];
+            userTeamPositions[req.teamName] || [];
           return userQualifiedPositions.includes(req.positionName);
         },
       );
@@ -729,9 +744,10 @@ const DashboardPage = () => {
                       req.status === "open",
                   );
 
-                  const userQualifiedPositions =
-                    userData?.teamPositions?.[teamData.teamId] || [];
-                  const isQualified = userQualifiedPositions.includes(
+                  const userTeamPositions = userData?.teamPositions || {};
+                  
+                  const qualifiedPositions = userTeamPositions[teamData.teamId] || [];
+                  const isQualified = qualifiedPositions.includes(
                     group.posId,
                   );
                   const isAlreadyAssigned = group.assignedUsers.some(

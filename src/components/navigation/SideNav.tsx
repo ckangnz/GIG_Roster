@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useMemo } from "react";
 
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -57,6 +57,11 @@ const SideNav = ({ isVisible = true }: SideNavProps) => {
 
   const isMobile = windowWidth <= 767;
   const shouldShowLabels = isMobile || isDesktopSidebarExpanded;
+
+  const userTeams = useMemo(() => {
+    if (!userData) return [];
+    return userData.teams || [];
+  }, [userData]);
 
   const prevTeamRef = useRef<string | undefined>(undefined);
 
@@ -176,13 +181,13 @@ const SideNav = ({ isVisible = true }: SideNavProps) => {
           )}
 
           {activeTab === AppTab.ROSTER &&
-            userData?.teams?.map((teamIdentifier) => {
+            userTeams.map((teamIdentifier: string) => {
               const team = allTeams.find(
                 (t) => t.id === teamIdentifier || t.name === teamIdentifier,
               );
               if (!team) return null;
 
-              const hasOneTeam = userData.teams.length === 1;
+              const hasOneTeam = userTeams.length === 1;
               const isTeamExpanded =
                 hasOneTeam || expandedTeams.includes(team.id);
 
@@ -303,13 +308,13 @@ const SideNav = ({ isVisible = true }: SideNavProps) => {
             })}
 
           {activeTab === AppTab.THOUGHTS &&
-            userData?.teams?.map((teamIdentifier) => {
+            userTeams.map((teamIdentifier: string) => {
               const team = allTeams.find(
                 (t) => t.id === teamIdentifier || t.name === teamIdentifier,
               );
               if (!team) return null;
 
-              const hasOneTeam = userData.teams.length === 1;
+              const hasOneTeam = userTeams.length === 1;
               const isActive = activeTeamName === team.id;
 
               return (

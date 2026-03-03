@@ -1,8 +1,9 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 
+import { AuthState } from "./authSlice";
 import { db } from "../../firebase";
-import { Team, AppUser } from "../../model/model";
+import { Team } from "../../model/model";
 
 interface TeamsState {
   teams: Team[];
@@ -52,8 +53,8 @@ export const updateTeams = createAsyncThunk(
   "teams/updateTeams",
   async (teams: Team[], { rejectWithValue, getState }) => {
     try {
-      const state = getState() as { auth: { userData: AppUser | null } };
-      const orgId = state.auth.userData?.activeOrgId;
+      const state = getState() as { auth: AuthState };
+      const orgId = state.auth.activeOrgId;
       if (!orgId) throw new Error("Organisation ID missing");
 
       const docRef = doc(db, "organisations", orgId, "metadata", "teams");

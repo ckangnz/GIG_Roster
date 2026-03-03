@@ -10,6 +10,7 @@ import {
   getAssignmentsForTeam,
   isTeamRosterData,
   getAbsenceForUser,
+  AppUserWithMembership,
 } from "../../model/model";
 import {
   updatePositions,
@@ -475,7 +476,7 @@ export const useRosterActions = (
   const handleCancel = useCallback(() => {
     dispatch(setFocusedCell(null));
     dispatch(resetPositionsDirty());
-    const orgId = (userData as AppUser)?.activeOrgId;
+    const orgId = (userData as AppUserWithMembership | null)?.activeOrgId;
     if (orgId) {
       dispatch(fetchPositions(orgId));
     }

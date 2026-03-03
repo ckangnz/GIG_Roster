@@ -6,7 +6,8 @@ import {
   Users, 
   Trophy, 
   Music,
-  MessageSquareHeart
+  MessageSquareHeart,
+  Building2
 } from "lucide-react";
 import { LucideIcon } from "lucide-react";
 
@@ -19,6 +20,7 @@ export enum AppTab {
 
 export enum SettingsSection {
   PROFILE = "profile",
+  ORGANISATIONS = "organisations",
   USER_MANAGEMENT = "user_management",
   POSITIONS = "position_management",
   TEAMS = "team_management",
@@ -40,6 +42,7 @@ export const BOTTOM_NAV_ITEMS: NavItem[] = [
 
 export const SETTINGS_NAV_ITEMS: NavItem[] = [
   { id: SettingsSection.PROFILE, label: "My Profile", icon: User },
+  { id: SettingsSection.ORGANISATIONS, label: "Organisations", icon: Building2 },
   {
     id: SettingsSection.USER_MANAGEMENT,
     label: "User Management",

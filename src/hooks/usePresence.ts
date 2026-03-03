@@ -109,6 +109,7 @@ export const useTrackPresence = (firebaseUser: User | null, userData: AppUser | 
   const hasCleanedUp = useRef(false);
   const location = useLocation();
   
+  const { activeOrgId } = useAppSelector(state => state.auth);
   const { focusedCell } = useAppSelector(state => state.ui);
   const { rosterDates, users, allTeamUsers } = useAppSelector(state => state.rosterView);
   const { positions: allPositions } = useAppSelector(state => state.positions);
@@ -141,8 +142,13 @@ export const useTrackPresence = (firebaseUser: User | null, userData: AppUser | 
         if (currentPos?.isCustom) {
           identifier = currentPos.customLabels?.[focusedCell.col] || "";
         } else {
-          const orgId = userData?.activeOrgId;
-          const sorted = users.filter(u => orgId ? u.organisations?.[orgId]?.isActive : true); 
+          const sorted = users.filter(u => {
+            const orgs = u.organisations;
+            if (orgs && !Array.isArray(orgs) && activeOrgId) {
+              return orgs[activeOrgId]?.isActive ?? true;
+            }
+            return true;
+          });
           identifier = sorted[focusedCell.col]?.email || "";
         }
       }
@@ -154,7 +160,7 @@ export const useTrackPresence = (firebaseUser: User | null, userData: AppUser | 
       teamName,
       viewName: activePosition || null // Use null instead of undefined for Firestore compatibility
     };
-  }, [focusedCell, rosterDates, users, allTeamUsers, allPositions, location.pathname, userData?.activeOrgId]);
+  }, [focusedCell, rosterDates, users, allTeamUsers, allPositions, location.pathname, activeOrgId]);
 
   useEffect(() => {
     if (!firebaseUser?.uid || !userData?.email) return;

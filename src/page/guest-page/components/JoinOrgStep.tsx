@@ -1,13 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Check } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import Button from "../../../components/common/Button";
 import { InputField } from "../../../components/common/InputField";
-import { useAppDispatch } from "../../../hooks/redux";
+import { useAppDispatch, useAppSelector } from "../../../hooks/redux";
 import { Organisation } from "../../../model/model";
-import { searchOrganisations } from "../../../store/slices/authSlice";
+import { searchOrganisations, selectUserData } from "../../../store/slices/authSlice";
 import wizardStyles from "../onboarding-wizard.module.css";
 
 interface JoinOrgStepProps {
@@ -19,8 +19,18 @@ interface JoinOrgStepProps {
 const JoinOrgStep = ({ onJoin, selectedOrg, onSelectOrg }: JoinOrgStepProps) => {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
+  const userData = useAppSelector(selectUserData);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState<Organisation[]>([]);
+
+  const isAlreadyMember = useMemo(() => {
+    if (!selectedOrg || !userData?.organisations) return false;
+    const orgs = userData.organisations;
+    if (Array.isArray(orgs)) {
+      return orgs.includes(selectedOrg.id);
+    }
+    return !!orgs[selectedOrg.id];
+  }, [selectedOrg, userData?.organisations]);
 
   useEffect(() => {
     if (searchTerm.length >= 3 && !selectedOrg) {
@@ -83,12 +93,19 @@ const JoinOrgStep = ({ onJoin, selectedOrg, onSelectOrg }: JoinOrgStepProps) => 
 
       {selectedOrg && (
         <div className={wizardStyles.wizardActions}>
-          <Button 
-            className={wizardStyles.fullWidthBtn}
-            onClick={() => onJoin(selectedOrg)}
-          >
-            {t('onboarding.requestAccess')} <ArrowRight size={18} style={{ marginLeft: 8 }} />
-          </Button>
+          {isAlreadyMember ? (
+            <div className={wizardStyles.alreadyMemberNotice}>
+              <Check size={18} style={{ marginRight: 8 }} />
+              {t('onboarding.alreadyMember', "You are already a member of this organisation")}
+            </div>
+          ) : (
+            <Button 
+              className={wizardStyles.fullWidthBtn}
+              onClick={() => onJoin(selectedOrg)}
+            >
+              {t('onboarding.requestAccess')} <ArrowRight size={18} style={{ marginLeft: 8 }} />
+            </Button>
+          )}
         </div>
       )}
     </>

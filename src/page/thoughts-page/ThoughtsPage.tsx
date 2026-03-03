@@ -25,7 +25,7 @@ import { TextAreaField } from "../../components/common/InputField";
 import Spinner from "../../components/common/Spinner";
 import { db } from "../../firebase";
 import { useAppSelector, useAppDispatch } from "../../hooks/redux";
-import { Thought, AppUser, ThoughtEntry } from "../../model/model";
+import { Thought, AppUser, ThoughtEntry, OrgMembership } from "../../model/model";
 import { selectUserData } from "../../store/slices/authSlice";
 import {
   setThoughts,
@@ -421,8 +421,9 @@ const ThoughtsPage = () => {
     if (!teamId || !orgId) return [];
     return allUsers.filter(
       (u) => {
-        const orgEntry = u.organisations?.[orgId];
-        return u.teams?.includes(teamId) && orgEntry?.isActive;
+        const orgs = u.organisations as Record<string, OrgMembership>;
+        const orgEntry = orgs?.[orgId];
+        return orgEntry?.teams?.includes(teamId) && orgEntry?.isActive;
       }
     );
   }, [allUsers, teamId, userData?.activeOrgId]);
