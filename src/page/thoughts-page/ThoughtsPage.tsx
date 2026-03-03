@@ -35,17 +35,9 @@ import {
   syncHeartEntryRemote,
 } from "../../store/slices/thoughtsSlice";
 import { showAlert } from "../../store/slices/uiSlice";
+import { safeDecode } from "../../utils/stringUtils";
 
 import styles from "./thoughts-page.module.css";
-
-const safeDecode = (str: string | undefined) => {
-  if (!str) return "";
-  try {
-    return decodeURIComponent(str);
-  } catch {
-    return str;
-  }
-};
 
 const ThoughtsPage = () => {
   const { t } = useTranslation();

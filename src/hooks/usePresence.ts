@@ -21,6 +21,7 @@ import { db, auth } from "../firebase";
 import { useAppDispatch, useAppSelector } from "./redux";
 import { AppUser, Position } from "../model/model";
 import { setOnlineUsers, setPresenceError } from "../store/slices/presenceSlice";
+import { safeDecode } from "../utils/stringUtils";
 
 export interface PresenceFocus {
   date: string;
@@ -103,15 +104,6 @@ const sessionColor = PRESENCE_COLORS[sessionColorIndex][0];
 
 const HEARTBEAT_INTERVAL = 60000;
 const PRESENCE_THRESHOLD = 90000;
-
-const safeDecode = (str: string | undefined) => {
-  if (!str) return "";
-  try {
-    return decodeURIComponent(str);
-  } catch {
-    return str;
-  }
-};
 
 export const useTrackPresence = (firebaseUser: User | null, userData: AppUser | null) => {
   const hasCleanedUp = useRef(false);

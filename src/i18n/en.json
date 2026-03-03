@@ -110,7 +110,7 @@
   },
   "management": {
     "team": {
-      "title": "Team Management",
+      "title": "Teams",
       "newTeam": "New Team",
       "deleteTitle": "Delete Team",
       "deleteConfirm": "Are you sure you want to delete this team?",
@@ -167,7 +167,7 @@
       "end": "End"
     },
     "position": {
-      "title": "Position Management",
+      "title": "Positions",
       "newPosition": "New Position",
       "deleteTitle": "Delete Position",
       "deleteConfirm": "Are you sure you want to delete this position? This will remove it from all teams and delete any associated child positions.",
@@ -194,7 +194,7 @@
       "createPosition": "Create Position"
     },
     "user": {
-      "title": "User Management",
+      "title": "Members",
       "unsavedChanges": "Unsaved user changes",
       "saveAll": "Save All User Changes",
       "pending": "Pending Approval",
@@ -214,10 +214,10 @@
     }
   },
   "settings": {
-    "profile": "Profile Settings",
-    "team_management": "Team Management",
-    "position_management": "Position Management",
-    "user_management": "User Management",
+    "profile": "Profile",
+    "team_management": "Teams",
+    "position_management": "Positions",
+    "user_management": "Members",
     "name": "Full Name",
     "nameRequired": "Full name is required",
     "gender": "Gender",

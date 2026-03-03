@@ -110,7 +110,7 @@
   },
   "management": {
     "team": {
-      "title": "팀 관리",
+      "title": "팀",
       "newTeam": "새 팀 추가",
       "deleteTitle": "팀 삭제",
       "deleteConfirm": "이 팀을 삭제하시겠습니까?",
@@ -167,7 +167,7 @@
       "end": "종료"
     },
     "position": {
-      "title": "포지션 관리",
+      "title": "포지션",
       "newPosition": "새 포지션 추가",
       "deleteTitle": "포지션 삭제",
       "deleteConfirm": "이 포지션을 삭제하시겠습니까? 이 작업은 모든 팀에서 해당 포지션을 제거하고 연관된 하위 포지션도 모두 삭제합니다.",
@@ -194,7 +194,7 @@
       "createPosition": "포지션 생성"
     },
     "user": {
-      "title": "사용자 관리",
+      "title": "멤버",
       "unsavedChanges": "저장되지 않은 사용자 변경사항",
       "saveAll": "모든 사용자 변경사항 저장",
       "pending": "승인 대기 중",
@@ -215,10 +215,10 @@
     }
   },
   "settings": {
-    "profile": "프로필 설정",
-    "team_management": "팀 관리",
-    "position_management": "포지션 관리",
-    "user_management": "사용자 관리",
+    "profile": "프로필",
+    "team_management": "팀",
+    "position_management": "포지션",
+    "user_management": "멤버",
     "name": "이름",
     "nameRequired": "이름을 입력해 주세요",
     "gender": "성별",
