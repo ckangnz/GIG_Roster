@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 
 import { Reorder, useDragControls } from "framer-motion";
-import { Plus } from "lucide-react";
+import { Plus, IdCardLanyard } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import NewPositionModal from "./NewPositionModal";
@@ -338,28 +338,42 @@ const PositionManagement = () => {
           layout: true,
         }}
         customBody={
-          <>
-            {positionBlocks.map((block) => {
-              const parentIdx = positions.findIndex(
-                (p) => p.id === block.parent.id,
-              );
-              return (
-                <DraggableRowBlock
-                  key={block.id}
-                  block={block}
-                  indexInPositions={parentIdx}
-                  onUpdate={handleUpdate}
-                  onDelete={deletePosition}
-                />
-              );
-            })}
-          </>
+          positionBlocks.length === 0 ? (
+            <tbody>
+              <tr>
+                <td colSpan={6}>
+                  <div className={styles.emptyState}>
+                    <IdCardLanyard size={40} className={styles.emptyStateIcon} />
+                    <p className={styles.emptyStateText}>{t("management.position.empty")}</p>
+                    <p className={styles.emptyStateSubtext}>{t("management.position.emptyHint")}</p>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          ) : (
+            <>
+              {positionBlocks.map((block) => {
+                const parentIdx = positions.findIndex(
+                  (p) => p.id === block.parent.id,
+                );
+                return (
+                  <DraggableRowBlock
+                    key={block.id}
+                    block={block}
+                    indexInPositions={parentIdx}
+                    onUpdate={handleUpdate}
+                    onDelete={deletePosition}
+                  />
+                );
+              })}
+            </>
+          )
         }
       >
         {null}
       </SettingsTable>
 
-      <div style={{ display: "flex", justifyContent: "flex-end" }}>
+      <div className={styles.addBtn}>
         <Button variant="primary" onClick={() => setIsModalOpen(true)}>
           <Plus size={18} style={{ marginRight: "8px" }} />
           {t("management.position.newPosition")}

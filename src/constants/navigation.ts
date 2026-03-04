@@ -5,7 +5,7 @@ import {
   User, 
   Users, 
   Trophy, 
-  Music,
+  IdCardLanyard,
   MessageSquareHeart,
   Building2
 } from "lucide-react";
@@ -58,7 +58,7 @@ export const SETTINGS_NAV_ITEMS: NavItem[] = [
   {
     id: SettingsSection.POSITIONS,
     label: "Position Management",
-    icon: Music,
+    icon: IdCardLanyard,
     adminOnly: true,
   },
 ];

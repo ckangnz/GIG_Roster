@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 
 import { Reorder } from "framer-motion";
-import { Plus } from "lucide-react";
+import { Plus, Users } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import TeamConfigModal from "./TeamConfigModal";
@@ -211,30 +211,39 @@ const TeamManagement = () => {
           { text: "", width: 50 },
         ]}
         customBody={
-          <Reorder.Group
-            axis="y"
-            values={teams}
-            onReorder={setTeams}
-            as="tbody"
-          >
-            {teams.map((team, teamIndex) => (
-              <TeamManagementRow
-                key={team.id}
-                team={team}
-                teamIndex={teamIndex}
-                availablePositions={availablePositions}
-                onUpdate={handleUpdate}
-                onDelete={deleteTeam}
-                onEdit={(idx) => setEditingTeamIndex(idx)}
-              />
-            ))}
-          </Reorder.Group>
+          teams.length === 0 ? (
+            <tbody>
+              <tr>
+                <td colSpan={5}>
+                  <div className={styles.emptyState}>
+                    <Users size={40} className={styles.emptyStateIcon} />
+                    <p className={styles.emptyStateText}>{t("management.team.empty")}</p>
+                    <p className={styles.emptyStateSubtext}>{t("management.team.emptyHint")}</p>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          ) : (
+            <Reorder.Group axis="y" values={teams} onReorder={setTeams} as="tbody">
+              {teams.map((team, teamIndex) => (
+                <TeamManagementRow
+                  key={team.id}
+                  team={team}
+                  teamIndex={teamIndex}
+                  availablePositions={availablePositions}
+                  onUpdate={handleUpdate}
+                  onDelete={deleteTeam}
+                  onEdit={(idx) => setEditingTeamIndex(idx)}
+                />
+              ))}
+            </Reorder.Group>
+          )
         }
       >
         {null}
       </SettingsTable>
 
-      <div style={{ display: "flex", justifyContent: "flex-end" }}>
+      <div className={styles.addBtn}>
         <Button variant="primary" onClick={() => setIsNewTeamModalOpen(true)}>
           <Plus size={18} style={{ marginRight: "8px" }} />
           {t("management.team.newTeam")}

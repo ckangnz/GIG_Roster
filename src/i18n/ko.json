@@ -136,6 +136,8 @@
     "team": {
       "title": "팀",
       "newTeam": "새 팀 추가",
+      "empty": "팀이 없습니다",
+      "emptyHint": "'새 팀 추가'를 클릭하여 첫 번째 팀을 만드세요.",
       "deleteTitle": "팀 삭제",
       "deleteConfirm": "이 팀을 삭제하시겠습니까?",
       "unsavedChanges": "저장되지 않은 팀 변경사항",
@@ -193,6 +195,8 @@
     "position": {
       "title": "포지션",
       "newPosition": "새 포지션 추가",
+      "empty": "포지션이 없습니다",
+      "emptyHint": "'새 포지션 추가'를 클릭하여 첫 번째 포지션을 만드세요.",
       "deleteTitle": "포지션 삭제",
       "deleteConfirm": "이 포지션을 삭제하시겠습니까? 이 작업은 모든 팀에서 해당 포지션을 제거하고 연관된 하위 포지션도 모두 삭제합니다.",
       "unsavedChanges": "저장되지 않은 포지션 변경사항",
