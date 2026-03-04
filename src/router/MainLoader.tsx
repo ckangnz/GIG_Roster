@@ -14,6 +14,7 @@ const MainLoader = () => {
   // Capture invite param from URL or sessionStorage
   const inviteOrgId = searchParams.get("join") || sessionStorage.getItem("pendingInviteOrgId");
 
+
   if (loading) {
     return <LoadingPage />;
   }
@@ -33,19 +34,16 @@ const MainLoader = () => {
 
   // If there's a pending invite, redirect to guest page to handle it
   if (inviteOrgId) {
-    // Check if already a member of this org
     const orgs = userData.organisations;
     const isMember = Array.isArray(orgs)
       ? orgs.includes(inviteOrgId)
       : !!orgs?.[inviteOrgId];
 
     if (isMember) {
-      // Already a member — clear invite and go to dashboard
       sessionStorage.removeItem("pendingInviteOrgId");
       return <Navigate to="/app/dashboard" replace />;
     }
 
-    // Not a member — send to guest page with invite param
     return <Navigate to={`/guest?join=${inviteOrgId}`} replace />;
   }
 
@@ -56,8 +54,9 @@ const MainLoader = () => {
     return <Navigate to="/guest" replace />;
   }
 
+  // activeOrgId is set but user is not approved — send back to select-org
   if (!userData.isApproved) {
-    return <Navigate to="/guest" replace />;
+    return <Navigate to="/select-org" replace />;
   }
 
   return <Navigate to="/app/dashboard" replace />;

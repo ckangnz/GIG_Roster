@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 
-import { ArrowRight, Check, Globe, Lock } from "lucide-react";
+import { ArrowRight, Globe, Lock } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import Button from "../../../components/common/Button";
@@ -23,14 +23,11 @@ const JoinOrgStep = ({ onJoin, selectedOrg, onSelectOrg }: JoinOrgStepProps) => 
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState<Organisation[]>([]);
 
-  const isAlreadyMember = useMemo(() => {
-    if (!selectedOrg || !userData?.organisations) return false;
-    const orgs = userData.organisations;
-    if (Array.isArray(orgs)) {
-      return orgs.includes(selectedOrg.id);
-    }
-    return !!orgs[selectedOrg.id];
-  }, [selectedOrg, userData?.organisations]);
+  const userOrgIds = useMemo(() => {
+    const orgs = userData?.organisations;
+    if (!orgs) return new Set<string>();
+    return new Set(Array.isArray(orgs) ? orgs : Object.keys(orgs));
+  }, [userData?.organisations]);
 
   useEffect(() => {
     if (searchTerm.length >= 3 && !selectedOrg) {
@@ -38,16 +35,16 @@ const JoinOrgStep = ({ onJoin, selectedOrg, onSelectOrg }: JoinOrgStepProps) => 
         dispatch(searchOrganisations(searchTerm))
           .unwrap()
           .then((results) => {
-            setSearchResults(results);
+            // Filter out orgs the user is already a member of
+            setSearchResults(results.filter((org) => !userOrgIds.has(org.id)));
           });
       }, 300);
       return () => clearTimeout(delayDebounceFn);
     } else if (searchResults.length > 0) {
-      // Use setTimeout 0 to avoid setState in render cycle warning
       const timer = setTimeout(() => setSearchResults([]), 0);
       return () => clearTimeout(timer);
     }
-  }, [searchTerm, dispatch, selectedOrg, searchResults.length]);
+  }, [searchTerm, dispatch, selectedOrg, searchResults.length, userOrgIds]);
 
   return (
     <>
@@ -74,31 +71,23 @@ const JoinOrgStep = ({ onJoin, selectedOrg, onSelectOrg }: JoinOrgStepProps) => 
         {searchTerm.length >= 3 && !selectedOrg && (
           <div className={wizardStyles.resultsList}>
             {searchResults.length > 0 ? (
-              searchResults.map((org) => {
-                const joined = Array.isArray(userData?.organisations) 
-                  ? userData.organisations.includes(org.id)
-                  : !!userData?.organisations?.[org.id];
-                
-                return (
-                  <button
-                    key={org.id}
-                    className={`${wizardStyles.resultItem} ${joined ? wizardStyles.resultItemJoined : ""}`}
-                    onClick={() => onSelectOrg(org)}
-                  >
-                    <div className={wizardStyles.orgItemRow}>
-                      {org.visibility === 'private' ? (
-                        <Lock size={14} color="var(--color-text-dim)" />
-                      ) : (
-                        <Globe size={14} color="var(--color-primary)" />
-                      )}
-                      <span className={wizardStyles.orgName}>{org.name}</span>
-                    </div>
-                    <span className={wizardStyles.orgMeta}>
-                      {joined ? t('onboarding.alreadyMember') : t('onboarding.clickToJoin')}
-                    </span>
-                  </button>
-                );
-              })
+              searchResults.map((org) => (
+                <button
+                  key={org.id}
+                  className={wizardStyles.resultItem}
+                  onClick={() => onSelectOrg(org)}
+                >
+                  <div className={wizardStyles.orgItemRow}>
+                    {org.visibility === 'private' ? (
+                      <Lock size={14} color="var(--color-text-dim)" />
+                    ) : (
+                      <Globe size={14} color="var(--color-primary)" />
+                    )}
+                    <span className={wizardStyles.orgName}>{org.name}</span>
+                  </div>
+                  <span className={wizardStyles.orgMeta}>{t('onboarding.clickToJoin')}</span>
+                </button>
+              ))
             ) : (
               <div className={wizardStyles.noResults}>{t('onboarding.noOrgs')}</div>
             )}
@@ -108,16 +97,9 @@ const JoinOrgStep = ({ onJoin, selectedOrg, onSelectOrg }: JoinOrgStepProps) => 
 
       {selectedOrg && (
         <div className={wizardStyles.wizardActions}>
-          {isAlreadyMember ? (
-            <div className={wizardStyles.alreadyMemberNotice}>
-              <Check size={18} className={wizardStyles.noticeIcon} />
-              {t('onboarding.alreadyMember')}
-            </div>
-          ) : (
-            <Button className={wizardStyles.fullWidthBtn} onClick={() => onJoin(selectedOrg)}>
-              {t('onboarding.requestAccess')} <ArrowRight size={18} className={wizardStyles.btnIcon} />
-            </Button>
-          )}
+          <Button className={wizardStyles.fullWidthBtn} onClick={() => onJoin(selectedOrg)}>
+            {t('onboarding.requestAccess')} <ArrowRight size={18} className={wizardStyles.btnIcon} />
+          </Button>
         </div>
       )}
     </>

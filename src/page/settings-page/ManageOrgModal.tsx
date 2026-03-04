@@ -347,12 +347,43 @@ const ManageOrgModal = ({
           <div className={modalStyles.dangerZone}>
             {isOwner ? (
               <>
-                {!showDeleteConfirm ? (
+                {!showLeaveConfirm && !showDeleteConfirm && (
+                  <Button variant="delete" className={modalStyles.dangerConfirmBtn} onClick={() => setShowLeaveConfirm(true)}>
+                    <LogOut size={18} className={modalStyles.changePlanIcon} />
+                    {t("settings.leaveOrg")}
+                  </Button>
+                )}
+                {showLeaveConfirm && (
+                  <div className={modalStyles.dangerConfirmBox}>
+                    <div className={modalStyles.dangerConfirmTitle}>
+                      <AlertTriangle size={20} />
+                      <span>{t("settings.criticalAction")}</span>
+                    </div>
+                    <p className={modalStyles.dangerConfirmDesc}>
+                      {t("settings.leaveOrgVerification", { name: org.name })}
+                    </p>
+                    <InputField
+                      value={verificationName}
+                      onChange={(e) => setVerificationName(e.target.value)}
+                      placeholder={org.name}
+                      autoFocus
+                    />
+                    <div className={modalStyles.dangerConfirmActions}>
+                      <Button variant="secondary" className={modalStyles.dangerConfirmBtn} onClick={() => setShowLeaveConfirm(false)}>
+                        {t("common.cancel")}
+                      </Button>
+                      <Button variant="delete" className={modalStyles.dangerConfirmBtn} onClick={handleConfirmLeave} disabled={verificationName.trim() !== org.name}>
+                        {t("common.confirm")}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+                {!showLeaveConfirm && !showDeleteConfirm ? (
                   <Button variant="delete" className={modalStyles.dangerConfirmBtn} onClick={() => setShowDeleteConfirm(true)}>
                     <Trash2 size={18} className={modalStyles.changePlanIcon} />
                     {t("settings.deleteOrg")}
                   </Button>
-                ) : (
+                ) : !showLeaveConfirm && (
                   <div className={modalStyles.dangerConfirmBox}>
                     <div className={modalStyles.dangerConfirmTitle}>
                       <AlertTriangle size={20} />

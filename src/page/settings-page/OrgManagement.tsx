@@ -61,11 +61,7 @@ const OrgManagement = ({
       }
 
       try {
-        // TODO: Cleanup - After organisations root Map is removed, remove the Object.keys fallback
-        // Extract IDs whether it's a Map (transition) or Array (final)
-        const orgIds = Array.isArray(userData.organisations)
-          ? userData.organisations
-          : Object.keys(userData.organisations);
+        const orgIds = userData.organisations as string[];
 
         if (orgIds.length === 0) {
           setLoading(false);
@@ -159,10 +155,6 @@ const OrgManagement = ({
     if (!firebaseUser) return;
 
     try {
-      if (activeOrgId === org.id) {
-        dispatch(setActiveOrgId(null));
-      }
-
       await dispatch(
         leaveOrganisation({
           uid: firebaseUser.uid,
@@ -171,6 +163,11 @@ const OrgManagement = ({
       ).unwrap();
 
       setOrgs((prev) => prev.filter((o) => o.id !== org.id));
+
+      if (activeOrgId === org.id) {
+        dispatch(clearActiveOrgId());
+        navigate("/select-org");
+      }
     } catch (error) {
       console.error("Error leaving organisation:", error);
     }
@@ -180,10 +177,6 @@ const OrgManagement = ({
     if (!firebaseUser) return;
 
     try {
-      if (activeOrgId === org.id) {
-        dispatch(setActiveOrgId(null));
-      }
-
       await deleteDoc(doc(db, "organisations", org.id));
       await dispatch(
         leaveOrganisation({
@@ -193,6 +186,11 @@ const OrgManagement = ({
       ).unwrap();
 
       setOrgs((prev) => prev.filter((o) => o.id !== org.id));
+
+      if (activeOrgId === org.id) {
+        dispatch(clearActiveOrgId());
+        navigate("/select-org");
+      }
     } catch (error) {
       console.error("Error deleting organisation:", error);
     }

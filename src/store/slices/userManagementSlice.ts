@@ -59,11 +59,6 @@ export const fetchAllUsers = createAsyncThunk(
           users.push({
             ...userData,
             id: uDoc.id,
-            // TODO: Cleanup - After organisations root Map is removed, remove this virtual map injection
-            // Inject the specific membership into a virtual organisations map for UI compatibility
-            organisations: {
-              [activeOrgId]: memberships[uDoc.id]
-            } as Record<string, OrgMembership>
           });
         }
       });
@@ -237,11 +232,10 @@ const userManagementSlice = createSlice({
       if (user) {
         let orgs = user.organisations as unknown as Record<string, OrgMembership>;
         if (!orgs || Array.isArray(orgs)) {
-           // TODO: Cleanup - After organisations root Map is removed, remove this transition case
-           orgs = {};
-           (user as Record<string, unknown>).organisations = orgs;
+          orgs = {};
+          (user as Record<string, unknown>).organisations = orgs;
         }
-        
+
         if (!orgs[orgId]) {
           orgs[orgId] = { 
             isActive: true, 

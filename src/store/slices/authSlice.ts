@@ -21,7 +21,6 @@ import {
   AppUser,
   Organisation,
   OrgMembership,
-  UserOrgMetadata,
   AppUserWithMembership,
   generateIndexedAssignments,
 } from "../../model/model";
@@ -66,11 +65,8 @@ export const initializeUserData = createAsyncThunk(
         // Load membership for active org if exists
         const activeOrgId = localStorage.getItem("activeOrgId");
         const orgs = data.organisations;
-        const hasOrg = Array.isArray(orgs)
-          ? orgs.includes(activeOrgId || "")
-          : activeOrgId && orgs
-            ? !!orgs[activeOrgId]
-            : false;
+        const orgIds: string[] = Array.isArray(orgs) ? orgs : Object.keys(orgs);
+        const hasOrg = activeOrgId ? orgIds.includes(activeOrgId) : false;
 
         if (activeOrgId && hasOrg) {
           const memRef = doc(
@@ -95,7 +91,7 @@ export const initializeUserData = createAsyncThunk(
         const newData: AppUser = {
           name: authUser?.displayName || null,
           email: authUser?.email || null,
-          organisations: {},
+          organisations: [],
           gender: "",
         };
         await setDoc(userDocRef, newData);
@@ -227,17 +223,16 @@ export const joinOrganisation = createAsyncThunk(
         ? userSnap.data().organisations || []
         : [];
 
+      // Migrate legacy map format to array
+      const currentOrgIds: string[] = Array.isArray(currentOrgs)
+        ? currentOrgs
+        : Object.keys(currentOrgs);
+
       const userUpdate: Record<string, unknown> = { ...profileData };
-      if (Array.isArray(currentOrgs)) {
-        if (!currentOrgs.includes(orgId)) {
-          userUpdate.organisations = [...currentOrgs, orgId];
-        }
+      if (!currentOrgIds.includes(orgId)) {
+        userUpdate.organisations = [...currentOrgIds, orgId];
       } else {
-        userUpdate[`organisations.${orgId}`] = {
-          isActive: true,
-          isAdmin: false,
-          isApproved,
-        };
+        userUpdate.organisations = currentOrgIds;
       }
 
       await updateDoc(userRef, userUpdate);
@@ -281,18 +276,13 @@ export const leaveOrganisation = createAsyncThunk(
         ? userSnap.data().organisations || []
         : [];
 
-      if (Array.isArray(currentOrgs)) {
-        await updateDoc(userRef, {
-          organisations: currentOrgs.filter((id: string) => id !== orgId),
-        });
-      } else {
-        // Map structure (transition)
-        const nextOrgs = { ...currentOrgs };
-        delete nextOrgs[orgId];
-        await updateDoc(userRef, {
-          organisations: nextOrgs
-        });
-      }
+      // Migrate legacy map format to array, then filter out orgId
+      const currentOrgIds: string[] = Array.isArray(currentOrgs)
+        ? currentOrgs
+        : Object.keys(currentOrgs);
+      await updateDoc(userRef, {
+        organisations: currentOrgIds.filter((id: string) => id !== orgId),
+      });
 
       // 2. Delete membership document
       const memRef = doc(db, "organisations", orgId, "memberships", uid);
@@ -396,14 +386,16 @@ export const createOrganisation = createAsyncThunk(
         ? userSnap.data().organisations || []
         : [];
 
+      // Migrate legacy map format to array
+      const currentOrgIds: string[] = Array.isArray(currentOrgs)
+        ? currentOrgs
+        : Object.keys(currentOrgs);
+
       const userUpdate: Record<string, unknown> = {
         ...profileData,
-        organisations: Array.isArray(currentOrgs)
-          ? [...currentOrgs, orgId]
-          : {
-              ...currentOrgs,
-              [orgId]: { isActive: true, isAdmin: true, isApproved: true },
-            },
+        organisations: currentOrgIds.includes(orgId)
+          ? currentOrgIds
+          : [...currentOrgIds, orgId],
       };
       await updateDoc(userRef, userUpdate);
 
@@ -503,21 +495,14 @@ const authSlice = createSlice({
       })
       .addCase(joinOrganisation.fulfilled, (state, action) => {
         if (state.userData && !action.payload.alreadyMember) {
-          const { orgId, membership } = action.payload;
+          const { orgId } = action.payload;
           const orgs = state.userData.organisations;
-          if (Array.isArray(orgs)) {
-            if (!orgs.includes(orgId)) {
-              state.userData.organisations = [...orgs, orgId];
-            }
+          // Always keep as array, migrate legacy map if needed
+          const orgIds: string[] = Array.isArray(orgs) ? orgs : Object.keys(orgs);
+          if (!orgIds.includes(orgId)) {
+            state.userData.organisations = [...orgIds, orgId];
           } else {
-            state.userData.organisations = {
-              ...orgs,
-              [orgId]: {
-                isActive: true,
-                isAdmin: false,
-                isApproved: membership.isApproved,
-              },
-            };
+            state.userData.organisations = orgIds;
           }
         }
         // Always update membership in state
@@ -526,15 +511,10 @@ const authSlice = createSlice({
       .addCase(leaveOrganisation.fulfilled, (state, action) => {
         if (state.userData) {
           const orgs = state.userData.organisations;
-          if (Array.isArray(orgs)) {
-            state.userData.organisations = orgs.filter(
-              (id: string) => id !== action.payload.orgId,
-            );
-          } else {
-            const nextOrgs = { ...orgs };
-            delete nextOrgs[action.payload.orgId];
-            state.userData.organisations = nextOrgs;
-          }
+          const orgIds: string[] = Array.isArray(orgs) ? orgs : Object.keys(orgs);
+          state.userData.organisations = orgIds.filter(
+            (id: string) => id !== action.payload.orgId,
+          );
         }
         if (state.activeOrgId === action.payload.orgId) {
           state.activeOrgId = null;
@@ -544,18 +524,12 @@ const authSlice = createSlice({
       .addCase(createOrganisation.fulfilled, (state, action) => {
         if (state.userData) {
           const orgs = state.userData.organisations;
-          if (Array.isArray(orgs)) {
-            state.userData.organisations = [...orgs, action.payload.orgId];
-          } else {
-            state.userData.organisations = {
-              ...orgs,
-              [action.payload.orgId]: {
-                isActive: true,
-                isAdmin: true,
-                isApproved: true,
-              },
-            };
-          }
+          // Always keep as array, migrate legacy map if needed
+          const orgIds: string[] = Array.isArray(orgs) ? orgs : Object.keys(orgs);
+          const orgId = action.payload.orgId;
+          state.userData.organisations = orgIds.includes(orgId)
+            ? orgIds
+            : [...orgIds, orgId];
         }
         state.activeOrgId = action.payload.orgId;
         state.membership = action.payload.membership;
@@ -584,39 +558,14 @@ export const selectUserData = createSelector(
   (userData, activeOrgId, membership): AppUserWithMembership | null => {
     if (!userData) return null;
 
-    // Get permissions from Root User Document if it's a Map (Fast path during migration)
-    const orgs = userData.organisations;
-    const isMap = orgs && !Array.isArray(orgs);
-    const rootOrgData =
-      isMap && activeOrgId
-        ? (orgs as Record<string, UserOrgMetadata>)[activeOrgId]
-        : null;
-
-    // TODO: Cleanup - After organisations root Map is removed, remove this conversion
-    // For UI compatibility, convert Array to virtual Map if needed
-    let organisations = userData.organisations;
-    if (Array.isArray(organisations)) {
-      const virtualMap: Record<string, UserOrgMetadata> = {};
-      organisations.forEach((id) => {
-        virtualMap[id] = {
-          isActive: id === activeOrgId ? (membership?.isActive ?? true) : true,
-          isAdmin: id === activeOrgId ? (membership?.isAdmin ?? false) : false,
-          isApproved:
-            id === activeOrgId ? (membership?.isApproved ?? false) : true,
-        };
-      });
-      organisations = virtualMap;
-    }
-
     return {
       ...userData,
       activeOrgId,
       orgId: activeOrgId,
-      organisations, // Now guaranteed to be a Map for the UI
-      // Merge: Root map takes precedence if it exists, otherwise use membership sub-collection
-      isAdmin: rootOrgData?.isAdmin ?? membership?.isAdmin ?? false,
-      isApproved: rootOrgData?.isApproved ?? membership?.isApproved ?? false,
-      isActive: rootOrgData?.isActive ?? membership?.isActive ?? true,
+      organisations: userData.organisations,
+      isAdmin: membership?.isAdmin ?? false,
+      isApproved: membership?.isApproved ?? false,
+      isActive: membership?.isActive ?? true,
 
       teams: membership?.teams || [],
       teamPositions: membership?.teamPositions || {},
