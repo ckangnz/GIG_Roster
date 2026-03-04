@@ -80,12 +80,12 @@ const JoinOrgStep = ({ onJoin, selectedOrg, onSelectOrg }: JoinOrgStepProps) => 
                   : !!userData?.organisations?.[org.id];
                 
                 return (
-                  <button 
-                    key={org.id} 
+                  <button
+                    key={org.id}
                     className={`${wizardStyles.resultItem} ${joined ? wizardStyles.resultItemJoined : ""}`}
                     onClick={() => onSelectOrg(org)}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div className={wizardStyles.orgItemRow}>
                       {org.visibility === 'private' ? (
                         <Lock size={14} color="var(--color-text-dim)" />
                       ) : (
@@ -110,15 +110,12 @@ const JoinOrgStep = ({ onJoin, selectedOrg, onSelectOrg }: JoinOrgStepProps) => 
         <div className={wizardStyles.wizardActions}>
           {isAlreadyMember ? (
             <div className={wizardStyles.alreadyMemberNotice}>
-              <Check size={18} style={{ marginRight: 8 }} />
+              <Check size={18} className={wizardStyles.noticeIcon} />
               {t('onboarding.alreadyMember')}
             </div>
           ) : (
-            <Button 
-              className={wizardStyles.fullWidthBtn}
-              onClick={() => onJoin(selectedOrg)}
-            >
-              {t('onboarding.requestAccess')} <ArrowRight size={18} style={{ marginLeft: 8 }} />
+            <Button className={wizardStyles.fullWidthBtn} onClick={() => onJoin(selectedOrg)}>
+              {t('onboarding.requestAccess')} <ArrowRight size={18} className={wizardStyles.btnIcon} />
             </Button>
           )}
         </div>

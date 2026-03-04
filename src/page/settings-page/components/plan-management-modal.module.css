@@ -1,0 +1,55 @@
+/* PlanManagementModal */
+
+.tierList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 12px;
+}
+
+.tierCardContent {
+  flex: 1;
+  text-align: left;
+}
+
+.tierCardTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tierCardTitle {
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.currentBadge {
+  font-size: 0.7rem;
+  background: var(--color-primary);
+  color: #ffffff;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.tierCardDesc {
+  font-size: 0.75rem;
+  opacity: 0.7;
+  margin-top: 2px;
+  color: var(--color-text-primary);
+}
+
+.tierCardRight {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tierCardPrice {
+  font-weight: 800;
+  color: var(--color-secondary);
+}
+
+.cancelRow {
+  margin-top: 24px;
+  text-align: center;
+}

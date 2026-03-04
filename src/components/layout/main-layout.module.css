@@ -24,7 +24,6 @@
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   animation: fadeIn 0.3s ease-in-out;
 }
 

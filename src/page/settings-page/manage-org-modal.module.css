@@ -1,0 +1,163 @@
+/* ManageOrgModal */
+
+.footer {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Visibility toggle row */
+.visibilityRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.visibilityInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.visibilityDesc {
+  font-size: 0.75rem;
+  color: var(--color-text-dim);
+  margin: 0;
+}
+
+.visibilityHint {
+  font-size: 0.75rem;
+  color: var(--color-text-dim);
+  margin-top: 8px;
+  font-style: italic;
+  padding-left: 32px;
+}
+
+/* Invite link section */
+.inviteSection {
+  padding: 16px;
+  background: var(--background-primary-subtle);
+  border-radius: 12px;
+  border: 1px solid var(--border-color-primary);
+}
+
+.inviteLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--color-text-primary);
+}
+
+.inviteRow {
+  display: flex;
+  gap: 8px;
+}
+
+.inviteInput {
+  flex: 1;
+  font-size: 0.8rem;
+}
+
+.inviteButton {
+  min-width: 80px;
+}
+
+.inviteNote {
+  font-size: 0.7rem;
+  color: var(--color-text-dim);
+  margin: 8px 0 0 0;
+}
+
+/* Subscription section */
+.subscriptionBox {
+  padding: 16px;
+  background: var(--background-app-shell);
+  border-radius: 12px;
+  border: 1px solid var(--border-color-secondary);
+}
+
+.subscriptionLabel {
+  margin: 0 0 8px 0;
+  font-size: 0.9rem;
+  color: var(--color-text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 700;
+}
+
+.subscriptionRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.subscriptionPlan {
+  font-weight: 700;
+  font-size: 1.1rem;
+  display: block;
+  color: var(--color-text-primary);
+}
+
+.subscriptionExpiry {
+  font-size: 0.85rem;
+  color: var(--color-text-dim);
+}
+
+.subscriptionUnlimited {
+  margin: 4px 0 0 0;
+  font-size: 0.85rem;
+  color: var(--color-secondary);
+  font-weight: 600;
+}
+
+.changePlanIcon {
+  margin-right: 6px;
+}
+
+/* Danger zone */
+.dangerZone {
+  border-top: 1px solid var(--border-color-secondary);
+  padding-top: 24px;
+}
+
+.dangerConfirmBox {
+  background: var(--surface-error);
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid var(--color-error);
+}
+
+.dangerConfirmTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-error);
+  margin-bottom: 12px;
+  font-weight: 700;
+}
+
+.dangerConfirmDesc {
+  font-size: 0.85rem;
+  margin-bottom: 16px;
+  color: var(--color-text-primary);
+}
+
+.dangerConfirmActions {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.dangerConfirmBtn {
+  flex: 1;
+}

@@ -42,3 +42,19 @@
   letter-spacing: 1px;
   margin-top: 8px;
 }
+
+.logoutSection {
+  margin-top: 2rem;
+  border-top: 1px solid var(--border-color-secondary);
+  padding-top: 1rem;
+}
+
+.logoutBtn {
+  width: 100%;
+  background: none;
+  border: none;
+  color: var(--color-error);
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+}

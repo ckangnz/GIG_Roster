@@ -6,6 +6,8 @@ import Modal from "../../../components/common/Modal";
 import { Organisation } from "../../../model/model";
 import selectionStyles from "../../org-selection-page/org-selection-page.module.css";
 
+import styles from "./plan-management-modal.module.css";
+
 interface PlanManagementModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -55,14 +57,7 @@ const PlanManagementModal = ({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={t("settings.changePlan")}>
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "12px",
-          paddingTop: "12px",
-        }}
-      >
+      <div className={styles.tierList}>
         {tiers.map((tier) => {
           const isCurrent = tier.id === currentPlan;
           return (
@@ -72,35 +67,19 @@ const PlanManagementModal = ({
               onClick={() => handlePlanSelect(tier.id)}
               disabled={tier.disabled}
             >
-              <div style={{ flex: 1, textAlign: "left" }}>
-                <div
-                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
-                >
-                  <span style={{ fontWeight: 700 }}>{tier.name}</span>
+              <div className={styles.tierCardContent}>
+                <div className={styles.tierCardTitleRow}>
+                  <span className={styles.tierCardTitle}>{tier.name}</span>
                   {isCurrent && (
-                    <span
-                      style={{
-                        fontSize: "0.7rem",
-                        background: "var(--color-primary)",
-                        color: "white",
-                        padding: "2px 8px",
-                        borderRadius: "10px",
-                      }}
-                    >
+                    <span className={styles.currentBadge}>
                       {t("settings.currentPlan")}
                     </span>
                   )}
                 </div>
-                <div style={{ fontSize: "0.75rem", opacity: 0.7 }}>
-                  {tier.desc}
-                </div>
+                <div className={styles.tierCardDesc}>{tier.desc}</div>
               </div>
-              <div
-                style={{ display: "flex", alignItems: "center", gap: "12px" }}
-              >
-                <div style={{ fontWeight: 800, color: "var(--color-accent)" }}>
-                  {tier.price}
-                </div>
+              <div className={styles.tierCardRight}>
+                <div className={styles.tierCardPrice}>{tier.price}</div>
                 {isCurrent && <Check size={18} color="var(--color-primary)" />}
               </div>
             </button>
@@ -108,7 +87,7 @@ const PlanManagementModal = ({
         })}
       </div>
 
-      <div style={{ marginTop: "24px", textAlign: "center" }}>
+      <div className={styles.cancelRow}>
         <Button variant="secondary" onClick={onClose}>
           {t("common.cancel")}
         </Button>

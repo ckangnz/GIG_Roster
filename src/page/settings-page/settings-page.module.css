@@ -1,11 +1,13 @@
 .settingsContainer {
   width: 100%;
+  flex: 1;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
   min-width: 0;
   box-sizing: border-box;
   padding: 1rem;
+  overflow: auto;
 }
 
 .managementWrapper {

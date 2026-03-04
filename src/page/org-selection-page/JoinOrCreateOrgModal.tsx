@@ -115,53 +115,38 @@ const JoinOrCreateOrgModal = ({ isOpen, onClose, onJoin }: JoinOrCreateOrgModalP
       }
     >
       {mode === "choice" && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', padding: '12px 0' }}>
-          <button 
-            className={styles.choiceCard} 
-            onClick={() => setMode("join")}
-          >
+        <div className={styles.choiceList}>
+          <button className={styles.choiceCard} onClick={() => setMode("join")}>
             <div className={styles.choiceIcon}>
               <Search size={24} />
             </div>
-            <div style={{ textAlign: 'left' }}>
-              <div style={{ fontWeight: 700, fontSize: '1.1rem' }}>{t("onboarding.joinTitle")}</div>
-              <div style={{ fontSize: '0.85rem', color: 'var(--color-text-dim)' }}>{t("onboarding.joinDesc")}</div>
+            <div className={styles.choiceText}>
+              <span className={styles.choiceTitle}>{t("onboarding.joinTitle")}</span>
+              <span className={styles.choiceDesc}>{t("onboarding.joinDesc")}</span>
             </div>
           </button>
 
-          <button 
-            className={styles.choiceCard} 
-            onClick={() => setMode("create")}
-          >
-            <div className={styles.choiceIcon} style={{ background: 'var(--background-primary-subtle)', color: 'var(--color-primary)' }}>
+          <button className={styles.choiceCard} onClick={() => setMode("create")}>
+            <div className={`${styles.choiceIcon} ${styles.choiceIconAlt}`}>
               <Plus size={24} />
             </div>
-            <div style={{ textAlign: 'left' }}>
-              <div style={{ fontWeight: 700, fontSize: '1.1rem' }}>{t("onboarding.createTitle")}</div>
-              <div style={{ fontSize: '0.85rem', color: 'var(--color-text-dim)' }}>{t("onboarding.createDesc")}</div>
+            <div className={styles.choiceText}>
+              <span className={styles.choiceTitle}>{t("onboarding.createTitle")}</span>
+              <span className={styles.choiceDesc}>{t("onboarding.createDesc")}</span>
             </div>
           </button>
         </div>
       )}
 
       {mode === "join" && (
-        <div style={{ paddingTop: '12px' }}>
-          <JoinOrgStep 
-            onJoin={(org) => {
-              onJoin(org);
-              handleClose();
-            }}
+        <div className={styles.joinWrapper}>
+          <JoinOrgStep
+            onJoin={(org) => { onJoin(org); handleClose(); }}
             selectedOrg={selectedOrg}
             onSelectOrg={setSelectedOrg}
           />
-          <div style={{ marginTop: '20px', textAlign: 'center' }}>
-            <button 
-              className={styles.backLink} 
-              onClick={() => {
-                setMode("choice");
-                setSelectedOrg(null);
-              }}
-            >
+          <div className={styles.joinBack}>
+            <button className={styles.backLink} onClick={() => { setMode("choice"); setSelectedOrg(null); }}>
               {t("common.back")}
             </button>
           </div>
@@ -169,10 +154,10 @@ const JoinOrCreateOrgModal = ({ isOpen, onClose, onJoin }: JoinOrCreateOrgModalP
       )}
 
       {mode === "create" && (
-        <div style={{ paddingTop: '12px' }}>
+        <div className={styles.createWrapper}>
           {createStep === 1 && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              <InputField 
+            <div className={styles.createStep}>
+              <InputField
                 label={t("settings.orgName")}
                 value={orgForm.name}
                 onChange={(e) => setOrgForm({ ...orgForm, name: e.target.value })}
@@ -182,103 +167,94 @@ const JoinOrCreateOrgModal = ({ isOpen, onClose, onJoin }: JoinOrCreateOrgModalP
 
               <div className={formStyles.formGroup}>
                 <label>{t("onboarding.orgType")}</label>
-                <div style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>
-                  <button 
+                <div className={styles.typeCardRow}>
+                  <button
                     className={`${styles.typeCard} ${orgForm.visibility === 'public' ? styles.activeType : ''}`}
                     onClick={() => setOrgForm({ ...orgForm, visibility: 'public' })}
                   >
                     <Globe size={20} />
-                    <div style={{ textAlign: 'left' }}>
-                      <div style={{ fontWeight: 700 }}>{t("onboarding.public")}</div>
-                      <div style={{ fontSize: '0.75rem', opacity: 0.7 }}>{t("onboarding.publicDesc")}</div>
+                    <div className={styles.typeCardText}>
+                      <span className={styles.typeCardTitle}>{t("onboarding.public")}</span>
+                      <span className={styles.typeCardDesc}>{t("onboarding.publicDesc")}</span>
                     </div>
                   </button>
-                  <button 
+                  <button
                     className={`${styles.typeCard} ${orgForm.visibility === 'private' ? styles.activeType : ''}`}
                     onClick={() => setOrgForm({ ...orgForm, visibility: 'private' })}
                   >
                     <Lock size={20} />
-                    <div style={{ textAlign: 'left' }}>
-                      <div style={{ fontWeight: 700 }}>{t("onboarding.private")}</div>
-                      <div style={{ fontSize: '0.75rem', opacity: 0.7 }}>{t("onboarding.privateDesc")}</div>
+                    <div className={styles.typeCardText}>
+                      <span className={styles.typeCardTitle}>{t("onboarding.private")}</span>
+                      <span className={styles.typeCardDesc}>{t("onboarding.privateDesc")}</span>
                     </div>
                   </button>
                 </div>
               </div>
 
               <div className={formStyles.formGroup}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div className={styles.requireApprovalRow}>
                   <div>
-                    <label style={{ margin: 0 }}>{t("onboarding.requireApproval")}</label>
-                    <p style={{ fontSize: '0.75rem', color: 'var(--color-text-dim)', margin: 0 }}>{t("onboarding.requireApprovalDesc")}</p>
+                    <label className={styles.requireApprovalLabel}>{t("onboarding.requireApproval")}</label>
+                    <p className={styles.requireApprovalDesc}>{t("onboarding.requireApprovalDesc")}</p>
                   </div>
-                  <Toggle 
-                    isOn={orgForm.requireApproval}
-                    onToggle={(isOn) => setOrgForm({ ...orgForm, requireApproval: isOn })}
-                  />
+                  <Toggle isOn={orgForm.requireApproval} onToggle={(isOn) => setOrgForm({ ...orgForm, requireApproval: isOn })} />
                 </div>
               </div>
 
-              <div style={{ marginTop: '8px', display: 'flex', gap: '12px' }}>
-                <Button variant="secondary" style={{ flex: 1 }} onClick={() => setMode("choice")}>
+              <div className={styles.stepActions}>
+                <Button variant="secondary" className={styles.btnFlex1} onClick={() => setMode("choice")}>
                   {t("common.cancel")}
                 </Button>
-                <Button 
-                  style={{ flex: 2 }} 
-                  disabled={orgForm.name.trim().length < 3}
-                  onClick={() => setCreateStep(2)}
-                >
-                  {t("common.continue")} <ArrowRight size={18} style={{ marginLeft: 8 }} />
+                <Button className={styles.btnFlex2} disabled={orgForm.name.trim().length < 3} onClick={() => setCreateStep(2)}>
+                  {t("common.continue")} <ArrowRight size={18} className={styles.btnIcon} />
                 </Button>
               </div>
             </div>
           )}
 
           {createStep === 2 && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div className={styles.createStep}>
               <div>
-                <h4 style={{ margin: '0 0 4px 0' }}>{t("onboarding.selectTier")}</h4>
-                <p style={{ fontSize: '0.85rem', color: 'var(--color-accent)', fontWeight: 600, margin: 0 }}>
-                  ✨ {t("onboarding.freeTrialNote")}
-                </p>
+                <h4 className={styles.tierHeader}>{t("onboarding.selectTier")}</h4>
+                <p className={styles.tierTrialNote}>✨ {t("onboarding.freeTrialNote")}</p>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div className={styles.tierList}>
                 {tiers.map(tier => (
-                  <button 
-                    key={tier.id} 
+                  <button
+                    key={tier.id}
                     className={`${styles.tierSelectCard} ${orgForm.plan === tier.id ? styles.activeTier : ''} ${tier.disabled ? styles.tierDisabled : ''}`}
                     onClick={() => !tier.disabled && setOrgForm({ ...orgForm, plan: tier.id })}
                     disabled={tier.disabled}
                   >
-                    <div style={{ flex: 1, textAlign: 'left' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={{ fontWeight: 700 }}>{tier.name}</span>
+                    <div className={styles.tierCardContent}>
+                      <div className={styles.tierCardTitleRow}>
+                        <span className={styles.tierCardTitle}>{tier.name}</span>
                         {tier.disabled && <span className={styles.comingSoonBadge}>{t("common.comingSoon")}</span>}
                       </div>
-                      <div style={{ fontSize: '0.75rem', opacity: 0.7 }}>{tier.desc}</div>
+                      <div className={styles.tierCardDesc}>{tier.desc}</div>
                     </div>
-                    <div style={{ fontWeight: 800, color: tier.disabled ? 'inherit' : 'var(--color-accent)' }}>{tier.price}</div>
+                    <div className={tier.disabled ? styles.tierCardPriceDisabled : styles.tierCardPrice}>{tier.price}</div>
                   </button>
                 ))}
               </div>
 
-              <div style={{ marginTop: '8px', display: 'flex', gap: '12px' }}>
-                <Button variant="secondary" style={{ flex: 1 }} onClick={() => setCreateStep(1)}>
+              <div className={styles.stepActions}>
+                <Button variant="secondary" className={styles.btnFlex1} onClick={() => setCreateStep(1)}>
                   {t("common.back")}
                 </Button>
-                <Button style={{ flex: 2 }} onClick={() => setCreateStep(3)}>
-                  {t("common.continue")} <ArrowRight size={18} style={{ marginLeft: 8 }} />
+                <Button className={styles.btnFlex2} onClick={() => setCreateStep(3)}>
+                  {t("common.continue")} <ArrowRight size={18} className={styles.btnIcon} />
                 </Button>
               </div>
             </div>
           )}
 
           {createStep === 3 && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            <div className={styles.createStepWide}>
               <div className={styles.summarySection}>
                 <h4 className={styles.summaryTitle}>{t("common.confirm")}</h4>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div className={styles.tierList}>
                   <div className={styles.summaryRow}>
                     <span className={styles.summaryLabel}>{t("settings.orgName")}</span>
                     <span className={styles.summaryValue}>{orgForm.name}</span>
@@ -294,21 +270,19 @@ const JoinOrCreateOrgModal = ({ isOpen, onClose, onJoin }: JoinOrCreateOrgModalP
                 </div>
               </div>
 
-              <div style={{ opacity: 0.6 }}>
-                <h4 style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', fontSize: '0.9rem' }}>
+              <div className={styles.paymentSection}>
+                <h4 className={styles.paymentHeader}>
                   <CreditCard size={18} /> {t("onboarding.paymentInfo")}
                 </h4>
                 <InputField label="Card Number" placeholder="**** **** **** ****" disabled />
-                <p style={{ fontSize: '0.7rem', color: 'var(--color-text-dim)', fontStyle: 'italic', marginTop: '4px' }}>
-                  * Payment info disabled for preview
-                </p>
+                <p className={styles.paymentNote}>* Payment info disabled for preview</p>
               </div>
 
-              <div style={{ display: 'flex', gap: '12px' }}>
-                <Button variant="secondary" style={{ flex: 1 }} onClick={() => setCreateStep(2)} disabled={isCreating}>
+              <div className={styles.stepActions}>
+                <Button variant="secondary" className={styles.btnFlex1} onClick={() => setCreateStep(2)} disabled={isCreating}>
                   {t("common.back")}
                 </Button>
-                <Button style={{ flex: 2 }} onClick={handleCreate} isLoading={isCreating}>
+                <Button className={styles.btnFlex2} onClick={handleCreate} isLoading={isCreating}>
                   {t("onboarding.createOrganisation")}
                 </Button>
               </div>

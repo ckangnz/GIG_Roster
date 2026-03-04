@@ -5,22 +5,26 @@
   justify-content: center;
   min-height: 100vh;
   padding: 20px;
-  background-color: var(--color-bg-main);
+  background-color: var(--background-body);
 }
 
 .card {
   width: 100%;
   max-width: 500px;
-  background: var(--color-bg-secondary);
+  background: var(--background-card);
   border-radius: 16px;
   padding: 32px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  border: 1px solid var(--border-color-table);
+  border: 1px solid var(--border-color-secondary);
 }
 
 .header {
   text-align: center;
   margin-bottom: 32px;
+}
+
+.headerIcon {
+  margin-bottom: 16px;
 }
 
 .title {
@@ -47,8 +51,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 16px;
-  background: var(--color-bg-main);
-  border: 1px solid var(--border-color-table);
+  background: var(--background-body);
+  border: 1px solid var(--border-color-secondary);
   border-radius: 12px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -57,7 +61,7 @@
 }
 
 .orgItem:hover {
-  border-color: var(--color-accent);
+  border-color: var(--color-secondary);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
@@ -135,7 +139,7 @@
 }
 
 .choiceCard:not(.disabled):hover {
-  border-color: var(--color-accent);
+  border-color: var(--color-secondary);
   background: var(--background-hover);
   transform: translateY(-2px);
 }
@@ -183,7 +187,7 @@
 .tierCard {
   padding: 16px;
   background: var(--background-app-shell);
-  border: 1px solid var(--border-color-table);
+  border: 1px solid var(--border-color-secondary);
   border-radius: 12px;
 }
 
@@ -202,7 +206,7 @@
 }
 
 .activeType {
-  border-color: var(--color-accent);
+  border-color: var(--color-secondary);
   background: var(--background-primary-subtle);
 }
 
@@ -221,7 +225,7 @@
 }
 
 .activeTier {
-  border-color: var(--color-accent);
+  border-color: var(--color-secondary);
   background: var(--background-primary-subtle);
 }
 
@@ -235,11 +239,14 @@
   background: var(--background-app-shell);
   padding: 20px;
   border-radius: 16px;
-  border: 1px solid var(--border-color-table);
+  border: 1px solid var(--border-color-secondary);
 }
 
 .summaryTitle {
   margin: 0 0 16px 0 !important;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
 }
 
 .summaryRow {
@@ -274,4 +281,203 @@
 
 .logoutBtn:hover {
   color: var(--color-text-primary);
+}
+
+/* OrgSelectionPage */
+.orgItemRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.actionBtn {
+  width: 100%;
+}
+
+.btnIcon {
+  margin-right: 8px;
+}
+
+/* JoinOrCreateOrgModal / CreateOrgStep */
+.choiceList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 12px 0;
+}
+
+.choiceText {
+  text-align: left;
+}
+
+.choiceTitle {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--color-text-primary);
+  display: block;
+}
+
+.choiceDesc {
+  font-size: 0.85rem;
+  color: var(--color-text-dim);
+  display: block;
+}
+
+.choiceIconAlt {
+  background: var(--background-primary-subtle);
+  color: var(--color-primary);
+}
+
+.joinWrapper {
+  padding-top: 12px;
+}
+
+.joinBack {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.createWrapper {
+  padding-top: 12px;
+}
+
+.createStep {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.createStepWide {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.typeCardRow {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.typeCardText {
+  text-align: left;
+}
+
+.typeCardTitle {
+  font-weight: 700;
+  color: var(--color-text-primary);
+  display: block;
+}
+
+.typeCardDesc {
+  font-size: 0.75rem;
+  opacity: 0.7;
+  display: block;
+}
+
+.requireApprovalRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.requireApprovalLabel {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.requireApprovalDesc {
+  font-size: 0.75rem;
+  color: var(--color-text-dim);
+  margin: 4px 0 0 0;
+}
+
+.stepActions {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.btnFlex1 {
+  flex: 1;
+}
+
+.btnFlex2 {
+  flex: 2;
+}
+
+.tierHeader {
+  margin: 0 0 4px 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.tierTrialNote {
+  font-size: 0.85rem;
+  color: var(--color-secondary);
+  font-weight: 600;
+  margin: 0;
+}
+
+.tierList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tierCardContent {
+  flex: 1;
+  text-align: left;
+}
+
+.tierCardTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tierCardTitle {
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.tierCardDesc {
+  font-size: 0.75rem;
+  opacity: 0.7;
+  margin-top: 2px;
+}
+
+.tierCardPrice {
+  font-weight: 800;
+  color: var(--color-secondary);
+}
+
+.tierCardPriceDisabled {
+  font-weight: 800;
+  color: var(--color-text-dim);
+}
+
+.paymentSection {
+  opacity: 0.6;
+}
+
+.paymentHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.paymentNote {
+  font-size: 0.7rem;
+  color: var(--color-text-dim);
+  font-style: italic;
+  margin-top: 4px;
 }

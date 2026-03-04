@@ -128,7 +128,7 @@ const OrgSelectionPage = () => {
     <div className={styles.container}>
       <div className={styles.card}>
         <div className={styles.header}>
-          <Building2 size={48} color="var(--color-accent)" style={{ marginBottom: 16 }} />
+          <Building2 size={48} color="var(--color-secondary)" className={styles.headerIcon} />
           <h1 className={styles.title}>{t("onboarding.selectOrgTitle", "Select Organisation")}</h1>
           <p className={styles.subtitle}>{t("onboarding.selectOrgDesc", "Choose an organisation to continue")}</p>
         </div>
@@ -145,7 +145,7 @@ const OrgSelectionPage = () => {
                 disabled={!org.isApproved}
               >
                 <div className={styles.orgInfo}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%' }}>
+                  <div className={styles.orgItemRow}>
                     {org.visibility === 'private' ? (
                       <Lock size={16} color="var(--color-text-dim)" />
                     ) : (
@@ -179,9 +179,8 @@ const OrgSelectionPage = () => {
             variant="secondary" 
             className={styles.actionBtn} 
             onClick={() => setIsJoinModalOpen(true)}
-            style={{ width: '100%', marginBottom: 12 }}
           >
-            <UserPlus size={18} style={{ marginRight: 8 }} />
+            <UserPlus size={18} className={styles.btnIcon} />
             {t("onboarding.addOrg", "Add Organisation")}
           </Button>
         </div>

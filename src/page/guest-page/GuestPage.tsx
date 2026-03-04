@@ -168,19 +168,8 @@ const GuestPage = () => {
           />
         )}
 
-        <div className={styles.actionContainer} style={{ marginTop: '2rem', borderTop: '1px solid var(--border-color-secondary)', paddingTop: '1rem' }}>
-          <button 
-            onClick={handleLogout}
-            style={{ 
-              width: '100%', 
-              background: 'none', 
-              border: 'none', 
-              color: 'var(--color-error)', 
-              cursor: 'pointer',
-              fontSize: '0.9rem',
-              fontWeight: 600
-            }}
-          >
+        <div className={styles.logoutSection}>
+          <button className={styles.logoutBtn} onClick={handleLogout}>
             Logout
           </button>
         </div>

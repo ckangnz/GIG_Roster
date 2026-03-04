@@ -12,7 +12,13 @@ import Spinner from "../../components/common/Spinner";
 import { db } from "../../firebase";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { Organisation, OrgMembership } from "../../model/model";
-import { setActiveOrgId, selectUserData, leaveOrganisation, clearActiveOrgId, joinOrganisation } from "../../store/slices/authSlice";
+import {
+  setActiveOrgId,
+  selectUserData,
+  leaveOrganisation,
+  clearActiveOrgId,
+  joinOrganisation,
+} from "../../store/slices/authSlice";
 import JoinOrCreateOrgModal from "../org-selection-page/JoinOrCreateOrgModal";
 
 import styles from "./org-management.module.css";
@@ -22,12 +28,12 @@ interface OrgWithMembership extends Organisation {
   isAdmin: boolean;
 }
 
-const OrgManagement = ({ 
-  isOpen = true, 
-  onClose = () => {}, 
-  standalone = false 
-}: { 
-  isOpen?: boolean; 
+const OrgManagement = ({
+  isOpen = true,
+  onClose = () => {},
+  standalone = false,
+}: {
+  isOpen?: boolean;
   onClose?: () => void;
   standalone?: boolean;
 }) => {
@@ -38,10 +44,12 @@ const OrgManagement = ({
   const authState = useAppSelector((state) => state.auth);
   const firebaseUser = authState.firebaseUser;
   const activeOrgId = authState.activeOrgId;
-  
+
   const [orgs, setOrgs] = useState<OrgWithMembership[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedOrg, setSelectedOrg] = useState<OrgWithMembership | null>(null);
+  const [selectedOrg, setSelectedOrg] = useState<OrgWithMembership | null>(
+    null,
+  );
   const [isManageModalOpen, setIsManageOrgModalOpen] = useState(false);
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
 
@@ -68,7 +76,15 @@ const OrgManagement = ({
           orgIds.map(async (orgId) => {
             const [orgDoc, memDoc] = await Promise.all([
               getDoc(doc(db, "organisations", orgId)),
-              getDoc(doc(db, "organisations", orgId, "memberships", firebaseUser?.uid || ""))
+              getDoc(
+                doc(
+                  db,
+                  "organisations",
+                  orgId,
+                  "memberships",
+                  firebaseUser?.uid || "",
+                ),
+              ),
             ]);
 
             if (orgDoc.exists() && memDoc.exists()) {
@@ -81,7 +97,7 @@ const OrgManagement = ({
               } as OrgWithMembership;
             }
             return null;
-          })
+          }),
         );
 
         const sortedOrgs = fetchedOrgs
@@ -103,7 +119,7 @@ const OrgManagement = ({
 
   const handleSwitch = (orgId: string) => {
     if (activeOrgId === orgId) return;
-    
+
     // Note: root map only has permissions, language is in sub-collection.
     // useAppListeners will fetch the membership doc and change language.
 
@@ -115,15 +131,17 @@ const OrgManagement = ({
   const handleJoinOrg = async (org: Organisation) => {
     if (!firebaseUser || !userData) return;
     try {
-      await dispatch(joinOrganisation({
-        uid: firebaseUser.uid,
-        orgId: org.id,
-        profileData: {
-          name: userData.name,
-          gender: userData.gender,
-          preferredLanguage: userData.preferredLanguage
-        }
-      })).unwrap();
+      await dispatch(
+        joinOrganisation({
+          uid: firebaseUser.uid,
+          orgId: org.id,
+          profileData: {
+            name: userData.name,
+            gender: userData.gender,
+            preferredLanguage: userData.preferredLanguage,
+          },
+        }),
+      ).unwrap();
       dispatch(clearActiveOrgId());
       navigate("/guest");
     } catch (e) {
@@ -160,26 +178,30 @@ const OrgManagement = ({
 
   const confirmDeleteOrg = async (org: OrgWithMembership) => {
     if (!firebaseUser) return;
-    
+
     try {
       if (activeOrgId === org.id) {
         dispatch(setActiveOrgId(null));
       }
 
       await deleteDoc(doc(db, "organisations", org.id));
-      await dispatch(leaveOrganisation({ 
-        uid: firebaseUser.uid, 
-        orgId: org.id 
-      })).unwrap();
-      
-      setOrgs(prev => prev.filter(o => o.id !== org.id));
+      await dispatch(
+        leaveOrganisation({
+          uid: firebaseUser.uid,
+          orgId: org.id,
+        }),
+      ).unwrap();
+
+      setOrgs((prev) => prev.filter((o) => o.id !== org.id));
     } catch (error) {
       console.error("Error deleting organisation:", error);
     }
   };
 
   const onOrgUpdated = (updatedOrg: Organisation) => {
-    setOrgs(prev => prev.map(o => o.id === updatedOrg.id ? { ...o, ...updatedOrg } : o));
+    setOrgs((prev) =>
+      prev.map((o) => (o.id === updatedOrg.id ? { ...o, ...updatedOrg } : o)),
+    );
   };
 
   const renderContent = () => (
@@ -195,19 +217,20 @@ const OrgManagement = ({
           orgs.map((org) => {
             const isOwner = org.ownerId === firebaseUser?.uid;
             const isActive = activeOrgId === org.id;
-            
+
             return (
-              <div 
-                key={org.id} 
+              <div
+                key={org.id}
                 className={`${styles.orgItem} ${isActive ? styles.activeOrg : ""}`}
               >
-                <div 
-                  className={styles.orgInfo} 
-                  onClick={() => !isActive && org.isApproved && handleSwitch(org.id)}
-                  style={{ cursor: isActive ? 'default' : 'pointer' }}
+                <div
+                  className={`${styles.orgInfo} ${isActive ? styles.orgInfoStatic : styles.orgInfoClickable}`}
+                  onClick={() =>
+                    !isActive && org.isApproved && handleSwitch(org.id)
+                  }
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    {org.visibility === 'private' ? (
+                  <div className={styles.orgItemRow}>
+                    {org.visibility === "private" ? (
                       <Lock size={16} color="var(--color-text-dim)" />
                     ) : (
                       <Globe size={16} color="var(--color-primary)" />
@@ -216,20 +239,24 @@ const OrgManagement = ({
                   </div>
                   <div className={styles.orgMeta}>
                     <span className={styles.orgRole}>
-                      {isOwner 
-                        ? t("common.roles.owner") 
-                        : org.isAdmin 
-                          ? t("common.roles.admin") 
+                      {isOwner
+                        ? t("common.roles.owner")
+                        : org.isAdmin
+                          ? t("common.roles.admin")
                           : t("common.roles.member")}
                     </span>
                     {!isOwner && (
-                      <span className={`${styles.statusBadge} ${org.isApproved ? styles.statusApproved : styles.statusPending}`}>
-                        {org.isApproved ? t("common.status.approved") : t("common.status.pending")}
+                      <span
+                        className={`${styles.statusBadge} ${org.isApproved ? styles.statusApproved : styles.statusPending}`}
+                      >
+                        {org.isApproved
+                          ? t("common.status.approved")
+                          : t("common.status.pending")}
                       </span>
                     )}
                   </div>
                 </div>
-                
+
                 <div className={styles.actions}>
                   {isActive ? (
                     <div className={styles.activeLabel}>
@@ -237,12 +264,19 @@ const OrgManagement = ({
                       {t("common.status.active")}
                     </div>
                   ) : org.isApproved ? (
-                    <Button variant="secondary" size="small" onClick={() => handleSwitch(org.id)}>
+                    <Button
+                      variant="secondary"
+                      size="small"
+                      onClick={() => handleSwitch(org.id)}
+                    >
                       {t("common.switch")}
                     </Button>
                   ) : null}
-                  
-                  <button className={styles.moreBtn} onClick={(e) => handleMoreClick(e, org)}>
+
+                  <button
+                    className={styles.moreBtn}
+                    onClick={(e) => handleMoreClick(e, org)}
+                  >
                     <MoreVertical size={18} />
                   </button>
                 </div>
@@ -253,15 +287,19 @@ const OrgManagement = ({
       </div>
 
       <div className={styles.addOrgActions}>
-        <Button variant="secondary" className={styles.addBtn} onClick={() => setIsJoinModalOpen(true)} style={{ width: '100%' }}>
-          <UserPlus size={18} style={{ marginRight: 8 }} />
+        <Button
+          variant="secondary"
+          className={styles.addBtn}
+          onClick={() => setIsJoinModalOpen(true)}
+        >
+          <UserPlus size={18} className={styles.addBtnIcon} />
           {t("settings.joinNewOrg")}
         </Button>
       </div>
 
-      <ManageOrgModal 
-        isOpen={isManageModalOpen} 
-        onClose={() => setIsManageOrgModalOpen(false)} 
+      <ManageOrgModal
+        isOpen={isManageModalOpen}
+        onClose={() => setIsManageOrgModalOpen(false)}
         org={selectedOrg}
         onUpdate={onOrgUpdated}
         onLeave={handleLeaveOrg}
@@ -281,7 +319,9 @@ const OrgManagement = ({
     return (
       <div className={styles.standaloneContainer}>
         <div className={styles.standaloneHeader}>
-          <h2 className={styles.standaloneTitle}>{t("settings.myOrganisations")}</h2>
+          <h2 className={styles.standaloneTitle}>
+            {t("settings.myOrganisations")}
+          </h2>
         </div>
         {renderContent()}
       </div>
@@ -289,7 +329,11 @@ const OrgManagement = ({
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={t("settings.myOrganisations")}>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={t("settings.myOrganisations")}
+    >
       {renderContent()}
     </Modal>
   );
