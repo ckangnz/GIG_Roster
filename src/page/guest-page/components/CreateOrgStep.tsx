@@ -42,7 +42,7 @@ const CreateOrgStep = ({ onCreate, onBack, isCreating }: CreateOrgStepProps) => 
     { 
       id: 'free' as const, 
       name: t('onboarding.tierSprout'), 
-      price: '$0', 
+      price: '$9/mo', 
       desc: t('onboarding.tierSproutDesc'),
       disabled: false 
     },

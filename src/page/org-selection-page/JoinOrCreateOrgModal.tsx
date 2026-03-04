@@ -82,7 +82,7 @@ const JoinOrCreateOrgModal = ({ isOpen, onClose, onJoin }: JoinOrCreateOrgModalP
       id: 'free' as const, 
       key: 'tierSprout',
       name: t('onboarding.tierSprout'), 
-      price: '$0', 
+      price: '$9/mo', 
       desc: t('onboarding.tierSproutDesc'),
       disabled: false 
     },
