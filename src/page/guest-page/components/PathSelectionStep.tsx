@@ -5,9 +5,10 @@ import wizardStyles from "../onboarding-wizard.module.css";
 
 interface PathSelectionStepProps {
   onJoinClick: () => void;
+  onCreateClick: () => void;
 }
 
-const PathSelectionStep = ({ onJoinClick }: PathSelectionStepProps) => {
+const PathSelectionStep = ({ onJoinClick, onCreateClick }: PathSelectionStepProps) => {
   const { t } = useTranslation();
 
   return (
@@ -25,10 +26,9 @@ const PathSelectionStep = ({ onJoinClick }: PathSelectionStepProps) => {
           <p className={wizardStyles.choiceSubtitle}>{t('onboarding.joinDesc')}</p>
         </button>
 
-        <button className={`${wizardStyles.choiceCard} ${wizardStyles.disabled}`} disabled>
+        <button className={wizardStyles.choiceCard} onClick={onCreateClick}>
           <div className={wizardStyles.choiceTitle}>
             <PlusCircle size={20} /> {t('onboarding.createTitle')}
-            <span className={wizardStyles.disabledBadge}>{t('onboarding.comingSoon')}</span>
           </div>
           <p className={wizardStyles.choiceSubtitle}>{t('onboarding.createDesc')}</p>
         </button>

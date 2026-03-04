@@ -181,6 +181,18 @@
   margin-top: 1rem;
 }
 
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fieldLabel {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
 .fullWidthBtn {
   width: 100%;
   justify-content: center;

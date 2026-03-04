@@ -24,7 +24,7 @@ const OrgSelectionPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const { firebaseUser, loading } = useAppSelector((state) => state.auth);
+  const { firebaseUser, loading, activeOrgId } = useAppSelector((state) => state.auth);
   const userData = useAppSelector(selectUserData);
   
   const [orgs, setOrgs] = useState<OrgWithMembership[]>([]);
@@ -70,7 +70,11 @@ const OrgSelectionPage = () => {
           })
         );
 
-        setOrgs(fetchedOrgs.filter((o): o is OrgWithMembership => o !== null));
+        const sortedOrgs = fetchedOrgs
+          .filter((o): o is OrgWithMembership => o !== null)
+          .sort((a, b) => a.name.localeCompare(b.name));
+
+        setOrgs(sortedOrgs);
       } catch (error) {
         console.error("Error fetching organisations:", error);
       } finally {
@@ -131,11 +135,12 @@ const OrgSelectionPage = () => {
 
         <div className={styles.orgList}>
           {orgs.map((org) => {
-            const isOwner = org.ownerId === firebaseUser.uid;
+            const isOwner = org.ownerId === firebaseUser?.uid;
+            const isActive = activeOrgId === org.id;
             return (
               <button
                 key={org.id}
-                className={`${styles.orgItem} ${!org.isApproved ? styles.disabled : ""}`}
+                className={`${styles.orgItem} ${!org.isApproved ? styles.disabled : ""} ${isActive ? styles.activeOrg : ""}`}
                 onClick={() => handleSelectOrg(org.id, org.isApproved)}
                 disabled={!org.isApproved}
               >
@@ -144,19 +149,19 @@ const OrgSelectionPage = () => {
                   <div className={styles.orgMeta}>
                     <span className={styles.orgRole}>
                       {isOwner 
-                        ? t("common.roles.owner", "Owner") 
+                        ? t("common.roles.owner") 
                         : org.isAdmin 
-                          ? t("common.roles.admin", "Admin") 
-                          : t("common.roles.member", "Member")}
+                          ? t("common.roles.admin") 
+                          : t("common.roles.member")}
                     </span>
                     {!isOwner && (
                       <span className={`${styles.statusBadge} ${org.isApproved ? styles.statusApproved : styles.statusPending}`}>
-                        {org.isApproved ? t("common.status.approved", "Approved") : t("common.status.pending", "Pending")}
+                        {org.isApproved ? t("common.status.approved") : t("common.status.pending")}
                       </span>
                     )}
                   </div>
                 </div>
-                {org.isApproved && <Check size={20} color="var(--color-accent)" />}
+                {isActive && <Check size={20} color="var(--color-primary)" />}
               </button>
             );
           })}

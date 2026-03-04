@@ -8,11 +8,11 @@ import { useNavigate } from "react-router-dom";
 import ManageOrgModal from "./ManageOrgModal";
 import Button from "../../components/common/Button";
 import Modal from "../../components/common/Modal";
+import Spinner from "../../components/common/Spinner";
 import { db } from "../../firebase";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { Organisation, OrgMembership } from "../../model/model";
 import { setActiveOrgId, selectUserData, leaveOrganisation, clearActiveOrgId, joinOrganisation } from "../../store/slices/authSlice";
-import { showAlert } from "../../store/slices/uiSlice";
 import JoinOrCreateOrgModal from "../org-selection-page/JoinOrCreateOrgModal";
 
 import styles from "./org-management.module.css";
@@ -84,7 +84,11 @@ const OrgManagement = ({
           })
         );
 
-        setOrgs(fetchedOrgs.filter((o): o is OrgWithMembership => o !== null));
+        const sortedOrgs = fetchedOrgs
+          .filter((o): o is OrgWithMembership => o !== null)
+          .sort((a, b) => a.name.localeCompare(b.name));
+
+        setOrgs(sortedOrgs);
       } catch (error) {
         console.error("Error fetching organisations:", error);
       } finally {
@@ -105,7 +109,7 @@ const OrgManagement = ({
 
     dispatch(setActiveOrgId(orgId));
     if (!standalone) onClose();
-    navigate("/app/dashboard");
+    // Removed redirect - stay on current page
   };
 
   const handleJoinOrg = async (org: Organisation) => {
@@ -133,48 +137,42 @@ const OrgManagement = ({
     setIsManageOrgModalOpen(true);
   };
 
-  const handleLeaveOrg = (orgId: string) => {
-    const org = orgs.find(o => o.id === orgId);
-    if (!org || !firebaseUser) return;
-    
-    dispatch(showAlert({
-      title: t("settings.leaveOrgTitle", "Leave Organisation"),
-      message: t("settings.leaveOrgConfirm", { name: org.name }),
-      confirmText: t("common.leave", "Leave"),
-      onConfirm: async () => {
-        try {
-          await dispatch(leaveOrganisation({ 
-            uid: firebaseUser.uid, 
-            orgId: org.id 
-          })).unwrap();
-          
-          if (activeOrgId === org.id) {
-            dispatch(setActiveOrgId(null));
-          }
-          
-          setOrgs(prev => prev.filter(o => o.id !== org.id));
-        } catch (error) {
-          console.error("Error leaving organisation:", error);
-        }
+  const handleLeaveOrg = async (org: OrgWithMembership) => {
+    if (!firebaseUser) return;
+
+    try {
+      if (activeOrgId === org.id) {
+        dispatch(setActiveOrgId(null));
       }
-    }));
+
+      await dispatch(
+        leaveOrganisation({
+          uid: firebaseUser.uid,
+          orgId: org.id,
+        }),
+      ).unwrap();
+
+      setOrgs((prev) => prev.filter((o) => o.id !== org.id));
+    } catch (error) {
+      console.error("Error leaving organisation:", error);
+    }
   };
 
-  const confirmDeleteOrg = async (orgId: string) => {
+  const confirmDeleteOrg = async (org: OrgWithMembership) => {
     if (!firebaseUser) return;
     
     try {
-      await deleteDoc(doc(db, "organisations", orgId));
-      await dispatch(leaveOrganisation({ 
-        uid: firebaseUser.uid, 
-        orgId: orgId 
-      })).unwrap();
-      
-      if (activeOrgId === orgId) {
+      if (activeOrgId === org.id) {
         dispatch(setActiveOrgId(null));
       }
+
+      await deleteDoc(doc(db, "organisations", org.id));
+      await dispatch(leaveOrganisation({ 
+        uid: firebaseUser.uid, 
+        orgId: org.id 
+      })).unwrap();
       
-      setOrgs(prev => prev.filter(o => o.id !== orgId));
+      setOrgs(prev => prev.filter(o => o.id !== org.id));
     } catch (error) {
       console.error("Error deleting organisation:", error);
     }
@@ -188,7 +186,9 @@ const OrgManagement = ({
     <div className={styles.orgManagementContent}>
       <div className={styles.orgList}>
         {loading ? (
-          <p>{t("common.loading")}</p>
+          <div className={styles.loadingContainer}>
+            <Spinner />
+          </div>
         ) : orgs.length === 0 ? (
           <p>{t("settings.noOrganisations")}</p>
         ) : (

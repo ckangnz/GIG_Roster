@@ -48,6 +48,8 @@
       "inactive": "Inactive"
     },
     "switch": "Switch",
+    "continue": "Continue",
+    "back": "Back",
     "comingSoon": "Coming Soon"
   },
   "nav": {
@@ -245,6 +247,7 @@
     "deleteOrg": "Delete Organisation",
     "leaveOrgTitle": "Leave Organisation",
     "leaveOrgConfirm": "Are you sure you want to leave {{name}}?",
+    "leaveOrgVerification": "Please type {{name}} to confirm leaving:",
     "deleteOrgTitle": "Delete Organisation",
     "deleteOrgConfirm": "Are you sure you want to delete {{name}}?",
     "deleteOrgWarning": "This action is permanent and will delete all data associated with this organisation.",
@@ -261,6 +264,7 @@
     "subscriptionEnds": "Subscription ends on {{date}}",
     "noOrganisations": "You don't belong to any organisations yet.",
     "joinNewOrg": "Join New Organisation",
+    "noTeamsInOrg": "No teams available in this organisation yet.",
     "team_management": "Teams",
     "position_management": "Positions",
     "user_management": "Members",
@@ -291,7 +295,7 @@
     "joinTitle": "Join Organisation",
     "joinDesc": "Search for your church or group to request access.",
     "createTitle": "Create Organisation",
-    "createDesc": "Start a new GIG Roster instance for your own team.",
+    "createDesc": "Start a new workspace for your own team.",
     "findTitle": "Find Organisation",
     "findDesc": "Type at least 3 characters to search.",
     "confirmDesc": "Confirm your selection to request access.",
@@ -312,6 +316,20 @@
     "addOrg": "Add Organisation",
     "alreadyMember": "You are already a member of this organisation",
     "selectTier": "Select a Tier",
-    "paymentInfo": "Payment Information"
+    "paymentInfo": "Payment Information",
+    "orgType": "Organisation Visibility",
+    "public": "Public",
+    "publicDesc": "Anyone can search and request to join",
+    "private": "Private",
+    "privateDesc": "Invite only, hidden from search",
+    "requireApproval": "Require Approval",
+    "requireApprovalDesc": "New members must be approved by an admin",
+    "tierSprout": "Sprout (Basic)",
+    "tierSproutDesc": "Perfect for small teams getting started",
+    "tierBloom": "Bloom (Pro)",
+    "tierBloomDesc": "Advanced features for growing teams",
+    "tierGrove": "Grove (Enterprise)",
+    "tierGroveDesc": "Full power for large organisations",
+    "freeTrialNote": "1 month free trial included"
   }
 }

@@ -62,6 +62,12 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
+.activeOrg {
+  border-color: var(--color-primary);
+  background: var(--background-primary-subtle);
+  box-shadow: 0 0 0 1px var(--color-primary);
+}
+
 .orgInfo {
   flex: 1;
   min-width: 0;
@@ -134,6 +140,17 @@
   transform: translateY(-2px);
 }
 
+.choiceIcon {
+  width: 48px;
+  height: 48px;
+  background: var(--background-app-shell);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
 .choiceCard.disabled {
   opacity: 0.6;
   cursor: not-allowed;
@@ -168,6 +185,77 @@
   background: var(--background-app-shell);
   border: 1px solid var(--border-color-table);
   border-radius: 12px;
+}
+
+.typeCard {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: var(--background-card);
+  border: 2px solid var(--border-color-secondary);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--color-text-primary);
+}
+
+.activeType {
+  border-color: var(--color-accent);
+  background: var(--background-primary-subtle);
+}
+
+.tierSelectCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  background: var(--background-card);
+  border: 2px solid var(--border-color-secondary);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--color-text-primary);
+  width: 100%;
+}
+
+.activeTier {
+  border-color: var(--color-accent);
+  background: var(--background-primary-subtle);
+}
+
+.tierDisabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: var(--background-body);
+}
+
+.summarySection {
+  background: var(--background-app-shell);
+  padding: 20px;
+  border-radius: 16px;
+  border: 1px solid var(--border-color-table);
+}
+
+.summaryTitle {
+  margin: 0 0 16px 0 !important;
+}
+
+.summaryRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.summaryLabel {
+  color: var(--color-text-dim);
+  font-size: 0.9rem;
+}
+
+.summaryValue {
+  font-weight: 700;
+  color: var(--color-text-primary);
 }
 
 .footer {

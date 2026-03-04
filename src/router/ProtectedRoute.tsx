@@ -4,22 +4,23 @@ import { Navigate, Outlet } from "react-router-dom";
 
 import { useAppDispatch, useAppSelector } from "../hooks/redux";
 import LoadingPage from "../page/loading-page/LoadingPage";
+import { selectUserData } from "../store/slices/authSlice";
 import { fetchPositions } from "../store/slices/positionsSlice";
 import { fetchTeams } from "../store/slices/teamsSlice";
 
 const ProtectedRoute = () => {
   const dispatch = useAppDispatch();
-  const { firebaseUser, userData, loading } = useAppSelector(
+  const { firebaseUser, loading } = useAppSelector(
     (state) => state.auth,
   );
+  const userData = useAppSelector(selectUserData);
   const { fetched: teamsFetched, loading: teamsLoading } = useAppSelector((state) => state.teams);
   const { fetched: positionsFetched, loading: positionsLoading } = useAppSelector(
     (state) => state.positions,
   );
 
   const activeOrgId = useAppSelector((state) => state.auth.activeOrgId);
-  const membership = useAppSelector((state) => state.auth.membership);
-  const isApproved = membership?.isApproved || false;
+  const isApproved = userData?.isApproved || false;
 
   useEffect(() => {
     if (firebaseUser && isApproved && activeOrgId) {

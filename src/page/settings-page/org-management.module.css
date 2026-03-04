@@ -34,9 +34,9 @@
 }
 
 .activeOrg {
-  border-color: var(--color-accent);
-  background: var(--background-app-shell);
-  box-shadow: 0 0 0 1px var(--color-accent);
+  border-color: var(--color-primary);
+  background: var(--background-primary-subtle);
+  box-shadow: 0 0 0 1px var(--color-primary);
 }
 
 .orgInfo {
@@ -44,7 +44,8 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  align-items: flex-start; /* Left align */
+  align-items: flex-start;
+  text-align: left;
 }
 
 .orgName {
@@ -56,7 +57,6 @@
   overflow: hidden;
   text-overflow: ellipsis;
   width: 100%;
-  text-align: left;
 }
 
 .orgMeta {
@@ -120,7 +120,7 @@
 .activeLabel {
   font-size: 0.75rem;
   font-weight: 800;
-  color: var(--color-accent);
+  color: var(--color-primary);
   display: flex;
   align-items: center;
   gap: 4px;
@@ -146,4 +146,12 @@
 
 .deleteConfirmInput {
   margin-top: 12px;
+}
+
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+  width: 100%;
 }

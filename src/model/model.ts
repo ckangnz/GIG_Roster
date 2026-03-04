@@ -15,6 +15,7 @@ export interface Organisation {
   name: string;
   ownerId: string; // userUid of the creator
   createdAt: number;
+  visibility: "public" | "private";
   subscription?: {
     plan: "free" | "pro" | "enterprise" | "super";
     expiresAt?: number;

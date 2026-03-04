@@ -256,17 +256,23 @@ const ProfileSettings = ({
       {showExtendedInfo && (
         <>
           {userData.isApproved ? (
-            <TeamPositionEditor
-              selectedTeams={formState.teams}
-              teamPositions={formState.teamPositions}
-              onToggleTeam={toggleTeam}
-              onTogglePosition={toggleTeamPosition}
-              onReorderTeams={(newOrder) =>
-                setFormState((prev) => ({ ...prev, teams: newOrder }))
-              }
-              availableTeams={availableTeams}
-              globalPositions={globalPositions}
-            />
+            availableTeams.length > 0 ? (
+              <TeamPositionEditor
+                selectedTeams={formState.teams}
+                teamPositions={formState.teamPositions}
+                onToggleTeam={toggleTeam}
+                onTogglePosition={toggleTeamPosition}
+                onReorderTeams={(newOrder) =>
+                  setFormState((prev) => ({ ...prev, teams: newOrder }))
+                }
+                availableTeams={availableTeams}
+                globalPositions={globalPositions}
+              />
+            ) : (
+              <div className={styles.noTeamsNotice}>
+                <p>{t("settings.noTeamsInOrg")}</p>
+              </div>
+            )
           ) : (
             <div className={styles.approvalNotice}>
               <p>

@@ -29,6 +29,7 @@ const UserManagementRow = ({
 }: UserManagementRowProps) => {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
+  const { firebaseUser } = useAppSelector((state) => state.auth);
   const { positions: globalPositions } = useAppSelector((state) => state.positions);
   const currentUser = useAppSelector(selectUserData);
   const activeOrgId = currentUser?.activeOrgId;
@@ -147,6 +148,7 @@ const UserManagementRow = ({
           <Toggle
             isOn={isApproved}
             onToggle={(isOn) => handleOrgUpdate("isApproved", isOn)}
+            disabled={user.id === firebaseUser?.uid || isAdmin}
           />
         </SettingsTableAnyCell>
         <SettingsTableAnyCell textAlign="center">
