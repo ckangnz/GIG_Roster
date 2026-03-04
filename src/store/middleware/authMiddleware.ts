@@ -15,8 +15,8 @@ export const authMiddleware: Middleware = (store) => {
 
     onAuthStateChanged(auth, (firebaseUser) => {
       if (firebaseUser) {
-        store.dispatch(setUser(firebaseUser))
-          ; (store.dispatch as (action: unknown) => unknown)(initializeUserData(firebaseUser));
+        store.dispatch(setUser(firebaseUser));
+        (store.dispatch as (action: unknown) => unknown)(initializeUserData(firebaseUser));
 
         const userRef = doc(db, 'users', firebaseUser.uid);
 
@@ -27,10 +27,11 @@ export const authMiddleware: Middleware = (store) => {
           }
         });
       } else {
-        store.dispatch(logout());
         if (unsubscribeSnapshot) {
           unsubscribeSnapshot();
+          unsubscribeSnapshot = undefined;
         }
+        store.dispatch(logout());
       }
     });
   }

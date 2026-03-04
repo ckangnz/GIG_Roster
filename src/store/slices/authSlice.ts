@@ -458,9 +458,12 @@ const authSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(initializeUserData.pending, (state) => {
-        state.loading = true;
-        state.error = null;
+      .addCase(initializeUserData.pending, (state, action) => {
+        // Only set loading if called with a real user (not null)
+        if (action.meta.arg !== null) {
+          state.loading = true;
+          state.error = null;
+        }
       })
       .addCase(
         initializeUserData.fulfilled,
