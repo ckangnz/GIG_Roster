@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 
+import { Smile } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import TeamPositionEditor from "./TeamPositionEditor";
@@ -16,6 +17,14 @@ import {
 import formStyles from "../../styles/form.module.css";
 
 import styles from "./profile-settings.module.css";
+
+const getInitials = (name: string) => {
+  const parts = name.trim().split(" ").filter(Boolean);
+  if (parts.length === 0) return null;
+  return parts.length === 1
+    ? parts[0][0].toUpperCase()
+    : (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+};
 
 const ProfileSettings = ({
   className,
@@ -164,185 +173,159 @@ const ProfileSettings = ({
     return <div>Loading profile...</div>;
   }
 
+  const initials = getInitials(formState.name);
+
   return (
     <section className={`${styles.profileCard} ${className || ""}`}>
-      <div className={styles.profileReadonly}>
-        <p>
-          <strong>{t("management.user.email")}:</strong> {userData.email}
-        </p>
+      {/* Hero */}
+      <div className={styles.profileHero}>
+        <div className={`${styles.profileAvatar} ${!initials ? styles.profileAvatarPlaceholder : ""}`}>
+          {initials ?? <Smile size={32} />}
+        </div>
+        <h2 className={styles.profileHeroName}>
+          {formState.name.trim() || t("settings.name")}
+        </h2>
+        <p className={styles.profileHeroEmail}>{userData.email}</p>
       </div>
 
-      <div className={formStyles.formGroup}>
-        <label aria-required="true">{t("settings.name")}</label>
-        <input
-          required
-          type="text"
-          value={formState.name}
-          disabled={isLocked}
-          onChange={(e) =>
-            setFormState((prev) => ({ ...prev, name: e.target.value }))
-          }
-          className={`${formStyles.formInput} ${!isFormValid ? formStyles.inputError : ""}`}
-        />
-        {!isFormValid && (
-          <span className={formStyles.errorText}>
-            {t("settings.nameRequired")}
-          </span>
-        )}
-      </div>
-      <div className={formStyles.formGroup}>
-        <label>{t("settings.gender")}</label>
-        <PillGroup>
-          {[
-            {
-              value: "Male",
-              label: t("settings.male"),
-              colour: "var(--color-male)",
-            },
-            {
-              value: "Female",
-              label: t("settings.female"),
-              colour: "var(--color-female)",
-            },
-            {
-              value: "Undefined",
-              label: t("settings.undefined"),
-              colour: "var(--color-text-dim)",
-            },
-          ].map((g) => (
-            <Pill
-              key={g.value}
-              colour={g.colour}
-              onClick={() => {
-                if (!isLocked) {
-                  setFormState((prev) => ({ ...prev, gender: g.value }));
-                }
-              }}
-              isActive={formState.gender === g.value}
-              isDisabled={isLocked}
-            >
-              {g.label}
-            </Pill>
-          ))}
-        </PillGroup>
-      </div>
-
-      <div className={formStyles.formGroup}>
-        <label>{t("settings.language")}</label>
-        <PillGroup>
-          {[
-            { value: "en-NZ", label: t("settings.english") },
-            { value: "ko", label: t("settings.korean") },
-          ].map((l) => (
-            <Pill
-              key={l.value}
-              onClick={() => {
-                if (!isLocked) {
-                  setFormState((prev) => ({
-                    ...prev,
-                    preferredLanguage: l.value,
-                  }));
-                }
-              }}
-              isActive={formState.preferredLanguage === l.value}
-              isDisabled={isLocked}
-            >
-              {l.label}
-            </Pill>
-          ))}
-        </PillGroup>
-      </div>
-
-      {showExtendedInfo && (
-        <>
-          {userData.isApproved ? (
-            availableTeams.length > 0 ? (
-              <TeamPositionEditor
-                selectedTeams={formState.teams}
-                teamPositions={formState.teamPositions}
-                onToggleTeam={toggleTeam}
-                onTogglePosition={toggleTeamPosition}
-                onReorderTeams={(newOrder) =>
-                  setFormState((prev) => ({ ...prev, teams: newOrder }))
-                }
-                availableTeams={availableTeams}
-                globalPositions={globalPositions}
-              />
-            ) : (
-              <div className={styles.noTeamsNotice}>
-                <p>{t("settings.noTeamsInOrg")}</p>
-              </div>
-            )
-          ) : (
-            <div className={styles.approvalNotice}>
-              <p>
-                Your account is pending approval. Once approved by an
-                administrator, you will be able to select your teams and
-                positions.
-              </p>
-            </div>
-          )}
-        </>
-      )}
-
-      {!isLocked && (
-        <div className={formStyles.formGroup} style={{ marginTop: "24px" }}>
-          <label>{t("settings.availability")}</label>
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            <span
-              style={{
-                fontSize: "0.95rem",
-                color: "var(--color-text-secondary)",
-              }}
-            >
-              {formState.isActive
-                ? t("settings.active")
-                : t("settings.inactive")}
+      {/* Form body */}
+      <div className={styles.profileBody}>
+        <div className={formStyles.formGroup}>
+          <label aria-required="true">{t("settings.name")}</label>
+          <input
+            required
+            type="text"
+            value={formState.name}
+            disabled={isLocked}
+            onChange={(e) =>
+              setFormState((prev) => ({ ...prev, name: e.target.value }))
+            }
+            className={`${formStyles.formInput} ${!isFormValid ? formStyles.inputError : ""}`}
+          />
+          {!isFormValid && (
+            <span className={formStyles.errorText}>
+              {t("settings.nameRequired")}
             </span>
-            <Toggle
-              isOn={formState.isActive}
-              onToggle={(isOn) =>
-                setFormState((prev) => ({ ...prev, isActive: isOn }))
-              }
-            />
-          </div>
-          <p className={formStyles.fieldHint}>
-            {t("settings.availabilityHint")}
-          </p>
+          )}
         </div>
-      )}
 
-      {isLocked && (
-        <div className={styles.lockedStatusContainer}>
-          <div className={styles.lockedBadge}>
-            <span className={styles.lockedPulse} />
-            Application Submitted
-          </div>
-          <p className={styles.lockedHint}>
-            Your profile is currently being reviewed. You will receive access
-            once approved by an administrator.
-          </p>
-          <button
-            className={styles.withdrawBtn}
-            onClick={handleWithdraw}
-            disabled={status === "saving"}
-          >
-            Withdraw & Edit Profile
-          </button>
+        <div className={formStyles.formGroup}>
+          <label>{t("settings.gender")}</label>
+          <PillGroup>
+            {[
+              { value: "Male", label: t("settings.male"), colour: "var(--color-male)" },
+              { value: "Female", label: t("settings.female"), colour: "var(--color-female)" },
+              { value: "Undefined", label: t("settings.undefined"), colour: "var(--color-text-dim)" },
+            ].map((g) => (
+              <Pill
+                key={g.value}
+                colour={g.colour}
+                onClick={() => { if (!isLocked) setFormState((prev) => ({ ...prev, gender: g.value })); }}
+                isActive={formState.gender === g.value}
+                isDisabled={isLocked}
+              >
+                {g.label}
+              </Pill>
+            ))}
+          </PillGroup>
         </div>
-      )}
 
-      <div className={styles.actionContainer}>
-        <Button variant="delete" onClick={() => auth.signOut()}>
-          {t("common.logout")}
-        </Button>
+        <div className={formStyles.formGroup}>
+          <label>{t("settings.language")}</label>
+          <PillGroup>
+            {[
+              { value: "en-NZ", label: t("settings.english") },
+              { value: "ko", label: t("settings.korean") },
+            ].map((l) => (
+              <Pill
+                key={l.value}
+                onClick={() => { if (!isLocked) setFormState((prev) => ({ ...prev, preferredLanguage: l.value })); }}
+                isActive={formState.preferredLanguage === l.value}
+                isDisabled={isLocked}
+              >
+                {l.label}
+              </Pill>
+            ))}
+          </PillGroup>
+        </div>
+
+        {showExtendedInfo && (
+          <>
+            {userData.isApproved ? (
+              availableTeams.length > 0 ? (
+                <TeamPositionEditor
+                  selectedTeams={formState.teams}
+                  teamPositions={formState.teamPositions}
+                  onToggleTeam={toggleTeam}
+                  onTogglePosition={toggleTeamPosition}
+                  onReorderTeams={(newOrder) =>
+                    setFormState((prev) => ({ ...prev, teams: newOrder }))
+                  }
+                  availableTeams={availableTeams}
+                  globalPositions={globalPositions}
+                />
+              ) : (
+                <div className={styles.noTeamsNotice}>
+                  <p>{t("settings.noTeamsInOrg")}</p>
+                </div>
+              )
+            ) : (
+              <div className={styles.approvalNotice}>
+                <p>
+                  Your account is pending approval. Once approved by an
+                  administrator, you will be able to select your teams and
+                  positions.
+                </p>
+              </div>
+            )}
+          </>
+        )}
+
+        {!isLocked && (
+          <div className={formStyles.formGroup}>
+            <div className={styles.availabilityRow}>
+              <div>
+                <label className={styles.availabilityLabel}>{t("settings.availability")}</label>
+                <p className={formStyles.fieldHint}>{t("settings.availabilityHint")}</p>
+              </div>
+              <Toggle
+                isOn={formState.isActive}
+                onToggle={(isOn) => setFormState((prev) => ({ ...prev, isActive: isOn }))}
+              />
+            </div>
+          </div>
+        )}
+
+        {isLocked && (
+          <div className={styles.lockedStatusContainer}>
+            <div className={styles.lockedBadge}>
+              <span className={styles.lockedPulse} />
+              Application Submitted
+            </div>
+            <p className={styles.lockedHint}>
+              Your profile is currently being reviewed. You will receive access
+              once approved by an administrator.
+            </p>
+            <button
+              className={styles.withdrawBtn}
+              onClick={handleWithdraw}
+              disabled={status === "saving"}
+            >
+              Withdraw & Edit Profile
+            </button>
+          </div>
+        )}
+
+        <div className={styles.actionContainer}>
+          <Button variant="delete" onClick={() => auth.signOut()}>
+            {t("common.logout")}
+          </Button>
+        </div>
       </div>
 
       {hasChanges && !isLocked && (
         <SaveFooter
-          label={t("common.unsavedChanges", {
-            defaultValue: "Unsaved profile changes",
-          })}
+          label={t("common.unsavedChanges", { defaultValue: "Unsaved profile changes" })}
           saveText={t("common.save")}
           onSave={handleSave}
           onCancel={handleCancel}

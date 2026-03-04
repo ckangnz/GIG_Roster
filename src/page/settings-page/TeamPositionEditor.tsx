@@ -130,7 +130,7 @@ const TeamPositionEditor = ({
       </div>
 
       {selectedTeams.length > 0 && (
-        <div className={commonStyles.settingsSection}>
+        <div className={commonStyles.formGroup}>
           <label className={commonStyles.sectionLabel}>
             {t('management.user.positionsPerTeam')}
           </label>
