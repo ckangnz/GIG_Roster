@@ -20,6 +20,7 @@ import { useLocation, matchPath } from "react-router-dom";
 import { db, auth } from "../firebase";
 import { useAppDispatch, useAppSelector } from "./redux";
 import { AppUser, Position } from "../model/model";
+import { selectUserData } from "../store/slices/authSlice";
 import { setOnlineUsers, setPresenceError } from "../store/slices/presenceSlice";
 import { safeDecode } from "../utils/stringUtils";
 
@@ -109,12 +110,17 @@ export const useTrackPresence = (firebaseUser: User | null, userData: AppUser | 
   const hasCleanedUp = useRef(false);
   const location = useLocation();
   
-  const { activeOrgId } = useAppSelector(state => state.auth);
+  const authState = useAppSelector(state => state.auth);
+  const activeOrgId = authState.activeOrgId;
+  const userMembership = useAppSelector(selectUserData);
+  const myTeams = useMemo(() => userMembership?.teams || [], [userMembership?.teams]);
+
   const { focusedCell } = useAppSelector(state => state.ui);
   const { rosterDates, users, allTeamUsers } = useAppSelector(state => state.rosterView);
   const { positions: allPositions } = useAppSelector(state => state.positions);
   
   const currentFocus: PresenceFocus | null = useMemo(() => {
+    // ... same focus logic ...
     const rosterFullMatch = matchPath("/app/roster/:teamName/:positionName", location.pathname);
     const rosterTeamMatch = matchPath("/app/roster/:teamName", location.pathname);
     const thoughtsFullMatch = matchPath("/app/thoughts/:teamName", location.pathname);
@@ -158,22 +164,25 @@ export const useTrackPresence = (firebaseUser: User | null, userData: AppUser | 
       date,
       identifier,
       teamName,
-      viewName: activePosition || null // Use null instead of undefined for Firestore compatibility
+      viewName: activePosition || null
     };
   }, [focusedCell, rosterDates, users, allTeamUsers, allPositions, location.pathname, activeOrgId]);
 
   useEffect(() => {
-    if (!firebaseUser?.uid || !userData?.email) return;
+    if (!firebaseUser?.uid || !userData?.email || !activeOrgId) return;
 
     const docId = `${firebaseUser.uid}_${currentSessionId}`;
-    const userRef = doc(db, "presence", docId);
+    const userRef = doc(db, "organisations", activeOrgId, "presence", docId);
     
     if (!hasCleanedUp.current) {
       hasCleanedUp.current = true;
       const selfCleanup = async () => {
         try {
           const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
-          const q = query(collection(db, "presence"), where("userUid", "==", firebaseUser.uid));
+          const q = query(
+            collection(db, "organisations", activeOrgId, "presence"), 
+            where("userUid", "==", firebaseUser.uid)
+          );
           const snapshot = await getDocs(q);
           snapshot.forEach((docSnap) => {
             const lastSeen = docSnap.data().lastSeen?.toDate?.() || new Date(0);
@@ -199,6 +208,7 @@ export const useTrackPresence = (firebaseUser: User | null, userData: AppUser | 
           lastSeen: serverTimestamp(),
           focus: focusData,
           location: location.pathname,
+          teams: myTeams, // Team scoping data
         }, { merge: true });
       } catch (err: unknown) {
         const error = err as { code?: string; message?: string };
@@ -233,14 +243,14 @@ export const useTrackPresence = (firebaseUser: User | null, userData: AppUser | 
       window.removeEventListener("beforeunload", markOffline);
       markOffline();
     };
-  }, [firebaseUser?.uid, firebaseUser?.displayName, userData?.email, userData?.name, currentFocus, location.pathname]);
+  }, [firebaseUser?.uid, firebaseUser?.displayName, userData?.email, userData?.name, currentFocus, location.pathname, activeOrgId, myTeams]);
 
   useEffect(() => {
     const docId = `${firebaseUser?.uid}_${currentSessionId}`;
-    if (!firebaseUser?.uid || document.visibilityState !== 'visible') return;
+    if (!firebaseUser?.uid || !activeOrgId || document.visibilityState !== 'visible') return;
     
     const timeoutId = setTimeout(() => {
-      updateDoc(doc(db, "presence", docId), {
+      updateDoc(doc(db, "organisations", activeOrgId, "presence", docId), {
         focus: currentFocus,
         location: location.pathname,
         lastSeen: serverTimestamp()
@@ -248,20 +258,40 @@ export const useTrackPresence = (firebaseUser: User | null, userData: AppUser | 
     }, 200);
 
     return () => clearTimeout(timeoutId);
-  }, [currentFocus, location.pathname, firebaseUser?.uid]);
+  }, [currentFocus, location.pathname, firebaseUser?.uid, activeOrgId]);
 };
 
 export const usePresenceListener = () => {
   const dispatch = useAppDispatch();
-  const { firebaseUser } = useAppSelector((state) => state.auth);
+  const { firebaseUser, activeOrgId } = useAppSelector((state) => state.auth);
+  const userMembership = useAppSelector(selectUserData);
+  const myTeams = useMemo(() => userMembership?.teams || [], [userMembership?.teams]);
+  
   const userUid = firebaseUser?.uid;
   const latestDocs = useRef<DocumentData[]>([]);
 
   useEffect(() => {
-    if (!userUid) return;
+    if (!userUid || !activeOrgId) {
+      dispatch(setOnlineUsers([]));
+      return;
+    }
 
     let unsubscribe: (() => void) | null = null;
-    const q = query(collection(db, "presence"));
+    
+    // Scoped query: Only people in the same org.
+    // Filtering by team is done client-side or via query if teams exist.
+    const presenceCollection = collection(db, "organisations", activeOrgId, "presence");
+    let q = query(presenceCollection);
+
+    // If we have teams, we can use array-contains-any for efficiency,
+    // but if we don't, we still want to see ourselves (or others if we're an admin).
+    // Note: array-contains-any requires a non-empty array.
+    if (myTeams.length > 0) {
+      q = query(presenceCollection, where("teams", "array-contains-any", myTeams));
+    } else {
+      // If I have no teams, I only see myself
+      q = query(presenceCollection, where("userUid", "==", userUid));
+    }
 
     const processSnapshot = (dataArray: DocumentData[]) => {
       const now = Date.now();
@@ -298,7 +328,8 @@ export const usePresenceListener = () => {
           processSnapshot(docs);
         },
         error: (err) => {
-          console.error("[Presence] Listener failed:", err.message);
+          // If the query fails (e.g. missing index for array-contains-any), log it and clear
+          console.warn("[Presence] Listener error:", err.message);
           dispatch(setPresenceError(err.message));
         }
       });
@@ -313,7 +344,7 @@ export const usePresenceListener = () => {
       if (unsubscribe) unsubscribe();
       clearInterval(pruningInterval);
     };
-  }, [dispatch, userUid]);
+  }, [dispatch, userUid, activeOrgId, myTeams]);
 };
 
 export const useOnlineUsers = () => {

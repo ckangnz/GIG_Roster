@@ -57,6 +57,12 @@ service cloud.firestore {
         allow write: if isSignedIn() && (isOrgAdmin(orgId) || request.auth.uid == userId);
       }
 
+      match /presence/{docId} {
+        allow read: if isSignedIn() && isOrgApproved(orgId);
+        allow create: if isSignedIn() && isOrgApproved(orgId) && request.resource.data.userUid == request.auth.uid;
+        allow update, delete: if isSignedIn() && isOrgApproved(orgId) && resource.data.userUid == request.auth.uid;
+      }
+
       match /{allPaths=**} {
         allow read: if isSignedIn() && isOrgApproved(orgId);
         allow write: if isSignedIn() && isOrgAdmin(orgId);
@@ -71,11 +77,6 @@ service cloud.firestore {
         getUserData().get('organisations', null) != null
       );
       allow delete: if isSignedIn() && getUserData().get('organisations', null) != null;
-    }
-
-    match /presence/{docId} {
-      allow read: if isSignedIn();
-      allow create, update, delete: if isSignedIn();
     }
   }
 }
