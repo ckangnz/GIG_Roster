@@ -300,7 +300,9 @@
     "unsavedChanges": "저장되지 않은 변경사항"
   },
   "onboarding": {
-    "profileTitle": "프로필 설정",
+    "profileTitle": "환영합니다! 👋",
+    "heyName": "안녕하세요, {{name}}님!",
+    "namePlaceholder": "이름을 입력해주세요",
     "profileDesc": "시작하기 전에 자신에 대해 알려주세요.",
     "pathTitle": "시작하기",
     "pathDesc": "기존 조직에 가입하거나 새로운 조직을 만드세요.",

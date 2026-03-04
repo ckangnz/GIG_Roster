@@ -299,7 +299,9 @@
     "unsavedChanges": "Unsaved profile changes"
   },
   "onboarding": {
-    "profileTitle": "Setup Your Profile",
+    "profileTitle": "Welcome! 👋",
+    "heyName": "Hey, {{name}}!",
+    "namePlaceholder": "What's your name?",
     "profileDesc": "Tell us a bit about yourself to get started.",
     "pathTitle": "Choose Your Path",
     "pathDesc": "Join an existing organisation or create a new one.",

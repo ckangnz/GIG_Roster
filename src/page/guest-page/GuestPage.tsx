@@ -182,38 +182,50 @@ const GuestPage = () => {
           />
         )}
 
-        {step === 2 && !isJoining && !isCreating && !inviteOrgId && (
-          <PathSelectionStep 
-            onJoinClick={() => setIsJoining(true)} 
-            onCreateClick={() => setIsCreating(true)}
-          />
+        {step !== 1 && (
+          <div className={wizardStyles.wizardBody}>
+            {step === 2 && !isJoining && !isCreating && !inviteOrgId && (
+              <PathSelectionStep 
+                onJoinClick={() => setIsJoining(true)} 
+                onCreateClick={() => setIsCreating(true)}
+              />
+            )}
+
+            {step === 2 && inviteOrgId && (
+              <LoadingPage />
+            )}
+
+            {step === 2 && isJoining && (
+              <JoinOrgStep 
+                onJoin={handleJoin} 
+                selectedOrg={selectedOrg} 
+                onSelectOrg={setSelectedOrg} 
+              />
+            )}
+
+            {step === 2 && isCreating && (
+              <CreateOrgStep 
+                onCreate={handleCreate}
+                onBack={() => setIsCreating(false)}
+                isCreating={isCreatingAction}
+              />
+            )}
+
+            <div className={styles.logoutSection}>
+              <button className={styles.logoutBtn} onClick={handleLogout}>
+                Logout
+              </button>
+            </div>
+          </div>
         )}
 
-        {step === 2 && inviteOrgId && (
-          <LoadingPage />
+        {step === 1 && (
+          <div className={styles.logoutSection}>
+            <button className={styles.logoutBtn} onClick={handleLogout}>
+              Logout
+            </button>
+          </div>
         )}
-
-        {step === 2 && isJoining && (
-          <JoinOrgStep 
-            onJoin={handleJoin} 
-            selectedOrg={selectedOrg} 
-            onSelectOrg={setSelectedOrg} 
-          />
-        )}
-
-        {step === 2 && isCreating && (
-          <CreateOrgStep 
-            onCreate={handleCreate}
-            onBack={() => setIsCreating(false)}
-            isCreating={isCreatingAction}
-          />
-        )}
-
-        <div className={styles.logoutSection}>
-          <button className={styles.logoutBtn} onClick={handleLogout}>
-            Logout
-          </button>
-        </div>
       </div>
     </div>
   );
