@@ -26,10 +26,10 @@
 - [x] **Organisation Entity**: Created `Organisation` model and scoped all data (Teams, Positions, Users, Thoughts).
 - [x] **Atomic Roster Structure**: Refactored monolithic date documents into per-team-per-date documents (`organisations/{orgId}/roster/{teamId}_{date}`).
 - [x] **Internationalization (i18n)**: Multi-language support (English NZ, Korean) with user preference.
-- [ ] **Organisation Onboarding**:
-    - **Step 1: Profile Setup**: User provides Name and Gender (Male/Female/Undefined).
-    - **Step 2: Selection**: "Join Organisation" (Search with autocomplete, min 3 chars) or "Create Organisation" (Disabled).
-    - **Step 3: Approval**: User remains in Guest state until specific Org Admin approves them.
+- [x] **Organisation Onboarding**:
+    - [x] **Step 1: Profile Setup**: User provides Name and Gender (Male/Female/Undefined).
+    - [x] **Step 2: Selection**: "Join Organisation" (Search with autocomplete, min 3 chars) or "Create Organisation" (Disabled).
+    - [x] **Step 3: Approval**: User remains in Guest state until specific Org Admin approves them.
 - [ ] **Searchable Position Picker**: Refactor UI to use Autocomplete.
 
 ### 🛠 Implementation Guidelines
@@ -51,9 +51,9 @@
 - [x] **Scoped Data Migration**:
     - [x] Create a script to explode existing monolithic date docs into individual team-date docs.
     - [x] Assign all existing data to a default "Legacy Org".
-- [ ] **Onboarding Flow (Option A)**:
-    - **Guest Page**: Add search/input for "Join Organisation".
-    - **Approval Pipeline**: Ensure unapproved users with an `orgId` appear in that Org's Admin dashboard.
+- [x] **Onboarding Flow (Option A)**:
+    - [x] **Guest Page**: Add search/input for "Join Organisation".
+    - [x] **Approval Pipeline**: Ensure unapproved users with an `orgId` appear in that Org's Admin dashboard.
 - [ ] **UX Update**:
     - Replace "Pill Cloud" in `TeamPositionEditor` and `ProfileSettings` with a Searchable Multi-select.
 
@@ -67,13 +67,13 @@
       - it should have 'show all' button if more than 3. This should take the user to a page that shows all orgs they're enrolled in a table view. Clicking Change button changes their current org
       - it should also have manage org button. This should take the user to either join or create org(Disabled for now)
 
-- [ ] Online indicator is scoped to organisation > team. it should only show the users that are within the same org and have been assigned/enrolled to the same team. 
-  - if A is assigned to TeamA and TeamB, and B is only assigned to TeamA, both should see each other
-  - if A is assigned to TeamA and B is assigned to TeamB, they shouldn't see each other
-  - if A is assigned to OrgA.TeamA and B is assigned to OrgB.TeamB, they shouldn't see each other
-  - if A is assigned to TeamA and TeamB, and B is only assigned to TeamA, and if B clicks on A when he's in TeamA roster, B should not be able to see A anymore (because A is in a place B is not allowed)
-  - if A is an admin, and is on admin only page, and B is not an admin, B shouldn't be able to see A anymore.
-  - if A is an admin, and B is also an admin, they should be able to see each other when they're on admin only settings page
+- [x] Online indicator is scoped to organisation > team. it should only show the users that are within the same org and have been assigned/enrolled to the same team. 
+  - [x] if A is assigned to TeamA and TeamB, and B is only assigned to TeamA, both should see each other
+  - [x] if A is assigned to TeamA and B is assigned to TeamB, they shouldn't see each other
+  - [x] if A is assigned to OrgA.TeamA and B is assigned to OrgB.TeamB, they shouldn't see each other
+  - [x] if A is assigned to TeamA and TeamB, and B is only assigned to TeamA, and if B clicks on A when he's in TeamA roster, B should not be able to see A anymore (because A is in a place B is not allowed)
+  - [x] if A is an admin, and is on admin only page, and B is not an admin, B shouldn't be able to see A anymore.
+  - [x] if A is an admin, and B is also an admin, they should be able to see each other when they're on admin only settings page
 
 
 
