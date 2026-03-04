@@ -43,6 +43,8 @@ const GuestPage = () => {
   const [isCreatingAction, setIsCreatingAction] = useState(false);
   const [selectedOrg, setSelectedOrg] = useState<Organisation | null>(null);
   const autoJoinAttempted = useRef(false);
+  const profileRef = useRef(profile);
+  profileRef.current = profile;
 
   // Auto-join via invite link after profile step
   useEffect(() => {
@@ -52,26 +54,21 @@ const GuestPage = () => {
     autoJoinAttempted.current = true;
     const doAutoJoin = async () => {
       try {
-        const result = await dispatch(joinOrganisation({
+        await dispatch(joinOrganisation({
           uid: firebaseUser.uid,
           orgId: inviteOrgId,
-          profileData: profile,
+          profileData: profileRef.current,
         })).unwrap();
         sessionStorage.removeItem("pendingInviteOrgId");
         dispatch(setActiveOrgId(inviteOrgId));
-        // If auto-approved, membership.isApproved is true → ProtectedRoute will handle navigation
-        // If pending, setActiveOrgId will trigger guest page to show pending state
-        if (result.membership.isApproved) {
-          // Navigate to dashboard — but we need to wait for state to settle
-          // The ProtectedRoute will redirect correctly once membership is set
-        }
       } catch (e) {
         console.error("Auto-join failed:", e);
         autoJoinAttempted.current = false;
       }
     };
     doAutoJoin();
-  }, [step, inviteOrgId, firebaseUser, userData]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step, inviteOrgId, firebaseUser, userData, dispatch]);
 
   if (loading) return <LoadingPage />;
   if (!firebaseUser) return <Navigate to="/login" replace />;

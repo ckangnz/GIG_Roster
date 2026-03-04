@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 import { doc, updateDoc } from "firebase/firestore";
 import {
@@ -10,6 +10,8 @@ import {
   Copy,
   Sparkles,
   Check,
+  Pencil,
+  X,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
@@ -51,24 +53,35 @@ const ManageOrgModal = ({
   const [localOrg, setLocalOrg] = useState(org);
   const [name, setName] = useState("");
   const [visibility, setVisibility] = useState<"public" | "private">("public");
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [editingNameValue, setEditingNameValue] = useState("");
   const [saving, setSaving] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
   const [verificationName, setVerificationName] = useState("");
   const [copied, setCopied] = useState(false);
   const [isPlanModalOpen, setIsPlanModalOpen] = useState(false);
+  const titleInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (org && isOpen) {
       setLocalOrg(org);
       setName(org.name);
       setVisibility(org.visibility || "public");
+      setIsEditingName(false);
       setShowDeleteConfirm(false);
       setShowLeaveConfirm(false);
       setVerificationName("");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [org?.id, isOpen]);
+
+  useEffect(() => {
+    if (isEditingName && titleInputRef.current) {
+      titleInputRef.current.focus();
+      titleInputRef.current.select();
+    }
+  }, [isEditingName]);
 
   if (!org) return null;
 
@@ -102,6 +115,29 @@ const ManageOrgModal = ({
   };
 
   const inviteLink = `${window.location.origin}/#/guest?join=${org.id}`;
+
+  const handleStartEditName = () => {
+    setEditingNameValue(name);
+    setIsEditingName(true);
+  };
+
+  const handleConfirmNameEdit = () => {
+    const trimmed = editingNameValue.trim();
+    if (trimmed.length >= 1) {
+      setName(trimmed);
+    }
+    setIsEditingName(false);
+  };
+
+  const handleCancelNameEdit = () => {
+    setIsEditingName(false);
+    setEditingNameValue("");
+  };
+
+  const handleNameKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") handleConfirmNameEdit();
+    if (e.key === "Escape") handleCancelNameEdit();
+  };
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(inviteLink);
@@ -166,25 +202,57 @@ const ManageOrgModal = ({
     </div>
   );
 
+  const editableTitle = (isOwner || isAdmin) ? (
+    isEditingName ? (
+      <div className={modalStyles.titleEditRow}>
+        <input
+          ref={titleInputRef}
+          className={modalStyles.titleInput}
+          value={editingNameValue}
+          onChange={(e) => setEditingNameValue(e.target.value)}
+          onKeyDown={handleNameKeyDown}
+          maxLength={80}
+        />
+        <button
+          className={`${modalStyles.titleActionBtn} ${modalStyles.titleConfirmBtn}`}
+          onClick={handleConfirmNameEdit}
+          aria-label="Confirm"
+        >
+          <Check size={18} />
+        </button>
+        <button
+          className={`${modalStyles.titleActionBtn} ${modalStyles.titleCancelBtn}`}
+          onClick={handleCancelNameEdit}
+          aria-label="Cancel"
+        >
+          <X size={18} />
+        </button>
+      </div>
+    ) : (
+      <div className={modalStyles.titleRow}>
+        <span className={modalStyles.titleText}>{name}</span>
+        <button
+          className={modalStyles.editTitleBtn}
+          onClick={handleStartEditName}
+          aria-label="Edit name"
+        >
+          <Pencil size={15} />
+        </button>
+      </div>
+    )
+  ) : (
+    <span className={modalStyles.titleText}>{name}</span>
+  );
+
   return (
     <>
       <Modal
         isOpen={isOpen}
         onClose={onClose}
-        title={t("settings.manageOrg")}
+        title={editableTitle}
         footer={footer}
       >
         <div className={modalStyles.body}>
-          <div className={formStyles.formGroup}>
-            <InputField
-              label={t("settings.orgName")}
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder={t("settings.orgNamePlaceholder")}
-              disabled={!isOwner && !isAdmin}
-            />
-          </div>
-
           <div className={formStyles.formGroup}>
             <div className={modalStyles.visibilityRow}>
               <div className={modalStyles.visibilityInfo}>
@@ -209,22 +277,21 @@ const ManageOrgModal = ({
             <p className={modalStyles.visibilityHint}>
               {visibility === "public" ? t("onboarding.publicDesc") : t("onboarding.privateDesc")}
             </p>
-          </div>
-
-          {visibility === "private" && (isOwner || isAdmin) && (
-            <div className={modalStyles.inviteSection}>
-              <label className={modalStyles.inviteLabel}>
-                <Copy size={16} /> {t("settings.invitationLink")}
-              </label>
-              <div className={modalStyles.inviteRow}>
-                <InputField value={inviteLink} readOnly className={modalStyles.inviteInput} />
-                <Button size="small" onClick={handleCopyLink} className={modalStyles.inviteButton}>
-                  {copied ? <Check size={16} /> : t("common.copy")}
-                </Button>
+            {visibility === "private" && (isOwner || isAdmin) && (
+              <div className={modalStyles.inviteSection}>
+                <label className={modalStyles.inviteLabel}>
+                  <Copy size={16} /> {t("settings.invitationLink")}
+                </label>
+                <div className={modalStyles.inviteRow}>
+                  <InputField value={inviteLink} readOnly className={modalStyles.inviteInput} />
+                  <Button size="small" onClick={handleCopyLink} className={modalStyles.inviteButton}>
+                    {copied ? <Check size={16} /> : t("common.copy")}
+                  </Button>
+                </div>
+                <p className={modalStyles.inviteNote}>{t("settings.invitationLinkDesc")}</p>
               </div>
-              <p className={modalStyles.inviteNote}>{t("settings.invitationLinkDesc")}</p>
-            </div>
-          )}
+            )}
+          </div>
 
           <div className={modalStyles.subscriptionBox}>
             <h4 className={modalStyles.subscriptionLabel}>{t("settings.subscription")}</h4>

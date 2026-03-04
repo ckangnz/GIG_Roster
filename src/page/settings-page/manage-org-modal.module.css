@@ -1,5 +1,89 @@
 /* ManageOrgModal */
 
+/* Editable title in modal header */
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.titleText {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.editTitleBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-dim);
+  padding: 4px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  transition: color 0.15s ease;
+}
+
+.editTitleBtn:hover {
+  color: var(--color-text-primary);
+  background: var(--background-hover);
+}
+
+.titleEditRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  flex: 1;
+}
+
+.titleInput {
+  font-size: 1.1rem;
+  font-weight: 700;
+  background: var(--background-card);
+  border: 1px solid var(--color-primary);
+  border-radius: 8px;
+  padding: 4px 10px;
+  color: var(--color-text-primary);
+  outline: none;
+  min-width: 0;
+  flex: 1;
+}
+
+.titleActionBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.titleConfirmBtn {
+  color: var(--color-primary);
+}
+
+.titleConfirmBtn:hover {
+  background: var(--background-primary-subtle);
+}
+
+.titleCancelBtn {
+  color: var(--color-error);
+}
+
+.titleCancelBtn:hover {
+  background: var(--surface-error);
+}
+
 .footer {
   display: flex;
   gap: 12px;
@@ -40,11 +124,12 @@
   padding-left: 32px;
 }
 
-/* Invite link section */
+/* Invite link section — nested inside visibility block */
 .inviteSection {
-  padding: 16px;
+  margin-top: 12px;
+  padding: 12px;
   background: var(--background-primary-subtle);
-  border-radius: 12px;
+  border-radius: 10px;
   border: 1px solid var(--border-color-primary);
 }
 

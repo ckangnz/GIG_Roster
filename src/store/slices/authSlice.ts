@@ -26,6 +26,14 @@ import {
   generateIndexedAssignments,
 } from "../../model/model";
 
+/** Resolves "system" to the best matching supported language from the browser */
+const SUPPORTED_LANGUAGES = ["en-NZ", "ko"];
+export const resolveLanguage = (lang: string): string => {
+  if (lang !== "system") return lang;
+  const browserLang = navigator.language;
+  return SUPPORTED_LANGUAGES.find((l) => browserLang.startsWith(l.split("-")[0])) ?? "en-NZ";
+};
+
 export interface AuthState {
   firebaseUser: User | null;
   userData: AppUser | null;
@@ -77,7 +85,7 @@ export const initializeUserData = createAsyncThunk(
             const memData = memSnap.data() as OrgMembership;
             dispatch(setMembership(memData));
             if (memData.preferredLanguage) {
-              i18n.changeLanguage(memData.preferredLanguage);
+              i18n.changeLanguage(resolveLanguage(memData.preferredLanguage));
             }
           }
         }
@@ -150,7 +158,7 @@ export const updateUserProfile = createAsyncThunk(
         }
         if (data.preferredLanguage !== undefined) {
           membershipUpdate.preferredLanguage = data.preferredLanguage;
-          i18n.changeLanguage(data.preferredLanguage as string);
+          i18n.changeLanguage(resolveLanguage(data.preferredLanguage));
         }
       }
 
@@ -246,7 +254,7 @@ export const joinOrganisation = createAsyncThunk(
       };
 
       if (profileData.preferredLanguage) {
-        i18n.changeLanguage(profileData.preferredLanguage);
+        i18n.changeLanguage(resolveLanguage(profileData.preferredLanguage));
       }
 
       await setDoc(memRef, membership);
