@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { doc, getDoc } from "firebase/firestore";
-import { Check, UserPlus, Building2 } from "lucide-react";
+import { Check, UserPlus, Building2, Globe, Lock } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, Navigate } from "react-router-dom";
 
@@ -145,7 +145,14 @@ const OrgSelectionPage = () => {
                 disabled={!org.isApproved}
               >
                 <div className={styles.orgInfo}>
-                  <span className={styles.orgName}>{org.name}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%' }}>
+                    {org.visibility === 'private' ? (
+                      <Lock size={16} color="var(--color-text-dim)" />
+                    ) : (
+                      <Globe size={16} color="var(--color-primary)" />
+                    )}
+                    <span className={styles.orgName}>{org.name}</span>
+                  </div>
                   <div className={styles.orgMeta}>
                     <span className={styles.orgRole}>
                       {isOwner 

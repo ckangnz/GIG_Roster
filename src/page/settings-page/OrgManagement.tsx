@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { doc, getDoc, deleteDoc } from "firebase/firestore";
-import { MoreVertical, Check, UserPlus } from "lucide-react";
+import { MoreVertical, Check, UserPlus, Globe, Lock } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
@@ -206,7 +206,14 @@ const OrgManagement = ({
                   onClick={() => !isActive && org.isApproved && handleSwitch(org.id)}
                   style={{ cursor: isActive ? 'default' : 'pointer' }}
                 >
-                  <span className={styles.orgName}>{org.name}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    {org.visibility === 'private' ? (
+                      <Lock size={16} color="var(--color-text-dim)" />
+                    ) : (
+                      <Globe size={16} color="var(--color-primary)" />
+                    )}
+                    <span className={styles.orgName}>{org.name}</span>
+                  </div>
                   <div className={styles.orgMeta}>
                     <span className={styles.orgRole}>
                       {isOwner 

@@ -158,6 +158,12 @@
   background: var(--background-hover);
 }
 
+.resultItemJoined {
+  opacity: 0.7;
+  background: var(--background-app-shell);
+  border-left: 4px solid var(--color-link) !important;
+}
+
 .orgName {
   font-weight: 700;
 }

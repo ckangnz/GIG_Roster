@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 
-import { ArrowRight, Check } from "lucide-react";
+import { ArrowRight, Check, Globe, Lock } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import Button from "../../../components/common/Button";
@@ -74,16 +74,31 @@ const JoinOrgStep = ({ onJoin, selectedOrg, onSelectOrg }: JoinOrgStepProps) => 
         {searchTerm.length >= 3 && !selectedOrg && (
           <div className={wizardStyles.resultsList}>
             {searchResults.length > 0 ? (
-              searchResults.map((org) => (
-                <button 
-                  key={org.id} 
-                  className={wizardStyles.resultItem}
-                  onClick={() => onSelectOrg(org)}
-                >
-                  <span className={wizardStyles.orgName}>{org.name}</span>
-                  <span className={wizardStyles.orgMeta}>{t('onboarding.clickToJoin')}</span>
-                </button>
-              ))
+              searchResults.map((org) => {
+                const joined = Array.isArray(userData?.organisations) 
+                  ? userData.organisations.includes(org.id)
+                  : !!userData?.organisations?.[org.id];
+                
+                return (
+                  <button 
+                    key={org.id} 
+                    className={`${wizardStyles.resultItem} ${joined ? wizardStyles.resultItemJoined : ""}`}
+                    onClick={() => onSelectOrg(org)}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      {org.visibility === 'private' ? (
+                        <Lock size={14} color="var(--color-text-dim)" />
+                      ) : (
+                        <Globe size={14} color="var(--color-primary)" />
+                      )}
+                      <span className={wizardStyles.orgName}>{org.name}</span>
+                    </div>
+                    <span className={wizardStyles.orgMeta}>
+                      {joined ? t('onboarding.alreadyMember') : t('onboarding.clickToJoin')}
+                    </span>
+                  </button>
+                );
+              })
             ) : (
               <div className={wizardStyles.noResults}>{t('onboarding.noOrgs')}</div>
             )}

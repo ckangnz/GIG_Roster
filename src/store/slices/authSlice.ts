@@ -294,7 +294,8 @@ export const searchOrganisations = createAsyncThunk(
       const term = searchTerm.toLowerCase();
       snap.forEach((doc) => {
         const data = doc.data() as Organisation;
-        if (data.name.toLowerCase().includes(term)) {
+        // Only include public organisations in search results
+        if (data.visibility === "public" && data.name.toLowerCase().includes(term)) {
           results.push(data);
         }
       });
