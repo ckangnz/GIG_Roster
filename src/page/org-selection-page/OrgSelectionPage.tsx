@@ -10,7 +10,7 @@ import Button from "../../components/common/Button";
 import { auth, db } from "../../firebase";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { Organisation, OrgMembership } from "../../model/model";
-import { setActiveOrgId, clearActiveOrgId, joinOrganisation, selectUserData } from "../../store/slices/authSlice";
+import { setActiveOrgId, setMembership, clearActiveOrgId, joinOrganisation, selectUserData } from "../../store/slices/authSlice";
 import LoadingPage from "../loading-page/LoadingPage";
 
 import styles from "./org-selection-page.module.css";
@@ -97,8 +97,14 @@ const OrgSelectionPage = () => {
     : Object.keys(userData.organisations || {}).length;
   if (orgsCount === 0) return <Navigate to="/guest" replace />;
 
-  const handleSelectOrg = (orgId: string, isApproved: boolean) => {
+  const handleSelectOrg = async (orgId: string, isApproved: boolean) => {
     if (!isApproved) return;
+    // Load membership first so ProtectedRoute has isApproved before navigating
+    const memRef = doc(db, "organisations", orgId, "memberships", firebaseUser?.uid || "");
+    const memSnap = await getDoc(memRef);
+    if (memSnap.exists()) {
+      dispatch(setMembership(memSnap.data() as OrgMembership));
+    }
     dispatch(setActiveOrgId(orgId));
     navigate("/app/dashboard");
   };
