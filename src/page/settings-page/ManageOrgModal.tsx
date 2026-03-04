@@ -53,6 +53,7 @@ const ManageOrgModal = ({
   const [localOrg, setLocalOrg] = useState(org);
   const [name, setName] = useState("");
   const [visibility, setVisibility] = useState<"public" | "private">("public");
+  const [requiresApproval, setRequiresApproval] = useState(true);
   const [isEditingName, setIsEditingName] = useState(false);
   const [editingNameValue, setEditingNameValue] = useState("");
   const [saving, setSaving] = useState(false);
@@ -68,6 +69,7 @@ const ManageOrgModal = ({
       setLocalOrg(org);
       setName(org.name);
       setVisibility(org.visibility || "public");
+      setRequiresApproval(org.settings?.requireApproval ?? true);
       setIsEditingName(false);
       setShowDeleteConfirm(false);
       setShowLeaveConfirm(false);
@@ -86,7 +88,6 @@ const ManageOrgModal = ({
   if (!org) return null;
 
   const isOwner = org.ownerId === currentUserId;
-  const isAdmin = org.isAdmin;
 
   const currentOrg = localOrg ?? org;
   const plan = currentOrg.subscription?.plan || "free";
@@ -145,6 +146,8 @@ const ManageOrgModal = ({
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const originalRequiresApproval = org.settings?.requireApproval ?? true;
+
   const handleSave = async () => {
     if (!name.trim()) return;
 
@@ -153,13 +156,19 @@ const ManageOrgModal = ({
       const orgRef = doc(db, "organisations", org.id);
       const updates: Record<string, unknown> = {
         name: name.trim(),
-        visibility: visibility,
+        visibility,
+        "settings.requireApproval": requiresApproval,
       };
       if (plan !== originalPlan) {
         updates.subscription = { ...currentOrg.subscription, plan };
       }
       await updateDoc(orgRef, updates);
-      onUpdate({ ...currentOrg, name: name.trim(), visibility: visibility });
+      onUpdate({
+        ...currentOrg,
+        name: name.trim(),
+        visibility,
+        settings: { ...currentOrg.settings, requireApproval: requiresApproval },
+      });
       onClose();
     } catch (error) {
       console.error("Error updating organisation:", error);
@@ -187,13 +196,18 @@ const ManageOrgModal = ({
       <Button variant="secondary" onClick={onClose} disabled={saving}>
         {t("common.cancel")}
       </Button>
-      {!showDeleteConfirm && !showLeaveConfirm && (
+      {!showDeleteConfirm && !showLeaveConfirm && isOwner && (
         <Button
           onClick={handleSave}
           disabled={
             saving ||
             !name.trim() ||
-            (name === org.name && visibility === org.visibility && plan === originalPlan)
+            (
+              name === org.name &&
+              visibility === org.visibility &&
+              plan === originalPlan &&
+              requiresApproval === originalRequiresApproval
+            )
           }
         >
           {saving ? t("common.saving") : t("common.save")}
@@ -202,7 +216,7 @@ const ManageOrgModal = ({
     </div>
   );
 
-  const editableTitle = (isOwner || isAdmin) ? (
+  const editableTitle = isOwner ? (
     isEditingName ? (
       <div className={modalStyles.titleEditRow}>
         <input
@@ -271,13 +285,13 @@ const ManageOrgModal = ({
               <Toggle
                 isOn={visibility === "public"}
                 onToggle={(isOn) => setVisibility(isOn ? "public" : "private")}
-                disabled={!isOwner && !isAdmin}
+                disabled={!isOwner}
               />
             </div>
             <p className={modalStyles.visibilityHint}>
               {visibility === "public" ? t("onboarding.publicDesc") : t("onboarding.privateDesc")}
             </p>
-            {visibility === "private" && (isOwner || isAdmin) && (
+            {visibility === "private" && isOwner && (
               <div className={modalStyles.inviteSection}>
                 <label className={modalStyles.inviteLabel}>
                   <Copy size={16} /> {t("settings.invitationLink")}
@@ -291,6 +305,20 @@ const ManageOrgModal = ({
                 <p className={modalStyles.inviteNote}>{t("settings.invitationLinkDesc")}</p>
               </div>
             )}
+          </div>
+
+          <div className={formStyles.formGroup}>
+            <div className={modalStyles.visibilityRow}>
+              <div>
+                <label className={modalStyles.requireApprovalLabel}>{t("onboarding.requireApproval")}</label>
+                <p className={modalStyles.visibilityDesc}>{t("onboarding.requireApprovalDesc")}</p>
+              </div>
+              <Toggle
+                isOn={requiresApproval}
+                onToggle={setRequiresApproval}
+                disabled={!isOwner}
+              />
+            </div>
           </div>
 
           <div className={modalStyles.subscriptionBox}>

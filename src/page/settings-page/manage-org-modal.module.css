@@ -116,6 +116,14 @@
   margin: 0;
 }
 
+.requireApprovalLabel {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--color-text-primary);
+  margin: 0 0 4px 0;
+  display: block;
+}
+
 .visibilityHint {
   font-size: 0.75rem;
   color: var(--color-text-dim);
