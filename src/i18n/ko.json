@@ -2,6 +2,7 @@
   "common": {
     "loading": "로딩 중...",
     "save": "저장",
+    "saving": "저장 중...",
     "cancel": "취소",
     "delete": "삭제",
     "edit": "수정",

@@ -46,6 +46,7 @@ const ManageOrgModal = ({
   currentUserId,
 }: ManageOrgModalProps) => {
   const { t } = useTranslation();
+  const [localOrg, setLocalOrg] = useState(org);
   const [name, setName] = useState("");
   const [visibility, setVisibility] = useState<"public" | "private">("public");
   const [saving, setSaving] = useState(false);
@@ -56,22 +57,26 @@ const ManageOrgModal = ({
   const [isPlanModalOpen, setIsPlanModalOpen] = useState(false);
 
   useEffect(() => {
-    if (org) {
+    if (org && isOpen) {
+      setLocalOrg(org);
       setName(org.name);
       setVisibility(org.visibility || "public");
       setShowDeleteConfirm(false);
-      if (showLeaveConfirm) setShowLeaveConfirm(false);
+      setShowLeaveConfirm(false);
       setVerificationName("");
     }
-  }, [org, isOpen, showLeaveConfirm]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [org?.id, isOpen]);
 
   if (!org) return null;
 
   const isOwner = org.ownerId === currentUserId;
   const isAdmin = org.isAdmin;
 
-  const plan = org.subscription?.plan || "free";
-  const expiresAt = org.subscription?.expiresAt;
+  const currentOrg = localOrg ?? org;
+  const plan = currentOrg.subscription?.plan || "free";
+  const expiresAt = currentOrg.subscription?.expiresAt;
+  const originalPlan = org.subscription?.plan || "free";
 
   const createdAt = org.createdAt ? new Date(org.createdAt) : new Date();
   const defaultEndDate = new Date(createdAt);
@@ -104,17 +109,19 @@ const ManageOrgModal = ({
 
   const handleSave = async () => {
     if (!name.trim()) return;
-    const isChanged = name !== org.name || visibility !== org.visibility;
-    if (!isChanged) return;
 
     setSaving(true);
     try {
       const orgRef = doc(db, "organisations", org.id);
-      await updateDoc(orgRef, {
+      const updates: Record<string, unknown> = {
         name: name.trim(),
         visibility: visibility,
-      });
-      onUpdate({ ...org, name: name.trim(), visibility: visibility });
+      };
+      if (plan !== originalPlan) {
+        updates.subscription = { ...currentOrg.subscription, plan };
+      }
+      await updateDoc(orgRef, updates);
+      onUpdate({ ...currentOrg, name: name.trim(), visibility: visibility });
       onClose();
     } catch (error) {
       console.error("Error updating organisation:", error);
@@ -155,7 +162,7 @@ const ManageOrgModal = ({
           disabled={
             saving ||
             !name.trim() ||
-            (name === org.name && visibility === org.visibility)
+            (name === org.name && visibility === org.visibility && plan === originalPlan)
           }
         >
           {saving ? t("common.saving") : t("common.save")}
@@ -505,8 +512,11 @@ const ManageOrgModal = ({
       <PlanManagementModal
         isOpen={isPlanModalOpen}
         onClose={() => setIsPlanModalOpen(false)}
-        org={org}
-        onUpdate={onUpdate}
+        org={localOrg ?? org}
+        onUpdate={(updatedOrg) => {
+          setLocalOrg(updatedOrg as Organisation & { isAdmin: boolean; isApproved: boolean });
+          onUpdate(updatedOrg);
+        }}
       />
     </>
   );

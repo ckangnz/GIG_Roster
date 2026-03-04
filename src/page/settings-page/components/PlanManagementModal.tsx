@@ -1,12 +1,8 @@
-import { useState } from "react";
-
-import { doc, updateDoc } from "firebase/firestore";
 import { Check } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import Button from "../../../components/common/Button";
 import Modal from "../../../components/common/Modal";
-import { db } from "../../../firebase";
 import { Organisation } from "../../../model/model";
 import selectionStyles from "../../org-selection-page/org-selection-page.module.css";
 
@@ -24,7 +20,6 @@ const PlanManagementModal = ({
   onUpdate,
 }: PlanManagementModalProps) => {
   const { t } = useTranslation();
-  const [saving, setSaving] = useState(false);
   const currentPlan = org.subscription?.plan || "free";
 
   const tiers = [
@@ -33,39 +28,29 @@ const PlanManagementModal = ({
       name: t("onboarding.tierSprout"),
       price: "$0",
       desc: t("onboarding.tierSproutDesc"),
+      disabled: false,
     },
     {
       id: "pro" as const,
       name: t("onboarding.tierBloom"),
       price: "$19/mo",
       desc: t("onboarding.tierBloomDesc"),
+      disabled: false,
     },
     {
       id: "enterprise" as const,
       name: t("onboarding.tierGrove"),
       price: "$49/mo",
       desc: t("onboarding.tierGroveDesc"),
+      disabled: true,
     },
   ];
 
-  const handlePlanSelect = async (planId: "free" | "pro" | "enterprise") => {
-    if (planId === currentPlan) return;
-
-    setSaving(true);
-    try {
-      const orgRef = doc(db, "organisations", org.id);
-      const newSubscription = {
-        ...org.subscription,
-        plan: planId,
-      };
-      await updateDoc(orgRef, { subscription: newSubscription });
-      onUpdate({ ...org, subscription: newSubscription });
-      onClose();
-    } catch (error) {
-      console.error("Error updating plan:", error);
-    } finally {
-      setSaving(false);
+  const handlePlanSelect = (planId: "free" | "pro" | "enterprise") => {
+    if (planId !== currentPlan) {
+      onUpdate({ ...org, subscription: { ...org.subscription, plan: planId } });
     }
+    onClose();
   };
 
   return (
@@ -85,7 +70,7 @@ const PlanManagementModal = ({
               key={tier.id}
               className={`${selectionStyles.tierSelectCard} ${isCurrent ? selectionStyles.activeTier : ""}`}
               onClick={() => handlePlanSelect(tier.id)}
-              disabled={saving || isCurrent}
+              disabled={tier.disabled}
             >
               <div style={{ flex: 1, textAlign: "left" }}>
                 <div
@@ -124,7 +109,7 @@ const PlanManagementModal = ({
       </div>
 
       <div style={{ marginTop: "24px", textAlign: "center" }}>
-        <Button variant="secondary" onClick={onClose} disabled={saving}>
+        <Button variant="secondary" onClick={onClose}>
           {t("common.cancel")}
         </Button>
       </div>
