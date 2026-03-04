@@ -21,7 +21,7 @@ interface UIState {
   isMobileSidebarOpen: boolean;
   isDesktopSidebarExpanded: boolean;
   expandedTeams: string[];
-  hiddenUsers: Record<string, Record<string, string[]>>; // team -> position -> userEmails[]
+  hiddenUsers: Record<string, Record<string, string[]>>; // teamId -> positionId -> userEmails[]
   lastVisitedPaths: Record<string, string>; // tabId -> fullPathWithSearch
   rosterAllViewMode: 'user' | 'position';
   alertConfig: AlertConfig | null;
@@ -84,13 +84,13 @@ const uiSlice = createSlice({
     },
     toggleUserVisibility: (
       state,
-      action: PayloadAction<{ teamName: string; positionName: string; userEmail: string }>,
+      action: PayloadAction<{ teamId: string; positionId: string; userEmail: string }>,
     ) => {
-      const { teamName, positionName, userEmail } = action.payload;
-      if (!state.hiddenUsers[teamName]) state.hiddenUsers[teamName] = {};
-      if (!state.hiddenUsers[teamName][positionName]) state.hiddenUsers[teamName][positionName] = [];
+      const { teamId, positionId, userEmail } = action.payload;
+      if (!state.hiddenUsers[teamId]) state.hiddenUsers[teamId] = {};
+      if (!state.hiddenUsers[teamId][positionId]) state.hiddenUsers[teamId][positionId] = [];
 
-      const list = state.hiddenUsers[teamName][positionName];
+      const list = state.hiddenUsers[teamId][positionId];
       const index = list.indexOf(userEmail);
       if (index >= 0) {
         list.splice(index, 1);

@@ -115,8 +115,8 @@ export const useRosterUI = (
       if (!teamId || !activePositionId) return;
       dispatch(
         toggleUserVisibility({
-          teamName: teamId,
-          positionName: activePositionId,
+          teamId,
+          positionId: activePositionId,
           userEmail,
         }),
       );

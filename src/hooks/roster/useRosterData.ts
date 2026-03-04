@@ -29,11 +29,11 @@ export const useRosterData = () => {
   const allTeams = useMemo(() => teamsState?.teams || [], [teamsState?.teams]);
 
   const teamId = useMemo(() => 
-    allTeams.find(t => t.name === teamName)?.id || teamName, 
+    allTeams.find(t => t.id === teamName || t.name === teamName)?.id || teamName, 
   [allTeams, teamName]);
 
   const activePositionId = useMemo(() => 
-    allPositions.find(p => p.name === activePosition)?.id || activePosition, 
+    allPositions.find(p => p.id === activePosition || p.name === activePosition)?.id || activePosition, 
   [allPositions, activePosition]);
 
   // Use globally synced users from userManagement slice for reliability
