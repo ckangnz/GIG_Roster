@@ -2,6 +2,7 @@
   width: 100%;
   max-width: 600px;
   margin: 0 auto;
+  padding: 40px 0;
 }
 
 .standaloneHeader {
@@ -15,11 +16,17 @@
   margin: 0;
 }
 
+.orgManagementContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
 .orgList {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  margin-top: 16px;
+  margin-top: 0;
 }
 
 .orgItem {
