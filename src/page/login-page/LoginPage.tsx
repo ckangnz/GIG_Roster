@@ -1,5 +1,7 @@
+import { useEffect } from 'react';
+
 import { signInWithPopup } from 'firebase/auth';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useSearchParams } from 'react-router-dom';
 
 import { auth, googleProvider } from '../../firebase';
 import { useAppSelector } from '../../hooks/redux';
@@ -8,7 +10,16 @@ import styles from './login-page.module.css';
 
 const LoginPage = () => {
   const { firebaseUser, loading } = useAppSelector((state) => state.auth);
+  const [searchParams] = useSearchParams();
   const loginGoogle = () => signInWithPopup(auth, googleProvider);
+
+  // Persist invite param so it survives the login redirect
+  useEffect(() => {
+    const joinOrgId = searchParams.get('join');
+    if (joinOrgId) {
+      sessionStorage.setItem('pendingInviteOrgId', joinOrgId);
+    }
+  }, [searchParams]);
 
   if (loading) {
     return null;

@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 
 import { ArrowLeft } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { Navigate } from "react-router-dom";
+import { Navigate, useSearchParams } from "react-router-dom";
 
 import { auth } from "../../firebase";
 import CreateOrgStep from "./components/CreateOrgStep";
@@ -25,8 +25,13 @@ const GuestPage = () => {
     (state) => state.auth,
   );
   const userData = useAppSelector(selectUserData);
+  const [searchParams] = useSearchParams();
 
-  const [step, setStep] = useState(1);
+  const inviteOrgId = searchParams.get("join") || sessionStorage.getItem("pendingInviteOrgId");
+
+  // If invited and user already has a profile, skip to step 2 (auto-join)
+  const hasProfile = !!(userData?.name);
+  const [step, setStep] = useState(inviteOrgId && hasProfile ? 2 : 1);
   const [profile, setProfile] = useState({
     name: userData?.name || "",
     gender: userData?.gender || "",
@@ -37,6 +42,36 @@ const GuestPage = () => {
   const [isCreating, setIsCreating] = useState(false);
   const [isCreatingAction, setIsCreatingAction] = useState(false);
   const [selectedOrg, setSelectedOrg] = useState<Organisation | null>(null);
+  const autoJoinAttempted = useRef(false);
+
+  // Auto-join via invite link after profile step
+  useEffect(() => {
+    if (!inviteOrgId || !firebaseUser || !userData || autoJoinAttempted.current) return;
+    if (step < 2) return; // Wait until profile is done
+
+    autoJoinAttempted.current = true;
+    const doAutoJoin = async () => {
+      try {
+        const result = await dispatch(joinOrganisation({
+          uid: firebaseUser.uid,
+          orgId: inviteOrgId,
+          profileData: profile,
+        })).unwrap();
+        sessionStorage.removeItem("pendingInviteOrgId");
+        dispatch(setActiveOrgId(inviteOrgId));
+        // If auto-approved, membership.isApproved is true → ProtectedRoute will handle navigation
+        // If pending, setActiveOrgId will trigger guest page to show pending state
+        if (result.membership.isApproved) {
+          // Navigate to dashboard — but we need to wait for state to settle
+          // The ProtectedRoute will redirect correctly once membership is set
+        }
+      } catch (e) {
+        console.error("Auto-join failed:", e);
+        autoJoinAttempted.current = false;
+      }
+    };
+    doAutoJoin();
+  }, [step, inviteOrgId, firebaseUser, userData]);
 
   if (loading) return <LoadingPage />;
   if (!firebaseUser) return <Navigate to="/login" replace />;
@@ -47,19 +82,24 @@ const GuestPage = () => {
   const hasOrgs = Array.isArray(orgIds) ? orgIds.length > 0 : Object.keys(orgIds || {}).length > 0;
 
   // If they have orgs but none is active, they should be in selection, not here
-  if (hasOrgs && !activeOrgId) {
+  // Unless we have an invite pending — let the invite flow handle it
+  if (hasOrgs && !activeOrgId && !inviteOrgId) {
     return <Navigate to="/select-org" replace />;
   }
 
   const handleJoin = async (org: Organisation) => {
     if (!firebaseUser) return;
     try {
-      await dispatch(joinOrganisation({
+      const result = await dispatch(joinOrganisation({
         uid: firebaseUser.uid,
         orgId: org.id,
         profileData: profile
       })).unwrap();
+      sessionStorage.removeItem("pendingInviteOrgId");
       dispatch(setActiveOrgId(org.id));
+      if (result.membership.isApproved) {
+        // ProtectedRoute/MainLoader will handle the redirect to dashboard
+      }
     } catch (e) {
       console.error("Failed to join org:", e);
     }
@@ -145,11 +185,15 @@ const GuestPage = () => {
           />
         )}
 
-        {step === 2 && !isJoining && !isCreating && (
+        {step === 2 && !isJoining && !isCreating && !inviteOrgId && (
           <PathSelectionStep 
             onJoinClick={() => setIsJoining(true)} 
             onCreateClick={() => setIsCreating(true)}
           />
+        )}
+
+        {step === 2 && inviteOrgId && (
+          <LoadingPage />
         )}
 
         {step === 2 && isJoining && (

@@ -194,7 +194,25 @@ export const joinOrganisation = createAsyncThunk(
     { rejectWithValue },
   ) => {
     try {
-      // 1. Update user document to include org index
+      // 1. Fetch org to check requiresApproval
+      const orgRef = doc(db, "organisations", orgId);
+      const orgSnap = await getDoc(orgRef);
+      if (!orgSnap.exists()) {
+        return rejectWithValue("Organisation not found");
+      }
+      const orgData = orgSnap.data() as Organisation;
+      const requiresApproval = orgData.settings?.requireApproval ?? true;
+      const isApproved = !requiresApproval;
+
+      // 2. Check if already a member
+      const memRef = doc(db, "organisations", orgId, "memberships", uid);
+      const existingMem = await getDoc(memRef);
+      if (existingMem.exists()) {
+        // Already a member — return existing membership
+        return { orgId, profileData, membership: existingMem.data() as OrgMembership, alreadyMember: true };
+      }
+
+      // 3. Update user document to include org index
       const userRef = doc(db, "users", uid);
       const userSnap = await getDoc(userRef);
       const currentOrgs = userSnap.exists()
@@ -207,22 +225,20 @@ export const joinOrganisation = createAsyncThunk(
           userUpdate.organisations = [...currentOrgs, orgId];
         }
       } else {
-        // Map structure (transition)
         userUpdate[`organisations.${orgId}`] = {
           isActive: true,
           isAdmin: false,
-          isApproved: false,
+          isApproved,
         };
       }
 
       await updateDoc(userRef, userUpdate);
 
-      // 2. Create membership document
-      const memRef = doc(db, "organisations", orgId, "memberships", uid);
+      // 4. Create membership document
       const membership: OrgMembership = {
         isActive: true,
         isAdmin: false,
-        isApproved: false,
+        isApproved,
         teams: [],
         teamPositions: {},
         indexedAssignments: [],
@@ -234,7 +250,7 @@ export const joinOrganisation = createAsyncThunk(
       }
 
       await setDoc(memRef, membership);
-      return { orgId, profileData, membership };
+      return { orgId, profileData, membership, alreadyMember: false };
     } catch (error) {
       return rejectWithValue(
         error instanceof Error ? error.message : "Join failed",
@@ -475,22 +491,26 @@ const authSlice = createSlice({
         }
       })
       .addCase(joinOrganisation.fulfilled, (state, action) => {
-        if (state.userData) {
+        if (state.userData && !action.payload.alreadyMember) {
+          const { orgId, membership } = action.payload;
           const orgs = state.userData.organisations;
           if (Array.isArray(orgs)) {
-            state.userData.organisations = [...orgs, action.payload.orgId];
+            if (!orgs.includes(orgId)) {
+              state.userData.organisations = [...orgs, orgId];
+            }
           } else {
-            // Map structure (transition)
             state.userData.organisations = {
               ...orgs,
-              [action.payload.orgId]: {
+              [orgId]: {
                 isActive: true,
                 isAdmin: false,
-                isApproved: false,
+                isApproved: membership.isApproved,
               },
             };
           }
         }
+        // Always update membership in state
+        state.membership = action.payload.membership;
       })
       .addCase(leaveOrganisation.fulfilled, (state, action) => {
         if (state.userData) {

@@ -101,7 +101,7 @@ const ManageOrgModal = ({
     }
   };
 
-  const inviteLink = `${window.location.origin}/guest?join=${org.id}`;
+  const inviteLink = `${window.location.origin}/#/guest?join=${org.id}`;
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(inviteLink);
