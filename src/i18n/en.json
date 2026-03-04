@@ -274,6 +274,7 @@
     "freeTierUntil": "Free tier ends on {{date}}",
     "subscriptionEnds": "Subscription ends on {{date}}",
     "noOrganisations": "You don't belong to any organisations yet.",
+    "pendingApproval": "Pending Approval",
     "joinNewOrg": "Join New Organisation",
     "noTeamsInOrg": "No teams available in this organisation yet.",
     "team_management": "Teams",

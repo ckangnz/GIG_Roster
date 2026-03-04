@@ -205,50 +205,70 @@ export const joinOrganisation = createAsyncThunk(
         return rejectWithValue("Organisation not found");
       }
       const orgData = orgSnap.data() as Organisation;
+      const isOwner = orgData.ownerId === uid;
       const requiresApproval = orgData.settings?.requireApproval ?? true;
-      const isApproved = !requiresApproval;
+      const isApproved = isOwner || !requiresApproval;
+      const isAdmin = isOwner;
 
-      // 2. Check if already a member
-      const memRef = doc(db, "organisations", orgId, "memberships", uid);
-      const existingMem = await getDoc(memRef);
-      if (existingMem.exists()) {
-        // Already a member — return existing membership
-        return { orgId, profileData, membership: existingMem.data() as OrgMembership, alreadyMember: true };
-      }
-
-      // 3. Update user document to include org index
+      // 2. Check user's current organisations
       const userRef = doc(db, "users", uid);
       const userSnap = await getDoc(userRef);
-      const currentOrgs = userSnap.exists()
-        ? userSnap.data().organisations || []
-        : [];
+      if (!userSnap.exists()) return rejectWithValue("User not found");
 
-      // Migrate legacy map format to array
+      const userData = userSnap.data() as AppUser;
+      const currentOrgs = userData.organisations || [];
       const currentOrgIds: string[] = Array.isArray(currentOrgs)
         ? currentOrgs
         : Object.keys(currentOrgs);
 
-      const userUpdate: Record<string, unknown> = { ...profileData };
-      if (!currentOrgIds.includes(orgId)) {
-        userUpdate.organisations = [...currentOrgIds, orgId];
-      } else {
-        userUpdate.organisations = currentOrgIds;
+      const isOrgInUserDoc = currentOrgIds.includes(orgId);
+
+      // 3. Check membership document
+      const memRef = doc(db, "organisations", orgId, "memberships", uid);
+      const memSnap = await getDoc(memRef);
+      const isMembershipDocExists = memSnap.exists();
+
+      // Case: Truly already a member
+      if (isOrgInUserDoc && isMembershipDocExists) {
+        return {
+          orgId,
+          profileData,
+          membership: memSnap.data() as OrgMembership,
+          alreadyMember: true,
+        };
       }
 
-      await updateDoc(userRef, userUpdate);
+      // Recovery / Join: Update user doc if org index is missing
+      if (!isOrgInUserDoc) {
+        const userUpdate: Record<string, unknown> = {
+          ...profileData,
+          organisations: [...currentOrgIds, orgId],
+        };
+        await updateDoc(userRef, userUpdate);
+      }
 
-      // 4. Create membership document
-      const membership: OrgMembership = {
-        isActive: true,
-        isAdmin: false,
-        isApproved,
-        teams: [],
-        teamPositions: {},
-        indexedAssignments: [],
-        preferredLanguage: profileData.preferredLanguage || "en-NZ",
-      };
+      // Prepare / update membership doc
+      let membership: OrgMembership;
+      if (isMembershipDocExists) {
+        membership = memSnap.data() as OrgMembership;
+        // Override stale data with fresh join logic
+        membership.isActive = true;
+        membership.isApproved = isApproved;
+        membership.isAdmin = isAdmin;
+      } else {
+        membership = {
+          isActive: true,
+          isAdmin,
+          isApproved,
+          teams: [],
+          teamPositions: {},
+          indexedAssignments: [],
+          preferredLanguage: profileData.preferredLanguage || "en-NZ",
+        };
+      }
 
       if (profileData.preferredLanguage) {
+        membership.preferredLanguage = profileData.preferredLanguage;
         i18n.changeLanguage(resolveLanguage(profileData.preferredLanguage));
       }
 
@@ -505,8 +525,11 @@ const authSlice = createSlice({
             state.userData.organisations = orgIds;
           }
         }
-        // Always update membership in state
-        state.membership = action.payload.membership;
+        // Only update membership if the joined org is the active one
+        // (don't overwrite active org's membership when joining a second org)
+        if (action.payload.orgId === state.activeOrgId) {
+          state.membership = action.payload.membership;
+        }
       })
       .addCase(leaveOrganisation.fulfilled, (state, action) => {
         if (state.userData) {
@@ -558,11 +581,17 @@ export const selectUserData = createSelector(
   (userData, activeOrgId, membership): AppUserWithMembership | null => {
     if (!userData) return null;
 
+    // Normalise legacy map format to string array
+    const rawOrgs = userData.organisations;
+    const organisationIds: string[] = Array.isArray(rawOrgs)
+      ? rawOrgs
+      : Object.keys(rawOrgs || {});
+
     return {
       ...userData,
       activeOrgId,
       orgId: activeOrgId,
-      organisations: userData.organisations,
+      organisations: organisationIds,
       isAdmin: membership?.isAdmin ?? false,
       isApproved: membership?.isApproved ?? false,
       isActive: membership?.isActive ?? true,

@@ -1,11 +1,19 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 
-import { doc, getDoc, deleteDoc } from "firebase/firestore";
-import { MoreVertical, Check, UserPlus, Globe, Lock } from "lucide-react";
+import {
+  doc,
+  getDoc,
+  deleteDoc,
+  onSnapshot,
+  updateDoc,
+} from "firebase/firestore";
+import { Reorder } from "framer-motion";
+import { UserPlus } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
 import ManageOrgModal from "./ManageOrgModal";
+import OrgItem from "./OrgItem";
 import Button from "../../components/common/Button";
 import Modal from "../../components/common/Modal";
 import Spinner from "../../components/common/Spinner";
@@ -14,6 +22,7 @@ import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { Organisation, OrgMembership } from "../../model/model";
 import {
   setActiveOrgId,
+  setMembership,
   selectUserData,
   leaveOrganisation,
   clearActiveOrgId,
@@ -23,7 +32,7 @@ import JoinOrCreateOrgModal from "../org-selection-page/JoinOrCreateOrgModal";
 
 import styles from "./org-management.module.css";
 
-interface OrgWithMembership extends Organisation {
+export interface OrgWithMembership extends Organisation {
   isApproved: boolean;
   isAdmin: boolean;
 }
@@ -53,21 +62,24 @@ const OrgManagement = ({
   const [isManageModalOpen, setIsManageOrgModalOpen] = useState(false);
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
 
+  const orgIdsKey =
+    (userData?.organisations as string[] | undefined)?.join(",") ?? "";
+
   useEffect(() => {
     const fetchOrgs = async () => {
-      if (!userData?.organisations) {
+      if (!orgIdsKey || !firebaseUser?.uid) {
+        setLoading(false);
+        return;
+      }
+
+      const orgIds = orgIdsKey.split(",").filter(Boolean);
+
+      if (orgIds.length === 0) {
         setLoading(false);
         return;
       }
 
       try {
-        const orgIds = userData.organisations as string[];
-
-        if (orgIds.length === 0) {
-          setLoading(false);
-          return;
-        }
-
         const fetchedOrgs = await Promise.all(
           orgIds.map(async (orgId) => {
             const [orgDoc, memDoc] = await Promise.all([
@@ -78,7 +90,7 @@ const OrgManagement = ({
                   "organisations",
                   orgId,
                   "memberships",
-                  firebaseUser?.uid || "",
+                  firebaseUser.uid,
                 ),
               ),
             ]);
@@ -96,9 +108,10 @@ const OrgManagement = ({
           }),
         );
 
-        const sortedOrgs = fetchedOrgs
-          .filter((o): o is OrgWithMembership => o !== null)
-          .sort((a, b) => a.name.localeCompare(b.name));
+        // Preserve array order from userData.organisations
+        const sortedOrgs = fetchedOrgs.filter(
+          (o): o is OrgWithMembership => o !== null,
+        );
 
         setOrgs(sortedOrgs);
       } catch (error) {
@@ -108,20 +121,54 @@ const OrgManagement = ({
       }
     };
 
-    if ((isOpen || standalone) && userData && firebaseUser?.uid) {
+    if (isOpen || standalone) {
       fetchOrgs();
     }
-  }, [isOpen, standalone, userData, firebaseUser?.uid]);
+  }, [isOpen, standalone, orgIdsKey, firebaseUser?.uid]);
 
-  const handleSwitch = (orgId: string) => {
+  // Subscribe to membership docs in real-time so approval status stays live
+  useEffect(() => {
+    if (!firebaseUser?.uid || !orgIdsKey) return;
+    const orgIds = orgIdsKey.split(",").filter(Boolean);
+    if (orgIds.length === 0) return;
+
+    const unsubs = orgIds.map((orgId) =>
+      onSnapshot(
+        doc(db, "organisations", orgId, "memberships", firebaseUser.uid),
+        (snap) => {
+          if (!snap.exists()) return;
+          const memData = snap.data() as OrgMembership;
+          setOrgs((prev) =>
+            prev.map((o) =>
+              o.id === orgId
+                ? {
+                    ...o,
+                    isApproved: memData.isApproved,
+                    isAdmin: memData.isAdmin,
+                  }
+                : o,
+            ),
+          );
+        },
+        (err) => console.error("Membership listener error:", err.message),
+      ),
+    );
+
+    return () => unsubs.forEach((u) => u());
+  }, [firebaseUser?.uid, orgIdsKey]);
+
+  const handleSwitch = async (orgId: string) => {
     if (activeOrgId === orgId) return;
 
-    // Note: root map only has permissions, language is in sub-collection.
-    // useAppListeners will fetch the membership doc and change language.
-
+    // Load membership first so isApproved is correct before MainLoader evaluates
+    const memSnap = await getDoc(
+      doc(db, "organisations", orgId, "memberships", firebaseUser?.uid || ""),
+    );
+    if (memSnap.exists()) {
+      dispatch(setMembership(memSnap.data() as OrgMembership));
+    }
     dispatch(setActiveOrgId(orgId));
     if (!standalone) onClose();
-    // Removed redirect - stay on current page
   };
 
   const handleJoinOrg = async (org: Organisation) => {
@@ -138,8 +185,13 @@ const OrgManagement = ({
           },
         }),
       ).unwrap();
-      dispatch(clearActiveOrgId());
-      navigate("/guest");
+
+      // If user already has an active approved org, stay on settings page.
+      // userData.organisations update will trigger the fetch effect to re-run.
+      if (!activeOrgId) {
+        navigate("/select-org");
+      }
+      setIsJoinModalOpen(false);
     } catch (e) {
       console.error("Failed to join org:", e);
     }
@@ -202,6 +254,21 @@ const OrgManagement = ({
     );
   };
 
+  const handleReorder = useCallback(
+    async (newOrgs: OrgWithMembership[]) => {
+      setOrgs(newOrgs);
+      if (!firebaseUser?.uid) return;
+      try {
+        await updateDoc(doc(db, "users", firebaseUser.uid), {
+          organisations: newOrgs.map((o) => o.id),
+        });
+      } catch (e) {
+        console.error("Failed to save org order:", e);
+      }
+    },
+    [firebaseUser?.uid],
+  );
+
   const renderContent = () => (
     <div className={styles.orgManagementContent}>
       <div className={styles.orgList}>
@@ -212,75 +279,30 @@ const OrgManagement = ({
         ) : orgs.length === 0 ? (
           <p>{t("settings.noOrganisations")}</p>
         ) : (
-          orgs.map((org) => {
-            const isOwner = org.ownerId === firebaseUser?.uid;
-            const isActive = activeOrgId === org.id;
+          <Reorder.Group
+            axis="y"
+            values={orgs}
+            onReorder={handleReorder}
+            layout
+            className={styles.reorderGroup}
+          >
+            {orgs.map((org) => {
+              const isOwner = org.ownerId === firebaseUser?.uid;
+              const isActive = activeOrgId === org.id;
 
-            return (
-              <div
-                key={org.id}
-                className={`${styles.orgItem} ${isActive ? styles.activeOrg : ""}`}
-              >
-                <div
-                  className={`${styles.orgInfo} ${isActive ? styles.orgInfoStatic : styles.orgInfoClickable}`}
-                  onClick={() =>
-                    !isActive && org.isApproved && handleSwitch(org.id)
-                  }
-                >
-                  <div className={styles.orgItemRow}>
-                    {org.visibility === "private" ? (
-                      <Lock size={16} color="var(--color-text-dim)" />
-                    ) : (
-                      <Globe size={16} color="var(--color-primary)" />
-                    )}
-                    <span className={styles.orgName}>{org.name}</span>
-                  </div>
-                  <div className={styles.orgMeta}>
-                    <span className={styles.orgRole}>
-                      {isOwner
-                        ? t("common.roles.owner")
-                        : org.isAdmin
-                          ? t("common.roles.admin")
-                          : t("common.roles.member")}
-                    </span>
-                    {!isOwner && (
-                      <span
-                        className={`${styles.statusBadge} ${org.isApproved ? styles.statusApproved : styles.statusPending}`}
-                      >
-                        {org.isApproved
-                          ? t("common.status.approved")
-                          : t("common.status.pending")}
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                <div className={styles.actions}>
-                  {isActive ? (
-                    <div className={styles.activeLabel}>
-                      <Check size={16} />
-                      {t("common.status.active")}
-                    </div>
-                  ) : org.isApproved ? (
-                    <Button
-                      variant="secondary"
-                      size="small"
-                      onClick={() => handleSwitch(org.id)}
-                    >
-                      {t("common.switch")}
-                    </Button>
-                  ) : null}
-
-                  <button
-                    className={styles.moreBtn}
-                    onClick={(e) => handleMoreClick(e, org)}
-                  >
-                    <MoreVertical size={18} />
-                  </button>
-                </div>
-              </div>
-            );
-          })
+              return (
+                <OrgItem
+                  key={org.id}
+                  org={org}
+                  isOwner={isOwner}
+                  isActive={isActive}
+                  onSwitch={handleSwitch}
+                  onMoreClick={handleMoreClick}
+                  t={t}
+                />
+              );
+            })}
+          </Reorder.Group>
         )}
       </div>
 

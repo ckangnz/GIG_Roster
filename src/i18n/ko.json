@@ -275,6 +275,7 @@
     "freeTierUntil": "무료 플랜 종료일: {{date}}",
     "subscriptionEnds": "구독 종료일: {{date}}",
     "noOrganisations": "가입된 단체가 없습니다.",
+    "pendingApproval": "승인 대기 중",
     "joinNewOrg": "새 단체 가입하기",
     "noTeamsInOrg": "이 단체에 등록된 팀이 아직 없습니다.",
     "team_management": "팀",

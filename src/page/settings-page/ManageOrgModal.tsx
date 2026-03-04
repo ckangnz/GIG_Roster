@@ -216,9 +216,16 @@ const ManageOrgModal = ({
     </div>
   );
 
+  const headerIcon = visibility === "public" ? (
+    <Globe size={22} className={modalStyles.headerIcon} />
+  ) : (
+    <Lock size={22} className={modalStyles.headerIcon} />
+  );
+
   const editableTitle = isOwner ? (
     isEditingName ? (
       <div className={modalStyles.titleEditRow}>
+        {headerIcon}
         <input
           ref={titleInputRef}
           className={modalStyles.titleInput}
@@ -244,6 +251,7 @@ const ManageOrgModal = ({
       </div>
     ) : (
       <div className={modalStyles.titleRow}>
+        {headerIcon}
         <span className={modalStyles.titleText}>{name}</span>
         <button
           className={modalStyles.editTitleBtn}
@@ -255,7 +263,10 @@ const ManageOrgModal = ({
       </div>
     )
   ) : (
-    <span className={modalStyles.titleText}>{name}</span>
+    <div className={modalStyles.titleRow}>
+      {headerIcon}
+      <span className={modalStyles.titleText}>{name}</span>
+    </div>
   );
 
   return (
@@ -270,11 +281,6 @@ const ManageOrgModal = ({
           <div className={formStyles.formGroup}>
             <div className={modalStyles.visibilityRow}>
               <div className={modalStyles.visibilityInfo}>
-                {visibility === "public" ? (
-                  <Globe size={20} color="var(--color-primary)" />
-                ) : (
-                  <Lock size={20} color="var(--color-text-dim)" />
-                )}
                 <div>
                   <label className={modalStyles.visibilityDesc}>{t("onboarding.orgType")}</label>
                   <p className={modalStyles.visibilityDesc}>

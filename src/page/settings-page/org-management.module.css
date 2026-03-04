@@ -25,113 +25,16 @@
 .orgList {
   display: flex;
   flex-direction: column;
-  gap: 12px;
   margin-top: 0;
 }
 
-.orgItem {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px;
-  background: var(--background-card);
-  border: 1px solid var(--border-color-secondary);
-  border-radius: 12px;
-  transition: all 0.2s ease;
-}
-
-.activeOrg {
-  border-color: var(--color-primary);
-  background: var(--background-primary-subtle);
-  box-shadow: 0 0 0 1px var(--color-primary);
-}
-
-.orgInfo {
-  flex: 1;
-  min-width: 0;
+.reorderGroup {
+  list-style: none;
+  padding: 0;
+  margin: 0;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  text-align: left;
-}
-
-.orgName {
-  display: block;
-  font-weight: 700;
-  font-size: 1.1rem;
-  color: var(--color-text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  width: 100%;
-}
-
-.orgMeta {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 4px;
-}
-
-.orgRole {
-  font-size: 0.75rem;
-  color: var(--color-text-dim);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-weight: 700;
-}
-
-.statusBadge {
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 0.7rem;
-  font-weight: 800;
-  text-transform: uppercase;
-}
-
-.statusApproved {
-  background: rgba(52, 199, 89, 0.1);
-  color: #34c759;
-}
-
-.statusPending {
-  background: rgba(255, 149, 0, 0.1);
-  color: #ff9500;
-}
-
-.actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-left: 16px;
-}
-
-.moreBtn {
-  background: none;
-  border: none;
-  color: var(--color-text-dim);
-  cursor: pointer;
-  padding: 8px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.2s;
-}
-
-.moreBtn:hover {
-  background: var(--background-hover);
-  color: var(--color-text-primary);
-}
-
-.activeLabel {
-  font-size: 0.75rem;
-  font-weight: 800;
-  color: var(--color-primary);
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 6px 12px;
+  gap: 12px;
 }
 
 .addOrgActions {
@@ -146,20 +49,6 @@
 
 .addBtnIcon {
   margin-right: 8px;
-}
-
-.orgItemRow {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.orgInfoStatic {
-  cursor: default;
-}
-
-.orgInfoClickable {
-  cursor: pointer;
 }
 
 /* Modal specific styles */
