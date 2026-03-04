@@ -67,7 +67,6 @@ const GuestPage = () => {
       }
     };
     doAutoJoin();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step, inviteOrgId, firebaseUser, userData, dispatch]);
 
   if (loading) return <LoadingPage />;
