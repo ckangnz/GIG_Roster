@@ -1,5 +1,7 @@
 import { useMemo, useCallback } from "react";
 
+import { useTranslation } from "react-i18next";
+
 import { AllRosterHeader } from "./AllRosterHeader";
 import { AllRosterRow } from "./AllRosterRow";
 import { useAppDispatch, useAppSelector } from "../../../hooks/redux";
@@ -8,6 +10,8 @@ import { useRosterHeaderLogic } from "../../../hooks/useRosterHeaderLogic";
 import { useRosterVisualRows } from "../../../hooks/useRosterVisualRows";
 import { getAssignmentsForTeam, OrgMembership } from "../../../model/model";
 import { setHighlightedUserId } from "../../../store/slices/rosterViewSlice";
+import EmptyState from "../../common/EmptyState";
+import { NoUsersIllustration } from "../../common/EmptyStateIllustrations";
 import NameTag from "../../common/NameTag";
 import cellStyles from "../roster-cell.module.css";
 import RosterTable from "../RosterTable";
@@ -16,6 +20,7 @@ import allStyles from "./all-roster.module.css";
 
 const AllRosterTable = () => {
   const logic = useRosterBaseLogic();
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const { hasPastDates } = useRosterHeaderLogic();
   const { filterUserId, highlightedUserId } = useAppSelector(
@@ -35,6 +40,8 @@ const AllRosterTable = () => {
     closestNextDate,
     getConflictStatus,
   } = logic;
+
+  const isAdmin = userData?.isAdmin || false;
 
   const currentTeam = useMemo(() => currentTeamData, [currentTeamData]);
   const isSlotted = currentTeam?.rosterMode === "slotted";
@@ -356,6 +363,23 @@ const AllRosterTable = () => {
       navigate={navigate}
     />
   );
+
+  if (rosterAllViewMode === "user" && filteredAllTeamUsers.length === 0) {
+    return (
+      <EmptyState
+        illustration={<NoUsersIllustration />}
+        title={t("roster.empty.noUsersTitle")}
+        description={t("roster.empty.noUsersDesc")}
+        instruction={{
+          text: isAdmin ? t("roster.empty.noUsersAdmin") : t("roster.empty.noUsersMember"),
+          action: isAdmin ? { 
+            label: t("management.user.title"), 
+            onClick: () => navigate("/app/settings/user_management") 
+          } : undefined
+        }}
+      />
+    );
+  }
 
   return (
     <RosterTable

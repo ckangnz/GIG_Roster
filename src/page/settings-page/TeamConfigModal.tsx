@@ -304,6 +304,7 @@ const TeamConfigModal = ({
     (draft.name || "").trim() !== "" && 
     (draft.emoji || "").trim() !== "" && 
     (draft.maxConflict !== undefined && draft.maxConflict > 0) &&
+    (draft.positions && draft.positions.length > 0) &&
     !!orgId;
 
   const footer = (

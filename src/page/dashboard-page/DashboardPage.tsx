@@ -11,6 +11,7 @@ import { CopyIcon, CheckCircle2, CalendarPlus } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
 
+import DashboardEmptyState, { EmptyStateType } from "./DashboardEmptyState";
 import ActionSheet from "../../components/common/ActionSheet";
 import Button from "../../components/common/Button";
 import ExpiryTimer from "../../components/common/ExpiryTimer";
@@ -53,6 +54,8 @@ const DashboardPage = () => {
 
   const userData = useAppSelector(selectUserData);
   const orgId = userData?.orgId;
+  const isAdmin = userData?.isAdmin || false;
+  
   const teamsState = useAppSelector((state) => state.teams);
   const allTeams = useMemo(
     () => (teamsState?.teams || []).filter((t) => t.orgId === orgId),
@@ -128,21 +131,40 @@ const DashboardPage = () => {
     [getTeamEndTime],
   );
 
+  const emptyType = useMemo((): EmptyStateType | null => {
+    if (loadingRoster) return null;
+    if (!userData) return null;
+
+    const userTeamsList = userData.teams || [];
+    const userTeams = allTeams.filter(
+      (t) => userTeamsList.includes(t.id) || userTeamsList.includes(t.name),
+    );
+
+    if (userTeams.length === 0) return 'no-teams';
+
+    const dateSet = new Set<string>();
+    userTeams.forEach((team) => {
+      const upcoming = getUpcomingDates(team.preferredDays as Weekday[]);
+      upcoming.forEach((d) => dateSet.add(d));
+    });
+
+    const upcomingDates = Array.from(dateSet).sort();
+    if (upcomingDates.length === 0) return 'no-future-data';
+
+    // Check if everything is expired
+    const allExpired = upcomingDates.every(dateStr => 
+      userTeams.every(team => isTeamExpired(team, dateStr))
+    );
+    if (allExpired) return 'all-expired';
+
+    return 'no-assignments';
+  }, [loadingRoster, userData, allTeams, isTeamExpired]);
+
   const rosterDates = useMemo(() => {
     const todayKey = getTodayKey();
     if (!userData || allTeams.length === 0) return [];
 
-    const orgs = userData.organisations;
-    let userTeamsList: string[] = [];
-    if (orgs && !Array.isArray(orgs) && userData.activeOrgId) {
-      // In hybrid model, teams might be in sub-collection membership, 
-      // but selectUserData should have already merged it into root if using selectUserData.
-      // However, userData.organisations might still be a Map.
-      userTeamsList = userData.teams || [];
-    } else {
-      userTeamsList = userData.teams || [];
-    }
-
+    const userTeamsList = userData.teams || [];
     const userTeams = allTeams.filter(
       (t) => userTeamsList.includes(t.id) || userTeamsList.includes(t.name),
     );
@@ -617,14 +639,10 @@ const DashboardPage = () => {
 
   if (rosterDates.length === 0 && !loadingRoster) {
     return (
-      <div className={styles.dashboardEmpty}>
-        <h2>
-          {t("dashboard.noEvents", {
-            defaultValue: "No upcoming events found",
-          })}
-        </h2>
-        <p>{t("dashboard.noAssignments")}</p>
-      </div>
+      <DashboardEmptyState 
+        type={emptyType || 'no-future-data'} 
+        isAdmin={isAdmin} 
+      />
     );
   }
 

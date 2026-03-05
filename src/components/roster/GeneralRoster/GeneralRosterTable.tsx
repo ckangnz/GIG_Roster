@@ -1,16 +1,23 @@
 import { useMemo, useCallback } from "react";
 
+import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
+
 import { GeneralRosterHeader } from "./GeneralRosterHeader";
 import { GeneralRosterRow } from "./GeneralRosterRow";
 import { useRosterBaseLogic } from "../../../hooks/useRosterBaseLogic";
 import { useRosterHeaderLogic } from "../../../hooks/useRosterHeaderLogic";
 import { useRosterVisualRows } from "../../../hooks/useRosterVisualRows";
 import { getAssignmentsForTeam, isTeamRosterData, OrgMembership } from "../../../model/model";
+import EmptyState from "../../common/EmptyState";
+import { NoUsersIllustration } from "../../common/EmptyStateIllustrations";
 import cellStyles from "../roster-cell.module.css";
 import RosterTable from "../RosterTable";
 
 const GeneralRosterTable = () => {
   const logic = useRosterBaseLogic();
+  const { t } = useTranslation();
+  const navigate = useNavigate();
   const { hasPastDates } = useRosterHeaderLogic();
   const {
     teamId,
@@ -27,6 +34,8 @@ const GeneralRosterTable = () => {
     getConflictStatus,
     hasPositionCoverageRequest,
   } = logic;
+
+  const isAdmin = userData?.isAdmin || false;
 
   const currentTeam = useMemo(
     () => allTeams.find((t) => t.id === teamId),
@@ -214,6 +223,23 @@ const GeneralRosterTable = () => {
       showPeek={true}
     />
   );
+
+  if (sortedUsers.length === 0) {
+    return (
+      <EmptyState
+        illustration={<NoUsersIllustration />}
+        title={t("roster.empty.noUsersTitle")}
+        description={t("roster.empty.noUsersDesc")}
+        instruction={{
+          text: isAdmin ? t("roster.empty.noUsersAdmin") : t("roster.empty.noUsersMember"),
+          action: isAdmin ? { 
+            label: t("management.user.title"), 
+            onClick: () => navigate("/app/settings/user_management") 
+          } : undefined
+        }}
+      />
+    );
+  }
 
   return (
     <RosterTable

@@ -74,7 +74,24 @@
     "addAllEvents": "Add All Events",
     "noEvents": "No upcoming events found",
     "noAssignments": "You have no upcoming assignments.",
-    "eventNamePlaceholder": "Event name (e.g. Easter Sunday)"
+    "eventNamePlaceholder": "Event name (e.g. Easter Sunday)",
+    "empty": {
+      "noTeamsTitle": "You are not in any teams",
+      "noTeamsDesc": "To see upcoming events, you need to be a member of at least one team in this organisation.",
+      "noTeamsAdmin": "As an administrator, you can add yourself to teams in your Profile Settings or manage teams in the Team Management page.",
+      "noTeamsMember": "Please contact your organisation administrator to be assigned to a team.",
+      "noAssignmentsTitle": "No assignments found",
+      "noAssignmentsDesc": "Your teams have upcoming dates, but no one has been assigned to any positions yet.",
+      "noAssignmentsAdmin": "Go to the Roster page to assign members to positions for upcoming dates.",
+      "noAssignmentsMember": "Assignments for upcoming events haven't been published yet. Check back later!",
+      "allExpiredTitle": "All events finished",
+      "allExpiredDesc": "All events for today have already concluded.",
+      "allExpiredInstruction": "Check the Roster page to see past events or wait for the next scheduled date.",
+      "noFutureTitle": "No upcoming events found",
+      "noFutureDesc": "There are no upcoming dates scheduled for your teams in the system.",
+      "noFutureAdmin": "Ensure your teams have 'Preferred Days' configured in Team Management so the system can generate upcoming dates.",
+      "noFutureMember": "It looks like there are no upcoming events scheduled at the moment."
+    }
   },
   "roster": {
     "loadPrevious": "Load Previous Dates",
@@ -96,7 +113,13 @@
     "hiddenMembers": "Hidden Members:",
     "editTeammateTitle": "Edit Teammate's Roster?",
     "editTeammateDesc": "You are about to change {{name}}'s assignment. Please ensure you have coordinated this swap with them.",
-    "changeAssignment": "Change Assignment"
+    "changeAssignment": "Change Assignment",
+    "empty": {
+      "noUsersTitle": "No positions assigned",
+      "noUsersDesc": "Members are in this team, but no one has been assigned to any positions yet.",
+      "noUsersAdmin": "As an administrator, you can manage position assignments in the Members page.",
+      "noUsersMember": "Please wait for your administrator to assign positions to members of this team."
+    }
   },
   "thoughts": {
     "title": "Team Thoughts",

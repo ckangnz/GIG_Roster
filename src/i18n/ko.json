@@ -74,7 +74,24 @@
     "addAllEvents": "모든 일정 추가",
     "noEvents": "예정된 일정이 없습니다",
     "noAssignments": "예정된 배정 일정이 없습니다.",
-    "eventNamePlaceholder": "일정 이름 (예: 부활절 주일)"
+    "eventNamePlaceholder": "일정 이름 (예: 부활절 주일)",
+    "empty": {
+      "noTeamsTitle": "가입된 팀이 없습니다",
+      "noTeamsDesc": "예정된 일정을 보려면 이 단체의 하나 이상의 팀에 소속되어야 합니다.",
+      "noTeamsAdmin": "관리자로서 프로필 설정에서 자신을 팀에 추가하거나 팀 관리 페이지에서 팀을 관리할 수 있습니다.",
+      "noTeamsMember": "팀에 배정받으려면 단체 관리자에게 문의하세요.",
+      "noAssignmentsTitle": "배정된 일정이 없습니다",
+      "noAssignmentsDesc": "팀에 예정된 날짜는 있지만 아직 포지션에 배정된 인원이 없습니다.",
+      "noAssignmentsAdmin": "로스터 페이지로 이동하여 예정된 날짜에 멤버를 포지션에 배정하세요.",
+      "noAssignmentsMember": "예정된 일정에 대한 배정이 아직 게시되지 않았습니다. 나중에 다시 확인해 주세요!",
+      "allExpiredTitle": "오늘 모든 일정이 종료되었습니다",
+      "allExpiredDesc": "오늘의 모든 일정이 이미 완료되었습니다.",
+      "allExpiredInstruction": "로스터 페이지에서 지난 일정을 확인하거나 다음 예정된 날짜를 기다려 주세요.",
+      "noFutureTitle": "예정된 일정이 없습니다",
+      "noFutureDesc": "시스템에 귀하의 팀을 위한 예정된 날짜가 예약되어 있지 않습니다.",
+      "noFutureAdmin": "팀 관리에서 팀의 '활동 요일'이 설정되어 있는지 확인하여 시스템이 예정된 날짜를 생성할 수 있도록 하세요.",
+      "noFutureMember": "현재 예약된 예정 일정이 없는 것으로 보입니다."
+    }
   },
   "roster": {
     "loadPrevious": "이전 날짜 불러오기",
@@ -96,7 +113,13 @@
     "hiddenMembers": "숨겨진 멤버:",
     "editTeammateTitle": "팀원 로스터 수정",
     "editTeammateDesc": "{{name}}님의 배정을 변경하려고 합니다. 해당 팀원과 사전에 조율되었는지 확인해 주세요.",
-    "changeAssignment": "배정 변경"
+    "changeAssignment": "배정 변경",
+    "empty": {
+      "noUsersTitle": "배정된 포지션 없음",
+      "noUsersDesc": "이 팀에 멤버는 있지만, 아직 아무도 포지션에 배정되지 않았습니다.",
+      "noUsersAdmin": "관리자로서 멤버 페이지에서 포지션 배정을 관리할 수 있습니다.",
+      "noUsersMember": "관리자가 팀 멤버들에게 포지션을 배정할 때까지 기다려 주세요."
+    }
   },
   "thoughts": {
     "title": "팀의 마음의 소리",
