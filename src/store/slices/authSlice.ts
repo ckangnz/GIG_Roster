@@ -138,13 +138,8 @@ export const updateUserProfile = createAsyncThunk(
 
       // Organisation-specific fields
       if (activeOrgId) {
-        // Root update (permissions)
-        if (data.isActive !== undefined) {
-          globalUpdate[`organisations.${activeOrgId}.isActive`] = data.isActive;
-          membershipUpdate.isActive = data.isActive; // Keep consistent
-        }
-
         // Membership update (data)
+        if (data.isActive !== undefined) membershipUpdate.isActive = data.isActive;
         if (data.teams !== undefined) membershipUpdate.teams = data.teams;
         if (data.teamPositions !== undefined) {
           membershipUpdate.teamPositions = data.teamPositions;
@@ -240,11 +235,9 @@ export const joinOrganisation = createAsyncThunk(
 
       // Recovery / Join: Update user doc if org index is missing
       if (!isOrgInUserDoc) {
-        const userUpdate: Record<string, unknown> = {
-          ...profileData,
+        await updateDoc(userRef, {
           organisations: [...currentOrgIds, orgId],
-        };
-        await updateDoc(userRef, userUpdate);
+        });
       }
 
       // Prepare / update membership doc
@@ -411,11 +404,13 @@ export const createOrganisation = createAsyncThunk(
         ? currentOrgs
         : Object.keys(currentOrgs);
 
+      const newOrgIds = currentOrgIds.includes(orgId)
+        ? currentOrgIds
+        : [...currentOrgIds, orgId];
+
       const userUpdate: Record<string, unknown> = {
         ...profileData,
-        organisations: currentOrgIds.includes(orgId)
-          ? currentOrgIds
-          : [...currentOrgIds, orgId],
+        organisations: newOrgIds,
       };
       await updateDoc(userRef, userUpdate);
 
