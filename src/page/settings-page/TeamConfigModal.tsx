@@ -1,11 +1,8 @@
 import { useState, useEffect } from "react";
 
-
-import { Reorder, useDragControls } from "framer-motion";
 import { 
   Plus, 
   Trash2, 
-  GripVertical, 
   Clock, 
   Sparkles, 
   CalendarPlus, 
@@ -20,6 +17,7 @@ import { InputField, SelectField } from "../../components/common/InputField";
 import Modal from "../../components/common/Modal";
 import Pill, { PillGroup } from "../../components/common/Pill";
 import { SettingsGroup } from "../../components/common/SettingsGroup";
+import { SortableList, SortableItem } from "../../components/common/SortableList";
 import Toggle from "../../components/common/Toggle";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { 
@@ -78,56 +76,48 @@ const SlotItem = ({
   onRemove: (id: string) => void;
 }) => {
   const { t } = useTranslation();
-  const dragControls = useDragControls();
 
   return (
-    <Reorder.Item
-      value={slot}
-      dragListener={false}
-      dragControls={dragControls}
-      className={localStyles.eventItem}
+    <SortableItem 
+      value={slot} 
+      label={slot.label || t('management.team.newSlot', { defaultValue: 'New Slot' })}
     >
-      <div
-        className={localStyles.dragHandle}
-        onPointerDown={(e) => dragControls.start(e)}
-      >
-        <GripVertical size={20} />
+      <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end', width: '100%', flexWrap: 'wrap' }}>
+        <div style={{ flex: '2 1 200px' }}>
+          <InputField
+            label={t('management.team.label')}
+            value={slot.label}
+            placeholder="e.g. 08:00 - 08:15"
+            onChange={(e) => onUpdate(slot.id, "label", e.target.value)}
+          />
+        </div>
+        <div style={{ flex: '1 1 100px' }}>
+          <InputField
+            label={t('management.team.start')}
+            type="time"
+            value={slot.startTime}
+            onChange={(e) => onUpdate(slot.id, "startTime", e.target.value)}
+          />
+        </div>
+        <div style={{ flex: '1 1 100px' }}>
+          <InputField
+            label={t('management.team.end')}
+            type="time"
+            value={slot.endTime}
+            onChange={(e) => onUpdate(slot.id, "endTime", e.target.value)}
+          />
+        </div>
+        <Button
+          variant="delete"
+          size="small"
+          isIcon
+          onClick={() => onRemove(slot.id)}
+          style={{ height: '38px', marginBottom: '4px' }}
+        >
+          <Trash2 size={16} />
+        </Button>
       </div>
-
-      <div className={localStyles.eventInputLabel}>
-        <InputField
-          label={t('management.team.label')}
-          value={slot.label}
-          placeholder="e.g. 08:00 - 08:15"
-          onChange={(e) => onUpdate(slot.id, "label", e.target.value)}
-        />
-      </div>
-      <div className={localStyles.eventInputStart}>
-        <InputField
-          label={t('management.team.start')}
-          type="time"
-          value={slot.startTime}
-          onChange={(e) => onUpdate(slot.id, "startTime", e.target.value)}
-        />
-      </div>
-      <div className={localStyles.eventInputEnd}>
-        <InputField
-          label={t('management.team.end')}
-          type="time"
-          value={slot.endTime}
-          onChange={(e) => onUpdate(slot.id, "endTime", e.target.value)}
-        />
-      </div>
-      <Button
-        variant="delete"
-        size="small"
-        isIcon
-        className={localStyles.deleteBtn}
-        onClick={() => onRemove(slot.id)}
-      >
-        <Trash2 size={16} />
-      </Button>
-    </Reorder.Item>
+    </SortableItem>
   );
 };
 
@@ -141,71 +131,63 @@ const EventItem = ({
   onRemove: (id: string) => void;
 }) => {
   const { t } = useTranslation();
-  const dragControls = useDragControls();
 
   return (
-    <Reorder.Item
-      value={ev}
-      dragListener={false}
-      dragControls={dragControls}
-      className={localStyles.eventItem}
+    <SortableItem 
+      value={ev} 
+      label={ev.label || t('management.team.newEvent', { defaultValue: 'New Event' })}
     >
-      <div
-        className={localStyles.dragHandle}
-        onPointerDown={(e) => dragControls.start(e)}
-      >
-        <GripVertical size={20} />
-      </div>
-
-      <div className={localStyles.eventInputLabel}>
-        <InputField
-          label={t('management.team.eventName')}
-          value={ev.label}
-          placeholder="e.g. Practice"
-          onChange={(e) => onUpdate(ev.id, "label", e.target.value)}
-        />
-      </div>
-      <div className={localStyles.eventInputDay}>
-        <SelectField
-          label={t('management.team.weekDay')}
-          value={ev.day}
-          onChange={(e) =>
-            onUpdate(ev.id, "day", e.target.value as Weekday)
-          }
+      <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end', width: '100%', flexWrap: 'wrap' }}>
+        <div style={{ flex: '2 1 150px' }}>
+          <InputField
+            label={t('management.team.eventName')}
+            value={ev.label}
+            placeholder="e.g. Practice"
+            onChange={(e) => onUpdate(ev.id, "label", e.target.value)}
+          />
+        </div>
+        <div style={{ flex: '1.5 1 120px' }}>
+          <SelectField
+            label={t('management.team.weekDay')}
+            value={ev.day}
+            onChange={(e) =>
+              onUpdate(ev.id, "day", e.target.value as Weekday)
+            }
+          >
+            {WEEK_DAYS.map((d) => (
+              <option key={d} value={d}>
+                {t(`common.weekdays.${d.toLowerCase()}`, { defaultValue: d })}
+              </option>
+            ))}
+          </SelectField>
+        </div>
+        <div style={{ flex: '1 1 90px' }}>
+          <InputField
+            label={t('management.team.starts')}
+            type="time"
+            value={ev.startTime}
+            onChange={(e) => onUpdate(ev.id, "startTime", e.target.value)}
+          />
+        </div>
+        <div style={{ flex: '1 1 90px' }}>
+          <InputField
+            label={t('management.team.finishes')}
+            type="time"
+            value={ev.endTime}
+            onChange={(e) => onUpdate(ev.id, "endTime", e.target.value)}
+          />
+        </div>
+        <Button
+          variant="delete"
+          size="small"
+          isIcon
+          onClick={() => onRemove(ev.id)}
+          style={{ height: '38px', marginBottom: '4px' }}
         >
-          {WEEK_DAYS.map((d) => (
-            <option key={d} value={d}>
-              {t(`common.weekdays.${d.toLowerCase()}`, { defaultValue: d })}
-            </option>
-          ))}
-        </SelectField>
+          <Trash2 size={16} />
+        </Button>
       </div>
-      <div className={localStyles.eventInputStart}>
-        <InputField
-          label={t('management.team.starts')}
-          type="time"
-          value={ev.startTime}
-          onChange={(e) => onUpdate(ev.id, "startTime", e.target.value)}
-        />
-      </div>
-      <div className={localStyles.eventInputEnd}>
-        <InputField
-          label={t('management.team.finishes')}
-          type="time"
-          value={ev.endTime}
-          onChange={(e) => onUpdate(ev.id, "endTime", e.target.value)}
-        />
-      </div>
-      <Button
-        variant="delete"
-        size="small"
-        isIcon
-        className={localStyles.deleteBtn}
-        onClick={() => onRemove(ev.id)}
-      >
-        <Trash2 size={16} />
-      </Button>
-    </Reorder.Item>
+    </SortableItem>
   );
 };
 
@@ -481,12 +463,9 @@ const TeamConfigModal = ({
               </div>
             )}
 
-            <Reorder.Group
-              axis="y"
-              values={draft.slots || []}
+            <SortableList
+              items={draft.slots || []}
               onReorder={(newOrder) => updateDraft({ slots: newOrder })}
-              className={localStyles.eventList}
-              style={{ listStyle: "none", padding: 0, margin: 0 }}
             >
               {(draft.slots || []).map((slot) => (
                 <SlotItem
@@ -502,7 +481,7 @@ const TeamConfigModal = ({
                   }}
                 />
               ))}
-            </Reorder.Group>
+            </SortableList>
 
             <Button
               onClick={handleAddSlot}
@@ -592,12 +571,9 @@ const TeamConfigModal = ({
             </Button>
           </div>
 
-          <Reorder.Group
-            axis="y"
-            values={draft.recurringEvents || []}
+          <SortableList
+            items={draft.recurringEvents || []}
             onReorder={(newOrder) => updateDraft({ recurringEvents: newOrder })}
-            className={localStyles.eventList}
-            style={{ listStyle: "none", padding: 0, margin: 0 }}
           >
             {(draft.recurringEvents || []).map((ev) => (
               <EventItem
@@ -613,7 +589,7 @@ const TeamConfigModal = ({
                 }}
               />
             ))}
-          </Reorder.Group>
+          </SortableList>
         </SettingsGroup>
 
         {/* Absence */}
