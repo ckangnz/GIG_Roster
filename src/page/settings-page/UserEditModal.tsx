@@ -3,8 +3,7 @@ import { useTranslation } from "react-i18next";
 import TeamPositionEditor from "./TeamPositionEditor";
 import Modal from "../../components/common/Modal";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
-import { AppUser, Team, OrgMembership } from "../../model/model";
-import { selectUserData } from "../../store/slices/authSlice";
+import { AppUser, Team } from "../../model/model";
 import { toggleUserTeam, toggleUserTeamPosition, reorderUserTeams } from "../../store/slices/userManagementSlice";
 
 
@@ -19,29 +18,21 @@ const UserEditModal = ({ isOpen, onClose, user, availableTeams }: UserEditModalP
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const { positions: globalPositions } = useAppSelector((state) => state.positions);
-  const currentUser = useAppSelector(selectUserData);
-  const activeOrgId = currentUser?.activeOrgId;
+  const memberships = useAppSelector((state) => state.userManagement.memberships);
 
   const handleToggleTeam = (teamName: string) => {
-    if (activeOrgId) {
-      dispatch(toggleUserTeam({ userId: user.id, orgId: activeOrgId, teamName }));
-    }
+    dispatch(toggleUserTeam({ userId: user.id, teamName }));
   };
 
   const handleTogglePosition = (teamName: string, posName: string) => {
-    if (activeOrgId) {
-      dispatch(toggleUserTeamPosition({ userId: user.id, orgId: activeOrgId, teamName, posName }));
-    }
+    dispatch(toggleUserTeamPosition({ userId: user.id, teamName, posName }));
   };
 
   const handleReorderTeams = (newOrder: string[]) => {
-    if (activeOrgId) {
-      dispatch(reorderUserTeams({ userId: user.id, orgId: activeOrgId, newOrder }));
-    }
+    dispatch(reorderUserTeams({ userId: user.id, newOrder }));
   };
 
-  const orgs = user.organisations as Record<string, OrgMembership>;
-  const membership = activeOrgId ? orgs?.[activeOrgId] : null;
+  const membership = memberships[user.id];
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={t('management.user.editTitle', { name: user.name })}>

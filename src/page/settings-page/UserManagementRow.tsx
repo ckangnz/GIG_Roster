@@ -10,8 +10,7 @@ import {
 import SummaryCell from "../../components/common/SummaryCell";
 import Toggle from "../../components/common/Toggle";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
-import { AppUser, Gender, Team, OrgMembership } from "../../model/model";
-import { selectUserData } from "../../store/slices/authSlice";
+import { AppUser, Gender, Team } from "../../model/model";
 import { updateUserField, updateUserOrgField } from "../../store/slices/userManagementSlice";
 import formStyles from "../../styles/form.module.css";
 import styles from "../../styles/settings-common.module.css";
@@ -31,8 +30,7 @@ const UserManagementRow = ({
   const dispatch = useAppDispatch();
   const { firebaseUser } = useAppSelector((state) => state.auth);
   const { positions: globalPositions } = useAppSelector((state) => state.positions);
-  const currentUser = useAppSelector(selectUserData);
-  const activeOrgId = currentUser?.activeOrgId;
+  const memberships = useAppSelector((state) => state.userManagement.memberships);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -47,13 +45,10 @@ const UserManagementRow = ({
     field: 'isActive' | 'isApproved' | 'isAdmin',
     value: boolean
   ) => {
-    if (activeOrgId) {
-      dispatch(updateUserOrgField({ userId: user.id, orgId: activeOrgId, field, value }));
-    }
+    dispatch(updateUserOrgField({ userId: user.id, field, value }));
   };
 
-  const orgs = user.organisations as Record<string, OrgMembership>;
-  const orgMembership = activeOrgId ? orgs?.[activeOrgId] : null;
+  const orgMembership = memberships[user.id];
   const isActive = orgMembership?.isActive ?? true;
   const isApproved = orgMembership?.isApproved ?? false;
   const isAdmin = orgMembership?.isAdmin ?? false;

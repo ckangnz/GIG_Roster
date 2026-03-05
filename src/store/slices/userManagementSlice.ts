@@ -16,6 +16,7 @@ interface UserManagementState {
   allUsers: AppUserWithId[];
   originalUsers: AppUserWithId[];
   memberships: Record<string, OrgMembership>; // userId -> OrgMembership
+  originalMemberships: Record<string, OrgMembership>;
   profiles: Record<string, AppUser>; // userId -> AppUser
   loading: boolean;
   saving: boolean;
@@ -26,6 +27,7 @@ const initialState: UserManagementState = {
   allUsers: [],
   originalUsers: [],
   memberships: {},
+  originalMemberships: {},
   profiles: {},
   loading: false,
   saving: false,
@@ -34,7 +36,7 @@ const initialState: UserManagementState = {
 
 export const fetchAllUsers = createAsyncThunk(
   "userManagement/fetchAllUsers",
-  async (_, { rejectWithValue, getState }) => {
+  async (_, { rejectWithValue, getState, dispatch }) => {
     try {
       const state = getState() as { auth: AuthState };
       const activeOrgId = state.auth.activeOrgId;
@@ -49,7 +51,12 @@ export const fetchAllUsers = createAsyncThunk(
 
       // 2. Fetch corresponding users
       const userIds = Object.keys(memberships);
-      if (userIds.length === 0) return [];
+      if (userIds.length === 0) {
+        dispatch(setAllMemberships({}));
+        return [];
+      }
+
+      dispatch(setAllMemberships(memberships));
 
       const users: AppUserWithId[] = [];
       const usersSnap = await getDocs(collection(db, "users"));
@@ -76,27 +83,23 @@ export const saveAllUserChanges = createAsyncThunk(
   "userManagement/saveAllChanges",
   async (users: AppUserWithId[], { rejectWithValue, getState }) => {
     try {
-      const state = getState() as { auth: AuthState };
+      const state = getState() as { auth: AuthState; userManagement: UserManagementState };
       const activeOrgId = state.auth.activeOrgId;
       if (!activeOrgId) throw new Error("Active Org ID missing");
 
       const batch = writeBatch(db);
       users.forEach((u) => {
-        const { id, name, gender, organisations } = u;
+        const { id, name, gender } = u;
         
-        // 1. Update Global User Data
+        // 1. Update Global User Data (only basic info)
         batch.update(doc(db, "users", id), { name, gender });
 
-        // 2. Update Membership Data
-        const orgs = organisations as unknown as Record<string, OrgMembership>;
-        const memEntry = orgs?.[activeOrgId];
-        if (memEntry) {
+        // 2. Update Membership Data in Organisations collection
+        const memData = state.userManagement.memberships[id];
+        if (memData) {
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const { id: _unused, ...memData } = memEntry;
-          if (memData.teamPositions) {
-            memData.indexedAssignments = generateIndexedAssignments(memData.teamPositions);
-          }
-          batch.set(doc(db, "organisations", activeOrgId, "memberships", id), memData, { merge: true });
+          const { id: _unused, ...payload } = memData;
+          batch.set(doc(db, "organisations", activeOrgId, "memberships", id), payload, { merge: true });
         }
       });
       await batch.commit();
@@ -222,106 +225,76 @@ const userManagementSlice = createSlice({
       state,
       action: PayloadAction<{
         userId: string;
-        orgId: string;
         field: keyof OrgMembership;
         value: boolean;
       }>,
     ) {
-      const { userId, orgId, field, value } = action.payload;
-      const user = state.allUsers.find((u) => u.id === userId);
-      if (user) {
-        let orgs = user.organisations as unknown as Record<string, OrgMembership>;
-        if (!orgs || Array.isArray(orgs)) {
-          orgs = {};
-          (user as Record<string, unknown>).organisations = orgs;
-        }
-
-        if (!orgs[orgId]) {
-          orgs[orgId] = { 
-            isActive: true, 
-            isAdmin: false, 
-            isApproved: false,
-            teams: [],
-            teamPositions: {},
-            indexedAssignments: []
-          };
-        }
-        const membership = orgs[orgId];
+      const { userId, field, value } = action.payload;
+      const membership = state.memberships[userId];
+      if (membership) {
         (membership as unknown as Record<string, unknown>)[field] = value;
       }
     },
     toggleUserTeam(
       state,
-      action: PayloadAction<{ userId: string; orgId: string; teamName: string }>,
+      action: PayloadAction<{ userId: string; teamName: string }>,
     ) {
-      const { userId, orgId, teamName } = action.payload;
-      const user = state.allUsers.find((u) => u.id === userId);
-      if (user) {
-        const orgs = user.organisations as unknown as Record<string, OrgMembership>;
-        if (orgs?.[orgId]) {
-          const org = orgs[orgId];
-          const currentTeams = org.teams || [];
-          const newTeams = currentTeams.includes(teamName)
-            ? currentTeams.filter((t: string) => t !== teamName)
-            : [...currentTeams, teamName];
-          org.teams = newTeams;
+      const { userId, teamName } = action.payload;
+      const org = state.memberships[userId];
+      if (org) {
+        const currentTeams = org.teams || [];
+        const newTeams = currentTeams.includes(teamName)
+          ? currentTeams.filter((t: string) => t !== teamName)
+          : [...currentTeams, teamName];
+        org.teams = newTeams;
 
-          if (!org.teamPositions) org.teamPositions = {};
-          if (newTeams.includes(teamName)) {
-            if (!org.teamPositions[teamName]) org.teamPositions[teamName] = [];
-          } else {
-            delete org.teamPositions[teamName];
-          }
-          org.indexedAssignments = generateIndexedAssignments(org.teamPositions);
+        if (!org.teamPositions) org.teamPositions = {};
+        if (newTeams.includes(teamName)) {
+          if (!org.teamPositions[teamName]) org.teamPositions[teamName] = [];
+        } else {
+          delete org.teamPositions[teamName];
         }
+        org.indexedAssignments = generateIndexedAssignments(org.teamPositions);
       }
     },
     toggleUserTeamPosition(
       state,
       action: PayloadAction<{
         userId: string;
-        orgId: string;
         teamName: string;
         posName: string;
       }>,
     ) {
-      const { userId, orgId, teamName, posName } = action.payload;
-      const user = state.allUsers.find((u) => u.id === userId);
-      if (user) {
-        const orgs = user.organisations as unknown as Record<string, OrgMembership>;
-        if (orgs?.[orgId]) {
-          const org = orgs[orgId];
-          if (!org.teamPositions) org.teamPositions = {};
-          if (!org.teamPositions[teamName]) org.teamPositions[teamName] = [];
+      const { userId, teamName, posName } = action.payload;
+      const org = state.memberships[userId];
+      if (org) {
+        if (!org.teamPositions) org.teamPositions = {};
+        if (!org.teamPositions[teamName]) org.teamPositions[teamName] = [];
 
-          const currentPos = org.teamPositions[teamName];
-          const newPos = currentPos.includes(posName)
-            ? currentPos.filter((p: string) => p !== posName)
-            : [...currentPos, posName];
-          org.teamPositions[teamName] = newPos;
-          org.indexedAssignments = generateIndexedAssignments(org.teamPositions);
-        }
+        const currentPos = org.teamPositions[teamName];
+        const newPos = currentPos.includes(posName)
+          ? currentPos.filter((p: string) => p !== posName)
+          : [...currentPos, posName];
+        org.teamPositions[teamName] = newPos;
+        org.indexedAssignments = generateIndexedAssignments(org.teamPositions);
       }
     },
     reorderUserTeams(
       state,
       action: PayloadAction<{
         userId: string;
-        orgId: string;
         newOrder: string[];
       }>,
     ) {
-      const { userId, orgId, newOrder } = action.payload;
-      const user = state.allUsers.find((u) => u.id === userId);
-      if (user) {
-        const orgs = user.organisations as unknown as Record<string, OrgMembership>;
-        if (orgs?.[orgId]) {
-          orgs[orgId].teams = newOrder;
-        }
+      const { userId, newOrder } = action.payload;
+      const org = state.memberships[userId];
+      if (org) {
+        org.teams = newOrder;
       }
     },
     resetUserChanges(state) {
       state.allUsers = JSON.parse(JSON.stringify(state.originalUsers));
+      state.memberships = JSON.parse(JSON.stringify(state.originalMemberships));
     },
     setAllUsers(state, action: PayloadAction<AppUserWithId[]>) {
       state.allUsers = action.payload;
@@ -330,6 +303,7 @@ const userManagementSlice = createSlice({
     },
     setAllMemberships(state, action: PayloadAction<Record<string, OrgMembership>>) {
       state.memberships = action.payload;
+      state.originalMemberships = JSON.parse(JSON.stringify(action.payload));
     },
     setAllUserProfiles(state, action: PayloadAction<Record<string, AppUser>>) {
       state.profiles = action.payload;
@@ -360,6 +334,7 @@ const userManagementSlice = createSlice({
       .addCase(saveAllUserChanges.fulfilled, (state) => {
         state.saving = false;
         state.originalUsers = JSON.parse(JSON.stringify(state.allUsers));
+        state.originalMemberships = JSON.parse(JSON.stringify(state.memberships));
       })
       .addCase(saveAllUserChanges.rejected, (state, action) => {
         state.error = action.payload as string;

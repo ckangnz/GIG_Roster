@@ -9,8 +9,7 @@ import SettingsTable, {
 } from "../../components/common/SettingsTable";
 import Spinner from "../../components/common/Spinner";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
-import { AppUser, OrgMembership } from "../../model/model";
-import { selectUserData } from "../../store/slices/authSlice";
+import { OrgMembership } from "../../model/model";
 import {
   saveAllUserChanges,
   resetUserChanges,
@@ -21,39 +20,40 @@ import styles from "./settings-page.module.css";
 const UserManagement = () => {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
-  const userData = useAppSelector(selectUserData);
-  const orgId = userData?.orgId;
 
-  const { allUsers, originalUsers, loading, saving, error } = useAppSelector(
+  const { allUsers, originalUsers, memberships, originalMemberships, loading, saving, error } = useAppSelector(
     (state) => state.userManagement,
   );
   const availableTeams = useAppSelector((state) => state.teams.teams);
 
   const hasChanges = useMemo(() => {
-    const normalize = (list: AppUser[]) =>
-      list.map((u) => {
-        const orgs = u.organisations as Record<string, OrgMembership>;
-        const orgEntry = orgId ? orgs?.[orgId] : null;
-        return {
-          name: u.name || "",
-          gender: u.gender || "",
-          teams: [...(orgEntry?.teams || [])].sort(),
-          teamPositions: Object.keys(orgEntry?.teamPositions || {})
-            .sort()
-            .reduce((acc: Record<string, string[]>, team) => {
-              acc[team] = [...(orgEntry?.teamPositions?.[team] || [])].sort();
-              return acc;
-            }, {}),
-          isActive: !!orgEntry?.isActive,
-          isApproved: !!orgEntry?.isApproved,
-          isAdmin: !!orgEntry?.isAdmin,
+    // 1. Check for basic user profile changes (name, gender)
+    const hasProfileChanges = JSON.stringify(allUsers.map(u => ({ id: u.id, name: u.name, gender: u.gender }))) !== 
+                             JSON.stringify(originalUsers.map(u => ({ id: u.id, name: u.name, gender: u.gender })));
+    
+    if (hasProfileChanges) return true;
+
+    // 2. Check for membership changes
+    // We normalize to ensure key order doesn't trigger false positives
+    const normalizeMem = (m: Record<string, OrgMembership>) => {
+      return Object.keys(m).sort().reduce((acc: Record<string, unknown>, userId) => {
+        const entry = m[userId];
+        acc[userId] = {
+          isActive: !!entry.isActive,
+          isApproved: !!entry.isApproved,
+          isAdmin: !!entry.isAdmin,
+          teams: [...(entry.teams || [])].sort(),
+          teamPositions: Object.keys(entry.teamPositions || {}).sort().reduce((tpAcc: Record<string, string[]>, teamId) => {
+            tpAcc[teamId] = [...(entry.teamPositions?.[teamId] || [])].sort();
+            return tpAcc;
+          }, {})
         };
-      });
-    return (
-      JSON.stringify(normalize(allUsers)) !==
-      JSON.stringify(normalize(originalUsers))
-    );
-  }, [allUsers, originalUsers, orgId]);
+        return acc;
+      }, {});
+    };
+
+    return JSON.stringify(normalizeMem(memberships)) !== JSON.stringify(normalizeMem(originalMemberships));
+  }, [allUsers, originalUsers, memberships, originalMemberships]);
 
   const isFormValid = useMemo(() => {
     return allUsers.every((u) => (u.name || "").trim() !== "");
@@ -76,14 +76,12 @@ const UserManagement = () => {
   }
 
   const pendingUsers = allUsers.filter((u) => {
-    const orgs = u.organisations as Record<string, OrgMembership>;
-    const orgEntry = orgId ? orgs?.[orgId] : null;
-    return orgEntry && !orgEntry.isApproved;
+    const mem = memberships[u.id];
+    return mem && !mem.isApproved;
   });
   const approvedUsers = allUsers.filter((u) => {
-    const orgs = u.organisations as Record<string, OrgMembership>;
-    const orgEntry = orgId ? orgs?.[orgId] : null;
-    return orgEntry && orgEntry.isApproved;
+    const mem = memberships[u.id];
+    return mem && mem.isApproved;
   });
 
   const tableHeaders: SettingsTableHeaderProps[] = [
