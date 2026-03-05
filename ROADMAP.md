@@ -30,7 +30,7 @@
     - [x] **Step 1: Profile Setup**: User provides Name and Gender (Male/Female/Undefined).
     - [x] **Step 2: Selection**: "Join Organisation" (Search with autocomplete, min 3 chars) or "Create Organisation" (Disabled).
     - [x] **Step 3: Approval**: User remains in Guest state until specific Org Admin approves them.
-- [ ] **Searchable Position Picker**: Refactor UI to use Autocomplete.
+- [x] **Searchable Position Picker**: Refactor UI to use Autocomplete.
 
 ### 🛠 Implementation Guidelines
 - [x] **Step 0: Preparation & Simplification (Minimize Effort)**:
@@ -54,8 +54,8 @@
 - [x] **Onboarding Flow (Option A)**:
     - [x] **Guest Page**: Add search/input for "Join Organisation".
     - [x] **Approval Pipeline**: Ensure unapproved users with an `orgId` appear in that Org's Admin dashboard.
-- [ ] **UX Update**:
-    - Replace "Pill Cloud" in `TeamPositionEditor` and `ProfileSettings` with a Searchable Multi-select.
+- [x] **UX Update**:
+    - [x] Replace "Pill Cloud" in `TeamPositionEditor` and `ProfileSettings` with a Searchable Multi-select.
 
 - [ ] Organisation selection
   - the user should be able to click on Organisation identifier button on the sidenav title.

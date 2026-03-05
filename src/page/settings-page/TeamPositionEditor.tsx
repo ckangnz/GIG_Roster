@@ -2,7 +2,7 @@ import { Reorder, useDragControls } from "framer-motion";
 import { GripVertical } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-import Pill, { PillGroup } from "../../components/common/Pill";
+import SearchableMultiPicker from "../../components/common/SearchableMultiPicker";
 import { SettingsGroup } from "../../components/common/SettingsGroup";
 import { Position, Team } from "../../model/model";
 import commonStyles from "../../styles/settings-common.module.css";
@@ -64,23 +64,17 @@ const ReorderableTeamItem = ({
         </div>
 
         {allTopLevelPositions.length > 0 ? (
-          <PillGroup>
-            {allTopLevelPositions.map((pos) => {
-              const isCustom = !!pos.isCustom;
-              const isSelected = selectedPositions.includes(pos.id) || selectedPositions.includes(pos.name);
-              return (
-                <Pill
-                  key={pos.id}
-                  onClick={() => onTogglePosition(teamName, pos.id)}
-                  isActive={isSelected}
-                  isDisabled={isCustom}
-                  colour={pos.colour}
-                >
-                  <span>{pos.emoji}</span> {pos.name}
-                </Pill>
-              );
-            })}
-          </PillGroup>
+          <SearchableMultiPicker
+            items={allTopLevelPositions.map((pos) => ({
+              id: pos.id,
+              label: pos.name,
+              emoji: pos.emoji,
+              color: pos.colour,
+            }))}
+            selectedIds={selectedPositions}
+            onToggle={(posId) => onTogglePosition(teamName, posId)}
+            placeholder={t("settings.searchPositions", { defaultValue: "Search positions..." })}
+          />
         ) : (
           <p
             style={{
@@ -112,21 +106,16 @@ const TeamPositionEditor = ({
     <>
       <div className={commonStyles.formGroup}>
         <label className={commonStyles.sectionLabel}>{t('management.user.teams')}</label>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-          {availableTeams.map((team) => {
-            const teamIdentifier = team.id;
-            const isSelected = selectedTeams.includes(teamIdentifier);
-            return (
-              <Pill
-                key={teamIdentifier}
-                onClick={() => onToggleTeam(teamIdentifier)}
-                isActive={isSelected}
-              >
-                <span>{team.emoji}</span> {team.name}
-              </Pill>
-            );
-          })}
-        </div>
+        <SearchableMultiPicker
+          items={availableTeams.map((team) => ({
+            id: team.id,
+            label: team.name,
+            emoji: team.emoji,
+          }))}
+          selectedIds={selectedTeams}
+          onToggle={onToggleTeam}
+          placeholder={t("settings.searchTeams", { defaultValue: "Search teams..." })}
+        />
       </div>
 
       {selectedTeams.length > 0 && (

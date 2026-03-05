@@ -55,10 +55,12 @@
   }
 
   .pill.pillActive:hover:not(.pillDisabled) {
-    filter: brightness(1.1);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    background-color: var(--pill-colour);
-    color: #ffffff;
+    filter: brightness(1.05);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    /* Maintain active state colors instead of forcing solid color + white text */
+    background-color: var(--pill-bg, var(--background-primary-subtle));
+    color: var(--pill-color, var(--pill-colour));
   }
 }
 
