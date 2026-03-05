@@ -14,7 +14,7 @@
   background-color: var(--background-body);
   border: 1px solid var(--border-color-table);
   border-radius: 16px;
-  overflow: hidden;
+  /* Remove overflow: hidden to allow dropdowns to pop out */
   transition: border-color 0.2s ease;
   user-select: none; /* Prevent text selection during drag */
   position: relative;
@@ -65,6 +65,7 @@
   flex-direction: column;
   gap: 8px;
   min-width: 0;
+  overflow: visible;
 }
 
 .itemHeader {
@@ -82,4 +83,5 @@
 
 .itemBody {
   width: 100%;
+  overflow: visible;
 }
