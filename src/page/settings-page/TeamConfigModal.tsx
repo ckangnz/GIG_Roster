@@ -15,7 +15,7 @@ import { useTranslation } from "react-i18next";
 import Button from "../../components/common/Button";
 import { InputField, SelectField } from "../../components/common/InputField";
 import Modal from "../../components/common/Modal";
-import Pill, { PillGroup } from "../../components/common/Pill";
+import SearchableMultiPicker from "../../components/common/SearchableMultiPicker";
 import { SettingsGroup } from "../../components/common/SettingsGroup";
 import { SortableList, SortableItem } from "../../components/common/SortableList";
 import Toggle from "../../components/common/Toggle";
@@ -496,29 +496,25 @@ const TeamConfigModal = ({
 
         {/* Positions */}
         <SettingsGroup label={t('management.team.allowedPositions')} description={t('management.team.allowedPositionsDesc')}>
-          <PillGroup>
-            {availablePositions
-              ?.filter((pos) => !pos.parentId)
-              ?.map((pos) => {
-                const isActive = draft.positions?.some((pId) => pId === pos.id);
-                return (
-                  <Pill
-                    key={pos.id}
-                    colour={pos.colour}
-                    isActive={isActive}
-                    onClick={() => {
-                      const current = draft.positions || [];
-                      const updated = current.includes(pos.id)
-                        ? current.filter(pId => pId !== pos.id)
-                        : [...current, pos.id];
-                      updateDraft({ positions: updated });
-                    }}
-                  >
-                    {pos.emoji} {pos.name}
-                  </Pill>
-                );
-              })}
-          </PillGroup>
+          <SearchableMultiPicker
+            items={(availablePositions || [])
+              .filter((pos) => !pos.parentId)
+              .map((pos) => ({
+                id: pos.id,
+                label: pos.name,
+                emoji: pos.emoji,
+                color: pos.colour,
+              }))}
+            selectedIds={draft.positions || []}
+            onToggle={(posId: string) => {
+              const current = draft.positions || [];
+              const updated = current.includes(posId)
+                ? current.filter(id => id !== posId)
+                : [...current, posId];
+              updateDraft({ positions: updated });
+            }}
+            placeholder={t("settings.searchPositions", { defaultValue: "Search positions..." })}
+          />
         </SettingsGroup>
 
         {/* Preferred Days */}
