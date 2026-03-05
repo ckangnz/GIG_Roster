@@ -113,3 +113,32 @@ export const NoUsersIllustration = () => (
     <circle cx="40" cy="70" r="2" fill="currentColor" fillOpacity="0.5" />
   </SvgWrapper>
 );
+
+export const NoTeamsAssignedIllustration = () => (
+  <SvgWrapper>
+    <circle cx="100" cy="100" r="80" fill="currentColor" fillOpacity="0.03" />
+    
+    {/* Large thought cloud base */}
+    <path 
+      d="M70 110C70 90 85 75 105 75C125 75 140 90 140 110C140 130 125 145 105 145C100 145 95 144 90 142L75 155V140C72 132 70 122 70 110Z" 
+      stroke="currentColor" 
+      strokeWidth="8" 
+      strokeLinecap="round" 
+      strokeLinejoin="round"
+    />
+    
+    {/* Secondary smaller bubble */}
+    <circle cx="145" cy="85" r="20" stroke="currentColor" strokeWidth="6" strokeOpacity="0.3" />
+    <path d="M135 95L125 105" stroke="currentColor" strokeWidth="4" strokeOpacity="0.2" />
+    
+    {/* Question mark in the center */}
+    <path 
+      d="M95 105C95 100 98 95 105 95C112 95 115 100 115 105C115 110 112 113 108 115C105 117 105 120 105 120" 
+      stroke="currentColor" 
+      strokeWidth="6" 
+      strokeLinecap="round" 
+      strokeOpacity="0.6"
+    />
+    <circle cx="105" cy="130" r="3" fill="currentColor" fillOpacity="0.6" />
+  </SvgWrapper>
+);

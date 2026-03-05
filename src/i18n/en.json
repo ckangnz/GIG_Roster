@@ -153,7 +153,13 @@
     "possessive": "'s",
     "instructions": "Tap to read • Double-tap to love",
     "readMore": "read more",
-    "noUsers": "No users found in this team."
+    "noUsers": "No users found in this team.",
+    "empty": {
+      "noTeamsTitle": "No teams assigned",
+      "noTeamsDesc": "You need to be in a team to participate in Team Thoughts.",
+      "noTeamsAdmin": "As an administrator, you can add yourself to teams in your Profile Settings.",
+      "noTeamsMember": "Please contact your organisation administrator to be assigned to a team."
+    }
   },
   "management": {
     "team": {

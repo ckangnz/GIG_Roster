@@ -21,6 +21,8 @@ import { ThoughtExpiry } from "./ThoughtExpiry";
 import ThoughtWheel from "./ThoughtWheel";
 import ActionSheet from "../../components/common/ActionSheet";
 import Button from "../../components/common/Button";
+import EmptyState from "../../components/common/EmptyState";
+import { NoTeamsAssignedIllustration } from "../../components/common/EmptyStateIllustrations";
 import { TextAreaField } from "../../components/common/InputField";
 import Spinner from "../../components/common/Spinner";
 import { db } from "../../firebase";
@@ -438,6 +440,24 @@ const ThoughtsPage = () => {
   const displayTitle = teamId
     ? `${t("nav.thoughts")} • ${displayTeamName}`
     : t("thoughts.title");
+
+  if (!userData?.teams || userData.teams.length === 0) {
+    const isAdmin = userData?.isAdmin || false;
+    return (
+      <EmptyState
+        illustration={<NoTeamsAssignedIllustration />}
+        title={t("thoughts.empty.noTeamsTitle")}
+        description={t("thoughts.empty.noTeamsDesc")}
+        instruction={{
+          text: isAdmin ? t("thoughts.empty.noTeamsAdmin") : t("thoughts.empty.noTeamsMember"),
+          action: isAdmin ? { 
+            label: t("settings.profile"), 
+            onClick: () => navigate("/app/settings/profile") 
+          } : undefined
+        }}
+      />
+    );
+  }
 
   return (
     <>
