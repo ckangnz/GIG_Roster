@@ -65,7 +65,7 @@ service cloud.firestore {
 
       match /{allPaths=**} {
         allow read: if isSignedIn() && isOrgApproved(orgId);
-        allow write: if isSignedIn() && isOrgAdmin(orgId);
+        allow write: if isSignedIn() && isOrgApproved(orgId);
       }
     }
 
