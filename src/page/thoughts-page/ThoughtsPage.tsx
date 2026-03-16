@@ -25,6 +25,7 @@ import Button from "../../components/common/Button";
 import EmptyState from "../../components/common/EmptyState";
 import { NoTeamsAssignedIllustration } from "../../components/common/EmptyStateIllustrations";
 import { TextAreaField } from "../../components/common/InputField";
+import { SortableList, SortableItem } from "../../components/common/SortableList";
 import Spinner from "../../components/common/Spinner";
 import { db } from "../../firebase";
 import { useAppSelector, useAppDispatch } from "../../hooks/redux";
@@ -156,6 +157,21 @@ const ThoughtsPage = () => {
     if (targetThought?.entries?.length) {
       setIsManagementOpen(true);
     }
+  };
+
+  const handleReorderEntries = (newOrder: ThoughtEntry[]) => {
+    if (!targetThought || !managementUser) return;
+
+    const id = targetThought.id;
+    dispatch(applyOptimisticThoughts({ id, entries: newOrder }));
+    dispatch(
+      syncThoughtEntriesRemote({
+        userUid: managementUser.id!,
+        teamName: teamId,
+        userName: managementUser.name || "Anonymous",
+        entries: newOrder,
+      }),
+    );
   };
 
   const handleSaveThought = () => {
@@ -715,48 +731,56 @@ const ThoughtsPage = () => {
         }
       >
         <div className={styles.managementList}>
-          {targetThought?.entries?.map((entry) => (
-            <div
-              key={entry.id}
-              className={`${styles.managementItem} ${entry.isExpired ? styles.managementItemExpired : ""}`}
+          {targetThought?.entries?.length ? (
+            <SortableList
+              items={targetThought.entries}
+              onReorder={handleReorderEntries}
             >
-              <div className={styles.entryContent}>
-                <div className={styles.entryText}>{entry.text}</div>
-                <div
-                  style={{ display: "flex", gap: "8px", alignItems: "center" }}
-                >
-                  <ThoughtExpiry
-                    updatedAt={entry.updatedAt}
-                    className={styles.expiryLabel}
-                  />
-                  {entry.isExpired && (
-                    <span className={styles.expiredBadge}>
-                      {t("thoughts.expired")}
-                    </span>
-                  )}
-                </div>
-              </div>
-              <div className={styles.entryActions}>
-                <Button
-                  variant="secondary"
-                  size="small"
-                  isIcon
-                  onClick={() => handleOpenEditor(entry.id)}
-                  title={entry.isExpired ? t("thoughts.revive", { defaultValue: "Revive" }) : t("thoughts.editThought")}
-                >
-                  {entry.isExpired ? <Sparkles size={14} /> : <Edit2 size={14} />}
-                </Button>
-                <Button
-                  variant="delete"
-                  size="small"
-                  isIcon
-                  onClick={() => handleClearEntry(entry.id)}
-                >
-                  <Trash2 size={14} />
-                </Button>
-              </div>
-            </div>
-          ))}
+              {targetThought.entries.map((entry) => (
+                <SortableItem key={entry.id} value={entry}>
+                  <div
+                    className={`${styles.managementItem} ${entry.isExpired ? styles.managementItemExpired : ""}`}
+                  >
+                    <div className={styles.entryContent}>
+                      <div className={styles.entryText}>{entry.text}</div>
+                      <div
+                        style={{ display: "flex", gap: "8px", alignItems: "center" }}
+                      >
+                        <ThoughtExpiry
+                          updatedAt={entry.updatedAt}
+                          className={styles.expiryLabel}
+                        />
+                        {entry.isExpired && (
+                          <span className={styles.expiredBadge}>
+                            {t("thoughts.expired")}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className={styles.entryActions}>
+                      <Button
+                        variant="secondary"
+                        size="small"
+                        isIcon
+                        onClick={() => handleOpenEditor(entry.id)}
+                        title={entry.isExpired ? t("thoughts.revive", { defaultValue: "Revive" }) : t("thoughts.editThought")}
+                      >
+                        {entry.isExpired ? <Sparkles size={14} /> : <Edit2 size={14} />}
+                      </Button>
+                      <Button
+                        variant="delete"
+                        size="small"
+                        isIcon
+                        onClick={() => handleClearEntry(entry.id)}
+                      >
+                        <Trash2 size={14} />
+                      </Button>
+                    </div>
+                  </div>
+                </SortableItem>
+              ))}
+            </SortableList>
+          ) : null}
 
           {(targetThought?.entries?.length || 0) < 5 &&
             (managementUser?.id === firebaseUser?.uid || userData?.isAdmin) && (
