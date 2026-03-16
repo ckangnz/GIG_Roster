@@ -6,6 +6,7 @@ import {
   Plus,
   Trash2,
   Edit2,
+  Sparkles,
   Share,
   User,
   Users,
@@ -132,15 +133,19 @@ const ThoughtsPage = () => {
     setIsManagementOpen(true);
   };
 
+  const [isReviving, setIsReviving] = useState(false);
+
   const handleOpenEditor = (entryId: string | null = null) => {
     setIsManagementOpen(false);
     if (entryId) {
       const entry = targetThought?.entries?.find((e) => e.id === entryId);
       setInputText(entry?.text || "");
       setEditingEntryId(entryId);
+      setIsReviving(!!entry?.isExpired);
     } else {
       setInputText("");
       setEditingEntryId(null);
+      setIsReviving(false);
     }
     setIsEditorOpen(true);
   };
@@ -165,6 +170,7 @@ const ThoughtsPage = () => {
         currentEntries[index] = {
           ...currentEntries[index],
           text: sanitizedText,
+          ...(currentEntries[index].isExpired ? { hearts: {} } : {}),
           updatedAt: Date.now(),
         };
       }
@@ -736,8 +742,9 @@ const ThoughtsPage = () => {
                   size="small"
                   isIcon
                   onClick={() => handleOpenEditor(entry.id)}
+                  title={entry.isExpired ? t("thoughts.revive", { defaultValue: "Revive" }) : t("thoughts.editThought")}
                 >
-                  <Edit2 size={14} />
+                  {entry.isExpired ? <Sparkles size={14} /> : <Edit2 size={14} />}
                 </Button>
                 <Button
                   variant="delete"
@@ -773,7 +780,9 @@ const ThoughtsPage = () => {
         isOpen={isEditorOpen}
         onClose={handleCloseEditor}
         title={
-          editingEntryId ? t("thoughts.editThought") : t("thoughts.addThought")
+          isReviving
+            ? t("thoughts.reviveThought", { defaultValue: "Revive Thought" })
+            : editingEntryId ? t("thoughts.editThought") : t("thoughts.addThought")
         }
       >
         <div className={styles.inputContainer}>
@@ -795,7 +804,9 @@ const ThoughtsPage = () => {
               disabled={!inputText.trim()}
               className={styles.saveBtn}
             >
-              {t("thoughts.saveThought")}
+              {isReviving
+                ? t("thoughts.reviveThought", { defaultValue: "Revive Thought" })
+                : t("thoughts.saveThought")}
             </Button>
           </div>
         </div>
