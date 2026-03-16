@@ -291,6 +291,21 @@
   font-weight: 500;
 }
 
+.heartsToggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 4px;
+  border-top: 1px solid var(--border-color-secondary);
+  margin-top: 8px;
+}
+
+.heartsToggleLabel {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
 @media (min-width: 768px) {
   .footer {
     padding-bottom: 6rem;

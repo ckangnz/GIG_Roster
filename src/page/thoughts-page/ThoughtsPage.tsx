@@ -27,6 +27,7 @@ import { NoTeamsAssignedIllustration } from "../../components/common/EmptyStateI
 import { TextAreaField } from "../../components/common/InputField";
 import { SortableList, SortableItem } from "../../components/common/SortableList";
 import Spinner from "../../components/common/Spinner";
+import Toggle from "../../components/common/Toggle";
 import { db } from "../../firebase";
 import { useAppSelector, useAppDispatch } from "../../hooks/redux";
 import { Thought, AppUser, ThoughtEntry, OrgMembership } from "../../model/model";
@@ -77,8 +78,10 @@ const ThoughtsPage = () => {
   const [inputText, setInputText] = useState("");
 
   const [isShareSheetOpen, setIsShareSheetOpen] = useState(false);
+  const [isMyShareOpen, setIsMyShareOpen] = useState(false);
   const [isEveryoneOptionsOpen, setIsEveryoneOptionsOpen] = useState(false);
   const [showCopiedToast, setShowCopiedToast] = useState(false);
+  const [includeHearts, setIncludeHearts] = useState(true);
 
   const [likerList, setLikerList] = useState<
     { name: string; time: string }[] | null
@@ -320,18 +323,27 @@ const ThoughtsPage = () => {
   const handleShareMyThoughts = () => {
     if (!myThought?.entries?.length) return;
 
-    const totalLikes = myThought.entries.reduce(
-      (sum, entry) => sum + Object.keys(entry.hearts || {}).length,
-      0,
-    );
-    let text = `My Thoughts (Total Likes: ${totalLikes})\n`;
-    myThought.entries.forEach((entry, i) => {
-      text += `${i + 1}. ${entry.text} (${Object.keys(entry.hearts || {}).length} ❤️)\n`;
-    });
+    let text = "";
+    if (includeHearts) {
+      const totalLikes = myThought.entries.reduce(
+        (sum, entry) => sum + Object.keys(entry.hearts || {}).length,
+        0,
+      );
+      text = `My Thoughts (Total Likes: ${totalLikes})\n`;
+      myThought.entries.forEach((entry, i) => {
+        text += `${i + 1}. ${entry.text} (${Object.keys(entry.hearts || {}).length} ❤️)\n`;
+      });
+    } else {
+      text = `My Thoughts\n`;
+      myThought.entries.forEach((entry, i) => {
+        text += `${i + 1}. ${entry.text}\n`;
+      });
+    }
 
     navigator.clipboard.writeText(text).then(() => {
       setShowCopiedToast(true);
       setTimeout(() => setShowCopiedToast(false), 2000);
+      setIsMyShareOpen(false);
       setIsShareSheetOpen(false);
     });
   };
@@ -394,7 +406,9 @@ const ThoughtsPage = () => {
     });
 
     usersWithThoughts.forEach((u) => {
-      text += `${u.user.name} (${u.totalLikes} ❤️)\n`;
+      text += includeHearts
+        ? `${u.user.name} (${u.totalLikes} ❤️)\n`
+        : `${u.user.name}\n`;
       u.entries.forEach((entry) => {
         text += `- ${entry.text}\n`;
       });
@@ -574,7 +588,7 @@ const ThoughtsPage = () => {
       >
         <button
           className={styles.shareOptionItem}
-          onClick={handleShareMyThoughts}
+          onClick={() => setIsMyShareOpen(true)}
           disabled={!myThought?.entries?.length}
           style={{ opacity: !myThought?.entries?.length ? 0.5 : 1 }}
         >
@@ -603,6 +617,25 @@ const ThoughtsPage = () => {
           </div>
           <Users className={styles.shareOptionIcon} size={20} />
         </button>
+      </ActionSheet>
+
+      <ActionSheet
+        isOpen={isMyShareOpen}
+        onClose={() => setIsMyShareOpen(false)}
+        title={t("thoughts.shareMyThoughts")}
+      >
+        <div className={styles.heartsToggle}>
+          <span className={styles.heartsToggleLabel}>
+            {t("thoughts.includeHearts", { defaultValue: "Include heart counts" })}
+          </span>
+          <Toggle isOn={includeHearts} onToggle={setIncludeHearts} />
+        </div>
+        <Button
+          onClick={handleShareMyThoughts}
+          style={{ width: "100%" }}
+        >
+          {t("thoughts.copyToClipboard", { defaultValue: "Copy to Clipboard" })}
+        </Button>
       </ActionSheet>
 
       <ActionSheet
@@ -719,6 +752,13 @@ const ThoughtsPage = () => {
             style={{ opacity: 0.5 }}
           />
         </button>
+
+        <div className={styles.heartsToggle}>
+          <span className={styles.heartsToggleLabel}>
+            {t("thoughts.includeHearts", { defaultValue: "Include heart counts" })}
+          </span>
+          <Toggle isOn={includeHearts} onToggle={setIncludeHearts} />
+        </div>
       </ActionSheet>
 
       <ActionSheet
