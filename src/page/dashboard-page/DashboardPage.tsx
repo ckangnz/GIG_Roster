@@ -554,6 +554,7 @@ const DashboardPage = () => {
     const resolvePayload = {
       date,
       requestId,
+      teamId,
       status: "resolved" as const,
       resolvedByEmail: userEmail,
     };
@@ -577,6 +578,7 @@ const DashboardPage = () => {
   const handleDismiss = (
     date: string,
     requestId: string,
+    teamId: string,
   ) => {
     dispatch(
       showAlert({
@@ -588,6 +590,7 @@ const DashboardPage = () => {
           const resolvePayload = {
             date,
             requestId,
+            teamId,
             status: "dismissed" as const,
             resolvedByEmail: userEmail,
           };
@@ -864,7 +867,7 @@ const DashboardPage = () => {
                                       size="small"
                                       variant="secondary"
                                       onClick={() =>
-                                        handleDismiss(dateStr, requestId)
+                                        handleDismiss(dateStr, requestId, teamData.teamId)
                                       }
                                       style={{
                                         marginLeft: "4px",

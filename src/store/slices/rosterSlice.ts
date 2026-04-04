@@ -339,10 +339,11 @@ export const resolveCoverageRequestRemote = createAsyncThunk(
       requestId: string;
       status: "resolved" | "dismissed";
       resolvedByEmail?: string;
+      teamId?: string; // pass teamId directly to avoid reading stale optimistic state
     },
     { rejectWithValue, getState },
   ) => {
-    const { date, requestId } = payload;
+    const { date, requestId, teamId: payloadTeamId } = payload;
     try {
       const state = getState() as {
         auth: AuthState;
@@ -351,9 +352,10 @@ export const resolveCoverageRequestRemote = createAsyncThunk(
       const orgId = state.auth.activeOrgId;
       if (!orgId) throw new Error("Org ID missing");
 
+      // Use payloadTeamId if provided, otherwise look up from state
+      // (state may have already been updated optimistically)
       const entry = state.roster.entries[date];
-      const request = entry?.coverageRequests?.[requestId];
-      const teamId = request?.teamName; // teamName field actually stores teamId
+      const teamId = payloadTeamId || entry?.coverageRequests?.[requestId]?.teamName;
 
       if (teamId) {
         const docId = `${teamId}_${date}`;
