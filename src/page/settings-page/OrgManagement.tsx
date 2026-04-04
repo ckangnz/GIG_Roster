@@ -28,6 +28,7 @@ import {
   clearActiveOrgId,
   joinOrganisation,
 } from "../../store/slices/authSlice";
+import { clearLastVisitedPaths } from "../../store/slices/uiSlice";
 import JoinOrCreateOrgModal from "../org-selection-page/JoinOrCreateOrgModal";
 
 import styles from "./org-management.module.css";
@@ -167,6 +168,7 @@ const OrgManagement = ({
     if (memSnap.exists()) {
       dispatch(setMembership(memSnap.data() as OrgMembership));
     }
+    dispatch(clearLastVisitedPaths());
     dispatch(setActiveOrgId(orgId));
     if (!standalone) onClose();
   };

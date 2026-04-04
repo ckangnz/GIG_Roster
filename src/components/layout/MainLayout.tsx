@@ -79,10 +79,20 @@ const MainLayout = () => {
       });
     } else if (isBaseRoster) {
       const savedPath = lastVisitedPaths[AppTab.ROSTER];
-      if (savedPath) {
+      const userTeamIds = userData?.teams || [];
+      const savedPathTeamId = savedPath?.split("/")?.[3];
+      const savedTeamStillValid =
+        savedPathTeamId &&
+        allTeams.some(
+          (t) =>
+            (t.id === savedPathTeamId || t.name === savedPathTeamId) &&
+            userTeamIds.includes(t.id),
+        );
+
+      if (savedPath && savedTeamStillValid) {
         navigate(savedPath, { replace: true });
-      } else if (userData?.teams?.[0] && allTeams.length > 0) {
-        const teamId = userData.teams[0];
+      } else if (userTeamIds.length > 0 && allTeams.length > 0) {
+        const teamId = userTeamIds[0];
         const team = allTeams.find((t) => t.id === teamId || t.name === teamId);
         if (team) {
           navigate(`/app/roster/${team.id}/All`, {

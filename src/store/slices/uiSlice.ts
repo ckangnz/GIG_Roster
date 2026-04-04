@@ -67,6 +67,9 @@ const uiSlice = createSlice({
       const { tabId, path } = action.payload;
       state.lastVisitedPaths[tabId] = path;
     },
+    clearLastVisitedPaths: (state) => {
+      state.lastVisitedPaths = {};
+    },
     toggleTeamExpansion: (state, action: PayloadAction<string>) => {
       const teamName = action.payload;
       const index = state.expandedTeams.indexOf(teamName);
@@ -119,6 +122,7 @@ export const {
   setDesktopSidebarExpanded,
   setRosterAllViewMode,
   setLastVisitedPath,
+  clearLastVisitedPaths,
   toggleTeamExpansion,
   expandTeam,
   toggleUserVisibility,
