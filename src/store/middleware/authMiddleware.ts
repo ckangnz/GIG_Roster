@@ -22,7 +22,12 @@ export const authMiddleware: Middleware = (store) => {
 
         unsubscribeSnapshot = onSnapshot(userRef, (docSnap) => {
           if (docSnap.exists()) {
-            const userData = docSnap.data() as AppUser;
+            const userData = { ...docSnap.data() as AppUser, id: firebaseUser.uid };
+            // Always keep photoURL in sync with Firebase Auth (source of truth)
+            const providerPhotoURL = firebaseUser.providerData?.[0]?.photoURL || firebaseUser.photoURL;
+            if (!userData.photoURL && providerPhotoURL) {
+              userData.photoURL = providerPhotoURL.replace(/=s\d+-c$/, "=s200-c");
+            }
             store.dispatch(setUserData(userData));
           }
         });

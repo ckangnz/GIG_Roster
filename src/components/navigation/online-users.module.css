@@ -144,6 +144,13 @@
   font-weight: 700;
 }
 
+.avatarImg {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
 .pulse {
   width: 8px;
   height: 8px;

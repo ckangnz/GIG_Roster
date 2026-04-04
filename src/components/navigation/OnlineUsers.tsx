@@ -9,6 +9,7 @@ import { useAppSelector } from "../../hooks/redux";
 import { useOnlineUsers, currentSessionId } from "../../hooks/usePresence";
 import { useTheme } from "../../hooks/useThemeHook";
 import { selectUserData } from "../../store/slices/authSlice";
+import { getUserPhotoURL, getInitials } from "../../utils/avatarUtils";
 import NameTag from "../common/NameTag";
 
 import styles from "./online-users.module.css";
@@ -83,17 +84,6 @@ const OnlineUsers = ({
   const displayUsers = onlineUsers.slice(0, 3);
   const remainingCount = onlineUsers.length - 3;
 
-  const getInitials = (name: string | undefined | null) => {
-    if (!name || typeof name !== "string") return "?";
-    const parts = name.trim().split(" ");
-    if (parts.length === 0) return "?";
-    return parts
-      .map((n) => n[0])
-      .join("")
-      .substring(0, 2)
-      .toUpperCase();
-  };
-
   const containerClasses = [
     styles.onlineUsersContainer,
     variant === "sidebar" ? styles.sidebarVariant : "",
@@ -128,11 +118,14 @@ const OnlineUsers = ({
             className={styles.avatarCircle}
             title={user.name || "Unknown User"}
             style={{ 
-              backgroundColor: resolvePresenceColor(user.colorIndex, user.color, isDark), 
+              backgroundColor: getUserPhotoURL(user.photoURL, user.hidePhoto) ? "transparent" : resolvePresenceColor(user.colorIndex, user.color, isDark), 
               borderColor: "white" 
             }}
           >
-            {getInitials(user.name)}
+            {getUserPhotoURL(user.photoURL, user.hidePhoto)
+              ? <img src={getUserPhotoURL(user.photoURL, user.hidePhoto)!} alt={user.name} className={styles.avatarImg} referrerPolicy="no-referrer" />
+              : getInitials(user.name)
+            }
           </div>
         ))}
       </div>
@@ -159,9 +152,12 @@ const OnlineUsers = ({
                 >
                   <div
                     className={styles.userAvatarSmall}
-                    style={{ backgroundColor: resolvePresenceColor(user.colorIndex, user.color, isDark) }}
+                    style={{ backgroundColor: getUserPhotoURL(user.photoURL, user.hidePhoto) ? "transparent" : resolvePresenceColor(user.colorIndex, user.color, isDark) }}
                   >
-                    {getInitials(user.name)}
+                    {getUserPhotoURL(user.photoURL, user.hidePhoto)
+                      ? <img src={getUserPhotoURL(user.photoURL, user.hidePhoto)!} alt={user.name} className={styles.avatarImg} referrerPolicy="no-referrer" />
+                      : getInitials(user.name)
+                    }
                   </div>
                   <span className={styles.userNameText}>
                     <NameTag

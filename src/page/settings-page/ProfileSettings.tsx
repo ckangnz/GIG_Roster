@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 
-import { Smile } from "lucide-react";
+import { doc, updateDoc } from "firebase/firestore";
+import { Eye, EyeOff, Smile } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import TeamPositionEditor from "./TeamPositionEditor";
@@ -8,13 +9,14 @@ import Button from "../../components/common/Button";
 import Pill, { PillGroup } from "../../components/common/Pill";
 import SaveFooter from "../../components/common/SaveFooter";
 import Toggle from "../../components/common/Toggle";
-import { auth } from "../../firebase";
+import { auth, db } from "../../firebase";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import {
   updateUserProfile,
   selectUserData,
 } from "../../store/slices/authSlice";
 import formStyles from "../../styles/form.module.css";
+import { getUserPhotoURL } from "../../utils/avatarUtils";
 
 import styles from "./profile-settings.module.css";
 
@@ -120,6 +122,12 @@ const ProfileSettings = ({
     });
   };
 
+  const handleTogglePhoto = async () => {
+    if (!firebaseUser || !userData) return;
+    const newHidePhoto = !userData.hidePhoto;
+    await updateDoc(doc(db, "users", firebaseUser.uid), { hidePhoto: newHidePhoto });
+  };
+
   const handleWithdraw = async () => {
     if (!firebaseUser) return;
     setStatus("saving");
@@ -179,8 +187,20 @@ const ProfileSettings = ({
     <section className={`${styles.profileCard} ${className || ""}`}>
       {/* Hero */}
       <div className={styles.profileHero}>
-        <div className={`${styles.profileAvatar} ${!initials ? styles.profileAvatarPlaceholder : ""}`}>
-          {initials ?? <Smile size={32} />}
+        <div
+          className={`${styles.profileAvatar} ${!userData.photoURL && !initials ? styles.profileAvatarPlaceholder : ""} ${userData.photoURL ? styles.profileAvatarClickable : ""}`}
+          onClick={userData.photoURL ? handleTogglePhoto : undefined}
+          title={userData.photoURL ? (userData.hidePhoto ? t("settings.showPhoto") : t("settings.hidePhoto")) : undefined}
+        >
+          {getUserPhotoURL(userData.photoURL, userData.hidePhoto)
+            ? <img src={getUserPhotoURL(userData.photoURL, userData.hidePhoto)!} alt={formState.name} className={styles.profileAvatarImg} referrerPolicy="no-referrer" />
+            : (initials ?? <Smile size={32} />)
+          }
+          {userData.photoURL && (
+            <div className={styles.profileAvatarOverlay}>
+              {userData.hidePhoto ? <Eye size={20} /> : <EyeOff size={20} />}
+            </div>
+          )}
         </div>
         <h2 className={styles.profileHeroName}>
           {formState.name.trim() || t("settings.name")}

@@ -57,6 +57,8 @@ export interface AppUser {
   email: string | null;
   organisations: Record<string, UserOrgMetadata> | string[]; // Can be Map during transition or Array after cleanup
   gender: string;
+  photoURL?: string | null;
+  hidePhoto?: boolean;
 }
 
 export interface AppUserWithMembership extends AppUser {

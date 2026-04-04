@@ -317,6 +317,8 @@
     "position_management": "포지션",
     "user_management": "멤버",
     "name": "이름",
+    "hidePhoto": "사진 숨기기",
+    "showPhoto": "사진 보이기",
     "nameRequired": "이름을 입력해 주세요",
     "gender": "성별",
     "male": "남",

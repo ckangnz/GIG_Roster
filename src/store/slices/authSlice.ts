@@ -62,6 +62,15 @@ export const initializeUserData = createAsyncThunk(
       if (userSnap.exists()) {
         const data = userSnap.data() as AppUser;
 
+        // Sync photoURL from Google auth if changed
+        // providerData[0].photoURL is more reliable than user.photoURL for federated login
+        const rawPhotoURL = authUser.providerData?.[0]?.photoURL || authUser.photoURL || null;
+        const latestPhotoURL = rawPhotoURL ? rawPhotoURL.replace(/=s\d+-c$/, "=s200-c") : null;
+        if (latestPhotoURL !== (data.photoURL ?? null)) {
+          await updateDoc(userDocRef, { photoURL: latestPhotoURL });
+          data.photoURL = latestPhotoURL;
+        }
+
         // Load membership for active org if exists
         const activeOrgId = localStorage.getItem("activeOrgId");
         const orgs = data.organisations;
@@ -93,6 +102,9 @@ export const initializeUserData = createAsyncThunk(
           email: authUser?.email || null,
           organisations: [],
           gender: "",
+          photoURL: (authUser?.providerData?.[0]?.photoURL || authUser?.photoURL)
+            ? (authUser?.providerData?.[0]?.photoURL || authUser?.photoURL)!.replace(/=s\d+-c$/, "=s200-c")
+            : null,
         };
         await setDoc(userDocRef, newData);
         return newData;

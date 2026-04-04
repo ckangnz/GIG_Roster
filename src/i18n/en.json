@@ -316,6 +316,8 @@
     "position_management": "Positions",
     "user_management": "Members",
     "name": "Full Name",
+    "hidePhoto": "Hide photo",
+    "showPhoto": "Show photo",
     "nameRequired": "Full name is required",
     "gender": "Gender",
     "male": "Male",

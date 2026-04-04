@@ -39,6 +39,8 @@ export interface PresenceUser {
   lastSeen: number; 
   color: string;
   colorIndex?: number;
+  photoURL?: string | null;
+  hidePhoto?: boolean;
   focus?: PresenceFocus | null;
   location?: string;
 }
@@ -206,6 +208,8 @@ export const useTrackPresence = (firebaseUser: User | null, userData: AppUser | 
           email: userData.email,
           color: sessionColor,
           colorIndex: sessionColorIndex,
+          photoURL: (firebaseUser.providerData?.[0]?.photoURL || firebaseUser.photoURL || null),
+          hidePhoto: userData.hidePhoto || false,
           lastSeen: serverTimestamp(),
           focus: focusData,
           location: location.pathname,
@@ -244,7 +248,8 @@ export const useTrackPresence = (firebaseUser: User | null, userData: AppUser | 
       window.removeEventListener("beforeunload", markOffline);
       markOffline();
     };
-  }, [firebaseUser?.uid, firebaseUser?.displayName, userData?.email, userData?.name, currentFocus, location.pathname, activeOrgId, myTeams]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [firebaseUser?.uid, firebaseUser?.displayName, firebaseUser?.photoURL, userData?.email, userData?.name, userData?.hidePhoto, currentFocus, location.pathname, activeOrgId, myTeams]);
 
   useEffect(() => {
     const docId = `${firebaseUser?.uid}_${currentSessionId}`;
@@ -311,6 +316,8 @@ export const usePresenceListener = () => {
             email: String(data.email || ""),
             color: String(data.color || "#5c4eb1"),
             colorIndex: typeof data.colorIndex === 'number' ? data.colorIndex : undefined,
+            photoURL: data.photoURL || null,
+            hidePhoto: data.hidePhoto || false,
             lastSeen: lastSeenMillis,
             focus: data.focus || null,
             location: data.location || "",
