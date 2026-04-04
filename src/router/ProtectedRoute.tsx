@@ -33,12 +33,16 @@ const ProtectedRoute = () => {
     }
   }, [dispatch, firebaseUser, isApproved, activeOrgId, teamsFetched, teamsLoading, positionsFetched, positionsLoading]);
 
-  if (loading || !userData) {
+  if (loading) {
     return <LoadingPage />;
   }
 
   if (!firebaseUser) {
     return <Navigate to="/login" replace />;
+  }
+
+  if (!userData) {
+    return <LoadingPage />;
   }
 
   if (!activeOrgId) {
