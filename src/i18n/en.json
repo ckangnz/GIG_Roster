@@ -66,6 +66,12 @@
     "title": "Upcoming Events",
     "replacementNeeded": "Replacement Needed",
     "claimShift": "Claim Shift",
+    "dismissShift": "Dismiss",
+    "dismissAlert": {
+      "title": "Accept Vacancy?",
+      "message": "This will close the alert and leave the position vacant. Are you sure?",
+      "confirm": "Dismiss"
+    },
     "unavailable": "unavailable",
     "resetToUpcoming": "Reset to upcoming",
     "copyToClipboard": "Copy to clipboard",

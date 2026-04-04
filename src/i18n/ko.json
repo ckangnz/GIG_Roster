@@ -66,6 +66,12 @@
     "title": "예정된 일정",
     "replacementNeeded": "대체 필요",
     "claimShift": "신청하기",
+    "dismissShift": "닫기",
+    "dismissAlert": {
+      "title": "공석 수락?",
+      "message": "이 알림을 닫고 해당 포지션을 공석으로 남깁니다. 계속하시겠습니까?",
+      "confirm": "닫기"
+    },
     "unavailable": "참여불가",
     "resetToUpcoming": "예정된 일정으로 리셋",
     "copyToClipboard": "클립보드에 복사",

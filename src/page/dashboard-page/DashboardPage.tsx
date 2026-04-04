@@ -38,6 +38,7 @@ import {
   syncEventNameRemote,
 } from "../../store/slices/rosterSlice";
 import { getUpcomingDates } from "../../store/slices/rosterViewSlice";
+import { showAlert } from "../../store/slices/uiSlice";
 import {
   generateMultiIcsString,
   generateIcsString,
@@ -573,6 +574,30 @@ const DashboardPage = () => {
     }
   };
 
+  const handleDismiss = (
+    date: string,
+    requestId: string,
+  ) => {
+    dispatch(
+      showAlert({
+        title: t("dashboard.dismissAlert.title"),
+        message: t("dashboard.dismissAlert.message"),
+        confirmText: t("dashboard.dismissAlert.confirm"),
+        onConfirm: () => {
+          const userEmail = userData?.email || "";
+          const resolvePayload = {
+            date,
+            requestId,
+            status: "dismissed" as const,
+            resolvedByEmail: userEmail,
+          };
+          dispatch(applyOptimisticResolve(resolvePayload));
+          dispatch(resolveCoverageRequestRemote(resolvePayload));
+        },
+      }),
+    );
+  };
+
   const currentEventDate = rosterDates[currentDateIndex];
   const todayKey = getTodayKey();
 
@@ -650,7 +675,7 @@ const DashboardPage = () => {
   const showSpinner = loadingRoster || !isInitialized;
 
   const pageTitle = isPast
-    ? t("common.previousEvent", { defaultValue: "Previous Event" })
+    ? t("common.previousEvent")
     : t("dashboard.title");
 
   const formatDate = (dateStr: string) => {
@@ -742,7 +767,7 @@ const DashboardPage = () => {
                       ) : (
                         <>
                           <CopyIcon size={16} />{" "}
-                          {t("common.copy", { defaultValue: "Copy" })}
+                          {t("common.copy")}
                         </>
                       )}
                     </button>
@@ -807,32 +832,51 @@ const DashboardPage = () => {
                               ? t("common.unassigned")
                               : null}
 
-                          {/* Show Claim button inline if qualified, not assigned, and there's a request */}
-                          {isQualified &&
-                            !isAlreadyAssigned &&
+                          {/* Show Claim/Dismiss buttons inline if there's a request */}
+                          {(isQualified && !isAlreadyAssigned || isAdmin) &&
                             matchingRequests.map(
                               ([requestId, request], idx) => (
                                 <Fragment key={requestId}>
-                                  <Button
-                                    size="small"
-                                    variant="primary"
-                                    onClick={() =>
-                                      handleClaim(
-                                        dateStr,
-                                        teamData.teamId,
-                                        group.posId,
-                                        requestId,
-                                      )
-                                    }
-                                    style={{
-                                      marginLeft: "4px",
-                                      padding: "2px 8px",
-                                      height: "auto",
-                                      fontSize: "0.65rem",
-                                    }}
-                                  >
-                                    {t("dashboard.claimShift")}
-                                  </Button>
+                                  {isQualified && !isAlreadyAssigned && (
+                                    <Button
+                                      size="small"
+                                      variant="primary"
+                                      onClick={() =>
+                                        handleClaim(
+                                          dateStr,
+                                          teamData.teamId,
+                                          group.posId,
+                                          requestId,
+                                        )
+                                      }
+                                      style={{
+                                        marginLeft: "4px",
+                                        padding: "2px 8px",
+                                        height: "auto",
+                                        fontSize: "0.65rem",
+                                      }}
+                                    >
+                                      {t("dashboard.claimShift")}
+                                    </Button>
+                                  )}
+                                  {isAdmin && (
+                                    <Button
+                                      size="small"
+                                      variant="secondary"
+                                      onClick={() =>
+                                        handleDismiss(dateStr, requestId)
+                                      }
+                                      style={{
+                                        marginLeft: "4px",
+                                        padding: "2px 8px",
+                                        height: "auto",
+                                        fontSize: "0.65rem",
+                                      }}
+                                    >
+                                      {t("dashboard.dismissShift")}
+                                    </Button>
+                                  )}
+                                  {" "}
                                   <span className={styles.inlineClaimInfo}>
                                     ({request.absentUserName}{" "}
                                     {t("dashboard.unavailable")})
