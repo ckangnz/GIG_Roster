@@ -1,0 +1,21 @@
+echo "Running Prettier..."
+yarn prettier --write "src/**/*.{ts,tsx}"
+git add -u
+
+echo "Running ESLint check..."
+yarn eslint .
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "ESLint check failed. Please fix the errors before committing."
+  exit 1
+fi
+
+echo "Running TypeScript type check..."
+yarn tsc --noEmit
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "TypeScript type check failed. Please fix the errors before committing."
+  exit 1
+fi
+
+echo "Pre-commit checks passed!"
