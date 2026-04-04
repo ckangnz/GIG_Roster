@@ -1,9 +1,8 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 
 import { db } from '../../firebase';
-import { AppUser, Team, Weekday, formatToDateKey, OrgMembership } from '../../model/model';
-import { RootState } from '../index';
+import { Team, Weekday, formatToDateKey } from '../../model/model';
 
 // Helper function from RosterTable.tsx
 export const getUpcomingDates = (
@@ -107,120 +106,22 @@ const getPreviousDates = (preferredDays: Weekday[], earliestDateStr: string, cou
 };
 
 interface RosterViewState {
-  users: AppUser[];
-  allTeamUsers: AppUser[];
   currentTeamData: Team | null;
   rosterDates: string[];
-  loadingUsers: boolean;
   loadingTeam: boolean;
-  loadingAllTeamUsers: boolean;
   error: string | null;
   filterUserId: string | null;
   highlightedUserId: string | null;
 }
 
 const initialState: RosterViewState = {
-  users: [],
-  allTeamUsers: [],
   currentTeamData: null,
   rosterDates: [],
-  loadingUsers: false,
   loadingTeam: false,
-  loadingAllTeamUsers: false,
   error: null,
   filterUserId: null,
   highlightedUserId: null,
 };
-
-export const fetchAllTeamUsers = createAsyncThunk(
-  'rosterView/fetchAllTeamUsers',
-  async ({ teamId, orgId }: { teamId: string, orgId: string }, { rejectWithValue }) => {
-    if (!teamId || !orgId) return [];
-    try {
-      // 1. Fetch memberships from sub-collection
-      const memSnap = await getDocs(collection(db, 'organisations', orgId, 'memberships'));
-      const memberships: Record<string, OrgMembership> = {};
-      memSnap.forEach(doc => {
-        memberships[doc.id] = doc.data() as OrgMembership;
-      });
-
-      // 2. Fetch corresponding users
-      const usersSnap = await getDocs(collection(db, 'users'));
-      const fetchedUsers: AppUser[] = [];
-      
-      usersSnap.forEach((uDoc) => {
-        const memData = memberships[uDoc.id];
-        if (memData && memData.teams?.includes(teamId)) {
-          const userData = uDoc.data() as AppUser;
-          fetchedUsers.push({
-            ...userData,
-            id: uDoc.id,
-            // Inject virtual organisations map for component compatibility
-            organisations: { [orgId]: memData } as Record<string, OrgMembership>
-          });
-        }
-      });
-
-      return fetchedUsers.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
-    } catch (err) {
-      console.error('Error fetching team users:', err);
-      return rejectWithValue('Failed to load team users.');
-    }
-  },
-);
-
-export const fetchUsersByTeamAndPosition = createAsyncThunk(
-  'rosterView/fetchUsers',
-  async (
-    { teamId, positionId, orgId }: { teamId: string; positionId: string; orgId: string },
-    { rejectWithValue, getState },
-  ) => {
-    if (!teamId || !positionId || !orgId) return [];
-    try {
-      const state = getState() as RootState;
-      const allPositions = state.positions.positions;
-
-      // Find children of this position
-      const children = allPositions.filter((p) => p.parentId === positionId);
-      const positionGroup = [positionId, ...children.map((c) => c.id)];
-
-      // Create indexed keys for all positions in the group (ID|ID)
-      const indexedKeys = positionGroup.map((posId) => `${teamId}|${posId}`);
-
-      // 1. Fetch memberships from sub-collection
-      const memSnap = await getDocs(collection(db, 'organisations', orgId, 'memberships'));
-      const memberships: Record<string, OrgMembership> = {};
-      memSnap.forEach(doc => {
-        memberships[doc.id] = doc.data() as OrgMembership;
-      });
-
-      // 2. Fetch corresponding users
-      const usersSnap = await getDocs(collection(db, 'users'));
-      const fetchedUsers: AppUser[] = [];
-      
-      usersSnap.forEach((uDoc) => {
-        const memData = memberships[uDoc.id];
-        if (memData) {
-          const hasAssignment = memData.indexedAssignments?.some((ia: string) => indexedKeys.includes(ia));
-          if (hasAssignment) {
-            const userData = uDoc.data() as AppUser;
-            fetchedUsers.push({
-              ...userData,
-              id: uDoc.id,
-              // Inject virtual organisations map for component compatibility
-              organisations: { [orgId]: memData } as Record<string, OrgMembership>
-            });
-          }
-        }
-      });
-
-      return fetchedUsers.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
-    } catch (err) {
-      console.error('Error fetching users:', err);
-      return rejectWithValue('Failed to load users.');
-    }
-  },
-);
 
 export const fetchTeamDataForRoster = createAsyncThunk(
   'rosterView/fetchTeamData',
@@ -291,36 +192,6 @@ const rosterViewSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // Fetch Users
-      .addCase(fetchUsersByTeamAndPosition.pending, (state) => {
-        state.loadingUsers = true;
-        state.users = [];
-        state.error = null;
-      })
-      .addCase(
-        fetchUsersByTeamAndPosition.fulfilled,
-        (state, action: PayloadAction<AppUser[]>) => {
-          state.users = action.payload;
-          state.loadingUsers = false;
-        },
-      )
-      .addCase(fetchUsersByTeamAndPosition.rejected, (state, action) => {
-        state.error = action.payload as string;
-        state.loadingUsers = false;
-      })
-      // Fetch All Team Users
-      .addCase(fetchAllTeamUsers.pending, (state) => {
-        state.loadingAllTeamUsers = true;
-        state.allTeamUsers = [];
-      })
-      .addCase(fetchAllTeamUsers.fulfilled, (state, action: PayloadAction<AppUser[]>) => {
-        state.allTeamUsers = action.payload;
-        state.loadingAllTeamUsers = false;
-      })
-      .addCase(fetchAllTeamUsers.rejected, (state, action) => {
-        state.error = action.payload as string;
-        state.loadingAllTeamUsers = false;
-      })
       // Fetch Team Data
       .addCase(fetchTeamDataForRoster.pending, (state) => {
         state.loadingTeam = true;

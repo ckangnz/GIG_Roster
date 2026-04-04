@@ -116,7 +116,8 @@ export const useTrackPresence = (firebaseUser: User | null, userData: AppUser | 
   const myTeams = useMemo(() => userMembership?.teams || [], [userMembership?.teams]);
 
   const { focusedCell } = useAppSelector(state => state.ui);
-  const { rosterDates, users, allTeamUsers } = useAppSelector(state => state.rosterView);
+  const { rosterDates } = useAppSelector(state => state.rosterView);
+  const allUsers = useAppSelector(state => state.userManagement.allUsers);
   const { positions: allPositions } = useAppSelector(state => state.positions);
   
   const currentFocus: PresenceFocus | null = useMemo(() => {
@@ -142,13 +143,13 @@ export const useTrackPresence = (firebaseUser: User | null, userData: AppUser | 
     if (focusedCell) {
       date = rosterDates[focusedCell.row] || "";
       if (focusedCell.table === "absence") {
-        identifier = allTeamUsers[focusedCell.col]?.email || "";
+        identifier = allUsers[focusedCell.col]?.email || "";
       } else if (focusedCell.table === "roster") {
         const currentPos = allPositions.find((p: Position) => p.name === activePosition);
         if (currentPos?.isCustom) {
           identifier = currentPos.customLabels?.[focusedCell.col] || "";
         } else {
-          const sorted = users.filter(u => {
+          const sorted = allUsers.filter(u => {
             const orgs = u.organisations;
             if (orgs && !Array.isArray(orgs) && activeOrgId) {
               return orgs[activeOrgId]?.isActive ?? true;
@@ -166,7 +167,7 @@ export const useTrackPresence = (firebaseUser: User | null, userData: AppUser | 
       teamName,
       viewName: activePosition || null
     };
-  }, [focusedCell, rosterDates, users, allTeamUsers, allPositions, location.pathname, activeOrgId]);
+  }, [focusedCell, rosterDates, allUsers, allPositions, location.pathname, activeOrgId]);
 
   useEffect(() => {
     if (!firebaseUser?.uid || !userData?.email || !activeOrgId) return;

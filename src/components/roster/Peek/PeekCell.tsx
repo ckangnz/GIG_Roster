@@ -3,6 +3,7 @@ import { memo } from "react";
 import { useParams } from "react-router-dom";
 
 import { useAppSelector } from "../../../hooks/redux";
+import { getAssignmentsForTeam } from "../../../model/model";
 
 import styles from "./peek.module.css";
 
@@ -13,24 +14,23 @@ interface PeekCellProps {
 export const PeekCell = memo(({ dateString }: PeekCellProps) => {
   const { teamName } = useParams();
   const { peekPositionName } = useAppSelector((state) => state.ui);
-  const { allTeamUsers } = useAppSelector((state) => state.rosterView);
+  const allTeamUsers = useAppSelector((state) => state.userManagement.allUsers);
   const { entries } = useAppSelector((state) => state.roster);
 
-  if (!peekPositionName || !teamName) return <td className={`${styles.peekCell} peekCell`} />;
+  if (!peekPositionName || !teamName)
+    return <td className={`${styles.peekCell} peekCell`} />;
 
   const dateKey = dateString.split("T")[0];
   const entry = entries[dateKey];
   if (!entry || !entry.teams[teamName])
     return <td className={`${styles.peekCell} peekCell`} />;
 
-  const assignedUsers = Object.entries(entry.teams[teamName])
-    .filter(
-      ([, assignments]) =>
-        Array.isArray(assignments) && assignments.includes(peekPositionName),
-    )
-    .map(([email]) => {
-      const user = allTeamUsers.find((u) => u.email === email);
-      return user?.name || email;
+  const assignments = getAssignmentsForTeam(entry, teamName);
+  const assignedUsers = Object.entries(assignments)
+    .filter(([, positionIds]) => positionIds.includes(peekPositionName))
+    .map(([userKey]) => {
+      const user = allTeamUsers.find((u) => u.id === userKey || u.email === userKey);
+      return user?.name || userKey;
     });
 
   return (
