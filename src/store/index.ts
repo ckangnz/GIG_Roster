@@ -38,8 +38,6 @@ export const store = configureStore({
           'auth.firebaseUser',
           'roster.entries',
           'roster.dirtyEntries',
-          'rosterView.users',
-          'rosterView.allTeamUsers',
           'thoughts.thoughts',
           'ui.alertConfig',
         ],

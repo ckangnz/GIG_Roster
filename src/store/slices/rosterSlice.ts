@@ -377,17 +377,6 @@ const rosterSlice = createSlice({
   name: "roster",
   initialState,
   reducers: {
-    clearError: (state) => {
-      state.error = null;
-    },
-    setRosterEntries(
-      state,
-      action: PayloadAction<Record<string, RosterEntry>>,
-    ) {
-      state.entries = action.payload;
-      state.loading = false;
-      state.initialLoad = true;
-    },
     setLoading(state, action: PayloadAction<boolean>) {
       state.loading = action.payload;
     },
@@ -785,8 +774,6 @@ const rosterSlice = createSlice({
 });
 
 export const {
-  clearError,
-  setRosterEntries,
   setLoading,
   updateRosterTeams,
   updateRosterAbsences,

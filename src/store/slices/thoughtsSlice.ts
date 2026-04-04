@@ -59,7 +59,7 @@ const ensureTimestamp = (ts: unknown): number => {
  * 3. In syncThoughtEntriesRemote: Remove the 'text: deleteField()' and 'hearts: deleteField()' lines.
  * 4. In model.ts: Remove 'text' and 'hearts' from the Thought interface.
  */
-export const normalizeThought = (thought: Thought): Thought => {
+const normalizeThought = (thought: Thought): Thought => {
   const now = Date.now();
   let entries: ThoughtEntry[] = [];
 

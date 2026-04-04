@@ -27,7 +27,7 @@ import {
 
 /** Resolves "system" to the best matching supported language from the browser */
 const SUPPORTED_LANGUAGES = ["en-NZ", "ko"];
-export const resolveLanguage = (lang: string): string => {
+const resolveLanguage = (lang: string): string => {
   if (lang !== "system") return lang;
   const browserLang = navigator.language;
   return SUPPORTED_LANGUAGES.find((l) => browserLang.startsWith(l.split("-")[0])) ?? "en-NZ";

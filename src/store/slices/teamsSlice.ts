@@ -72,9 +72,6 @@ const teamsSlice = createSlice({
   name: "teams",
   initialState,
   reducers: {
-    clearError: (state) => {
-      state.error = null;
-    },
     setTeams: (state, action: PayloadAction<Team[]>) => {
       state.teams = action.payload;
       state.fetched = true;
@@ -115,5 +112,5 @@ const teamsSlice = createSlice({
   },
 });
 
-export const { clearError, setTeams, removePositionFromAllTeams } = teamsSlice.actions;
+export const { setTeams, removePositionFromAllTeams } = teamsSlice.actions;
 export const teamsReducer = teamsSlice.reducer;

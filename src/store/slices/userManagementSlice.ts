@@ -34,7 +34,7 @@ const initialState: UserManagementState = {
   error: null,
 };
 
-export const fetchAllUsers = createAsyncThunk(
+const fetchAllUsers = createAsyncThunk(
   "userManagement/fetchAllUsers",
   async (_, { rejectWithValue, getState, dispatch }) => {
     try {
