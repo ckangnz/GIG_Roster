@@ -21,11 +21,7 @@ const RosterPage = () => {
     return <GeneralRosterTable />;
   };
 
-  return (
-    <div className={styles.rosterPage}>
-      {renderRoster()}
-    </div>
-  );
+  return <div className={styles.rosterPage}>{renderRoster()}</div>;
 };
 
 export default RosterPage;

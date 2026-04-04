@@ -1,16 +1,16 @@
-import { configureStore } from '@reduxjs/toolkit';
+import { configureStore } from "@reduxjs/toolkit";
 
-import { authMiddleware } from './middleware/authMiddleware';
-import { authReducer } from './slices/authSlice';
-import { positionsReducer } from './slices/positionsSlice';
-import { presenceReducer } from './slices/presenceSlice';
-import { rosterReducer } from './slices/rosterSlice';
-import { rosterViewReducer } from './slices/rosterViewSlice';
-import { teamsReducer } from './slices/teamsSlice';
-import { thoughtsReducer } from './slices/thoughtsSlice';
-import { uiReducer } from './slices/uiSlice';
-import { undoReducer } from './slices/undoSlice';
-import { userManagementReducer } from './slices/userManagementSlice';
+import { authMiddleware } from "./middleware/authMiddleware";
+import { authReducer } from "./slices/authSlice";
+import { positionsReducer } from "./slices/positionsSlice";
+import { presenceReducer } from "./slices/presenceSlice";
+import { rosterReducer } from "./slices/rosterSlice";
+import { rosterViewReducer } from "./slices/rosterViewSlice";
+import { teamsReducer } from "./slices/teamsSlice";
+import { thoughtsReducer } from "./slices/thoughtsSlice";
+import { uiReducer } from "./slices/uiSlice";
+import { undoReducer } from "./slices/undoSlice";
+import { userManagementReducer } from "./slices/userManagementSlice";
 
 export const store = configureStore({
   reducer: {
@@ -29,17 +29,17 @@ export const store = configureStore({
     getDefaultMiddleware({
       serializableCheck: {
         ignoredActions: [
-          'auth/setUser',
-          'roster/fetchEntries/fulfilled',
-          'roster/saveChanges/fulfilled',
-          'ui/showAlert',
+          "auth/setUser",
+          "roster/fetchEntries/fulfilled",
+          "roster/saveChanges/fulfilled",
+          "ui/showAlert",
         ],
         ignoredPaths: [
-          'auth.firebaseUser',
-          'roster.entries',
-          'roster.dirtyEntries',
-          'thoughts.thoughts',
-          'ui.alertConfig',
+          "auth.firebaseUser",
+          "roster.entries",
+          "roster.dirtyEntries",
+          "thoughts.thoughts",
+          "ui.alertConfig",
         ],
       },
     }).concat(authMiddleware),

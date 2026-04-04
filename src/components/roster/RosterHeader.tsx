@@ -3,12 +3,9 @@ import { ReactNode, memo } from "react";
 import { History } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-
 import { PeekHeader } from "./Peek/PeekHeader";
 import { useAppDispatch } from "../../hooks/redux";
-import {
-  loadPreviousDates,
-} from "../../store/slices/rosterViewSlice";
+import { loadPreviousDates } from "../../store/slices/rosterViewSlice";
 
 import styles from "./roster-header.module.css";
 
@@ -31,11 +28,13 @@ const RosterHeader = memo(({ showPeek, children }: RosterHeaderProps) => {
             <button
               className={styles.loadPrevBtn}
               onClick={handleLoadPrevious}
-              title={t('roster.loadPrevious')}
+              title={t("roster.loadPrevious")}
             >
               <History size={16} />
             </button>
-            <span className={styles.dateText}>{t('common.date', { defaultValue: 'Date' })}</span>
+            <span className={styles.dateText}>
+              {t("common.date", { defaultValue: "Date" })}
+            </span>
           </div>
         </th>
         {children}

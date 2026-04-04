@@ -202,12 +202,10 @@ const ManageOrgModal = ({
           disabled={
             saving ||
             !name.trim() ||
-            (
-              name === org.name &&
+            (name === org.name &&
               visibility === org.visibility &&
               plan === originalPlan &&
-              requiresApproval === originalRequiresApproval
-            )
+              requiresApproval === originalRequiresApproval)
           }
         >
           {saving ? t("common.saving") : t("common.save")}
@@ -216,11 +214,12 @@ const ManageOrgModal = ({
     </div>
   );
 
-  const headerIcon = visibility === "public" ? (
-    <Globe size={22} className={modalStyles.headerIcon} />
-  ) : (
-    <Lock size={22} className={modalStyles.headerIcon} />
-  );
+  const headerIcon =
+    visibility === "public" ? (
+      <Globe size={22} className={modalStyles.headerIcon} />
+    ) : (
+      <Lock size={22} className={modalStyles.headerIcon} />
+    );
 
   const editableTitle = isOwner ? (
     isEditingName ? (
@@ -282,9 +281,13 @@ const ManageOrgModal = ({
             <div className={modalStyles.visibilityRow}>
               <div className={modalStyles.visibilityInfo}>
                 <div>
-                  <label className={modalStyles.visibilityDesc}>{t("onboarding.orgType")}</label>
+                  <label className={modalStyles.visibilityDesc}>
+                    {t("onboarding.orgType")}
+                  </label>
                   <p className={modalStyles.visibilityDesc}>
-                    {visibility === "public" ? t("onboarding.public") : t("onboarding.private")}
+                    {visibility === "public"
+                      ? t("onboarding.public")
+                      : t("onboarding.private")}
                   </p>
                 </div>
               </div>
@@ -295,7 +298,9 @@ const ManageOrgModal = ({
               />
             </div>
             <p className={modalStyles.visibilityHint}>
-              {visibility === "public" ? t("onboarding.publicDesc") : t("onboarding.privateDesc")}
+              {visibility === "public"
+                ? t("onboarding.publicDesc")
+                : t("onboarding.privateDesc")}
             </p>
             {visibility === "private" && isOwner && (
               <div className={modalStyles.inviteSection}>
@@ -303,12 +308,22 @@ const ManageOrgModal = ({
                   <Copy size={16} /> {t("settings.invitationLink")}
                 </label>
                 <div className={modalStyles.inviteRow}>
-                  <InputField value={inviteLink} readOnly className={modalStyles.inviteInput} />
-                  <Button size="small" onClick={handleCopyLink} className={modalStyles.inviteButton}>
+                  <InputField
+                    value={inviteLink}
+                    readOnly
+                    className={modalStyles.inviteInput}
+                  />
+                  <Button
+                    size="small"
+                    onClick={handleCopyLink}
+                    className={modalStyles.inviteButton}
+                  >
                     {copied ? <Check size={16} /> : t("common.copy")}
                   </Button>
                 </div>
-                <p className={modalStyles.inviteNote}>{t("settings.invitationLinkDesc")}</p>
+                <p className={modalStyles.inviteNote}>
+                  {t("settings.invitationLinkDesc")}
+                </p>
               </div>
             )}
           </div>
@@ -316,8 +331,12 @@ const ManageOrgModal = ({
           <div className={formStyles.formGroup}>
             <div className={modalStyles.visibilityRow}>
               <div>
-                <label className={modalStyles.requireApprovalLabel}>{t("onboarding.requireApproval")}</label>
-                <p className={modalStyles.visibilityDesc}>{t("onboarding.requireApprovalDesc")}</p>
+                <label className={modalStyles.requireApprovalLabel}>
+                  {t("onboarding.requireApproval")}
+                </label>
+                <p className={modalStyles.visibilityDesc}>
+                  {t("onboarding.requireApprovalDesc")}
+                </p>
               </div>
               <Toggle
                 isOn={requiresApproval}
@@ -328,10 +347,14 @@ const ManageOrgModal = ({
           </div>
 
           <div className={modalStyles.subscriptionBox}>
-            <h4 className={modalStyles.subscriptionLabel}>{t("settings.subscription")}</h4>
+            <h4 className={modalStyles.subscriptionLabel}>
+              {t("settings.subscription")}
+            </h4>
             <div className={modalStyles.subscriptionRow}>
               <div>
-                <span className={modalStyles.subscriptionPlan}>{getPlanLabel()}</span>
+                <span className={modalStyles.subscriptionPlan}>
+                  {getPlanLabel()}
+                </span>
                 {plan !== "super" && (
                   <span className={modalStyles.subscriptionExpiry}>
                     {t("settings.freeTierUntil", { date: displayExpiry })}
@@ -339,14 +362,20 @@ const ManageOrgModal = ({
                 )}
               </div>
               {isOwner && (
-                <Button variant="secondary" size="small" onClick={() => setIsPlanModalOpen(true)}>
+                <Button
+                  variant="secondary"
+                  size="small"
+                  onClick={() => setIsPlanModalOpen(true)}
+                >
                   <Sparkles size={14} className={modalStyles.changePlanIcon} />
                   {t("settings.changePlan")}
                 </Button>
               )}
             </div>
             {plan === "super" && (
-              <p className={modalStyles.subscriptionUnlimited}>{t("settings.unlimitedAccess")}</p>
+              <p className={modalStyles.subscriptionUnlimited}>
+                {t("settings.unlimitedAccess")}
+              </p>
             )}
           </div>
 
@@ -354,7 +383,11 @@ const ManageOrgModal = ({
             {isOwner ? (
               <>
                 {!showLeaveConfirm && !showDeleteConfirm && (
-                  <Button variant="delete" className={modalStyles.dangerConfirmBtn} onClick={() => setShowLeaveConfirm(true)}>
+                  <Button
+                    variant="delete"
+                    className={modalStyles.dangerConfirmBtn}
+                    onClick={() => setShowLeaveConfirm(true)}
+                  >
                     <LogOut size={18} className={modalStyles.changePlanIcon} />
                     {t("settings.leaveOrg")}
                   </Button>
@@ -375,50 +408,80 @@ const ManageOrgModal = ({
                       autoFocus
                     />
                     <div className={modalStyles.dangerConfirmActions}>
-                      <Button variant="secondary" className={modalStyles.dangerConfirmBtn} onClick={() => setShowLeaveConfirm(false)}>
+                      <Button
+                        variant="secondary"
+                        className={modalStyles.dangerConfirmBtn}
+                        onClick={() => setShowLeaveConfirm(false)}
+                      >
                         {t("common.cancel")}
                       </Button>
-                      <Button variant="delete" className={modalStyles.dangerConfirmBtn} onClick={handleConfirmLeave} disabled={verificationName.trim() !== org.name}>
+                      <Button
+                        variant="delete"
+                        className={modalStyles.dangerConfirmBtn}
+                        onClick={handleConfirmLeave}
+                        disabled={verificationName.trim() !== org.name}
+                      >
                         {t("common.confirm")}
                       </Button>
                     </div>
                   </div>
                 )}
                 {!showLeaveConfirm && !showDeleteConfirm ? (
-                  <Button variant="delete" className={modalStyles.dangerConfirmBtn} onClick={() => setShowDeleteConfirm(true)}>
+                  <Button
+                    variant="delete"
+                    className={modalStyles.dangerConfirmBtn}
+                    onClick={() => setShowDeleteConfirm(true)}
+                  >
                     <Trash2 size={18} className={modalStyles.changePlanIcon} />
                     {t("settings.deleteOrg")}
                   </Button>
-                ) : !showLeaveConfirm && (
-                  <div className={modalStyles.dangerConfirmBox}>
-                    <div className={modalStyles.dangerConfirmTitle}>
-                      <AlertTriangle size={20} />
-                      <span>{t("settings.criticalAction")}</span>
+                ) : (
+                  !showLeaveConfirm && (
+                    <div className={modalStyles.dangerConfirmBox}>
+                      <div className={modalStyles.dangerConfirmTitle}>
+                        <AlertTriangle size={20} />
+                        <span>{t("settings.criticalAction")}</span>
+                      </div>
+                      <p className={modalStyles.dangerConfirmDesc}>
+                        {t("settings.deleteOrgVerification", {
+                          name: org.name,
+                        })}
+                      </p>
+                      <InputField
+                        value={verificationName}
+                        onChange={(e) => setVerificationName(e.target.value)}
+                        placeholder={org.name}
+                        autoFocus
+                      />
+                      <div className={modalStyles.dangerConfirmActions}>
+                        <Button
+                          variant="secondary"
+                          className={modalStyles.dangerConfirmBtn}
+                          onClick={() => setShowDeleteConfirm(false)}
+                        >
+                          {t("common.cancel")}
+                        </Button>
+                        <Button
+                          variant="delete"
+                          className={modalStyles.dangerConfirmBtn}
+                          onClick={handleConfirmDelete}
+                          disabled={verificationName.trim() !== org.name}
+                        >
+                          {t("common.confirm")}
+                        </Button>
+                      </div>
                     </div>
-                    <p className={modalStyles.dangerConfirmDesc}>
-                      {t("settings.deleteOrgVerification", { name: org.name })}
-                    </p>
-                    <InputField
-                      value={verificationName}
-                      onChange={(e) => setVerificationName(e.target.value)}
-                      placeholder={org.name}
-                      autoFocus
-                    />
-                    <div className={modalStyles.dangerConfirmActions}>
-                      <Button variant="secondary" className={modalStyles.dangerConfirmBtn} onClick={() => setShowDeleteConfirm(false)}>
-                        {t("common.cancel")}
-                      </Button>
-                      <Button variant="delete" className={modalStyles.dangerConfirmBtn} onClick={handleConfirmDelete} disabled={verificationName.trim() !== org.name}>
-                        {t("common.confirm")}
-                      </Button>
-                    </div>
-                  </div>
+                  )
                 )}
               </>
             ) : (
               <>
                 {!showLeaveConfirm ? (
-                  <Button variant="delete" className={modalStyles.dangerConfirmBtn} onClick={() => setShowLeaveConfirm(true)}>
+                  <Button
+                    variant="delete"
+                    className={modalStyles.dangerConfirmBtn}
+                    onClick={() => setShowLeaveConfirm(true)}
+                  >
                     <LogOut size={18} className={modalStyles.changePlanIcon} />
                     {t("settings.leaveOrg")}
                   </Button>
@@ -438,10 +501,19 @@ const ManageOrgModal = ({
                       autoFocus
                     />
                     <div className={modalStyles.dangerConfirmActions}>
-                      <Button variant="secondary" className={modalStyles.dangerConfirmBtn} onClick={() => setShowLeaveConfirm(false)}>
+                      <Button
+                        variant="secondary"
+                        className={modalStyles.dangerConfirmBtn}
+                        onClick={() => setShowLeaveConfirm(false)}
+                      >
                         {t("common.cancel")}
                       </Button>
-                      <Button variant="delete" className={modalStyles.dangerConfirmBtn} onClick={handleConfirmLeave} disabled={verificationName.trim() !== org.name}>
+                      <Button
+                        variant="delete"
+                        className={modalStyles.dangerConfirmBtn}
+                        onClick={handleConfirmLeave}
+                        disabled={verificationName.trim() !== org.name}
+                      >
                         {t("common.confirm")}
                       </Button>
                     </div>
@@ -458,7 +530,12 @@ const ManageOrgModal = ({
         onClose={() => setIsPlanModalOpen(false)}
         org={localOrg ?? org}
         onUpdate={(updatedOrg) => {
-          setLocalOrg(updatedOrg as Organisation & { isAdmin: boolean; isApproved: boolean });
+          setLocalOrg(
+            updatedOrg as Organisation & {
+              isAdmin: boolean;
+              isApproved: boolean;
+            },
+          );
           onUpdate(updatedOrg);
         }}
       />

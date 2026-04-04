@@ -1,15 +1,20 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect } from "react";
 
-import { useAppDispatch, useAppSelector } from './redux';
-import { 
-  applyOptimisticAssignment, 
-  syncAssignmentRemote, 
-  applyOptimisticAbsence, 
+import { useAppDispatch, useAppSelector } from "./redux";
+import {
+  applyOptimisticAssignment,
+  syncAssignmentRemote,
+  applyOptimisticAbsence,
   syncAbsenceRemote,
   applyOptimisticEventName,
-  syncEventNameRemote
-} from '../store/slices/rosterSlice';
-import { popAction, AssignmentUndoPayload, AbsenceUndoPayload, EventNameUndoPayload } from '../store/slices/undoSlice';
+  syncEventNameRemote,
+} from "../store/slices/rosterSlice";
+import {
+  popAction,
+  AssignmentUndoPayload,
+  AbsenceUndoPayload,
+  EventNameUndoPayload,
+} from "../store/slices/undoSlice";
 
 export const useUndo = () => {
   const dispatch = useAppDispatch();
@@ -21,7 +26,7 @@ export const useUndo = () => {
     const lastAction = history[0];
     const { type, payload } = lastAction;
 
-    if (type === 'assignment') {
+    if (type === "assignment") {
       const p = payload as AssignmentUndoPayload;
       const reversePayload = {
         date: p.date,
@@ -31,7 +36,7 @@ export const useUndo = () => {
       };
       dispatch(applyOptimisticAssignment(reversePayload));
       dispatch(syncAssignmentRemote(reversePayload));
-    } else if (type === 'absence') {
+    } else if (type === "absence") {
       const p = payload as AbsenceUndoPayload;
       const reversePayload = {
         date: p.date,
@@ -41,16 +46,18 @@ export const useUndo = () => {
         clearedTeams: [], // Not needed for reversal
         clearedPositions: p.restoredAssignments || {},
       };
-      
-      dispatch(applyOptimisticAbsence({
-        date: p.date,
-        userIdentifier: p.userEmail,
-        isAbsent: p.previousIsAbsent,
-        reason: p.previousReason,
-        clearedPositions: p.restoredAssignments,
-      }));
+
+      dispatch(
+        applyOptimisticAbsence({
+          date: p.date,
+          userIdentifier: p.userEmail,
+          isAbsent: p.previousIsAbsent,
+          reason: p.previousReason,
+          clearedPositions: p.restoredAssignments,
+        }),
+      );
       dispatch(syncAbsenceRemote(reversePayload));
-    } else if (type === 'eventName') {
+    } else if (type === "eventName") {
       const p = payload as EventNameUndoPayload;
       const reversePayload = {
         date: p.date,
@@ -66,7 +73,7 @@ export const useUndo = () => {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!e.key) return;
-      const isZ = e.key.toLowerCase() === 'z';
+      const isZ = e.key.toLowerCase() === "z";
       const isCmdOrCtrl = e.metaKey || e.ctrlKey;
 
       if (isZ && isCmdOrCtrl && !e.shiftKey) {
@@ -78,8 +85,8 @@ export const useUndo = () => {
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [undoAction, history.length]);
 
   return {

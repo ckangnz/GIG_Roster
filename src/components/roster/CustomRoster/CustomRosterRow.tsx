@@ -9,7 +9,11 @@ interface CustomRosterRowProps {
   rowIndex: number;
   focusedCell: { row: number; col: number; table: string } | null;
   setFocusedCell: (
-    cell: { row: number; col: number; table: "roster" | "absence" | "all" } | null,
+    cell: {
+      row: number;
+      col: number;
+      table: "roster" | "absence" | "all";
+    } | null,
   ) => void;
   entries: Record<string, RosterEntry>;
   onDateClick: (date: string) => void;

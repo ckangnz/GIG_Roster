@@ -1,7 +1,9 @@
-import { createContext } from 'react';
+import { createContext } from "react";
 
 export interface LoadingContextType {
   isLoading: boolean;
 }
 
-export const LoadingContext = createContext<LoadingContextType | undefined>(undefined);
+export const LoadingContext = createContext<LoadingContextType | undefined>(
+  undefined,
+);

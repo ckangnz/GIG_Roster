@@ -1,10 +1,10 @@
-import React, { useState, useRef, useMemo, useEffect } from 'react';
+import React, { useState, useRef, useMemo, useEffect } from "react";
 
-import { Check, X } from 'lucide-react';
+import { Check, X } from "lucide-react";
 
-import Pill from './Pill';
+import Pill from "./Pill";
 
-import styles from './searchable-multi-picker.module.css';
+import styles from "./searchable-multi-picker.module.css";
 
 export interface PickerItem {
   id: string;
@@ -28,13 +28,13 @@ const SearchableMultiPicker: React.FC<SearchableMultiPickerProps> = ({
   onToggle,
   placeholder = "Search...",
   limit = 5,
-  emptyMessage = "No items found"
+  emptyMessage = "No items found",
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [focusedIndex, setFocusedIndex] = useState(0);
   const [isComposing, setIsComposing] = useState(false);
-  
+
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -48,14 +48,17 @@ const SearchableMultiPicker: React.FC<SearchableMultiPickerProps> = ({
       return items.slice(0, limit);
     }
     return items
-      .filter(item => item.label.toLowerCase().includes(term))
+      .filter((item) => item.label.toLowerCase().includes(term))
       .slice(0, 20);
   }, [items, searchTerm, limit]);
 
   // Handle outside clicks to close dropdown
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
@@ -82,7 +85,9 @@ const SearchableMultiPicker: React.FC<SearchableMultiPickerProps> = ({
         setIsOpen(true);
         setFocusedIndex(0);
       } else {
-        setFocusedIndex(prev => (prev + 1) % Math.max(filteredItems.length, 1));
+        setFocusedIndex(
+          (prev) => (prev + 1) % Math.max(filteredItems.length, 1),
+        );
       }
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
@@ -90,7 +95,11 @@ const SearchableMultiPicker: React.FC<SearchableMultiPickerProps> = ({
         setIsOpen(true);
         setFocusedIndex(Math.max(filteredItems.length - 1, 0));
       } else {
-        setFocusedIndex(prev => (prev - 1 + filteredItems.length) % Math.max(filteredItems.length, 1));
+        setFocusedIndex(
+          (prev) =>
+            (prev - 1 + filteredItems.length) %
+            Math.max(filteredItems.length, 1),
+        );
       }
     } else if (e.key === "Enter") {
       if (isOpen && filteredItems.length > 0) {
@@ -113,27 +122,29 @@ const SearchableMultiPicker: React.FC<SearchableMultiPickerProps> = ({
 
   const selectedItems = useMemo(() => {
     return selectedIds
-      .map(id => items.find(item => item.id === id))
+      .map((id) => items.find((item) => item.id === id))
       .filter((item): item is PickerItem => !!item);
   }, [selectedIds, items]);
 
   return (
     <div className={styles.pickerContainer} ref={containerRef}>
-      <div 
+      <div
         className={`${styles.inputWrapper} ${isOpen ? styles.inputWrapperFocused : ""}`}
         onClick={() => inputRef.current?.focus()}
       >
         <div className={styles.selectedPills}>
-          {selectedItems.map(item => (
+          {selectedItems.map((item) => (
             <Pill
               key={item.id}
               colour={item.color || fallbackColor}
               isActive={true}
               onClick={(e) => e.stopPropagation()}
             >
-              {item.emoji && <span className={styles.itemEmoji}>{item.emoji}</span>}
-              <span style={{ whiteSpace: 'nowrap' }}>{item.label}</span>
-              <span 
+              {item.emoji && (
+                <span className={styles.itemEmoji}>{item.emoji}</span>
+              )}
+              <span style={{ whiteSpace: "nowrap" }}>{item.label}</span>
+              <span
                 className={styles.pillDeleteBtn}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -170,7 +181,7 @@ const SearchableMultiPicker: React.FC<SearchableMultiPickerProps> = ({
               const isSelected = selectedIds.includes(item.id);
               const isFocused = index === focusedIndex;
               const pillColour = item.color || fallbackColor;
-              
+
               return (
                 <div
                   key={item.id}
@@ -182,14 +193,18 @@ const SearchableMultiPicker: React.FC<SearchableMultiPickerProps> = ({
                   onClick={() => handleItemClick(item.id)}
                   onMouseEnter={() => setFocusedIndex(index)}
                 >
-                  <div 
+                  <div
                     className={styles.pillPreview}
-                    style={{ 
-                      '--pill-bg': `${pillColour}20`, 
-                      '--pill-color': pillColour 
-                    } as React.CSSProperties}
+                    style={
+                      {
+                        "--pill-bg": `${pillColour}20`,
+                        "--pill-color": pillColour,
+                      } as React.CSSProperties
+                    }
                   >
-                    {item.emoji && <span className={styles.itemEmoji}>{item.emoji}</span>}
+                    {item.emoji && (
+                      <span className={styles.itemEmoji}>{item.emoji}</span>
+                    )}
                     <span className={styles.itemLabel}>{item.label}</span>
                     {isSelected && (
                       <span className={styles.itemCheck}>

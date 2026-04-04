@@ -21,7 +21,9 @@ const SettingsPage = () => {
     <div className={styles.settingsContainer}>
       {activeSection === SettingsSection.PROFILE && <ProfileSettings />}
 
-      {activeSection === SettingsSection.ORGANISATIONS && <OrgManagement standalone />}
+      {activeSection === SettingsSection.ORGANISATIONS && (
+        <OrgManagement standalone />
+      )}
 
       {activeSection === SettingsSection.USER_MANAGEMENT &&
         (userData.isAdmin ? <UserManagement /> : <p>Access Denied</p>)}

@@ -13,13 +13,18 @@ export const selectQualifiedCoverageRequests = createSelector(
     if (!userData || !userData.email) return [];
 
     const userQualifiedPositions = userData.teamPositions || {};
-    const qualifiedRequests: { date: string; request: CoverageRequest; requestId: string }[] = [];
+    const qualifiedRequests: {
+      date: string;
+      request: CoverageRequest;
+      requestId: string;
+    }[] = [];
 
     Object.entries(entries).forEach(([date, entry]) => {
       const requests = entry.coverageRequests || {};
       Object.entries(requests).forEach(([reqId, req]) => {
         // Only show requests that are open AND NOT from the current user
-        if (req.status !== "open" || req.absentUserEmail === userData.email) return;
+        if (req.status !== "open" || req.absentUserEmail === userData.email)
+          return;
 
         // Check if user is in this team and has this position
         const teamPos = userQualifiedPositions[req.teamName] || [];
@@ -31,5 +36,5 @@ export const selectQualifiedCoverageRequests = createSelector(
 
     // Sort by date ascending
     return [...qualifiedRequests].sort((a, b) => a.date.localeCompare(b.date));
-  }
+  },
 );

@@ -56,7 +56,7 @@ const DashboardPage = () => {
   const userData = useAppSelector(selectUserData);
   const orgId = userData?.orgId;
   const isAdmin = userData?.isAdmin || false;
-  
+
   const teamsState = useAppSelector((state) => state.teams);
   const allTeams = useMemo(
     () => (teamsState?.teams || []).filter((t) => t.orgId === orgId),
@@ -141,7 +141,7 @@ const DashboardPage = () => {
       (t) => userTeamsList.includes(t.id) || userTeamsList.includes(t.name),
     );
 
-    if (userTeams.length === 0) return 'no-teams';
+    if (userTeams.length === 0) return "no-teams";
 
     const dateSet = new Set<string>();
     userTeams.forEach((team) => {
@@ -150,15 +150,15 @@ const DashboardPage = () => {
     });
 
     const upcomingDates = Array.from(dateSet).sort();
-    if (upcomingDates.length === 0) return 'no-future-data';
+    if (upcomingDates.length === 0) return "no-future-data";
 
     // Check if everything is expired
-    const allExpired = upcomingDates.every(dateStr => 
-      userTeams.every(team => isTeamExpired(team, dateStr))
+    const allExpired = upcomingDates.every((dateStr) =>
+      userTeams.every((team) => isTeamExpired(team, dateStr)),
     );
-    if (allExpired) return 'all-expired';
+    if (allExpired) return "all-expired";
 
-    return 'no-assignments';
+    return "no-assignments";
   }, [loadingRoster, userData, allTeams, isTeamExpired]);
 
   const rosterDates = useMemo(() => {
@@ -256,8 +256,7 @@ const DashboardPage = () => {
 
       const userTeams = allTeams
         .filter(
-          (t) =>
-            userTeamsList.includes(t.id) || userTeamsList.includes(t.name),
+          (t) => userTeamsList.includes(t.id) || userTeamsList.includes(t.name),
         )
         .sort((a, b) => {
           const indexA = userTeamsList.findIndex(
@@ -575,11 +574,7 @@ const DashboardPage = () => {
     }
   };
 
-  const handleDismiss = (
-    date: string,
-    requestId: string,
-    teamId: string,
-  ) => {
+  const handleDismiss = (date: string, requestId: string, teamId: string) => {
     dispatch(
       showAlert({
         title: t("dashboard.dismissAlert.title"),
@@ -640,8 +635,7 @@ const DashboardPage = () => {
       const hasQualifiedRequest = Object.values(entry.coverageRequests).some(
         (req) => {
           if (req.status !== "open") return false;
-          const userQualifiedPositions =
-            userTeamPositions[req.teamName] || [];
+          const userQualifiedPositions = userTeamPositions[req.teamName] || [];
           return userQualifiedPositions.includes(req.positionName);
         },
       );
@@ -667,9 +661,9 @@ const DashboardPage = () => {
 
   if (rosterDates.length === 0 && !loadingRoster) {
     return (
-      <DashboardEmptyState 
-        type={emptyType || 'no-future-data'} 
-        isAdmin={isAdmin} 
+      <DashboardEmptyState
+        type={emptyType || "no-future-data"}
+        isAdmin={isAdmin}
       />
     );
   }
@@ -677,9 +671,7 @@ const DashboardPage = () => {
   const currentEntry = entries[currentEventDate] || { eventName: "" };
   const showSpinner = loadingRoster || !isInitialized;
 
-  const pageTitle = isPast
-    ? t("common.previousEvent")
-    : t("dashboard.title");
+  const pageTitle = isPast ? t("common.previousEvent") : t("dashboard.title");
 
   const formatDate = (dateStr: string) => {
     const dateObj = new Date(dateStr);
@@ -769,8 +761,7 @@ const DashboardPage = () => {
                         </>
                       ) : (
                         <>
-                          <CopyIcon size={16} />{" "}
-                          {t("common.copy")}
+                          <CopyIcon size={16} /> {t("common.copy")}
                         </>
                       )}
                     </button>
@@ -791,11 +782,10 @@ const DashboardPage = () => {
                   );
 
                   const userTeamPositions = userData?.teamPositions || {};
-                  
-                  const qualifiedPositions = userTeamPositions[teamData.teamId] || [];
-                  const isQualified = qualifiedPositions.includes(
-                    group.posId,
-                  );
+
+                  const qualifiedPositions =
+                    userTeamPositions[teamData.teamId] || [];
+                  const isQualified = qualifiedPositions.includes(group.posId);
                   const isAlreadyAssigned = group.assignedUsers.some(
                     (u) => u.isMe,
                   );
@@ -836,7 +826,7 @@ const DashboardPage = () => {
                               : null}
 
                           {/* Show Claim/Dismiss buttons inline if there's a request */}
-                          {(isQualified && !isAlreadyAssigned || isAdmin) &&
+                          {((isQualified && !isAlreadyAssigned) || isAdmin) &&
                             matchingRequests.map(
                               ([requestId, request], idx) => (
                                 <Fragment key={requestId}>
@@ -867,7 +857,11 @@ const DashboardPage = () => {
                                       size="small"
                                       variant="secondary"
                                       onClick={() =>
-                                        handleDismiss(dateStr, requestId, teamData.teamId)
+                                        handleDismiss(
+                                          dateStr,
+                                          requestId,
+                                          teamData.teamId,
+                                        )
                                       }
                                       style={{
                                         marginLeft: "4px",
@@ -878,8 +872,7 @@ const DashboardPage = () => {
                                     >
                                       {t("dashboard.dismissShift")}
                                     </Button>
-                                  )}
-                                  {" "}
+                                  )}{" "}
                                   <span className={styles.inlineClaimInfo}>
                                     ({request.absentUserName}{" "}
                                     {t("dashboard.unavailable")})

@@ -1,21 +1,21 @@
-import React from 'react';
+import React from "react";
 
-import ReactDOM from 'react-dom/client';
-import { Provider } from 'react-redux';
-import { createHashRouter, RouterProvider } from 'react-router-dom';
+import ReactDOM from "react-dom/client";
+import { Provider } from "react-redux";
+import { createHashRouter, RouterProvider } from "react-router-dom";
 
-import { LoadingProvider } from './hooks/LoadingProvider';
-import { ThemeProvider } from './hooks/useTheme.tsx';
+import { LoadingProvider } from "./hooks/LoadingProvider";
+import { ThemeProvider } from "./hooks/useTheme.tsx";
 
-import { routes } from './router/routes';
-import { store } from './store';
+import { routes } from "./router/routes";
+import { store } from "./store";
 
-import './i18n/config';
-import './index.css';
+import "./i18n/config";
+import "./index.css";
 
 const router = createHashRouter(routes);
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
+ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <Provider store={store}>
       <LoadingProvider>

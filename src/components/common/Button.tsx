@@ -34,16 +34,18 @@ const Button = ({
     .join(" ");
 
   return (
-    <button 
-      className={buttonClasses} 
-      disabled={disabled || isLoading} 
+    <button
+      className={buttonClasses}
+      disabled={disabled || isLoading}
       {...props}
     >
       {isLoading ? (
         <div className={styles.spinnerContainer}>
           <Spinner />
         </div>
-      ) : children}
+      ) : (
+        children
+      )}
     </button>
   );
 };

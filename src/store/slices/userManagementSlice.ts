@@ -1,14 +1,13 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
-import {
-  collection,
-  getDocs,
-  writeBatch,
-  doc,
-} from "firebase/firestore";
+import { collection, getDocs, writeBatch, doc } from "firebase/firestore";
 
 import { AuthState } from "./authSlice";
 import { db } from "../../firebase";
-import { OrgMembership, AppUser, generateIndexedAssignments } from "../../model/model";
+import {
+  OrgMembership,
+  AppUser,
+  generateIndexedAssignments,
+} from "../../model/model";
 
 type AppUserWithId = AppUser & { id: string };
 
@@ -43,9 +42,11 @@ const fetchAllUsers = createAsyncThunk(
       if (!activeOrgId) return [];
 
       // 1. Fetch all memberships for this org
-      const memSnap = await getDocs(collection(db, "organisations", activeOrgId, "memberships"));
+      const memSnap = await getDocs(
+        collection(db, "organisations", activeOrgId, "memberships"),
+      );
       const memberships: Record<string, OrgMembership> = {};
-      memSnap.forEach(d => {
+      memSnap.forEach((d) => {
         memberships[d.id] = { ...(d.data() as OrgMembership), id: d.id };
       });
 
@@ -60,7 +61,7 @@ const fetchAllUsers = createAsyncThunk(
 
       const users: AppUserWithId[] = [];
       const usersSnap = await getDocs(collection(db, "users"));
-      usersSnap.forEach(uDoc => {
+      usersSnap.forEach((uDoc) => {
         if (memberships[uDoc.id]) {
           const userData = uDoc.data() as AppUser;
           users.push({
@@ -83,14 +84,17 @@ export const saveAllUserChanges = createAsyncThunk(
   "userManagement/saveAllChanges",
   async (users: AppUserWithId[], { rejectWithValue, getState }) => {
     try {
-      const state = getState() as { auth: AuthState; userManagement: UserManagementState };
+      const state = getState() as {
+        auth: AuthState;
+        userManagement: UserManagementState;
+      };
       const activeOrgId = state.auth.activeOrgId;
       if (!activeOrgId) throw new Error("Active Org ID missing");
 
       const batch = writeBatch(db);
       users.forEach((u) => {
         const { id, name, gender } = u;
-        
+
         // 1. Update Global User Data (only basic info)
         batch.update(doc(db, "users", id), { name, gender });
 
@@ -99,7 +103,11 @@ export const saveAllUserChanges = createAsyncThunk(
         if (memData) {
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const { id: _unused, ...payload } = memData;
-          batch.set(doc(db, "organisations", activeOrgId, "memberships", id), payload, { merge: true });
+          batch.set(
+            doc(db, "organisations", activeOrgId, "memberships", id),
+            payload,
+            { merge: true },
+          );
         }
       });
       await batch.commit();
@@ -115,7 +123,11 @@ export const saveAllUserChanges = createAsyncThunk(
 export const cleanupUsersAfterDeletion = createAsyncThunk(
   "userManagement/cleanupAfterDeletion",
   async (
-    { teamId, teamName, positionId }: { teamId?: string; teamName?: string; positionId?: string },
+    {
+      teamId,
+      teamName,
+      positionId,
+    }: { teamId?: string; teamName?: string; positionId?: string },
     { rejectWithValue, getState },
   ) => {
     try {
@@ -123,8 +135,10 @@ export const cleanupUsersAfterDeletion = createAsyncThunk(
       const activeOrgId = state.auth.activeOrgId;
       if (!activeOrgId) return;
 
-      const memSnap = await getDocs(collection(db, "organisations", activeOrgId, "memberships"));
-      
+      const memSnap = await getDocs(
+        collection(db, "organisations", activeOrgId, "memberships"),
+      );
+
       const batch = writeBatch(db);
       let count = 0;
 
@@ -136,15 +150,20 @@ export const cleanupUsersAfterDeletion = createAsyncThunk(
         const updatePayload: Partial<OrgMembership> = {};
 
         if (teamId) {
-          if (orgEntry.teams?.includes(teamId) || (teamName && orgEntry.teams?.includes(teamName))) {
-            updatePayload.teams = orgEntry.teams.filter((id) => id !== teamId && id !== teamName);
+          if (
+            orgEntry.teams?.includes(teamId) ||
+            (teamName && orgEntry.teams?.includes(teamName))
+          ) {
+            updatePayload.teams = orgEntry.teams.filter(
+              (id) => id !== teamId && id !== teamName,
+            );
             changed = true;
           }
 
           if (orgEntry.teamPositions) {
             const newTeamPositions = { ...orgEntry.teamPositions };
             let tpChanged = false;
-            
+
             if (newTeamPositions[teamId]) {
               delete newTeamPositions[teamId];
               tpChanged = true;
@@ -156,7 +175,8 @@ export const cleanupUsersAfterDeletion = createAsyncThunk(
 
             if (tpChanged) {
               updatePayload.teamPositions = newTeamPositions;
-              updatePayload.indexedAssignments = generateIndexedAssignments(newTeamPositions);
+              updatePayload.indexedAssignments =
+                generateIndexedAssignments(newTeamPositions);
               changed = true;
             }
           }
@@ -169,7 +189,9 @@ export const cleanupUsersAfterDeletion = createAsyncThunk(
 
             Object.entries(orgEntry.teamPositions).forEach(([tId, posIds]) => {
               if (Array.isArray(posIds) && posIds.includes(positionId)) {
-                newTeamPositions[tId] = posIds.filter((id) => id !== positionId);
+                newTeamPositions[tId] = posIds.filter(
+                  (id) => id !== positionId,
+                );
                 posChanged = true;
               } else {
                 newTeamPositions[tId] = posIds as string[];
@@ -178,14 +200,18 @@ export const cleanupUsersAfterDeletion = createAsyncThunk(
 
             if (posChanged) {
               updatePayload.teamPositions = newTeamPositions;
-              updatePayload.indexedAssignments = generateIndexedAssignments(newTeamPositions);
+              updatePayload.indexedAssignments =
+                generateIndexedAssignments(newTeamPositions);
               changed = true;
             }
           }
         }
 
         if (changed) {
-          batch.update(doc(db, "organisations", activeOrgId, "memberships", userId), updatePayload);
+          batch.update(
+            doc(db, "organisations", activeOrgId, "memberships", userId),
+            updatePayload,
+          );
           count++;
         }
       });
@@ -301,7 +327,10 @@ const userManagementSlice = createSlice({
       state.originalUsers = JSON.parse(JSON.stringify(action.payload));
       state.loading = false;
     },
-    setAllMemberships(state, action: PayloadAction<Record<string, OrgMembership>>) {
+    setAllMemberships(
+      state,
+      action: PayloadAction<Record<string, OrgMembership>>,
+    ) {
       state.memberships = action.payload;
       state.originalMemberships = JSON.parse(JSON.stringify(action.payload));
     },
@@ -334,7 +363,9 @@ const userManagementSlice = createSlice({
       .addCase(saveAllUserChanges.fulfilled, (state) => {
         state.saving = false;
         state.originalUsers = JSON.parse(JSON.stringify(state.allUsers));
-        state.originalMemberships = JSON.parse(JSON.stringify(state.memberships));
+        state.originalMemberships = JSON.parse(
+          JSON.stringify(state.memberships),
+        );
       })
       .addCase(saveAllUserChanges.rejected, (state, action) => {
         state.error = action.payload as string;

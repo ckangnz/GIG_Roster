@@ -13,7 +13,7 @@ export interface VisualRow {
 export const useRosterVisualRows = (
   rosterDates: string[],
   currentTeam: Team | null,
-  isSlotted: boolean
+  isSlotted: boolean,
 ): VisualRow[] => {
   return useMemo(() => {
     const rows: VisualRow[] = [];

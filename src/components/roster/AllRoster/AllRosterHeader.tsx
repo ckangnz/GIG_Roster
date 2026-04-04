@@ -2,7 +2,10 @@ import { memo, useMemo } from "react";
 
 import { useAppDispatch, useAppSelector } from "../../../hooks/redux";
 import { Position } from "../../../model/model";
-import { setFilterUserId, setHighlightedUserId } from "../../../store/slices/rosterViewSlice";
+import {
+  setFilterUserId,
+  setHighlightedUserId,
+} from "../../../store/slices/rosterViewSlice";
 import NameTag from "../../common/NameTag";
 import styles from "../roster-header.module.css";
 import RosterHeader from "../RosterHeader";
@@ -11,7 +14,12 @@ import allStyles from "./all-roster.module.css";
 
 interface AllRosterHeaderProps {
   rosterAllViewMode: "user" | "position";
-  allViewColumns: { id: string; name: string; isUser: boolean; gender?: string | null }[];
+  allViewColumns: {
+    id: string;
+    name: string;
+    isUser: boolean;
+    gender?: string | null;
+  }[];
   userData: { email?: string | null; gender?: string | null } | null;
   currentTeamData: { positions: string[] } | null;
   allPositions: Position[];
@@ -30,7 +38,9 @@ export const AllRosterHeader = memo(
     navigate,
   }: AllRosterHeaderProps) => {
     const dispatch = useAppDispatch();
-    const { filterUserId, highlightedUserId } = useAppSelector((state) => state.rosterView);
+    const { filterUserId, highlightedUserId } = useAppSelector(
+      (state) => state.rosterView,
+    );
 
     const handleHeaderClick = (colId: string) => {
       if (filterUserId === colId) {
@@ -50,21 +60,21 @@ export const AllRosterHeader = memo(
 
     const allViewPositions = useMemo(() => {
       if (rosterAllViewMode !== "position" || !currentTeamData) return [];
-      
+
       const teamPositionIds = currentTeamData.positions || [];
       const activePosIdSet = new Set<string>(teamPositionIds);
 
       // Also ensure children of these positions are included
-      teamPositionIds.forEach(pId => {
-        allPositions.forEach(p => {
+      teamPositionIds.forEach((pId) => {
+        allPositions.forEach((p) => {
           if (p.parentId === pId) activePosIdSet.add(p.id);
         });
       });
 
       return Array.from(activePosIdSet).sort((aId, bId) => {
-        const posA = allPositions.find(p => p.id === aId || p.name === aId);
-        const posB = allPositions.find(p => p.id === bId || p.name === bId);
-        
+        const posA = allPositions.find((p) => p.id === aId || p.name === aId);
+        const posB = allPositions.find((p) => p.id === bId || p.name === bId);
+
         const effectiveParentA = posA?.parentId || aId;
         const effectiveParentB = posB?.parentId || bId;
 
@@ -76,7 +86,7 @@ export const AllRosterHeader = memo(
 
         const indexA = teamPositionIds.indexOf(effectiveParentA);
         const indexB = teamPositionIds.indexOf(effectiveParentB);
-        
+
         if (indexA !== -1 && indexB !== -1) return indexA - indexB;
         if (indexA !== -1) return -1;
         if (indexB !== -1) return 1;
@@ -106,7 +116,9 @@ export const AllRosterHeader = memo(
               );
             })
           : allViewPositions.map((posId) => {
-              const pos = allPositions.find(p => p.id === posId || p.name === posId);
+              const pos = allPositions.find(
+                (p) => p.id === posId || p.name === posId,
+              );
               return (
                 <th
                   key={posId}
@@ -114,7 +126,7 @@ export const AllRosterHeader = memo(
                   onClick={() => handlePositionHeaderClick(pos?.id || posId)}
                 >
                   <div className={allStyles.allViewPositionHeader}>
-                    <span>{pos?.emoji || '❓'}</span>
+                    <span>{pos?.emoji || "❓"}</span>
                     <span className={allStyles.allViewPositionName}>
                       {pos?.name || posId}
                     </span>

@@ -12,7 +12,11 @@ interface GeneralRosterRowProps {
   rowIndex: number;
   focusedCell: { row: number; col: number; table: string } | null;
   setFocusedCell: (
-    cell: { row: number; col: number; table: "roster" | "absence" | "all" } | null,
+    cell: {
+      row: number;
+      col: number;
+      table: "roster" | "absence" | "all";
+    } | null,
   ) => void;
   entries: Record<string, RosterEntry>;
   onDateClick: (date: string) => void;
@@ -31,12 +35,19 @@ interface GeneralRosterRowProps {
   getAbsenceReason: (dateString: string, userEmail: string) => string;
   assignedOnClosestDate: string[];
   showPeek?: boolean;
-  getConflictStatus: (dateString: string, userEmail: string) => { hasConflict: boolean };
+  getConflictStatus: (
+    dateString: string,
+    userEmail: string,
+  ) => { hasConflict: boolean };
   userData: AppUser | null;
   allTeams: Team[];
   teamName: string;
   activePosition: string;
-  hasPositionCoverageRequest: (dateString: string, tName: string, pName: string) => boolean;
+  hasPositionCoverageRequest: (
+    dateString: string,
+    tName: string,
+    pName: string,
+  ) => boolean;
   isToday?: boolean;
   isPast?: boolean;
   // Slotted mode props
@@ -84,7 +95,11 @@ export const GeneralRosterRow = memo(
         onDateClick={onDateClick}
         closestNextDate={closestNextDate}
         showPeek={showPeek}
-        hasPositionRequest={hasPositionCoverageRequest(dateString, teamName, activePosition)}
+        hasPositionRequest={hasPositionCoverageRequest(
+          dateString,
+          teamName,
+          activePosition,
+        )}
         isToday={isToday}
         isPast={isPast}
         slot={slot}
@@ -106,7 +121,11 @@ export const GeneralRosterRow = memo(
                 focusedCell?.table === "roster"
               }
               onFocus={() =>
-                setFocusedCell({ row: rowIndex, col: colIndex, table: "roster" })
+                setFocusedCell({
+                  row: rowIndex,
+                  col: colIndex,
+                  table: "roster",
+                })
               }
               identifier={user.email || ""}
               disabled={
@@ -116,36 +135,49 @@ export const GeneralRosterRow = memo(
               absenceReason={
                 user.email ? getAbsenceReason(dateString, user.email) : ""
               }
-              isAssignedOnClosestDate={!!(
-                dateString === closestNextDate &&
-                user.email &&
-                assignedOnClosestDate.includes(user.email)
-              )}
-              hasConflict={user.email ? getConflictStatus(dateString, user.email).hasConflict : false}
+              isAssignedOnClosestDate={
+                !!(
+                  dateString === closestNextDate &&
+                  user.email &&
+                  assignedOnClosestDate.includes(user.email)
+                )
+              }
+              hasConflict={
+                user.email
+                  ? getConflictStatus(dateString, user.email).hasConflict
+                  : false
+              }
               isHighlighted={user.email === highlightedUserId}
               userData={userData}
               allTeams={allTeams}
               teamName={teamName}
               activePosition={activePosition}
-              hasOpenPositionRequest={hasPositionCoverageRequest(dateString, teamName, activePosition)}
+              hasOpenPositionRequest={hasPositionCoverageRequest(
+                dateString,
+                teamName,
+                activePosition,
+              )}
               content={
-                user.email ? (
-                  (() => {
-                    const cellContent = getCellContent(dateString, user.email);
-                    if (!cellContent) return null;
-                    return (
-                      <div
-                        className={
-                          user.email === highlightedUserId
-                            ? cellStyles.highlightedUserName
-                            : ""
-                        }
-                      >
-                        {cellContent}
-                      </div>
-                    );
-                  })()
-                ) : null
+                user.email
+                  ? (() => {
+                      const cellContent = getCellContent(
+                        dateString,
+                        user.email,
+                      );
+                      if (!cellContent) return null;
+                      return (
+                        <div
+                          className={
+                            user.email === highlightedUserId
+                              ? cellStyles.highlightedUserName
+                              : ""
+                          }
+                        >
+                          {cellContent}
+                        </div>
+                      );
+                    })()
+                  : null
               }
               onClick={() => {
                 if (user.email && !isCellDisabled(dateString, user.email)) {

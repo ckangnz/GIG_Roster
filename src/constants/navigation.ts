@@ -1,13 +1,13 @@
-import { 
-  LayoutDashboard, 
-  Calendar, 
-  Settings, 
-  User, 
-  Users, 
-  Trophy, 
+import {
+  LayoutDashboard,
+  Calendar,
+  Settings,
+  User,
+  Users,
+  Trophy,
   IdCardLanyard,
   MessageSquareHeart,
-  Building2
+  Building2,
 } from "lucide-react";
 import { LucideIcon } from "lucide-react";
 
@@ -42,7 +42,11 @@ export const BOTTOM_NAV_ITEMS: NavItem[] = [
 
 export const SETTINGS_NAV_ITEMS: NavItem[] = [
   { id: SettingsSection.PROFILE, label: "My Profile", icon: User },
-  { id: SettingsSection.ORGANISATIONS, label: "Organisations", icon: Building2 },
+  {
+    id: SettingsSection.ORGANISATIONS,
+    label: "Organisations",
+    icon: Building2,
+  },
   {
     id: SettingsSection.USER_MANAGEMENT,
     label: "User Management",

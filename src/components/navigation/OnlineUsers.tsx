@@ -105,7 +105,11 @@ const OnlineUsers = ({
       ref={dropdownRef}
       onClick={() => setShowDropdown(!showDropdown)}
     >
-      {showText && <span className={styles.onlineLabel}>{t('common.online', { defaultValue: 'Online' })}</span>}
+      {showText && (
+        <span className={styles.onlineLabel}>
+          {t("common.online", { defaultValue: "Online" })}
+        </span>
+      )}
       <div className={styles.avatarStack}>
         {remainingCount > 0 && (
           <div className={`${styles.avatarCircle} ${styles.moreCircle}`}>
@@ -117,15 +121,23 @@ const OnlineUsers = ({
             key={user.uid}
             className={styles.avatarCircle}
             title={user.name || "Unknown User"}
-            style={{ 
-              backgroundColor: getUserPhotoURL(user.photoURL, user.hidePhoto) ? "transparent" : resolvePresenceColor(user.colorIndex, user.color, isDark), 
-              borderColor: "white" 
+            style={{
+              backgroundColor: getUserPhotoURL(user.photoURL, user.hidePhoto)
+                ? "transparent"
+                : resolvePresenceColor(user.colorIndex, user.color, isDark),
+              borderColor: "white",
             }}
           >
-            {getUserPhotoURL(user.photoURL, user.hidePhoto)
-              ? <img src={getUserPhotoURL(user.photoURL, user.hidePhoto)!} alt={user.name} className={styles.avatarImg} referrerPolicy="no-referrer" />
-              : getInitials(user.name)
-            }
+            {getUserPhotoURL(user.photoURL, user.hidePhoto) ? (
+              <img
+                src={getUserPhotoURL(user.photoURL, user.hidePhoto)!}
+                alt={user.name}
+                className={styles.avatarImg}
+                referrerPolicy="no-referrer"
+              />
+            ) : (
+              getInitials(user.name)
+            )}
           </div>
         ))}
       </div>
@@ -133,16 +145,15 @@ const OnlineUsers = ({
       {showDropdown && (
         <div className={dropdownClasses}>
           <div className={styles.dropdownTitle}>
-            {t('common.onlineNow', { defaultValue: 'Online Now' })} ({onlineUsers.length})
+            {t("common.onlineNow", { defaultValue: "Online Now" })} (
+            {onlineUsers.length})
           </div>
           <div className={styles.userListScroll}>
             {onlineUsers.map((user) => {
               const isMe = user.uid === currentSessionDocId;
               const restricted = isRestricted(user.location);
               const canNavigate =
-                !isMe &&
-                !!user.location &&
-                (!restricted || userData?.isAdmin);
+                !isMe && !!user.location && (!restricted || userData?.isAdmin);
 
               return (
                 <div
@@ -152,12 +163,29 @@ const OnlineUsers = ({
                 >
                   <div
                     className={styles.userAvatarSmall}
-                    style={{ backgroundColor: getUserPhotoURL(user.photoURL, user.hidePhoto) ? "transparent" : resolvePresenceColor(user.colorIndex, user.color, isDark) }}
+                    style={{
+                      backgroundColor: getUserPhotoURL(
+                        user.photoURL,
+                        user.hidePhoto,
+                      )
+                        ? "transparent"
+                        : resolvePresenceColor(
+                            user.colorIndex,
+                            user.color,
+                            isDark,
+                          ),
+                    }}
                   >
-                    {getUserPhotoURL(user.photoURL, user.hidePhoto)
-                      ? <img src={getUserPhotoURL(user.photoURL, user.hidePhoto)!} alt={user.name} className={styles.avatarImg} referrerPolicy="no-referrer" />
-                      : getInitials(user.name)
-                    }
+                    {getUserPhotoURL(user.photoURL, user.hidePhoto) ? (
+                      <img
+                        src={getUserPhotoURL(user.photoURL, user.hidePhoto)!}
+                        alt={user.name}
+                        className={styles.avatarImg}
+                        referrerPolicy="no-referrer"
+                      />
+                    ) : (
+                      getInitials(user.name)
+                    )}
                   </div>
                   <span className={styles.userNameText}>
                     <NameTag

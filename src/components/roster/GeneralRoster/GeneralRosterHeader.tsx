@@ -44,10 +44,10 @@ export const GeneralRosterHeader = memo(
                 onClick={() => user.email && onToggleVisibility(user.email)}
                 title="Click to hide member"
               >
-                <NameTag 
-                  displayName={user.name} 
-                  isMe={isMe} 
-                  gender={isMe ? userData?.gender : user.gender} 
+                <NameTag
+                  displayName={user.name}
+                  isMe={isMe}
+                  gender={isMe ? userData?.gender : user.gender}
                 />
                 {currentPosition?.sortByGender && (
                   <span className={generalStyles.genderLabel}>

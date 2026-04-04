@@ -8,7 +8,11 @@ import { GeneralRosterRow } from "./GeneralRosterRow";
 import { useRosterBaseLogic } from "../../../hooks/useRosterBaseLogic";
 import { useRosterHeaderLogic } from "../../../hooks/useRosterHeaderLogic";
 import { useRosterVisualRows } from "../../../hooks/useRosterVisualRows";
-import { getAssignmentsForTeam, isTeamRosterData, OrgMembership } from "../../../model/model";
+import {
+  getAssignmentsForTeam,
+  isTeamRosterData,
+  OrgMembership,
+} from "../../../model/model";
 import EmptyState from "../../common/EmptyState";
 import { NoUsersIllustration } from "../../common/EmptyStateIllustrations";
 import cellStyles from "../roster-cell.module.css";
@@ -231,11 +235,15 @@ const GeneralRosterTable = () => {
         title={t("roster.empty.noUsersTitle")}
         description={t("roster.empty.noUsersDesc")}
         instruction={{
-          text: isAdmin ? t("roster.empty.noUsersAdmin") : t("roster.empty.noUsersMember"),
-          action: isAdmin ? { 
-            label: t("management.user.title"), 
-            onClick: () => navigate("/app/settings/user_management") 
-          } : undefined
+          text: isAdmin
+            ? t("roster.empty.noUsersAdmin")
+            : t("roster.empty.noUsersMember"),
+          action: isAdmin
+            ? {
+                label: t("management.user.title"),
+                onClick: () => navigate("/app/settings/user_management"),
+              }
+            : undefined,
         }}
       />
     );

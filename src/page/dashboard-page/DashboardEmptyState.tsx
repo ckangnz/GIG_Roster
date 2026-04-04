@@ -8,17 +8,24 @@ import {
   NoTeamsIllustration,
   NoAssignmentsIllustration,
   AllExpiredIllustration,
-  NoFutureDataIllustration
+  NoFutureDataIllustration,
 } from "../../components/common/EmptyStateIllustrations";
 
-export type EmptyStateType = "no-teams" | "no-assignments" | "no-future-data" | "all-expired";
+export type EmptyStateType =
+  | "no-teams"
+  | "no-assignments"
+  | "no-future-data"
+  | "all-expired";
 
 interface DashboardEmptyStateProps {
   type: EmptyStateType;
   isAdmin: boolean;
 }
 
-const DashboardEmptyState: React.FC<DashboardEmptyStateProps> = ({ type, isAdmin }) => {
+const DashboardEmptyState: React.FC<DashboardEmptyStateProps> = ({
+  type,
+  isAdmin,
+}) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
@@ -30,9 +37,16 @@ const DashboardEmptyState: React.FC<DashboardEmptyStateProps> = ({ type, isAdmin
           title: t("dashboard.empty.noTeamsTitle"),
           description: t("dashboard.empty.noTeamsDesc"),
           instruction: {
-            text: isAdmin ? t("dashboard.empty.noTeamsAdmin") : t("dashboard.empty.noTeamsMember"),
-            action: isAdmin ? { label: t("settings.profile"), onClick: () => navigate("/app/settings/profile") } : undefined
-          }
+            text: isAdmin
+              ? t("dashboard.empty.noTeamsAdmin")
+              : t("dashboard.empty.noTeamsMember"),
+            action: isAdmin
+              ? {
+                  label: t("settings.profile"),
+                  onClick: () => navigate("/app/settings/profile"),
+                }
+              : undefined,
+          },
         };
       case "no-assignments":
         return {
@@ -40,9 +54,16 @@ const DashboardEmptyState: React.FC<DashboardEmptyStateProps> = ({ type, isAdmin
           title: t("dashboard.empty.noAssignmentsTitle"),
           description: t("dashboard.empty.noAssignmentsDesc"),
           instruction: {
-            text: isAdmin ? t("dashboard.empty.noAssignmentsAdmin") : t("dashboard.empty.noAssignmentsMember"),
-            action: isAdmin ? { label: t("nav.roster"), onClick: () => navigate("/app/roster") } : undefined
-          }
+            text: isAdmin
+              ? t("dashboard.empty.noAssignmentsAdmin")
+              : t("dashboard.empty.noAssignmentsMember"),
+            action: isAdmin
+              ? {
+                  label: t("nav.roster"),
+                  onClick: () => navigate("/app/roster"),
+                }
+              : undefined,
+          },
         };
       case "all-expired":
         return {
@@ -51,8 +72,11 @@ const DashboardEmptyState: React.FC<DashboardEmptyStateProps> = ({ type, isAdmin
           description: t("dashboard.empty.allExpiredDesc"),
           instruction: {
             text: t("dashboard.empty.allExpiredInstruction"),
-            action: { label: t("nav.roster"), onClick: () => navigate("/app/roster") }
-          }
+            action: {
+              label: t("nav.roster"),
+              onClick: () => navigate("/app/roster"),
+            },
+          },
         };
       case "no-future-data":
       default:
@@ -61,9 +85,16 @@ const DashboardEmptyState: React.FC<DashboardEmptyStateProps> = ({ type, isAdmin
           title: t("dashboard.empty.noFutureTitle"),
           description: t("dashboard.empty.noFutureDesc"),
           instruction: {
-            text: isAdmin ? t("dashboard.empty.noFutureAdmin") : t("dashboard.empty.noFutureMember"),
-            action: isAdmin ? { label: t("management.team.title"), onClick: () => navigate("/app/settings/teams") } : undefined
-          }
+            text: isAdmin
+              ? t("dashboard.empty.noFutureAdmin")
+              : t("dashboard.empty.noFutureMember"),
+            action: isAdmin
+              ? {
+                  label: t("management.team.title"),
+                  onClick: () => navigate("/app/settings/teams"),
+                }
+              : undefined,
+          },
         };
     }
   };

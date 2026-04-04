@@ -30,19 +30,22 @@ const AbsenceRosterTable = () => {
     });
   }, [allTeamUsers, userData]);
 
-  const handleKeyboardAbsenceClick = useCallback((row: number, col: number) => {
-    const dateString = rosterDates[row];
-    const user = sortedAllTeamUsers[col];
-    if (dateString && user?.email) {
-      handleAbsenceClick(dateString, user.email, row, col);
-    }
-  }, [rosterDates, sortedAllTeamUsers, handleAbsenceClick]);
+  const handleKeyboardAbsenceClick = useCallback(
+    (row: number, col: number) => {
+      const dateString = rosterDates[row];
+      const user = sortedAllTeamUsers[col];
+      if (dateString && user?.email) {
+        handleAbsenceClick(dateString, user.email, row, col);
+      }
+    },
+    [rosterDates, sortedAllTeamUsers, handleAbsenceClick],
+  );
 
   const renderHeader = () => (
-    <AbsenceRosterHeader 
-      allTeamUsers={sortedAllTeamUsers} 
+    <AbsenceRosterHeader
+      allTeamUsers={sortedAllTeamUsers}
       userData={userData}
-      showPeek={true} 
+      showPeek={true}
     />
   );
 

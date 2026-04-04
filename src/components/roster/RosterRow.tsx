@@ -3,7 +3,13 @@ import { ReactNode, memo, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 import { PeekCell } from "./Peek/PeekCell";
-import { RosterEntry, formatDisplayDate, RosterSlot, getAssignmentsForTeam, isTeamRosterData } from "../../model/model";
+import {
+  RosterEntry,
+  formatDisplayDate,
+  RosterSlot,
+  getAssignmentsForTeam,
+  isTeamRosterData,
+} from "../../model/model";
 
 import styles from "./roster-row.module.css";
 
@@ -48,11 +54,13 @@ const RosterRow = memo(
       if (!entry) return false;
       // If this is a specific slot row
       if (slot) {
-        return Object.keys(entry.teams).some(tId => {
+        return Object.keys(entry.teams).some((tId) => {
           const teamData = entry.teams[tId];
-          if (isTeamRosterData(teamData) && teamData.type === 'slotted') {
+          if (isTeamRosterData(teamData) && teamData.type === "slotted") {
             const slotAssignments = teamData.slots?.[slot.id] || {};
-            return Object.values(slotAssignments).some((list: string[]) => list.length > 0);
+            return Object.values(slotAssignments).some(
+              (list: string[]) => list.length > 0,
+            );
           }
           return false;
         });
@@ -73,7 +81,9 @@ const RosterRow = memo(
       hasPositionRequest ? styles.rowNeedsCoverage : "",
       slot ? styles.slottedRow : "",
       !isFirstSlot ? styles.subsequentSlotRow : "",
-      isLastSlot && (isToday || dateString === closestNextDate) ? styles.slottedGroupBottom : "",
+      isLastSlot && (isToday || dateString === closestNextDate)
+        ? styles.slottedGroupBottom
+        : "",
     ]
       .filter(Boolean)
       .join(" ");
@@ -85,20 +95,23 @@ const RosterRow = memo(
           onClick={() => onDateClick(dateString)}
           title={eventName}
         >
-          <div className={`${styles.dateCellContent} ${hasPositionRequest ? styles.dateTextWarning : ""}`}>
+          <div
+            className={`${styles.dateCellContent} ${hasPositionRequest ? styles.dateTextWarning : ""}`}
+          >
             {isFirstSlot && (
               <>
                 {eventName && <span className={styles.specialEventDot} />}
                 {isToday && (
-                  <span className={styles.rosterTodayDot} title={t('common.today')} />
+                  <span
+                    className={styles.rosterTodayDot}
+                    title={t("common.today")}
+                  />
                 )}
                 {formatDisplayDate(dateKey)}
               </>
             )}
             {slot && (
-              <div className={styles.slotTimeLabel}>
-                {slot.startTime}
-              </div>
+              <div className={styles.slotTimeLabel}>{slot.startTime}</div>
             )}
           </div>
         </td>

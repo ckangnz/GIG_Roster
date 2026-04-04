@@ -9,7 +9,11 @@ interface AllRosterRowProps {
   rowIndex: number;
   focusedCell: { row: number; col: number; table: string } | null;
   setFocusedCell: (
-    cell: { row: number; col: number; table: "roster" | "absence" | "all" } | null,
+    cell: {
+      row: number;
+      col: number;
+      table: "roster" | "absence" | "all";
+    } | null,
   ) => void;
   entries: Record<string, RosterEntry>;
   onDateClick: (date: string) => void;
@@ -35,8 +39,15 @@ interface AllRosterRowProps {
   allViewPositions?: string[];
   isUserAbsent: (dateString: string, userEmail: string) => boolean;
   getAbsenceReason: (dateString: string, userEmail: string) => string;
-  isHighlightedCell: (dateString: string, identifier: string, type: 'user' | 'position') => boolean;
-  getConflictStatus: (dateString: string, userEmail: string) => { hasConflict: boolean };
+  isHighlightedCell: (
+    dateString: string,
+    identifier: string,
+    type: "user" | "position",
+  ) => boolean;
+  getConflictStatus: (
+    dateString: string,
+    userEmail: string,
+  ) => { hasConflict: boolean };
   isToday?: boolean;
   isPast?: boolean;
   // Slotted mode props
@@ -105,8 +116,12 @@ export const AllRosterRow = memo(
                 absenceReason={
                   col.id ? getAbsenceReason(dateString, col.id) : ""
                 }
-                isHighlighted={isHighlightedCell(dateString, col.id, 'user')}
-                hasConflict={col.id ? getConflictStatus(dateString, col.id).hasConflict : false}
+                isHighlighted={isHighlightedCell(dateString, col.id, "user")}
+                hasConflict={
+                  col.id
+                    ? getConflictStatus(dateString, col.id).hasConflict
+                    : false
+                }
                 content={
                   col.id ? getAllViewUserCellContent(dateString, col.id) : null
                 }
@@ -122,7 +137,9 @@ export const AllRosterRow = memo(
               />
             ))
           : allViewPositions.map((posId, colIndex) => {
-              const pos = allPositions.find(p => p.id === posId || p.name === posId);
+              const pos = allPositions.find(
+                (p) => p.id === posId || p.name === posId,
+              );
               return (
                 <RosterCell
                   key={posId}
@@ -135,11 +152,22 @@ export const AllRosterRow = memo(
                     focusedCell?.table === "all"
                   }
                   onFocus={() =>
-                    setFocusedCell({ row: rowIndex, col: colIndex, table: "all" })
+                    setFocusedCell({
+                      row: rowIndex,
+                      col: colIndex,
+                      table: "all",
+                    })
                   }
                   identifier={pos?.id || posId}
-                  isHighlighted={isHighlightedCell(dateString, pos?.id || posId, 'position')}
-                  content={getAllViewPositionCellContent(dateString, pos?.id || posId)}
+                  isHighlighted={isHighlightedCell(
+                    dateString,
+                    pos?.id || posId,
+                    "position",
+                  )}
+                  content={getAllViewPositionCellContent(
+                    dateString,
+                    pos?.id || posId,
+                  )}
                 />
               );
             })}

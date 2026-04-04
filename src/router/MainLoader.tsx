@@ -12,8 +12,8 @@ const MainLoader = () => {
   const [searchParams] = useSearchParams();
 
   // Capture invite param from URL or sessionStorage
-  const inviteOrgId = searchParams.get("join") || sessionStorage.getItem("pendingInviteOrgId");
-
+  const inviteOrgId =
+    searchParams.get("join") || sessionStorage.getItem("pendingInviteOrgId");
 
   if (loading) {
     return <LoadingPage />;
@@ -30,7 +30,9 @@ const MainLoader = () => {
   }
 
   const orgIds = userData.organisations || [];
-  const hasOrgs = Array.isArray(orgIds) ? orgIds.length > 0 : Object.keys(orgIds).length > 0;
+  const hasOrgs = Array.isArray(orgIds)
+    ? orgIds.length > 0
+    : Object.keys(orgIds).length > 0;
 
   // If there's a pending invite, redirect to guest page to handle it
   if (inviteOrgId) {

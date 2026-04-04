@@ -1,6 +1,5 @@
 import { memo } from "react";
 
-
 import { DragControls } from "framer-motion";
 import { CornerDownRight, Trash2, GripVertical } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -27,96 +26,110 @@ interface PositionManagementRowProps {
   dragControls?: DragControls;
 }
 
-const PositionManagementRow = memo(({
-  position,
-  index,
-  onUpdate,
-  onDelete,
-  isDragDisabled = false,
-  dragControls,
-}: PositionManagementRowProps) => {
-  const { t } = useTranslation();
-  const isChild = !!position.parentId;
+const PositionManagementRow = memo(
+  ({
+    position,
+    index,
+    onUpdate,
+    onDelete,
+    isDragDisabled = false,
+    dragControls,
+  }: PositionManagementRowProps) => {
+    const { t } = useTranslation();
+    const isChild = !!position.parentId;
 
-  return (
-    <tr style={{ background: "var(--background-card)", transform: "translateZ(0)" }}>
-      <SettingsTableAnyCell isSticky={true}>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-            paddingLeft: isChild ? "24px" : "0",
-            width: "100%",
-          }}
-        >
-          {!isDragDisabled && !isChild && dragControls && (
-            <div
-              style={{
-                cursor: "grab",
-                display: "flex",
-                alignItems: "center",
-                touchAction: "none",
-              }}
-              onPointerDown={(e) => dragControls.start(e)}
-            >
-              <GripVertical size={20} style={{ opacity: 0.4 }} />
-            </div>
-          )}
-          {isChild && (
-            <CornerDownRight size={18} style={{ opacity: 0.5, flexShrink: 0 }} />
-          )}
+    return (
+      <tr
+        style={{
+          background: "var(--background-card)",
+          transform: "translateZ(0)",
+        }}
+      >
+        <SettingsTableAnyCell isSticky={true}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              paddingLeft: isChild ? "24px" : "0",
+              width: "100%",
+            }}
+          >
+            {!isDragDisabled && !isChild && dragControls && (
+              <div
+                style={{
+                  cursor: "grab",
+                  display: "flex",
+                  alignItems: "center",
+                  touchAction: "none",
+                }}
+                onPointerDown={(e) => dragControls.start(e)}
+              >
+                <GripVertical size={20} style={{ opacity: 0.4 }} />
+              </div>
+            )}
+            {isChild && (
+              <CornerDownRight
+                size={18}
+                style={{ opacity: 0.5, flexShrink: 0 }}
+              />
+            )}
+            <input
+              name={`name-${index}`}
+              className={`${formStyles.formInput} ${!position.name?.trim() ? formStyles.inputError : ""}`}
+              value={position.name}
+              onChange={(e) => onUpdate(index, "name", e.target.value)}
+              style={{ width: "100%" }}
+              title={
+                !position.name?.trim()
+                  ? t("management.position.nameRequired")
+                  : ""
+              }
+            />
+          </div>
+        </SettingsTableAnyCell>
+        <SettingsTableAnyCell>
           <input
-            name={`name-${index}`}
-            className={`${formStyles.formInput} ${!position.name?.trim() ? formStyles.inputError : ""}`}
-            value={position.name}
-            onChange={(e) => onUpdate(index, "name", e.target.value)}
-            style={{ width: "100%" }}
-            title={!position.name?.trim() ? t('management.position.nameRequired') : ""}
+            name={`emoji-${index}`}
+            className={`${formStyles.formInput} ${!position.emoji?.trim() ? formStyles.inputError : ""}`}
+            value={position.emoji}
+            onChange={(e) => onUpdate(index, "emoji", e.target.value)}
+            title={
+              !position.emoji?.trim()
+                ? t("management.position.nameRequired")
+                : ""
+            }
           />
-        </div>
-      </SettingsTableAnyCell>
-      <SettingsTableAnyCell>
-        <input
-          name={`emoji-${index}`}
-          className={`${formStyles.formInput} ${!position.emoji?.trim() ? formStyles.inputError : ""}`}
-          value={position.emoji}
-          onChange={(e) => onUpdate(index, "emoji", e.target.value)}
-          title={!position.emoji?.trim() ? t('management.position.nameRequired') : ""}
+        </SettingsTableAnyCell>
+        <SettingsTableColourInputCell
+          name={`colour-${index}`}
+          value={position.colour}
+          onChange={(e) => onUpdate(index, "colour", e.target.value)}
+          error={!position.colour?.trim()}
         />
-      </SettingsTableAnyCell>
-      <SettingsTableColourInputCell
-        name={`colour-${index}`}
-        value={position.colour}
-        onChange={(e) => onUpdate(index, "colour", e.target.value)}
-        error={!position.colour?.trim()}
-      />
-      <SettingsTableAnyCell textAlign="center">
-        <Toggle
-          isOn={!!position.sortByGender}
-          onToggle={(isOn) => onUpdate(index, "sortByGender", isOn)}
-          disabled={position.isCustom || isChild}
-        />
-      </SettingsTableAnyCell>
-      <SettingsTableAnyCell textAlign="center">
-        <Toggle
-          isOn={!!position.isCustom}
-          onToggle={(isOn) => onUpdate(index, "isCustom", isOn)}
-          disabled={isChild}
-        />
-      </SettingsTableAnyCell>
-      <SettingsTableAnyCell textAlign="center">
-        <Button
-          variant="delete"
-          size="small"
-          onClick={() => onDelete(index)}
-        >
-          <Trash2 size={14} style={{ marginRight: "4px" }} />
-          {t('common.delete')}
-        </Button>
-      </SettingsTableAnyCell>
-    </tr>
-  );
-});
+        <SettingsTableAnyCell textAlign="center">
+          <Toggle
+            isOn={!!position.sortByGender}
+            onToggle={(isOn) => onUpdate(index, "sortByGender", isOn)}
+            disabled={position.isCustom || isChild}
+          />
+        </SettingsTableAnyCell>
+        <SettingsTableAnyCell textAlign="center">
+          <Toggle
+            isOn={!!position.isCustom}
+            onToggle={(isOn) => onUpdate(index, "isCustom", isOn)}
+            disabled={isChild}
+          />
+        </SettingsTableAnyCell>
+        <SettingsTableAnyCell textAlign="center">
+          <Button variant="delete" size="small" onClick={() => onDelete(index)}>
+            <Trash2 size={14} style={{ marginRight: "4px" }} />
+            {t("common.delete")}
+          </Button>
+        </SettingsTableAnyCell>
+      </tr>
+    );
+  },
+);
 
 export default PositionManagementRow;

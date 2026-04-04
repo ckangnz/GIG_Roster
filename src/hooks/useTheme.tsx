@@ -15,7 +15,9 @@ export const ThemeProvider = ({ children }: ThemeProviderProps) => {
 
   // Calculate the actual applied theme (light or dark)
   const [systemTheme, setSystemTheme] = useState<"light" | "dark">(
-    window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
+    window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? "dark"
+      : "light",
   );
 
   // Listen for system theme changes
@@ -59,7 +61,9 @@ export const ThemeProvider = ({ children }: ThemeProviderProps) => {
   }, [systemTheme]);
 
   return (
-    <ThemeContext.Provider value={{ theme: appliedTheme, toggleTheme, setTheme }}>
+    <ThemeContext.Provider
+      value={{ theme: appliedTheme, toggleTheme, setTheme }}
+    >
       {children}
     </ThemeContext.Provider>
   );

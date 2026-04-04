@@ -1,12 +1,12 @@
-import { useEffect } from 'react';
+import { useEffect } from "react";
 
-import { signInWithPopup } from 'firebase/auth';
-import { Navigate, useSearchParams } from 'react-router-dom';
+import { signInWithPopup } from "firebase/auth";
+import { Navigate, useSearchParams } from "react-router-dom";
 
-import { auth, googleProvider } from '../../firebase';
-import { useAppSelector } from '../../hooks/redux';
+import { auth, googleProvider } from "../../firebase";
+import { useAppSelector } from "../../hooks/redux";
 
-import styles from './login-page.module.css';
+import styles from "./login-page.module.css";
 
 const LoginPage = () => {
   const { firebaseUser, loading } = useAppSelector((state) => state.auth);
@@ -15,9 +15,9 @@ const LoginPage = () => {
 
   // Persist invite param so it survives the login redirect
   useEffect(() => {
-    const joinOrgId = searchParams.get('join');
+    const joinOrgId = searchParams.get("join");
     if (joinOrgId) {
-      sessionStorage.setItem('pendingInviteOrgId', joinOrgId);
+      sessionStorage.setItem("pendingInviteOrgId", joinOrgId);
     }
   }, [searchParams]);
 
@@ -37,7 +37,10 @@ const LoginPage = () => {
       </header>
 
       <div className={styles.loginButtonContainer}>
-        <button onClick={loginGoogle} className={`${styles.loginButton} ${styles.google}`}>
+        <button
+          onClick={loginGoogle}
+          className={`${styles.loginButton} ${styles.google}`}
+        >
           <img
             src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
             height="18"

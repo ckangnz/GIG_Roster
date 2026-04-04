@@ -1,10 +1,9 @@
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { doc, getDoc } from 'firebase/firestore';
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+import { doc, getDoc } from "firebase/firestore";
 
-import { db } from '../../firebase';
-import { Team, Weekday, formatToDateKey } from '../../model/model';
+import { db } from "../../firebase";
+import { Team, Weekday, formatToDateKey } from "../../model/model";
 
-// Helper function from RosterTable.tsx
 export const getUpcomingDates = (
   preferredDays: Weekday[],
   startYear?: number,
@@ -13,10 +12,11 @@ export const getUpcomingDates = (
 ): string[] => {
   const dates: Date[] = [];
   const now = new Date();
-  
-  // Helper to check if today is expired for this team
+
   const isTodayExpired = (t: Team) => {
-    const dayName = new Intl.DateTimeFormat("en-US", { weekday: "long" }).format(now) as Weekday;
+    const dayName = new Intl.DateTimeFormat("en-US", {
+      weekday: "long",
+    }).format(now) as Weekday;
     const endTimeStr = t.dayEndTimes?.[dayName] || "23:59";
     const [endH, endM] = endTimeStr.split(":").map(Number);
     const nowH = now.getHours();
@@ -46,8 +46,11 @@ export const getUpcomingDates = (
   let startDate: Date;
   if (effectiveStartYear === currentYear) {
     startDate = new Date(today);
-    // If today matches but is expired, start from tomorrow
-    if (team && preferredDayNumbers.includes(startDate.getDay()) && isTodayExpired(team)) {
+    if (
+      team &&
+      preferredDayNumbers.includes(startDate.getDay()) &&
+      isTodayExpired(team)
+    ) {
       startDate.setDate(startDate.getDate() + 1);
     }
   } else {
@@ -71,7 +74,11 @@ export const getUpcomingDates = (
   return dates.map((date) => formatToDateKey(date));
 };
 
-const getPreviousDates = (preferredDays: Weekday[], earliestDateStr: string, count: number = 5): string[] => {
+const getPreviousDates = (
+  preferredDays: Weekday[],
+  earliestDateStr: string,
+  count: number = 5,
+): string[] => {
   const dates: Date[] = [];
   const earliestDate = new Date(earliestDateStr);
   earliestDate.setHours(0, 0, 0, 0);
@@ -91,12 +98,10 @@ const getPreviousDates = (preferredDays: Weekday[], earliestDateStr: string, cou
 
   while (dates.length < count) {
     currentDate.setDate(currentDate.getDate() - 1);
-    // Safety check to prevent infinite loops if no days are selected (shouldn't happen with proper validation)
     if (preferredDayNumbers.includes(currentDate.getDay())) {
       dates.push(new Date(currentDate));
     }
-    
-    // Stop if we go back too far (e.g., more than a year from the earliest date)
+
     const limitDate = new Date(earliestDate);
     limitDate.setFullYear(limitDate.getFullYear() - 1);
     if (currentDate < limitDate) break;
@@ -124,11 +129,14 @@ const initialState: RosterViewState = {
 };
 
 export const fetchTeamDataForRoster = createAsyncThunk(
-  'rosterView/fetchTeamData',
-  async ({ teamId, orgId }: { teamId: string, orgId: string }, { rejectWithValue }) => {
+  "rosterView/fetchTeamData",
+  async (
+    { teamId, orgId }: { teamId: string; orgId: string },
+    { rejectWithValue },
+  ) => {
     if (!teamId || !orgId) return null;
     try {
-      const teamsDocRef = doc(db, 'organisations', orgId, 'metadata', 'teams');
+      const teamsDocRef = doc(db, "organisations", orgId, "metadata", "teams");
       const teamsSnap = await getDoc(teamsDocRef);
 
       if (teamsSnap.exists()) {
@@ -140,45 +148,51 @@ export const fetchTeamDataForRoster = createAsyncThunk(
               positions: teamData.positions || [],
             }))
           : [];
-        // Match by ID
         const foundTeam = allTeamsList.find((team) => team.id === teamId);
         return foundTeam || null;
       }
       return null;
     } catch (err) {
-      console.error('Error fetching team data:', err);
-      return rejectWithValue('Failed to load team data.');
+      console.error("Error fetching team data:", err);
+      return rejectWithValue("Failed to load team data.");
     }
-  }
+  },
 );
 
 const rosterViewSlice = createSlice({
-  name: 'rosterView',
+  name: "rosterView",
   initialState,
   reducers: {
     loadPreviousDates(state) {
       if (state.currentTeamData && state.rosterDates.length > 0) {
         const previous = getPreviousDates(
           state.currentTeamData.preferredDays,
-          state.rosterDates[0]
+          state.rosterDates[0],
         );
         state.rosterDates = [...previous, ...state.rosterDates];
       }
     },
     resetToUpcomingDates(state) {
       if (state.currentTeamData?.preferredDays) {
-        state.rosterDates = getUpcomingDates(state.currentTeamData.preferredDays, undefined, undefined, state.currentTeamData);
+        state.rosterDates = getUpcomingDates(
+          state.currentTeamData.preferredDays,
+          undefined,
+          undefined,
+          state.currentTeamData,
+        );
       }
     },
     loadNextYearDates(state) {
       if (state.currentTeamData && state.rosterDates.length > 0) {
-        const lastDate = new Date(state.rosterDates[state.rosterDates.length - 1]);
+        const lastDate = new Date(
+          state.rosterDates[state.rosterDates.length - 1],
+        );
         const nextYear = lastDate.getFullYear() + 1;
         const nextYearDates = getUpcomingDates(
           state.currentTeamData.preferredDays,
           nextYear,
           nextYear,
-          state.currentTeamData
+          state.currentTeamData,
         );
         state.rosterDates = [...state.rosterDates, ...nextYearDates];
       }
@@ -188,24 +202,31 @@ const rosterViewSlice = createSlice({
     },
     setHighlightedUserId(state, action: PayloadAction<string | null>) {
       state.highlightedUserId = action.payload;
-    }
+    },
   },
   extraReducers: (builder) => {
     builder
-      // Fetch Team Data
       .addCase(fetchTeamDataForRoster.pending, (state) => {
         state.loadingTeam = true;
         state.currentTeamData = null;
         state.rosterDates = [];
         state.error = null;
       })
-      .addCase(fetchTeamDataForRoster.fulfilled, (state, action: PayloadAction<Team | null>) => {
-        state.currentTeamData = action.payload;
-        if (action.payload?.preferredDays) {
-          state.rosterDates = getUpcomingDates(action.payload.preferredDays, undefined, undefined, action.payload);
-        }
-        state.loadingTeam = false;
-      })
+      .addCase(
+        fetchTeamDataForRoster.fulfilled,
+        (state, action: PayloadAction<Team | null>) => {
+          state.currentTeamData = action.payload;
+          if (action.payload?.preferredDays) {
+            state.rosterDates = getUpcomingDates(
+              action.payload.preferredDays,
+              undefined,
+              undefined,
+              action.payload,
+            );
+          }
+          state.loadingTeam = false;
+        },
+      )
       .addCase(fetchTeamDataForRoster.rejected, (state, action) => {
         state.error = action.payload as string;
         state.loadingTeam = false;

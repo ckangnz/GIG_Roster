@@ -7,7 +7,10 @@ import Button from "../../../components/common/Button";
 import { InputField } from "../../../components/common/InputField";
 import { useAppDispatch, useAppSelector } from "../../../hooks/redux";
 import { Organisation } from "../../../model/model";
-import { searchOrganisations, selectUserData } from "../../../store/slices/authSlice";
+import {
+  searchOrganisations,
+  selectUserData,
+} from "../../../store/slices/authSlice";
 import wizardStyles from "../onboarding-wizard.module.css";
 
 interface JoinOrgStepProps {
@@ -16,7 +19,11 @@ interface JoinOrgStepProps {
   onSelectOrg: (org: Organisation | null) => void;
 }
 
-const JoinOrgStep = ({ onJoin, selectedOrg, onSelectOrg }: JoinOrgStepProps) => {
+const JoinOrgStep = ({
+  onJoin,
+  selectedOrg,
+  onSelectOrg,
+}: JoinOrgStepProps) => {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const userData = useAppSelector(selectUserData);
@@ -49,17 +56,15 @@ const JoinOrgStep = ({ onJoin, selectedOrg, onSelectOrg }: JoinOrgStepProps) => 
   return (
     <>
       <div className={wizardStyles.stepHeader}>
-        <h3 className={wizardStyles.stepTitle}>{t('onboarding.findTitle')}</h3>
+        <h3 className={wizardStyles.stepTitle}>{t("onboarding.findTitle")}</h3>
         <p className={wizardStyles.stepDescription}>
-          {selectedOrg 
-            ? t('onboarding.confirmDesc')
-            : t('onboarding.findDesc')}
+          {selectedOrg ? t("onboarding.confirmDesc") : t("onboarding.findDesc")}
         </p>
       </div>
 
       <div className={wizardStyles.searchContainer}>
         <InputField
-          placeholder={t('onboarding.searchPlaceholder')}
+          placeholder={t("onboarding.searchPlaceholder")}
           value={selectedOrg ? selectedOrg.name : searchTerm}
           onChange={(e) => {
             setSearchTerm(e.target.value);
@@ -78,18 +83,22 @@ const JoinOrgStep = ({ onJoin, selectedOrg, onSelectOrg }: JoinOrgStepProps) => 
                   onClick={() => onSelectOrg(org)}
                 >
                   <div className={wizardStyles.orgItemRow}>
-                    {org.visibility === 'private' ? (
+                    {org.visibility === "private" ? (
                       <Lock size={14} color="var(--color-text-dim)" />
                     ) : (
                       <Globe size={14} color="var(--color-primary)" />
                     )}
                     <span className={wizardStyles.orgName}>{org.name}</span>
                   </div>
-                  <span className={wizardStyles.orgMeta}>{t('onboarding.clickToJoin')}</span>
+                  <span className={wizardStyles.orgMeta}>
+                    {t("onboarding.clickToJoin")}
+                  </span>
                 </button>
               ))
             ) : (
-              <div className={wizardStyles.noResults}>{t('onboarding.noOrgs')}</div>
+              <div className={wizardStyles.noResults}>
+                {t("onboarding.noOrgs")}
+              </div>
             )}
           </div>
         )}
@@ -97,8 +106,12 @@ const JoinOrgStep = ({ onJoin, selectedOrg, onSelectOrg }: JoinOrgStepProps) => 
 
       {selectedOrg && (
         <div className={wizardStyles.wizardActions}>
-          <Button className={wizardStyles.fullWidthBtn} onClick={() => onJoin(selectedOrg)}>
-            {t('onboarding.requestAccess')} <ArrowRight size={18} className={wizardStyles.btnIcon} />
+          <Button
+            className={wizardStyles.fullWidthBtn}
+            onClick={() => onJoin(selectedOrg)}
+          >
+            {t("onboarding.requestAccess")}{" "}
+            <ArrowRight size={18} className={wizardStyles.btnIcon} />
           </Button>
         </div>
       )}

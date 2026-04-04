@@ -28,34 +28,32 @@ export interface Organisation {
 
 export interface RosterSlot {
   id: string;
-  label: string; // e.g. "Shift 1", "08:00 - 08:15"
-  startTime: string; // "HH:mm"
-  endTime: string; // "HH:mm"
+  label: string;
+  startTime: string;
+  endTime: string;
 }
 
 export interface OrgMembership {
-  id?: string; // userId
+  id?: string;
   isActive: boolean;
   isAdmin: boolean;
   isApproved: boolean;
   teams: string[];
-  teamPositions?: Record<string, string[]>; // teamId -> positionIds[]
-  indexedAssignments?: string[]; // ["TeamId|PositionId", ...]
-  preferredLanguage?: string; // 'en-NZ' | 'ko'
-}
-
-// Lightweight membership stored on the user document for fast permission checks
-export interface UserOrgMetadata {
-  isActive: boolean;
-  isAdmin: boolean;
-  isApproved: boolean;
+  teamPositions?: Record<string, string[]>;
+  indexedAssignments?: string[];
+  preferredLanguage?: string;
 }
 
 export interface AppUser {
   id?: string;
   name: string | null;
   email: string | null;
-  organisations: Record<string, UserOrgMetadata> | string[]; // Can be Map during transition or Array after cleanup
+  organisations:
+    | Record<
+        string,
+        { isActive: boolean; isAdmin: boolean; isApproved: boolean }
+      >
+    | string[];
   gender: string;
   photoURL?: string | null;
   hidePhoto?: boolean;
@@ -77,24 +75,23 @@ export interface RecurringEvent {
   id: string;
   label: string;
   day: Weekday;
-  startTime: string; // HH:mm
-  endTime: string; // HH:mm
+  startTime: string;
+  endTime: string;
 }
 
 export interface Team {
   id: string;
-  orgId: string; // Scoped to an organisation
+  orgId: string;
   name: string;
   emoji: string;
-  positions: string[]; // Store IDs only for proper relational mapping
+  positions: string[];
   preferredDays: Weekday[];
   dayEndTimes?: Partial<Record<Weekday, string>>;
   maxConflict: number;
   allowAbsence?: boolean;
   recurringEvents?: RecurringEvent[];
-  // Granular Time Support
-  rosterMode?: RosterMode; // Default to 'daily'
-  slots?: RosterSlot[]; // Template for slots if mode is 'slotted'
+  rosterMode?: RosterMode;
+  slots?: RosterSlot[];
 }
 
 export interface Position {
@@ -122,49 +119,44 @@ export interface ThoughtEntry {
 }
 
 export interface Thought {
-  id: string; // userUid_teamId
-  orgId: string; // Scoped to an organisation
+  id: string;
+  orgId: string;
   userUid: string;
   userName: string;
-  teamName: string; // This stores teamId
+  teamName: string;
   entries?: ThoughtEntry[];
   updatedAt: number;
   text?: string;
   hearts?: Record<string, number>;
 }
 
-// Assignments for a single day OR a single slot
-export type UserAssignments = Record<string, string[]>; // userEmail/uid -> positionIds[]
+export type UserAssignments = Record<string, string[]>;
 
-// Wrapper for a team's data within a roster date
 export interface TeamRosterData {
   type: RosterMode;
-  // If 'daily': assignments is Record<userEmail, positionIds[]>
-  // If 'slotted': slots is Record<slotId, Record<userEmail, positionIds[]>>
-  assignments?: UserAssignments; 
+  assignments?: UserAssignments;
   slots?: Record<string, UserAssignments>;
 }
 
 export interface CoverageRequest {
-  orgId: string; // Scoped to an organisation
-  teamName: string; // This stores teamId
-  positionName: string; // This stores positionId
+  orgId: string;
+  teamName: string;
+  positionName: string;
   absentUserEmail: string;
   absentUserName?: string;
   requestedAt: number;
   status: "open" | "resolved" | "dismissed";
   resolvedByEmail?: string;
-  slotId?: string; // Optional: reference to a specific time slot
+  slotId?: string;
 }
 
 export interface RosterEntry {
-  id: string; // Document ID (usually date)
-  orgId: string; // Scoped to an organisation
-  date: string; // YYYY-MM-DD
-  eventName?: string; // Special occasion name
-  // teamId -> TeamRosterData
-  teams: Record<string, TeamRosterData | UserAssignments>; 
-  absence: Record<string, Absence>; // userIdentifier -> { reason }
+  id: string;
+  orgId: string;
+  date: string;
+  eventName?: string;
+  teams: Record<string, TeamRosterData | UserAssignments>;
+  absence: Record<string, Absence>;
   coverageRequests?: Record<string, CoverageRequest>;
   updatedAt?: number;
 }
@@ -172,7 +164,9 @@ export interface RosterEntry {
 /**
  * Type guard to distinguish between TeamRosterData container and legacy UserAssignments.
  */
-export const isTeamRosterData = (data: TeamRosterData | UserAssignments): data is TeamRosterData => {
+export const isTeamRosterData = (
+  data: TeamRosterData | UserAssignments,
+): data is TeamRosterData => {
   return (data as TeamRosterData).type !== undefined;
 };
 
@@ -181,25 +175,27 @@ export const isTeamRosterData = (data: TeamRosterData | UserAssignments): data i
  * Handles both legacy flat structures and new TeamRosterData containers.
  */
 export const getAssignmentsForTeam = (
-  entry: RosterEntry, 
-  teamId: string
+  entry: RosterEntry,
+  teamId: string,
 ): UserAssignments => {
   const teamData = entry.teams[teamId];
-  if (!teamData || typeof teamData !== 'object') return {};
-  
+  if (!teamData || typeof teamData !== "object") return {};
+
   if (isTeamRosterData(teamData)) {
-    if (teamData.type === 'daily') {
+    if (teamData.type === "daily") {
       return teamData.assignments || {};
     }
     // For 'slotted', we combine all slot assignments for compatibility with daily views
-    if (teamData.type === 'slotted' && teamData.slots) {
+    if (teamData.type === "slotted" && teamData.slots) {
       const combined: UserAssignments = {};
-      Object.values(teamData.slots).forEach(slotAssignments => {
-        if (slotAssignments && typeof slotAssignments === 'object') {
+      Object.values(teamData.slots).forEach((slotAssignments) => {
+        if (slotAssignments && typeof slotAssignments === "object") {
           Object.entries(slotAssignments).forEach(([email, posIds]) => {
             if (Array.isArray(posIds)) {
               if (!combined[email]) combined[email] = [];
-              combined[email] = Array.from(new Set([...combined[email], ...posIds]));
+              combined[email] = Array.from(
+                new Set([...combined[email], ...posIds]),
+              );
             }
           });
         }
@@ -208,7 +204,7 @@ export const getAssignmentsForTeam = (
     }
     return {};
   }
-  
+
   // Legacy flat structure - verify it's a Record<string, string[]>
   const assignments: UserAssignments = {};
   Object.entries(teamData).forEach(([email, posIds]) => {
@@ -224,7 +220,7 @@ export const getAssignmentsForTeam = (
  */
 export const getAbsenceForUser = (
   entry: RosterEntry | undefined,
-  userIdentifier: string
+  userIdentifier: string,
 ): Absence | null => {
   if (!entry || !entry.absence) return null;
   return entry.absence[userIdentifier] || null;

@@ -1,6 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 
-
 import { motion, AnimatePresence } from "framer-motion";
 import { Heart } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -48,7 +47,6 @@ const SpeechBubble = ({
   const [particles, setParticles] = useState<HeartParticle[]>([]);
   const lastHeartCount = useRef(0);
 
-  // Randomize floating animation parameters for organic feel
   const [floatTransition] = useState(() => ({
     duration: 3 + Math.random() * 2,
     repeat: Infinity,
@@ -61,12 +59,9 @@ const SpeechBubble = ({
   const isLikedByMe =
     currentUserId && entry.hearts && !!entry.hearts[currentUserId];
 
-  // Trigger burst effect when heart count increases
   useEffect(() => {
     if (heartCount > lastHeartCount.current) {
-      // Use setTimeout to avoid synchronous setState in effect
       setTimeout(() => {
-        // Generate new random particle data
         const newParticles = [...Array(6)].map((_, i) => ({
           id: Date.now() + i,
           x: (Math.random() - 0.5) * 60,
@@ -76,7 +71,7 @@ const SpeechBubble = ({
         setParticles(newParticles);
         setShowBurst(true);
         setShowUnlike(false);
-        
+
         setTimeout(() => {
           setShowBurst(false);
           setParticles([]);
@@ -92,7 +87,6 @@ const SpeechBubble = ({
     lastHeartCount.current = heartCount;
   }, [heartCount]);
 
-  // Check for truncation
   useEffect(() => {
     const checkTruncation = () => {
       if (!isExpanded && textRef.current) {
@@ -112,30 +106,30 @@ const SpeechBubble = ({
     };
   }, [entry.text, isExpanded]);
 
-  const handleTap = useCallback((e: MouseEvent | TouchEvent | PointerEvent) => {
-    // If a drag was recognized, don't trigger tap logic
-    if (isDragging.current) return;
+  const handleTap = useCallback(
+    (e: MouseEvent | TouchEvent | PointerEvent) => {
+      if (isDragging.current) return;
 
-    // Check if the tap originated from something that should be ignored (like the heart button)
-    const target = e?.target as HTMLElement;
-    if (target && target.closest('[data-ignore-tap="true"]')) {
-      return;
-    }
+      const target = e?.target as HTMLElement;
+      if (target && target.closest('[data-ignore-tap="true"]')) {
+        return;
+      }
 
-    if (clickTimer.current) {
-      clearTimeout(clickTimer.current);
-      clickTimer.current = null;
-      // Double tap to heart
-      onHeart(entry.id);
-    } else {
-      clickTimer.current = setTimeout(() => {
-        onToggleExpand();
+      if (clickTimer.current) {
+        clearTimeout(clickTimer.current);
         clickTimer.current = null;
-      }, 250);
-    }
-  }, [onToggleExpand, entry.id, onHeart]);
-      
-        return (
+        onHeart(entry.id);
+      } else {
+        clickTimer.current = setTimeout(() => {
+          onToggleExpand();
+          clickTimer.current = null;
+        }, 250);
+      }
+    },
+    [onToggleExpand, entry.id, onHeart],
+  );
+
+  return (
     <div
       className={`${styles.bubbleContainer} ${isExpanded ? styles.expandedContainer : ""}`}
     >
@@ -147,8 +141,6 @@ const SpeechBubble = ({
           if (onDragStart) onDragStart();
         }}
         onDragEnd={() => {
-          // Use a short timeout to ensure the tap event (which fires on release) 
-          // is caught and ignored by the handleTap logic
           setTimeout(() => {
             isDragging.current = false;
             if (onDragEnd) onDragEnd();
@@ -207,7 +199,9 @@ const SpeechBubble = ({
           {entry.text}
         </div>
         {isTruncated && !isExpanded && (
-          <div className={styles.readMore}>... {t('thoughts.readMore', { defaultValue: 'read more' })}</div>
+          <div className={styles.readMore}>
+            ... {t("thoughts.readMore", { defaultValue: "read more" })}
+          </div>
         )}
 
         {(isExpanded || heartCount > 0) && (
@@ -266,7 +260,13 @@ const SpeechBubble = ({
                   )}
                 </AnimatePresence>
                 <motion.div
-                  animate={showBurst ? { scale: [1, 1.5, 1] } : (showUnlike ? { scale: [1, 0.7, 1], rotate: [0, -15, 15, 0] } : {})}
+                  animate={
+                    showBurst
+                      ? { scale: [1, 1.5, 1] }
+                      : showUnlike
+                        ? { scale: [1, 0.7, 1], rotate: [0, -15, 15, 0] }
+                        : {}
+                  }
                   transition={{ duration: 0.3 }}
                 >
                   <Heart

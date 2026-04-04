@@ -21,10 +21,10 @@ import {
 } from "../../model/model";
 
 interface RosterState {
-  entries: Record<string, RosterEntry>; // date -> RosterEntry
+  entries: Record<string, RosterEntry>;
   loading: boolean;
   initialLoad: boolean;
-  syncing: Record<string, boolean>; // track which dates are currently syncing
+  syncing: Record<string, boolean>;
   error: string | null;
 }
 
@@ -42,7 +42,6 @@ export const fetchRosterEntries = createAsyncThunk(
     try {
       const entries: Record<string, RosterEntry> = {};
 
-      // 1. Fetch Team-Date Rosters
       const rosterRef = collection(db, "organisations", orgId, "roster");
       const rosterSnap = await getDocs(query(rosterRef));
 
@@ -77,7 +76,6 @@ export const fetchRosterEntries = createAsyncThunk(
         }
       });
 
-      // 2. Fetch Absences
       const absenceRef = collection(db, "organisations", orgId, "absences");
       const absenceSnap = await getDocs(query(absenceRef));
 
@@ -99,7 +97,6 @@ export const fetchRosterEntries = createAsyncThunk(
         entries[date].absence[userId] = { reason: reason || "" };
       });
 
-      // 3. Fetch Calendar Events (Metadata)
       const calendarRef = collection(
         db,
         "organisations",
@@ -355,7 +352,8 @@ export const resolveCoverageRequestRemote = createAsyncThunk(
       // Use payloadTeamId if provided, otherwise look up from state
       // (state may have already been updated optimistically)
       const entry = state.roster.entries[date];
-      const teamId = payloadTeamId || entry?.coverageRequests?.[requestId]?.teamName;
+      const teamId =
+        payloadTeamId || entry?.coverageRequests?.[requestId]?.teamName;
 
       if (teamId) {
         const docId = `${teamId}_${date}`;

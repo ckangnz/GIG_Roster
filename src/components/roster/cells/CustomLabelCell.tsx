@@ -13,29 +13,31 @@ interface CustomLabelCellProps {
   onClick?: () => void;
 }
 
-const CustomLabelCell = memo(({
-  rowIndex,
-  isFocused,
-  onFocus,
-  identifier,
-  dateString,
-  content,
-  onClick,
-}: CustomLabelCellProps) => {
-  return (
-    <BaseRosterCell
-      rowIndex={rowIndex}
-      isFocused={isFocused}
-      onFocus={onFocus}
-      identifier={identifier}
-      dateString={dateString}
-      className={styles.clickable}
-      tabIndex={content ? 0 : -1}
-      onClick={onClick}
-    >
-      {content}
-    </BaseRosterCell>
-  );
-});
+const CustomLabelCell = memo(
+  ({
+    rowIndex,
+    isFocused,
+    onFocus,
+    identifier,
+    dateString,
+    content,
+    onClick,
+  }: CustomLabelCellProps) => {
+    return (
+      <BaseRosterCell
+        rowIndex={rowIndex}
+        isFocused={isFocused}
+        onFocus={onFocus}
+        identifier={identifier}
+        dateString={dateString}
+        className={styles.clickable}
+        tabIndex={content ? 0 : -1}
+        onClick={onClick}
+      >
+        {content}
+      </BaseRosterCell>
+    );
+  },
+);
 
 export default CustomLabelCell;

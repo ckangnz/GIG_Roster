@@ -9,7 +9,6 @@ import {
   GripVertical,
 } from "lucide-react";
 
-
 import { OrgWithMembership } from "./OrgManagement";
 
 import styles from "./org-item.module.css";
@@ -55,7 +54,7 @@ const OrgItem = ({
       dragControls={dragControls}
       layout
       initial={{ opacity: 1 }}
-      whileDrag={{ 
+      whileDrag={{
         scale: 1.02,
         boxShadow: "0 8px 24px rgba(0,0,0,0.3)",
       }}

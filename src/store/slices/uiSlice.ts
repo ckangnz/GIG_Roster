@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface AlertConfig {
   title: string;
@@ -9,7 +9,7 @@ interface AlertConfig {
   cancelText?: string;
 }
 
-export type FocusedCellTable = 'roster' | 'absence' | 'all';
+export type FocusedCellTable = "roster" | "absence" | "all";
 
 export interface FocusedCell {
   row: number;
@@ -23,7 +23,7 @@ interface UIState {
   expandedTeams: string[];
   hiddenUsers: Record<string, Record<string, string[]>>; // teamId -> positionId -> userEmails[]
   lastVisitedPaths: Record<string, string>; // tabId -> fullPathWithSearch
-  rosterAllViewMode: 'user' | 'position';
+  rosterAllViewMode: "user" | "position";
   alertConfig: AlertConfig | null;
   peekPositionName: string | null;
   focusedCell: FocusedCell | null;
@@ -31,7 +31,7 @@ interface UIState {
 
 const loadHiddenUsers = (): Record<string, Record<string, string[]>> => {
   try {
-    const saved = localStorage.getItem('hidden-users');
+    const saved = localStorage.getItem("hidden-users");
     return saved ? JSON.parse(saved) : {};
   } catch {
     return {};
@@ -44,14 +44,14 @@ const initialState: UIState = {
   expandedTeams: [],
   hiddenUsers: loadHiddenUsers(),
   lastVisitedPaths: {},
-  rosterAllViewMode: 'user',
+  rosterAllViewMode: "user",
   alertConfig: null,
   peekPositionName: null,
   focusedCell: null,
 };
 
 const uiSlice = createSlice({
-  name: 'ui',
+  name: "ui",
   initialState,
   reducers: {
     setMobileSidebarOpen: (state, action: PayloadAction<boolean>) => {
@@ -60,10 +60,16 @@ const uiSlice = createSlice({
     setDesktopSidebarExpanded: (state, action: PayloadAction<boolean>) => {
       state.isDesktopSidebarExpanded = action.payload;
     },
-    setRosterAllViewMode: (state, action: PayloadAction<'user' | 'position'>) => {
+    setRosterAllViewMode: (
+      state,
+      action: PayloadAction<"user" | "position">,
+    ) => {
       state.rosterAllViewMode = action.payload;
     },
-    setLastVisitedPath: (state, action: PayloadAction<{ tabId: string; path: string }>) => {
+    setLastVisitedPath: (
+      state,
+      action: PayloadAction<{ tabId: string; path: string }>,
+    ) => {
       const { tabId, path } = action.payload;
       state.lastVisitedPaths[tabId] = path;
     },
@@ -87,11 +93,16 @@ const uiSlice = createSlice({
     },
     toggleUserVisibility: (
       state,
-      action: PayloadAction<{ teamId: string; positionId: string; userEmail: string }>,
+      action: PayloadAction<{
+        teamId: string;
+        positionId: string;
+        userEmail: string;
+      }>,
     ) => {
       const { teamId, positionId, userEmail } = action.payload;
       if (!state.hiddenUsers[teamId]) state.hiddenUsers[teamId] = {};
-      if (!state.hiddenUsers[teamId][positionId]) state.hiddenUsers[teamId][positionId] = [];
+      if (!state.hiddenUsers[teamId][positionId])
+        state.hiddenUsers[teamId][positionId] = [];
 
       const list = state.hiddenUsers[teamId][positionId];
       const index = list.indexOf(userEmail);
@@ -100,7 +111,7 @@ const uiSlice = createSlice({
       } else {
         list.push(userEmail);
       }
-      localStorage.setItem('hidden-users', JSON.stringify(state.hiddenUsers));
+      localStorage.setItem("hidden-users", JSON.stringify(state.hiddenUsers));
     },
     showAlert: (state, action: PayloadAction<AlertConfig>) => {
       state.alertConfig = action.payload;
@@ -131,4 +142,5 @@ export const {
   setPeekPositionName,
   setFocusedCell,
 } = uiSlice.actions;
+
 export const uiReducer = uiSlice.reducer;

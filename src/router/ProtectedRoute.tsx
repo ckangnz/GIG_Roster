@@ -10,14 +10,13 @@ import { fetchTeams } from "../store/slices/teamsSlice";
 
 const ProtectedRoute = () => {
   const dispatch = useAppDispatch();
-  const { firebaseUser, loading } = useAppSelector(
-    (state) => state.auth,
-  );
+  const { firebaseUser, loading } = useAppSelector((state) => state.auth);
   const userData = useAppSelector(selectUserData);
-  const { fetched: teamsFetched, loading: teamsLoading } = useAppSelector((state) => state.teams);
-  const { fetched: positionsFetched, loading: positionsLoading } = useAppSelector(
-    (state) => state.positions,
+  const { fetched: teamsFetched, loading: teamsLoading } = useAppSelector(
+    (state) => state.teams,
   );
+  const { fetched: positionsFetched, loading: positionsLoading } =
+    useAppSelector((state) => state.positions);
 
   const activeOrgId = useAppSelector((state) => state.auth.activeOrgId);
   const isApproved = userData?.isApproved || false;
@@ -31,7 +30,16 @@ const ProtectedRoute = () => {
         dispatch(fetchPositions(activeOrgId));
       }
     }
-  }, [dispatch, firebaseUser, isApproved, activeOrgId, teamsFetched, teamsLoading, positionsFetched, positionsLoading]);
+  }, [
+    dispatch,
+    firebaseUser,
+    isApproved,
+    activeOrgId,
+    teamsFetched,
+    teamsLoading,
+    positionsFetched,
+    positionsLoading,
+  ]);
 
   if (loading) {
     return <LoadingPage />;

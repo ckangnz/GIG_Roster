@@ -9,7 +9,11 @@ interface AbsenceRosterRowProps {
   rowIndex: number;
   focusedCell: { row: number; col: number; table: string } | null;
   setFocusedCell: (
-    cell: { row: number; col: number; table: "roster" | "absence" | "all" } | null,
+    cell: {
+      row: number;
+      col: number;
+      table: "roster" | "absence" | "all";
+    } | null,
   ) => void;
   entries: Record<string, RosterEntry>;
   onDateClick: (date: string) => void;
@@ -56,7 +60,7 @@ export const AbsenceRosterRow = memo(
     const hasAnyTeamRequest = () => {
       if (!teamId || !entries[dateString]?.coverageRequests) return false;
       return Object.values(entries[dateString].coverageRequests!).some(
-        req => req.teamName === teamId && req.status === "open"
+        (req) => req.teamName === teamId && req.status === "open",
       );
     };
 

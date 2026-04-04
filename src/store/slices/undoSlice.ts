@@ -1,6 +1,6 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-export type UndoActionType = 'assignment' | 'absence' | 'eventName';
+export type UndoActionType = "assignment" | "absence" | "eventName";
 
 export interface AssignmentUndoPayload {
   date: string;
@@ -42,7 +42,7 @@ const initialState: UndoState = {
 };
 
 const undoSlice = createSlice({
-  name: 'undo',
+  name: "undo",
   initialState,
   reducers: {
     pushAction: (state, action: PayloadAction<UndoAction>) => {
@@ -54,11 +54,8 @@ const undoSlice = createSlice({
     popAction: (state) => {
       state.history.shift();
     },
-    clearHistory: (state) => {
-      state.history = [];
-    },
   },
 });
 
-export const { pushAction, popAction, clearHistory } = undoSlice.actions;
+export const { pushAction, popAction } = undoSlice.actions;
 export const undoReducer = undoSlice.reducer;

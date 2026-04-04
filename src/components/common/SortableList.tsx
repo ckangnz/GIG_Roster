@@ -1,9 +1,9 @@
-import { ReactNode } from 'react';
+import { ReactNode } from "react";
 
-import { Reorder, useDragControls } from 'framer-motion';
-import { GripVertical } from 'lucide-react';
+import { Reorder, useDragControls } from "framer-motion";
+import { GripVertical } from "lucide-react";
 
-import styles from './sortable-list.module.css';
+import styles from "./sortable-list.module.css";
 
 interface SortableListProps<T> {
   items: T[];
@@ -16,7 +16,7 @@ export function SortableList<T>({
   items,
   onReorder,
   children,
-  className = ''
+  className = "",
 }: SortableListProps<T>) {
   return (
     <Reorder.Group
@@ -41,7 +41,7 @@ export function SortableItem({
   value,
   label,
   children,
-  className = ''
+  className = "",
 }: SortableItemProps) {
   const dragControls = useDragControls();
 
@@ -52,30 +52,28 @@ export function SortableItem({
       dragControls={dragControls}
       layout
       initial={{ opacity: 1 }}
-      whileDrag={{ 
+      whileDrag={{
         scale: 1.02,
         boxShadow: "0 8px 24px rgba(0,0,0,0.2)",
       }}
       className={`${styles.sortableItem} ${className}`}
     >
       <div className={styles.itemContainer}>
-        <div 
-          className={styles.dragHandle} 
+        <div
+          className={styles.dragHandle}
           onPointerDown={(e) => dragControls.start(e)}
-          style={{ touchAction: 'none' }}
+          style={{ touchAction: "none" }}
         >
           <GripVertical size={18} />
         </div>
-        
+
         <div className={styles.itemContent}>
           {label && (
             <div className={styles.itemHeader}>
               <h4 className={styles.itemLabel}>{label}</h4>
             </div>
           )}
-          <div className={styles.itemBody}>
-            {children}
-          </div>
+          <div className={styles.itemBody}>{children}</div>
         </div>
       </div>
     </Reorder.Item>

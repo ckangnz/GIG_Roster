@@ -51,9 +51,9 @@ const ensureTimestamp = (ts: unknown): number => {
 
 /**
  * LEGACY REMOVAL GUIDE (Post-March 2026):
- * Once all thoughts have migrated to the 'entries' format (which happens 
+ * Once all thoughts have migrated to the 'entries' format (which happens
  * automatically within 1 week of user activity):
- * 
+ *
  * 1. In normalizeThought: Remove the 'else if (thought.text)' block.
  * 2. In normalizeThought: Simplify to: return { ...thought, entries: thought.entries || [] };
  * 3. In syncThoughtEntriesRemote: Remove the 'text: deleteField()' and 'hearts: deleteField()' lines.
@@ -104,7 +104,7 @@ export const syncThoughtEntriesRemote = createAsyncThunk(
       userName: string;
       entries: ThoughtEntry[];
     },
-    { rejectWithValue, getState }
+    { rejectWithValue, getState },
   ) => {
     const { userUid, teamName, userName, entries } = payload;
     const id = `${userUid}_${teamName}`;
@@ -115,7 +115,7 @@ export const syncThoughtEntriesRemote = createAsyncThunk(
       if (!orgId) throw new Error("Org ID missing");
 
       const docRef = doc(db, "organisations", orgId, "thoughts", id);
-      
+
       // Strip isExpired for Firebase
       const cleanEntries = entries.map(({ isExpired, ...rest }) => {
         void isExpired;
@@ -136,15 +136,15 @@ export const syncThoughtEntriesRemote = createAsyncThunk(
           text: deleteField(),
           hearts: deleteField(),
         },
-        { merge: true }
+        { merge: true },
       );
       return { id };
     } catch (error: unknown) {
       return rejectWithValue(
-        error instanceof Error ? error.message : "Failed to sync thoughts"
+        error instanceof Error ? error.message : "Failed to sync thoughts",
       );
     }
-  }
+  },
 );
 
 export const removeThoughtRemote = createAsyncThunk(
@@ -160,10 +160,10 @@ export const removeThoughtRemote = createAsyncThunk(
       return { id: payload.id };
     } catch (error: unknown) {
       return rejectWithValue(
-        error instanceof Error ? error.message : "Failed to remove thought"
+        error instanceof Error ? error.message : "Failed to remove thought",
       );
     }
-  }
+  },
 );
 
 export const syncHeartEntryRemote = createAsyncThunk(
@@ -175,7 +175,7 @@ export const syncHeartEntryRemote = createAsyncThunk(
       userUid: string;
       updatedEntries: ThoughtEntry[];
     },
-    { rejectWithValue, getState }
+    { rejectWithValue, getState },
   ) => {
     const { thoughtId, updatedEntries } = payload;
     try {
@@ -184,7 +184,7 @@ export const syncHeartEntryRemote = createAsyncThunk(
       if (!orgId) throw new Error("Org ID missing");
 
       const docRef = doc(db, "organisations", orgId, "thoughts", thoughtId);
-      
+
       const cleanEntries = updatedEntries.map(({ isExpired, ...rest }) => {
         void isExpired;
         return rest;
@@ -197,10 +197,10 @@ export const syncHeartEntryRemote = createAsyncThunk(
       return { thoughtId };
     } catch (error: unknown) {
       return rejectWithValue(
-        error instanceof Error ? error.message : "Failed to sync heart"
+        error instanceof Error ? error.message : "Failed to sync heart",
       );
     }
-  }
+  },
 );
 
 const thoughtsSlice = createSlice({
@@ -220,7 +220,7 @@ const thoughtsSlice = createSlice({
     },
     applyOptimisticThoughts(
       state,
-      action: PayloadAction<{ id: string; entries: ThoughtEntry[] }>
+      action: PayloadAction<{ id: string; entries: ThoughtEntry[] }>,
     ) {
       const { id, entries } = action.payload;
       if (state.thoughts[id]) {

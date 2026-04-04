@@ -57,7 +57,15 @@ const OrgSelectionPage = () => {
           orgIds.map(async (orgId) => {
             const [orgDoc, memDoc] = await Promise.all([
               getDoc(doc(db, "organisations", orgId)),
-              getDoc(doc(db, "organisations", orgId, "memberships", firebaseUser?.uid || "")),
+              getDoc(
+                doc(
+                  db,
+                  "organisations",
+                  orgId,
+                  "memberships",
+                  firebaseUser?.uid || "",
+                ),
+              ),
             ]);
 
             if (orgDoc.exists() && memDoc.exists()) {
@@ -110,7 +118,11 @@ const OrgSelectionPage = () => {
           setOrgs((prev) =>
             prev.map((o) =>
               o.id === orgId
-                ? { ...o, isApproved: memData.isApproved, isAdmin: memData.isAdmin }
+                ? {
+                    ...o,
+                    isApproved: memData.isApproved,
+                    isAdmin: memData.isAdmin,
+                  }
                 : o,
             ),
           );

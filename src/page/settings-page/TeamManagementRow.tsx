@@ -3,9 +3,7 @@ import { Trash2, GripVertical } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import Button from "../../components/common/Button";
-import {
-  SettingsTableAnyCell,
-} from "../../components/common/SettingsTable";
+import { SettingsTableAnyCell } from "../../components/common/SettingsTable";
 import SummaryCell from "../../components/common/SummaryCell";
 import { Position, Team } from "../../model/model";
 import formStyles from "../../styles/form.module.css";
@@ -33,19 +31,17 @@ const TeamManagementRow = ({
 
   const getPositionsSummary = () => {
     if (!team.positions || team.positions.length === 0) {
-      return t('common.none');
+      return t("common.none");
     }
 
-    const displayEmojis = (team.positions || [])
-      .slice(0, 3)
-      .map((posId) => {
-        const pos = availablePositions.find(ap => ap.id === posId);
-        return (
-          <span key={posId} className={styles.summaryEmoji}>
-            {pos?.emoji || "❓"}
-          </span>
-        );
-      });
+    const displayEmojis = (team.positions || []).slice(0, 3).map((posId) => {
+      const pos = availablePositions.find((ap) => ap.id === posId);
+      return (
+        <span key={posId} className={styles.summaryEmoji}>
+          {pos?.emoji || "❓"}
+        </span>
+      );
+    });
     const remainingCount = team.positions.length - 3;
 
     return (
@@ -60,8 +56,10 @@ const TeamManagementRow = ({
 
   const getDaysSummary = () => {
     if (!team.preferredDays || team.preferredDays.length === 0)
-      return t('common.none');
-    return team.preferredDays.map((d) => t(`common.weekdays.${d.toLowerCase().substring(0, 3)}`)).join(", ");
+      return t("common.none");
+    return team.preferredDays
+      .map((d) => t(`common.weekdays.${d.toLowerCase().substring(0, 3)}`))
+      .join(", ");
   };
 
   return (
@@ -99,7 +97,9 @@ const TeamManagementRow = ({
               value={team.name}
               onChange={(e) => onUpdate(teamIndex, "name", e.target.value)}
               style={{ width: "100%" }}
-              title={!team.name?.trim() ? t('management.team.nameRequired') : ""}
+              title={
+                !team.name?.trim() ? t("management.team.nameRequired") : ""
+              }
             />
           </div>
         </SettingsTableAnyCell>
@@ -114,10 +114,13 @@ const TeamManagementRow = ({
         <SettingsTableAnyCell>
           <input
             name={`team-maxConflict-${teamIndex}`}
-            className={`${formStyles.formInput} ${(!team.maxConflict || team.maxConflict < 1) ? formStyles.inputError : ""}`}
+            className={`${formStyles.formInput} ${!team.maxConflict || team.maxConflict < 1 ? formStyles.inputError : ""}`}
             value={team.maxConflict?.toString() || "1"}
             type="number"
-            title={t('management.team.maxConflictHint', { defaultValue: 'Maximum number of simultaneous positions a member can be assigned to within this team.' })}
+            title={t("management.team.maxConflictHint", {
+              defaultValue:
+                "Maximum number of simultaneous positions a member can be assigned to within this team.",
+            })}
             onChange={(e) =>
               onUpdate(teamIndex, "maxConflict", parseInt(e.target.value) || 1)
             }
@@ -137,7 +140,7 @@ const TeamManagementRow = ({
             onClick={() => onDelete(teamIndex)}
           >
             <Trash2 size={14} style={{ marginRight: "6px" }} />
-            {t('common.delete')}
+            {t("common.delete")}
           </Button>
         </SettingsTableAnyCell>
       </Reorder.Item>

@@ -30,13 +30,16 @@ const SUPPORTED_LANGUAGES = ["en-NZ", "ko"];
 const resolveLanguage = (lang: string): string => {
   if (lang !== "system") return lang;
   const browserLang = navigator.language;
-  return SUPPORTED_LANGUAGES.find((l) => browserLang.startsWith(l.split("-")[0])) ?? "en-NZ";
+  return (
+    SUPPORTED_LANGUAGES.find((l) => browserLang.startsWith(l.split("-")[0])) ??
+    "en-NZ"
+  );
 };
 
 export interface AuthState {
   firebaseUser: User | null;
   userData: AppUser | null;
-  membership: OrgMembership | null; // Data for active org
+  membership: OrgMembership | null;
   activeOrgId: string | null;
   loading: boolean;
   error: string | null;
@@ -62,16 +65,16 @@ export const initializeUserData = createAsyncThunk(
       if (userSnap.exists()) {
         const data = userSnap.data() as AppUser;
 
-        // Sync photoURL from Google auth if changed
-        // providerData[0].photoURL is more reliable than user.photoURL for federated login
-        const rawPhotoURL = authUser.providerData?.[0]?.photoURL || authUser.photoURL || null;
-        const latestPhotoURL = rawPhotoURL ? rawPhotoURL.replace(/=s\d+-c$/, "=s200-c") : null;
+        const rawPhotoURL =
+          authUser.providerData?.[0]?.photoURL || authUser.photoURL || null;
+        const latestPhotoURL = rawPhotoURL
+          ? rawPhotoURL.replace(/=s\d+-c$/, "=s200-c")
+          : null;
         if (latestPhotoURL !== (data.photoURL ?? null)) {
           await updateDoc(userDocRef, { photoURL: latestPhotoURL });
           data.photoURL = latestPhotoURL;
         }
 
-        // Load membership for active org if exists
         const activeOrgId = localStorage.getItem("activeOrgId");
         const orgs = data.organisations;
         const orgIds: string[] = Array.isArray(orgs) ? orgs : Object.keys(orgs);
@@ -102,9 +105,11 @@ export const initializeUserData = createAsyncThunk(
           email: authUser?.email || null,
           organisations: [],
           gender: "",
-          photoURL: (authUser?.providerData?.[0]?.photoURL || authUser?.photoURL)
-            ? (authUser?.providerData?.[0]?.photoURL || authUser?.photoURL)!.replace(/=s\d+-c$/, "=s200-c")
-            : null,
+          photoURL:
+            authUser?.providerData?.[0]?.photoURL || authUser?.photoURL
+              ? (authUser?.providerData?.[0]?.photoURL ||
+                  authUser?.photoURL)!.replace(/=s\d+-c$/, "=s200-c")
+              : null,
         };
         await setDoc(userDocRef, newData);
         return newData;
@@ -144,14 +149,12 @@ export const updateUserProfile = createAsyncThunk(
       const globalUpdate: Record<string, unknown> = {};
       const membershipUpdate: Record<string, unknown> = {};
 
-      // Global fields (users/{uid})
       if (data.name !== undefined) globalUpdate.name = data.name;
       if (data.gender !== undefined) globalUpdate.gender = data.gender;
 
-      // Organisation-specific fields
       if (activeOrgId) {
-        // Membership update (data)
-        if (data.isActive !== undefined) membershipUpdate.isActive = data.isActive;
+        if (data.isActive !== undefined)
+          membershipUpdate.isActive = data.isActive;
         if (data.teams !== undefined) membershipUpdate.teams = data.teams;
         if (data.teamPositions !== undefined) {
           membershipUpdate.teamPositions = data.teamPositions;
@@ -205,7 +208,6 @@ export const joinOrganisation = createAsyncThunk(
     { rejectWithValue },
   ) => {
     try {
-      // 1. Fetch org to check requiresApproval
       const orgRef = doc(db, "organisations", orgId);
       const orgSnap = await getDoc(orgRef);
       if (!orgSnap.exists()) {
@@ -217,7 +219,6 @@ export const joinOrganisation = createAsyncThunk(
       const isApproved = isOwner || !requiresApproval;
       const isAdmin = isOwner;
 
-      // 2. Check user's current organisations
       const userRef = doc(db, "users", uid);
       const userSnap = await getDoc(userRef);
       if (!userSnap.exists()) return rejectWithValue("User not found");
@@ -230,12 +231,10 @@ export const joinOrganisation = createAsyncThunk(
 
       const isOrgInUserDoc = currentOrgIds.includes(orgId);
 
-      // 3. Check membership document
       const memRef = doc(db, "organisations", orgId, "memberships", uid);
       const memSnap = await getDoc(memRef);
       const isMembershipDocExists = memSnap.exists();
 
-      // Case: Truly already a member
       if (isOrgInUserDoc && isMembershipDocExists) {
         return {
           orgId,
@@ -245,18 +244,15 @@ export const joinOrganisation = createAsyncThunk(
         };
       }
 
-      // Recovery / Join: Update user doc if org index is missing
       if (!isOrgInUserDoc) {
         await updateDoc(userRef, {
           organisations: [...currentOrgIds, orgId],
         });
       }
 
-      // Prepare / update membership doc
       let membership: OrgMembership;
       if (isMembershipDocExists) {
         membership = memSnap.data() as OrgMembership;
-        // Override stale data with fresh join logic
         membership.isActive = true;
         membership.isApproved = isApproved;
         membership.isAdmin = isAdmin;
@@ -294,14 +290,11 @@ export const leaveOrganisation = createAsyncThunk(
     { rejectWithValue },
   ) => {
     try {
-      // 1. Remove from user's index
       const userRef = doc(db, "users", uid);
       const userSnap = await getDoc(userRef);
       const currentOrgs = userSnap.exists()
         ? userSnap.data().organisations || []
         : [];
-
-      // Migrate legacy map format to array, then filter out orgId
       const currentOrgIds: string[] = Array.isArray(currentOrgs)
         ? currentOrgs
         : Object.keys(currentOrgs);
@@ -309,7 +302,6 @@ export const leaveOrganisation = createAsyncThunk(
         organisations: currentOrgIds.filter((id: string) => id !== orgId),
       });
 
-      // 2. Delete membership document
       const memRef = doc(db, "organisations", orgId, "memberships", uid);
       await deleteDoc(memRef);
 
@@ -333,8 +325,10 @@ export const searchOrganisations = createAsyncThunk(
       const term = searchTerm.toLowerCase();
       snap.forEach((doc) => {
         const data = doc.data() as Organisation;
-        // Only include public organisations in search results
-        if (data.visibility === "public" && data.name.toLowerCase().includes(term)) {
+        if (
+          data.visibility === "public" &&
+          data.name.toLowerCase().includes(term)
+        ) {
           results.push(data);
         }
       });
@@ -373,7 +367,6 @@ export const createOrganisation = createAsyncThunk(
       const orgId = orgRef.id;
       const now = Date.now();
 
-      // 1. Create Organisation Document
       const orgData: Organisation = {
         id: orgId,
         name,
@@ -382,7 +375,6 @@ export const createOrganisation = createAsyncThunk(
         visibility,
         subscription: {
           plan,
-          // Trial ends in 1 month
           expiresAt: new Date(now).setMonth(new Date(now).getMonth() + 1),
         },
         settings: {
@@ -391,7 +383,6 @@ export const createOrganisation = createAsyncThunk(
       };
       await setDoc(orgRef, orgData);
 
-      // 2. Create Membership Document (Creator is Admin & Approved)
       const memRef = doc(db, "organisations", orgId, "memberships", uid);
       const membership: OrgMembership = {
         isActive: true,
@@ -404,14 +395,11 @@ export const createOrganisation = createAsyncThunk(
       };
       await setDoc(memRef, membership);
 
-      // 3. Update User Document
       const userRef = doc(db, "users", uid);
       const userSnap = await getDoc(userRef);
       const currentOrgs = userSnap.exists()
         ? userSnap.data().organisations || []
         : [];
-
-      // Migrate legacy map format to array
       const currentOrgIds: string[] = Array.isArray(currentOrgs)
         ? currentOrgs
         : Object.keys(currentOrgs);
@@ -478,7 +466,6 @@ const authSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(initializeUserData.pending, (state, action) => {
-        // Only set loading if called with a real user (not null)
         if (action.meta.arg !== null) {
           state.loading = true;
           state.error = null;
@@ -524,16 +511,15 @@ const authSlice = createSlice({
         if (state.userData && !action.payload.alreadyMember) {
           const { orgId } = action.payload;
           const orgs = state.userData.organisations;
-          // Always keep as array, migrate legacy map if needed
-          const orgIds: string[] = Array.isArray(orgs) ? orgs : Object.keys(orgs);
+          const orgIds: string[] = Array.isArray(orgs)
+            ? orgs
+            : Object.keys(orgs);
           if (!orgIds.includes(orgId)) {
             state.userData.organisations = [...orgIds, orgId];
           } else {
             state.userData.organisations = orgIds;
           }
         }
-        // Only update membership if the joined org is the active one
-        // (don't overwrite active org's membership when joining a second org)
         if (action.payload.orgId === state.activeOrgId) {
           state.membership = action.payload.membership;
         }
@@ -541,7 +527,9 @@ const authSlice = createSlice({
       .addCase(leaveOrganisation.fulfilled, (state, action) => {
         if (state.userData) {
           const orgs = state.userData.organisations;
-          const orgIds: string[] = Array.isArray(orgs) ? orgs : Object.keys(orgs);
+          const orgIds: string[] = Array.isArray(orgs)
+            ? orgs
+            : Object.keys(orgs);
           state.userData.organisations = orgIds.filter(
             (id: string) => id !== action.payload.orgId,
           );
@@ -554,8 +542,9 @@ const authSlice = createSlice({
       .addCase(createOrganisation.fulfilled, (state, action) => {
         if (state.userData) {
           const orgs = state.userData.organisations;
-          // Always keep as array, migrate legacy map if needed
-          const orgIds: string[] = Array.isArray(orgs) ? orgs : Object.keys(orgs);
+          const orgIds: string[] = Array.isArray(orgs)
+            ? orgs
+            : Object.keys(orgs);
           const orgId = action.payload.orgId;
           state.userData.organisations = orgIds.includes(orgId)
             ? orgIds
@@ -588,7 +577,6 @@ export const selectUserData = createSelector(
   (userData, activeOrgId, membership): AppUserWithMembership | null => {
     if (!userData) return null;
 
-    // Normalise legacy map format to string array
     const rawOrgs = userData.organisations;
     const organisationIds: string[] = Array.isArray(rawOrgs)
       ? rawOrgs

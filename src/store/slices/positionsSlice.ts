@@ -1,9 +1,9 @@
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 
-import { AuthState } from './authSlice';
-import { db } from '../../firebase';
-import { Position } from '../../model/model';
+import { AuthState } from "./authSlice";
+import { db } from "../../firebase";
+import { Position } from "../../model/model";
 
 interface PositionsState {
   positions: Position[];
@@ -22,10 +22,10 @@ const initialState: PositionsState = {
 };
 
 export const fetchPositions = createAsyncThunk(
-  'positions/fetchPositions',
+  "positions/fetchPositions",
   async (orgId: string, { rejectWithValue }) => {
     try {
-      const docRef = doc(db, 'organisations', orgId, 'metadata', 'positions');
+      const docRef = doc(db, "organisations", orgId, "metadata", "positions");
       const snap = await getDoc(docRef);
       if (snap.exists()) {
         const data = snap.data();
@@ -34,123 +34,104 @@ export const fetchPositions = createAsyncThunk(
       return [];
     } catch (error) {
       return rejectWithValue(
-        error instanceof Error ? error.message : 'Failed to fetch positions',
+        error instanceof Error ? error.message : "Failed to fetch positions",
       );
     }
   },
 );
 
 export const updatePositions = createAsyncThunk(
-  'positions/updatePositions',
+  "positions/updatePositions",
   async (positions: Position[], { rejectWithValue, getState }) => {
     try {
       const state = getState() as { auth: AuthState };
       const orgId = state.auth.activeOrgId;
       if (!orgId) throw new Error("Organisation ID missing");
 
-      const docRef = doc(db, 'organisations', orgId, 'metadata', 'positions');
+      const docRef = doc(db, "organisations", orgId, "metadata", "positions");
       await setDoc(docRef, { list: positions });
       return positions;
     } catch (error) {
       return rejectWithValue(
-        error instanceof Error ? error.message : 'Failed to update positions',
+        error instanceof Error ? error.message : "Failed to update positions",
       );
     }
   },
 );
 
 const positionsSlice = createSlice({
-
-  name: 'positions',
+  name: "positions",
 
   initialState,
 
   reducers: {
+    updatePositionCustomLabels: (
+      state,
+      action: PayloadAction<{ positionName: string; labels: string[] }>,
+    ) => {
+      const { positionName, labels } = action.payload;
+      const pos = state.positions.find((p) => p.name === positionName);
+      if (pos) {
+        pos.customLabels = labels;
+        state.isDirty = true;
+      }
+    },
 
-        updatePositionCustomLabels: (
-          state,
-          action: PayloadAction<{ positionName: string; labels: string[] }>,
-        ) => {
-          const { positionName, labels } = action.payload;
-          const pos = state.positions.find((p) => p.name === positionName);
-          if (pos) {
-            pos.customLabels = labels;
-            state.isDirty = true;
-          }
-        },
+    updatePositionCustomLabelsById: (
+      state,
+      action: PayloadAction<{ positionId: string; labels: string[] }>,
+    ) => {
+      const { positionId, labels } = action.payload;
+      const pos = state.positions.find((p) => p.id === positionId);
+      if (pos) {
+        pos.customLabels = labels;
+        state.isDirty = true;
+      }
+    },
 
-        updatePositionCustomLabelsById: (
-          state,
-          action: PayloadAction<{ positionId: string; labels: string[] }>,
-        ) => {
-          const { positionId, labels } = action.payload;
-          const pos = state.positions.find((p) => p.id === positionId);
-          if (pos) {
-            pos.customLabels = labels;
-            state.isDirty = true;
-          }
-        },
+    resetPositionsDirty: (state) => {
+      state.isDirty = false;
+    },
 
-        resetPositionsDirty: (state) => {
-
-          state.isDirty = false;
-
-        },
-
-        setPositions: (state, action: PayloadAction<Position[]>) => {
-          state.positions = action.payload;
-          state.fetched = true;
-          state.loading = false;
-        },
-
-      },
+    setPositions: (state, action: PayloadAction<Position[]>) => {
+      state.positions = action.payload;
+      state.fetched = true;
+      state.loading = false;
+    },
+  },
 
   extraReducers: (builder) => {
-
     builder
 
       .addCase(fetchPositions.pending, (state) => {
-
         state.loading = true;
 
         state.error = null;
-
       })
 
       .addCase(fetchPositions.fulfilled, (state, action) => {
-
         state.positions = action.payload;
 
         state.loading = false;
 
         state.fetched = true;
-
       })
 
       .addCase(fetchPositions.rejected, (state, action) => {
-
         state.error = action.payload as string;
 
         state.loading = false;
-
       })
 
-            .addCase(updatePositions.fulfilled, (state, action) => {
+      .addCase(updatePositions.fulfilled, (state, action) => {
+        state.positions = action.payload;
 
-              state.positions = action.payload;
-
-              state.isDirty = false;
-
-            });
-
-        },
-
+        state.isDirty = false;
       });
+  },
+});
 
-      
+export const { updatePositionCustomLabels, resetPositionsDirty, setPositions } =
+  positionsSlice.actions;
 
-      export const { updatePositionCustomLabels, resetPositionsDirty, setPositions } =
-
-        positionsSlice.actions;
-
-      export const positionsReducer = positionsSlice.reducer;
+export const positionsReducer = positionsSlice.reducer;

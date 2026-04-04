@@ -29,7 +29,9 @@ export const InputField = ({
         className={`${styles.input} ${error ? styles.inputError : ""} ${className || ""}`}
         {...props}
       />
-      {error && errorText && <span className={styles.errorText}>{errorText}</span>}
+      {error && errorText && (
+        <span className={styles.errorText}>{errorText}</span>
+      )}
     </div>
   );
 };
@@ -55,8 +57,7 @@ export const SelectField = ({
   );
 };
 
-interface TextAreaFieldProps
-  extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+interface TextAreaFieldProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   label?: string;
 }
 

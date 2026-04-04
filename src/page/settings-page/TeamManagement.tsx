@@ -217,14 +217,23 @@ const TeamManagement = () => {
                 <td colSpan={5}>
                   <div className={styles.emptyState}>
                     <Users size={40} className={styles.emptyStateIcon} />
-                    <p className={styles.emptyStateText}>{t("management.team.empty")}</p>
-                    <p className={styles.emptyStateSubtext}>{t("management.team.emptyHint")}</p>
+                    <p className={styles.emptyStateText}>
+                      {t("management.team.empty")}
+                    </p>
+                    <p className={styles.emptyStateSubtext}>
+                      {t("management.team.emptyHint")}
+                    </p>
                   </div>
                 </td>
               </tr>
             </tbody>
           ) : (
-            <Reorder.Group axis="y" values={teams} onReorder={setTeams} as="tbody">
+            <Reorder.Group
+              axis="y"
+              values={teams}
+              onReorder={setTeams}
+              as="tbody"
+            >
               {teams.map((team, teamIndex) => (
                 <TeamManagementRow
                   key={team.id}

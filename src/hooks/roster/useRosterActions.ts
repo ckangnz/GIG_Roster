@@ -126,9 +126,6 @@ export const useRosterActions = (
         }
         dispatch(setFocusedCell({ row, col, table: "roster" }));
 
-        // CRITICAL: Get fresh entries from store to avoid closure staleness
-        // Since we are inside a callback, we can't easily use getState without updating the hook,
-        // but we can ensure the hook dependencies include 'entries'.
         const entry = entries[dateString];
         const teamData = entry?.teams[teamId];
         let userAssignments: string[] = [];
@@ -147,7 +144,6 @@ export const useRosterActions = (
           userAssignments = teamAssignments[userEmail] || [];
         }
 
-        // --- UNDO INTEGRATION ---
         const targetUserName =
           allTeamUsers.find((u) => u.email === userEmail)?.name || userEmail;
         dispatch(
@@ -209,7 +205,6 @@ export const useRosterActions = (
         dispatch(applyOptimisticAssignment(payload));
         dispatch(syncAssignmentRemote(payload));
 
-        // --- ABSENCE INTEGRATION: Clear absence if user is being assigned ---
         if (nextPositionId && entry?.absence?.[userEmail]) {
           const absencePayload = {
             date: dateString,
@@ -267,7 +262,6 @@ export const useRosterActions = (
         const clearedPositions: Record<string, string[]> = {};
 
         if (targetAbsence && entry) {
-          // Marking absent: find current assignments to clear
           Object.keys(entry.teams).forEach((tId) => {
             const teamAssignments = getAssignmentsForTeam(entry, tId);
             if (
@@ -279,7 +273,6 @@ export const useRosterActions = (
             }
           });
         } else if (!targetAbsence && entry?.coverageRequests) {
-          // Removing absent: find coverage requests to restore assignments
           Object.values(entry.coverageRequests).forEach((req) => {
             if (req.status === "open" && req.absentUserEmail === userEmail) {
               if (!clearedPositions[req.teamName]) {
@@ -467,9 +460,6 @@ export const useRosterActions = (
   );
 
   const handleSave = useCallback(() => {
-    // Note: updatePositions handles orgId internally via getState(),
-    // but we can pass it if we update the thunk signature later.
-    // For now, the existing thunk reads from state.
     dispatch(updatePositions(allPositions));
   }, [dispatch, allPositions]);
 
@@ -543,7 +533,6 @@ export const useRosterActions = (
       const entry = entries[dateString];
       if (!entry?.coverageRequests) return false;
 
-      // Find children of this position to handle parent groups
       const children = allPositions.filter((p) => p.parentId === pId);
       const groupIds = [pId, ...children.map((c) => c.id)];
 

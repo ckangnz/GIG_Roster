@@ -21,38 +21,62 @@ const UserManagement = () => {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
 
-  const { allUsers, originalUsers, memberships, originalMemberships, loading, saving, error } = useAppSelector(
-    (state) => state.userManagement,
-  );
+  const {
+    allUsers,
+    originalUsers,
+    memberships,
+    originalMemberships,
+    loading,
+    saving,
+    error,
+  } = useAppSelector((state) => state.userManagement);
   const availableTeams = useAppSelector((state) => state.teams.teams);
 
   const hasChanges = useMemo(() => {
     // 1. Check for basic user profile changes (name, gender)
-    const hasProfileChanges = JSON.stringify(allUsers.map(u => ({ id: u.id, name: u.name, gender: u.gender }))) !== 
-                             JSON.stringify(originalUsers.map(u => ({ id: u.id, name: u.name, gender: u.gender })));
-    
+    const hasProfileChanges =
+      JSON.stringify(
+        allUsers.map((u) => ({ id: u.id, name: u.name, gender: u.gender })),
+      ) !==
+      JSON.stringify(
+        originalUsers.map((u) => ({
+          id: u.id,
+          name: u.name,
+          gender: u.gender,
+        })),
+      );
+
     if (hasProfileChanges) return true;
 
     // 2. Check for membership changes
     // We normalize to ensure key order doesn't trigger false positives
     const normalizeMem = (m: Record<string, OrgMembership>) => {
-      return Object.keys(m).sort().reduce((acc: Record<string, unknown>, userId) => {
-        const entry = m[userId];
-        acc[userId] = {
-          isActive: !!entry.isActive,
-          isApproved: !!entry.isApproved,
-          isAdmin: !!entry.isAdmin,
-          teams: [...(entry.teams || [])].sort(),
-          teamPositions: Object.keys(entry.teamPositions || {}).sort().reduce((tpAcc: Record<string, string[]>, teamId) => {
-            tpAcc[teamId] = [...(entry.teamPositions?.[teamId] || [])].sort();
-            return tpAcc;
-          }, {})
-        };
-        return acc;
-      }, {});
+      return Object.keys(m)
+        .sort()
+        .reduce((acc: Record<string, unknown>, userId) => {
+          const entry = m[userId];
+          acc[userId] = {
+            isActive: !!entry.isActive,
+            isApproved: !!entry.isApproved,
+            isAdmin: !!entry.isAdmin,
+            teams: [...(entry.teams || [])].sort(),
+            teamPositions: Object.keys(entry.teamPositions || {})
+              .sort()
+              .reduce((tpAcc: Record<string, string[]>, teamId) => {
+                tpAcc[teamId] = [
+                  ...(entry.teamPositions?.[teamId] || []),
+                ].sort();
+                return tpAcc;
+              }, {}),
+          };
+          return acc;
+        }, {});
     };
 
-    return JSON.stringify(normalizeMem(memberships)) !== JSON.stringify(normalizeMem(originalMemberships));
+    return (
+      JSON.stringify(normalizeMem(memberships)) !==
+      JSON.stringify(normalizeMem(originalMemberships))
+    );
   }, [allUsers, originalUsers, memberships, originalMemberships]);
 
   const isFormValid = useMemo(() => {

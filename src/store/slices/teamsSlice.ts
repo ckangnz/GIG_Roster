@@ -33,9 +33,10 @@ export const fetchTeams = createAsyncThunk(
               id: teamData.id || teamData.name,
               maxConflict: teamData.maxConflict || 1,
               // Convert object-based positions to ID-based if necessary
-              positions: (teamData.positions || []).map((p: string | { id?: string; name?: string }) => 
-                typeof p === 'string' ? p : (p.id || '')
-              )
+              positions: (teamData.positions || []).map(
+                (p: string | { id?: string; name?: string }) =>
+                  typeof p === "string" ? p : p.id || "",
+              ),
             }))
           : [];
         return teamsList;
@@ -79,9 +80,9 @@ const teamsSlice = createSlice({
     },
     removePositionFromAllTeams: (state, action: PayloadAction<string>) => {
       const positionId = action.payload;
-      state.teams = state.teams.map(team => ({
+      state.teams = state.teams.map((team) => ({
         ...team,
-        positions: (team.positions || []).filter(pId => pId !== positionId)
+        positions: (team.positions || []).filter((pId) => pId !== positionId),
       }));
     },
   },

@@ -343,9 +343,16 @@ const PositionManagement = () => {
               <tr>
                 <td colSpan={6}>
                   <div className={styles.emptyState}>
-                    <IdCardLanyard size={40} className={styles.emptyStateIcon} />
-                    <p className={styles.emptyStateText}>{t("management.position.empty")}</p>
-                    <p className={styles.emptyStateSubtext}>{t("management.position.emptyHint")}</p>
+                    <IdCardLanyard
+                      size={40}
+                      className={styles.emptyStateIcon}
+                    />
+                    <p className={styles.emptyStateText}>
+                      {t("management.position.empty")}
+                    </p>
+                    <p className={styles.emptyStateSubtext}>
+                      {t("management.position.emptyHint")}
+                    </p>
                   </div>
                 </td>
               </tr>

@@ -125,7 +125,9 @@ const ProfileSettings = ({
   const handleTogglePhoto = async () => {
     if (!firebaseUser || !userData) return;
     const newHidePhoto = !userData.hidePhoto;
-    await updateDoc(doc(db, "users", firebaseUser.uid), { hidePhoto: newHidePhoto });
+    await updateDoc(doc(db, "users", firebaseUser.uid), {
+      hidePhoto: newHidePhoto,
+    });
   };
 
   const handleWithdraw = async () => {
@@ -190,12 +192,24 @@ const ProfileSettings = ({
         <div
           className={`${styles.profileAvatar} ${!userData.photoURL && !initials ? styles.profileAvatarPlaceholder : ""} ${userData.photoURL ? styles.profileAvatarClickable : ""}`}
           onClick={userData.photoURL ? handleTogglePhoto : undefined}
-          title={userData.photoURL ? (userData.hidePhoto ? t("settings.showPhoto") : t("settings.hidePhoto")) : undefined}
-        >
-          {getUserPhotoURL(userData.photoURL, userData.hidePhoto)
-            ? <img src={getUserPhotoURL(userData.photoURL, userData.hidePhoto)!} alt={formState.name} className={styles.profileAvatarImg} referrerPolicy="no-referrer" />
-            : (initials ?? <Smile size={32} />)
+          title={
+            userData.photoURL
+              ? userData.hidePhoto
+                ? t("settings.showPhoto")
+                : t("settings.hidePhoto")
+              : undefined
           }
+        >
+          {getUserPhotoURL(userData.photoURL, userData.hidePhoto) ? (
+            <img
+              src={getUserPhotoURL(userData.photoURL, userData.hidePhoto)!}
+              alt={formState.name}
+              className={styles.profileAvatarImg}
+              referrerPolicy="no-referrer"
+            />
+          ) : (
+            (initials ?? <Smile size={32} />)
+          )}
           {userData.photoURL && (
             <div className={styles.profileAvatarOverlay}>
               {userData.hidePhoto ? <Eye size={20} /> : <EyeOff size={20} />}
@@ -233,14 +247,29 @@ const ProfileSettings = ({
           <label>{t("settings.gender")}</label>
           <PillGroup>
             {[
-              { value: "Male", label: t("settings.male"), colour: "var(--color-male)" },
-              { value: "Female", label: t("settings.female"), colour: "var(--color-female)" },
-              { value: "Undefined", label: t("settings.undefined"), colour: "var(--color-text-dim)" },
+              {
+                value: "Male",
+                label: t("settings.male"),
+                colour: "var(--color-male)",
+              },
+              {
+                value: "Female",
+                label: t("settings.female"),
+                colour: "var(--color-female)",
+              },
+              {
+                value: "Undefined",
+                label: t("settings.undefined"),
+                colour: "var(--color-text-dim)",
+              },
             ].map((g) => (
               <Pill
                 key={g.value}
                 colour={g.colour}
-                onClick={() => { if (!isLocked) setFormState((prev) => ({ ...prev, gender: g.value })); }}
+                onClick={() => {
+                  if (!isLocked)
+                    setFormState((prev) => ({ ...prev, gender: g.value }));
+                }}
                 isActive={formState.gender === g.value}
                 isDisabled={isLocked}
               >
@@ -259,7 +288,13 @@ const ProfileSettings = ({
             ].map((l) => (
               <Pill
                 key={l.value}
-                onClick={() => { if (!isLocked) setFormState((prev) => ({ ...prev, preferredLanguage: l.value })); }}
+                onClick={() => {
+                  if (!isLocked)
+                    setFormState((prev) => ({
+                      ...prev,
+                      preferredLanguage: l.value,
+                    }));
+                }}
                 isActive={formState.preferredLanguage === l.value}
                 isDisabled={isLocked}
               >
@@ -305,12 +340,18 @@ const ProfileSettings = ({
           <div className={formStyles.formGroup}>
             <div className={styles.availabilityRow}>
               <div>
-                <label className={styles.availabilityLabel}>{t("settings.availability")}</label>
-                <p className={formStyles.fieldHint}>{t("settings.availabilityHint")}</p>
+                <label className={styles.availabilityLabel}>
+                  {t("settings.availability")}
+                </label>
+                <p className={formStyles.fieldHint}>
+                  {t("settings.availabilityHint")}
+                </p>
               </div>
               <Toggle
                 isOn={formState.isActive}
-                onToggle={(isOn) => setFormState((prev) => ({ ...prev, isActive: isOn }))}
+                onToggle={(isOn) =>
+                  setFormState((prev) => ({ ...prev, isActive: isOn }))
+                }
               />
             </div>
           </div>
@@ -345,7 +386,9 @@ const ProfileSettings = ({
 
       {hasChanges && !isLocked && (
         <SaveFooter
-          label={t("common.unsavedChanges", { defaultValue: "Unsaved profile changes" })}
+          label={t("common.unsavedChanges", {
+            defaultValue: "Unsaved profile changes",
+          })}
           saveText={t("common.save")}
           onSave={handleSave}
           onCancel={handleCancel}

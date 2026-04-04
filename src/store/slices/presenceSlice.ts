@@ -1,6 +1,6 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-import { PresenceUser } from '../../hooks/usePresence';
+import { PresenceUser } from "../../hooks/usePresence";
 
 interface PresenceState {
   onlineUsers: PresenceUser[];
@@ -13,7 +13,7 @@ const initialState: PresenceState = {
 };
 
 const presenceSlice = createSlice({
-  name: 'presence',
+  name: "presence",
   initialState,
   reducers: {
     setOnlineUsers: (state, action: PayloadAction<PresenceUser[]>) => {

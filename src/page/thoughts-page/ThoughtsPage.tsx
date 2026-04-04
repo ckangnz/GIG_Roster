@@ -25,12 +25,20 @@ import Button from "../../components/common/Button";
 import EmptyState from "../../components/common/EmptyState";
 import { NoTeamsAssignedIllustration } from "../../components/common/EmptyStateIllustrations";
 import { TextAreaField } from "../../components/common/InputField";
-import { SortableList, SortableItem } from "../../components/common/SortableList";
+import {
+  SortableList,
+  SortableItem,
+} from "../../components/common/SortableList";
 import Spinner from "../../components/common/Spinner";
 import Toggle from "../../components/common/Toggle";
 import { db } from "../../firebase";
 import { useAppSelector, useAppDispatch } from "../../hooks/redux";
-import { Thought, AppUser, ThoughtEntry, OrgMembership } from "../../model/model";
+import {
+  Thought,
+  AppUser,
+  ThoughtEntry,
+  OrgMembership,
+} from "../../model/model";
 import { selectUserData } from "../../store/slices/authSlice";
 import {
   setThoughts,
@@ -457,13 +465,11 @@ const ThoughtsPage = () => {
   const teamUsers = useMemo(() => {
     const orgId = userData?.activeOrgId;
     if (!teamId || !orgId) return [];
-    return allUsers.filter(
-      (u) => {
-        const orgs = u.organisations as Record<string, OrgMembership>;
-        const orgEntry = orgs?.[orgId];
-        return orgEntry?.teams?.includes(teamId) && orgEntry?.isActive;
-      }
-    );
+    return allUsers.filter((u) => {
+      const orgs = u.organisations as Record<string, OrgMembership>;
+      const orgEntry = orgs?.[orgId];
+      return orgEntry?.teams?.includes(teamId) && orgEntry?.isActive;
+    });
   }, [allUsers, teamId, userData?.activeOrgId]);
 
   if (teamsLoading) return <Spinner />;
@@ -485,11 +491,15 @@ const ThoughtsPage = () => {
         title={t("thoughts.empty.noTeamsTitle")}
         description={t("thoughts.empty.noTeamsDesc")}
         instruction={{
-          text: isAdmin ? t("thoughts.empty.noTeamsAdmin") : t("thoughts.empty.noTeamsMember"),
-          action: isAdmin ? { 
-            label: t("settings.profile"), 
-            onClick: () => navigate("/app/settings/profile") 
-          } : undefined
+          text: isAdmin
+            ? t("thoughts.empty.noTeamsAdmin")
+            : t("thoughts.empty.noTeamsMember"),
+          action: isAdmin
+            ? {
+                label: t("settings.profile"),
+                onClick: () => navigate("/app/settings/profile"),
+              }
+            : undefined,
         }}
       />
     );
@@ -626,14 +636,13 @@ const ThoughtsPage = () => {
       >
         <div className={styles.heartsToggle}>
           <span className={styles.heartsToggleLabel}>
-            {t("thoughts.includeHearts", { defaultValue: "Include heart counts" })}
+            {t("thoughts.includeHearts", {
+              defaultValue: "Include heart counts",
+            })}
           </span>
           <Toggle isOn={includeHearts} onToggle={setIncludeHearts} />
         </div>
-        <Button
-          onClick={handleShareMyThoughts}
-          style={{ width: "100%" }}
-        >
+        <Button onClick={handleShareMyThoughts} style={{ width: "100%" }}>
           {t("thoughts.copyToClipboard", { defaultValue: "Copy to Clipboard" })}
         </Button>
       </ActionSheet>
@@ -755,7 +764,9 @@ const ThoughtsPage = () => {
 
         <div className={styles.heartsToggle}>
           <span className={styles.heartsToggleLabel}>
-            {t("thoughts.includeHearts", { defaultValue: "Include heart counts" })}
+            {t("thoughts.includeHearts", {
+              defaultValue: "Include heart counts",
+            })}
           </span>
           <Toggle isOn={includeHearts} onToggle={setIncludeHearts} />
         </div>
@@ -784,7 +795,11 @@ const ThoughtsPage = () => {
                     <div className={styles.entryContent}>
                       <div className={styles.entryText}>{entry.text}</div>
                       <div
-                        style={{ display: "flex", gap: "8px", alignItems: "center" }}
+                        style={{
+                          display: "flex",
+                          gap: "8px",
+                          alignItems: "center",
+                        }}
                       >
                         <ThoughtExpiry
                           updatedAt={entry.updatedAt}
@@ -803,9 +818,17 @@ const ThoughtsPage = () => {
                         size="small"
                         isIcon
                         onClick={() => handleOpenEditor(entry.id)}
-                        title={entry.isExpired ? t("thoughts.revive", { defaultValue: "Revive" }) : t("thoughts.editThought")}
+                        title={
+                          entry.isExpired
+                            ? t("thoughts.revive", { defaultValue: "Revive" })
+                            : t("thoughts.editThought")
+                        }
                       >
-                        {entry.isExpired ? <Sparkles size={14} /> : <Edit2 size={14} />}
+                        {entry.isExpired ? (
+                          <Sparkles size={14} />
+                        ) : (
+                          <Edit2 size={14} />
+                        )}
                       </Button>
                       <Button
                         variant="delete"
@@ -846,7 +869,9 @@ const ThoughtsPage = () => {
         title={
           isReviving
             ? t("thoughts.reviveThought", { defaultValue: "Revive Thought" })
-            : editingEntryId ? t("thoughts.editThought") : t("thoughts.addThought")
+            : editingEntryId
+              ? t("thoughts.editThought")
+              : t("thoughts.addThought")
         }
       >
         <div className={styles.inputContainer}>
@@ -869,7 +894,9 @@ const ThoughtsPage = () => {
               className={styles.saveBtn}
             >
               {isReviving
-                ? t("thoughts.reviveThought", { defaultValue: "Revive Thought" })
+                ? t("thoughts.reviveThought", {
+                    defaultValue: "Revive Thought",
+                  })
                 : t("thoughts.saveThought")}
             </Button>
           </div>

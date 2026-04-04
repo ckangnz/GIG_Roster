@@ -49,7 +49,6 @@ const ThoughtWheel = ({
 
   const isMobile = windowWidth < 768;
 
-  // Force re-render periodically to catch real-time expirations
   useEffect(() => {
     const timer = setInterval(() => setTick((t) => t + 1), 30000);
     return () => clearInterval(timer);
@@ -62,7 +61,6 @@ const ThoughtWheel = ({
   const angleStep = userCount > 0 ? 360 / userCount : 0;
   const wheelSnapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Listen to rotation changes in real-time
   useMotionValueEvent(rotation, "change", (latest) => {
     setRealTimeRotation(latest);
 
@@ -76,7 +74,6 @@ const ThoughtWheel = ({
     }
   });
 
-  // Update radius and windowWidth on resize
   useEffect(() => {
     const handleResize = () => {
       const width = window.innerWidth;
@@ -170,7 +167,6 @@ const ThoughtWheel = ({
     [rotation, snapToItem],
   );
 
-  // Enhanced cluster bubble positioning with better spread
   const getBubbleOffset = (index: number, total: number) => {
     if (total === 1) return { x: 0, y: 0 };
 
@@ -178,7 +174,6 @@ const ThoughtWheel = ({
     const horizontalMargin = isMobile ? 40 : 150;
     const maxAvailableWidth = windowWidth - horizontalMargin;
 
-    // Define relative "cloud cluster" layouts for 2-5 bubbles
     const layouts: Record<number, { x: number; y: number }[]> = {
       2: [
         { x: -90, y: 0 },
@@ -196,18 +191,17 @@ const ThoughtWheel = ({
         { x: 70, y: -90 },
       ],
       5: [
-        { x: 0, y: 0 }, // Bottom center
-        { x: -180, y: -45 }, // Mid left
-        { x: 180, y: -45 }, // Mid right
-        { x: -100, y: -110 }, // Top left
-        { x: 100, y: -110 }, // Top right
+        { x: 0, y: 0 },
+        { x: -180, y: -45 },
+        { x: 180, y: -45 },
+        { x: -100, y: -110 },
+        { x: 100, y: -110 },
       ],
     };
 
     const baseLayout = layouts[total as keyof typeof layouts] || layouts[5];
     const pos = baseLayout[index] || { x: 0, y: 0 };
 
-    // Calculate how much horizontal space this layout needs (approx bubble width 140px)
     const totalLayoutWidth =
       Math.max(...baseLayout.map((p) => Math.abs(p.x))) * 2 + 140;
     const scale = Math.min(1, maxAvailableWidth / totalLayoutWidth);
@@ -227,7 +221,9 @@ const ThoughtWheel = ({
       dragElastic={0}
       onDrag={handleDrag}
       onDragEnd={handleDragEnd}
-      animate={{ zIndex: activeDragId || expandedEntryId || hoveredEntryId ? 200 : 1 }}
+      animate={{
+        zIndex: activeDragId || expandedEntryId || hoveredEntryId ? 200 : 1,
+      }}
       style={{ "--wheel-radius": `${radius}px` } as React.CSSProperties}
     >
       <div className={styles.wheelWrapper}>
@@ -244,10 +240,13 @@ const ThoughtWheel = ({
             const isVisible = angularDistanceFromCenter < 10;
 
             const userThought = thoughts[`${user.id}_${selectedTeam}`];
-            const isDraggingThisUser = userThought?.entries?.some(e => e.id === activeDragId);
-            const isHoveringThisUser = userThought?.entries?.some(e => e.id === hoveredEntryId);
+            const isDraggingThisUser = userThought?.entries?.some(
+              (e) => e.id === activeDragId,
+            );
+            const isHoveringThisUser = userThought?.entries?.some(
+              (e) => e.id === hoveredEntryId,
+            );
 
-            // Real-time expiration check
             // eslint-disable-next-line react-hooks/purity
             const now = Date.now();
             const activeEntries =
@@ -265,7 +264,12 @@ const ThoughtWheel = ({
                   left: `calc(50% + ${x}px)`,
                   top: `calc(50% + ${y}px)`,
                   transform: `translate(-50%, -50%)`,
-                  zIndex: (isDraggingThisUser || isHoveringThisUser) ? 300 : (index === focusedIndex ? 100 : 5),
+                  zIndex:
+                    isDraggingThisUser || isHoveringThisUser
+                      ? 300
+                      : index === focusedIndex
+                        ? 100
+                        : 5,
                 }}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -286,8 +290,12 @@ const ThoughtWheel = ({
                         return (
                           <motion.div
                             key={entry.id}
-                            onMouseEnter={() => !isMobile && setHoveredEntryId(entry.id)}
-                            onMouseLeave={() => !isMobile && setHoveredEntryId(null)}
+                            onMouseEnter={() =>
+                              !isMobile && setHoveredEntryId(entry.id)
+                            }
+                            onMouseLeave={() =>
+                              !isMobile && setHoveredEntryId(null)
+                            }
                             initial={{
                               opacity: 0,
                               scale: 0.5,
@@ -297,9 +305,18 @@ const ThoughtWheel = ({
                             animate={{
                               opacity: 1,
                               scale: 1,
-                              x: isExpanded ? "-50%" : `calc(-50% + ${offset.x}px)`,
-                              y: isExpanded ? `calc(${radius}px - ${targetVh} + 50%)` : offset.y,
-                              zIndex: isExpanded ? 3000 : (activeDragId === entry.id || hoveredEntryId === entry.id ? 2000 : 100 + idx),
+                              x: isExpanded
+                                ? "-50%"
+                                : `calc(-50% + ${offset.x}px)`,
+                              y: isExpanded
+                                ? `calc(${radius}px - ${targetVh} + 50%)`
+                                : offset.y,
+                              zIndex: isExpanded
+                                ? 3000
+                                : activeDragId === entry.id ||
+                                    hoveredEntryId === entry.id
+                                  ? 2000
+                                  : 100 + idx,
                             }}
                             exit={{
                               opacity: 0,
@@ -308,11 +325,19 @@ const ThoughtWheel = ({
                               y: 50,
                             }}
                             transition={{
-                              x: { type: "spring", stiffness: 150, damping: 30 },
-                              y: { type: "spring", stiffness: 150, damping: 30 },
+                              x: {
+                                type: "spring",
+                                stiffness: 150,
+                                damping: 30,
+                              },
+                              y: {
+                                type: "spring",
+                                stiffness: 150,
+                                damping: 30,
+                              },
                               zIndex: { duration: 0 },
                               opacity: { duration: 0.2 },
-                              scale: { duration: 0.2 }
+                              scale: { duration: 0.2 },
                             }}
                             style={{
                               position: "absolute",

@@ -20,10 +20,10 @@ export const AbsenceRosterHeader = memo(
           const isMe = !!(user.email && user.email === userData?.email);
           return (
             <th key={user.email} className={styles.rosterTableHeaderCell}>
-              <NameTag 
-                displayName={user.name} 
-                isMe={isMe} 
-                gender={isMe ? userData?.gender : user.gender} 
+              <NameTag
+                displayName={user.name}
+                isMe={isMe}
+                gender={isMe ? userData?.gender : user.gender}
               />
             </th>
           );

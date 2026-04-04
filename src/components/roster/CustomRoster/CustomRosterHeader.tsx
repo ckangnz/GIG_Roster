@@ -31,10 +31,7 @@ export const CustomRosterHeader = memo(
     return (
       <RosterHeader showPeek={showPeek}>
         {(currentPosition?.customLabels || []).map((label, index) => (
-          <th
-            key={`custom-${index}`}
-            className={styles.rosterTableHeaderCell}
-          >
+          <th key={`custom-${index}`} className={styles.rosterTableHeaderCell}>
             <input
               type="text"
               className={customStyles.headerInput}

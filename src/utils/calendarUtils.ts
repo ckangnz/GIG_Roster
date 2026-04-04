@@ -7,7 +7,7 @@ export const generateMultiIcsString = (
   rosterDate: string,
   events: RecurringEvent[],
   teamName: string,
-  positionName: string
+  positionName: string,
 ): string => {
   const eventsContent = events
     .map((event) => {
@@ -43,7 +43,7 @@ export const generateIcsString = (
   rosterDate: string,
   event: RecurringEvent,
   teamName: string,
-  positionName: string
+  positionName: string,
 ): string => {
   return generateMultiIcsString(rosterDate, [event], teamName, positionName);
 };
@@ -78,7 +78,7 @@ const WEEKDAY_INDEX: Record<Weekday, number> = {
 const calculateDateTime = (
   rosterDate: string,
   targetDay: Weekday,
-  timeStr: string
+  timeStr: string,
 ): Date => {
   const [year, month, day] = rosterDate.split("-").map(Number);
   const [hours, minutes] = timeStr.split(":").map(Number);

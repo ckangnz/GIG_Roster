@@ -15,7 +15,6 @@ export const useHeaderTitle = () => {
   const { t } = useTranslation();
   const location = useLocation();
 
-  // 1. Data Selectors
   const { teams: allTeams, fetched: teamsFetched } = useAppSelector(
     (state) => state.teams,
   );
@@ -23,7 +22,6 @@ export const useHeaderTitle = () => {
     (state) => state.positions,
   );
 
-  // 2. Route Matching
   const rosterFullMatch = matchPath(
     "/app/roster/:teamName/:positionName",
     location.pathname,
@@ -38,7 +36,6 @@ export const useHeaderTitle = () => {
     location.pathname,
   );
 
-  // 3. Identification Resolution (Team IDs, Position IDs, etc.)
   const activeTeamName = useMemo(
     () =>
       safeDecode(
@@ -72,15 +69,12 @@ export const useHeaderTitle = () => {
     [location.pathname],
   );
 
-  // 4. Title Logic
   const headerTitle = useMemo(() => {
-    // --- Helper: Tab Label (e.g., "Roster", "Thoughts") ---
     const tabInfo = BOTTOM_NAV_ITEMS.find((item) => item.id === activeTab);
     const tabLabel = tabInfo
       ? t(`nav.${tabInfo.id.toLowerCase()}`, { defaultValue: tabInfo.label })
       : "GIG ROSTER";
 
-    // --- Helper: Resolution ---
     const foundTeam = allTeams.find(
       (t) => t.id === activeTeamName || t.name === activeTeamName,
     );
@@ -88,29 +82,26 @@ export const useHeaderTitle = () => {
       (p) => p.id === activeSideItem || p.name === activeSideItem,
     );
 
-    // --- State: Loading ---
     const isTeamLoading = activeTeamName?.includes("-") && !teamsFetched;
     const isPosLoading = activeSideItem?.includes("-") && !positionsFetched;
     if (isTeamLoading || isPosLoading) {
       return `${tabLabel} • ${t("common.loading")}`;
     }
 
-    // --- Resolved Strings ---
     const teamName = foundTeam?.name || activeTeamName;
     const sideItemName =
-      activeSideItem === "All" ? t("nav.all") : foundPos?.name || activeSideItem;
+      activeSideItem === "All"
+        ? t("nav.all")
+        : foundPos?.name || activeSideItem;
 
-    // --- Dashboard ---
     if (activeTab === AppTab.DASHBOARD) {
       return tabLabel;
     }
 
-    // --- Thoughts ---
     if (activeTab === AppTab.THOUGHTS) {
       return teamName ? `${tabLabel} • ${teamName}` : tabLabel;
     }
 
-    // --- Settings ---
     if (activeTab === AppTab.SETTINGS) {
       if (!activeSideItem) return tabLabel;
 
@@ -131,7 +122,6 @@ export const useHeaderTitle = () => {
       return `${tabLabel} • ${settingsLabel}`;
     }
 
-    // --- Roster (Default) ---
     if (teamName && sideItemName) {
       return `${teamName} • ${sideItemName}`;
     }

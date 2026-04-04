@@ -29,7 +29,9 @@ export const PeekCell = memo(({ dateString }: PeekCellProps) => {
   const assignedUsers = Object.entries(assignments)
     .filter(([, positionIds]) => positionIds.includes(peekPositionName))
     .map(([userKey]) => {
-      const user = allTeamUsers.find((u) => u.id === userKey || u.email === userKey);
+      const user = allTeamUsers.find(
+        (u) => u.id === userKey || u.email === userKey,
+      );
       return user?.name || userKey;
     });
 

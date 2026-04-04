@@ -11,7 +11,10 @@ import SummaryCell from "../../components/common/SummaryCell";
 import Toggle from "../../components/common/Toggle";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { AppUser, Gender, Team } from "../../model/model";
-import { updateUserField, updateUserOrgField } from "../../store/slices/userManagementSlice";
+import {
+  updateUserField,
+  updateUserOrgField,
+} from "../../store/slices/userManagementSlice";
 import formStyles from "../../styles/form.module.css";
 import styles from "../../styles/settings-common.module.css";
 
@@ -29,8 +32,12 @@ const UserManagementRow = ({
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const { firebaseUser } = useAppSelector((state) => state.auth);
-  const { positions: globalPositions } = useAppSelector((state) => state.positions);
-  const memberships = useAppSelector((state) => state.userManagement.memberships);
+  const { positions: globalPositions } = useAppSelector(
+    (state) => state.positions,
+  );
+  const memberships = useAppSelector(
+    (state) => state.userManagement.memberships,
+  );
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -42,8 +49,8 @@ const UserManagementRow = ({
   };
 
   const handleOrgUpdate = (
-    field: 'isActive' | 'isApproved' | 'isAdmin',
-    value: boolean
+    field: "isActive" | "isApproved" | "isAdmin",
+    value: boolean,
   ) => {
     dispatch(updateUserOrgField({ userId: user.id, field, value }));
   };
@@ -56,7 +63,7 @@ const UserManagementRow = ({
   const getTeamSummary = () => {
     const teams = orgMembership?.teams || [];
     if (teams.length === 0) {
-      return t('common.none');
+      return t("common.none");
     }
 
     const teamEmojis = teams
@@ -66,11 +73,13 @@ const UserManagementRow = ({
       })
       .filter(Boolean);
 
-    const displayEmojis = teamEmojis.slice(0, 3).map((emoji: string, i: number) => (
-      <span key={i} className={styles.summaryEmoji}>
-        {emoji}
-      </span>
-    ));
+    const displayEmojis = teamEmojis
+      .slice(0, 3)
+      .map((emoji: string, i: number) => (
+        <span key={i} className={styles.summaryEmoji}>
+          {emoji}
+        </span>
+      ));
     const remainingCount = teamEmojis.length - 3;
 
     return (
@@ -85,17 +94,16 @@ const UserManagementRow = ({
 
   const getPositionCount = () => {
     const teamPositions = orgMembership?.teamPositions || {};
-    return Object.entries(teamPositions).reduce(
-      (acc, [, posList]) => {
-        const positions = posList as string[];
-        const nonCustomPosList = positions.filter((posId: string) => {
-          const gp = globalPositions.find(p => p.id === posId || p.name === posId);
-          return !gp?.isCustom;
-        });
-        return acc + nonCustomPosList.length;
-      },
-      0,
-    );
+    return Object.entries(teamPositions).reduce((acc, [, posList]) => {
+      const positions = posList as string[];
+      const nonCustomPosList = positions.filter((posId: string) => {
+        const gp = globalPositions.find(
+          (p) => p.id === posId || p.name === posId,
+        );
+        return !gp?.isCustom;
+      });
+      return acc + nonCustomPosList.length;
+    }, 0);
   };
 
   return (
@@ -122,8 +130,8 @@ const UserManagementRow = ({
             onChange={(e) => handleUpdate("gender", e.target.value as Gender)}
           >
             <option value="">-</option>
-            <option value="Male">{t('settings.male')}</option>
-            <option value="Female">{t('settings.female')}</option>
+            <option value="Male">{t("settings.male")}</option>
+            <option value="Female">{t("settings.female")}</option>
           </select>
         </SettingsTableAnyCell>
         <SettingsTableAnyCell>

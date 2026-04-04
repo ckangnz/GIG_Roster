@@ -59,7 +59,11 @@ const BottomNav = () => {
                 <Icon size={20} />
                 {showBadge && <div className={styles.navBadge} />}
               </div>
-              <span>{t(`nav.${item.id.toLowerCase()}`, { defaultValue: item.label })}</span>
+              <span>
+                {t(`nav.${item.id.toLowerCase()}`, {
+                  defaultValue: item.label,
+                })}
+              </span>
             </button>
           );
         })}

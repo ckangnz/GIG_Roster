@@ -1,16 +1,16 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from "react";
 
-import { motion, AnimatePresence } from 'framer-motion';
-import { Undo2 } from 'lucide-react';
+import { motion, AnimatePresence } from "framer-motion";
+import { Undo2 } from "lucide-react";
 
-import { useAppSelector } from '../../hooks/redux';
-import { useUndo } from '../../hooks/useUndo';
+import { useAppSelector } from "../../hooks/redux";
+import { useUndo } from "../../hooks/useUndo";
 
-import styles from './undo-toast.module.css';
+import styles from "./undo-toast.module.css";
 
 const UndoToast = () => {
   const { undoAction, canUndo, lastActionDescription } = useUndo();
-  const history = useAppSelector(state => state.undo.history);
+  const history = useAppSelector((state) => state.undo.history);
   const [isVisible, setIsVisible] = useState(false);
   const lastHistoryId = useRef<string | null>(null);
 
@@ -19,15 +19,15 @@ const UndoToast = () => {
     const currentAction = history[0];
     if (currentAction && currentAction.id !== lastHistoryId.current) {
       lastHistoryId.current = currentAction.id;
-      
+
       const showTimer = setTimeout(() => {
         setIsVisible(true);
       }, 10);
-      
+
       const hideTimer = setTimeout(() => {
         setIsVisible(false);
       }, 5000); // Hide after 5 seconds
-      
+
       return () => {
         clearTimeout(showTimer);
         clearTimeout(hideTimer);
@@ -46,10 +46,13 @@ const UndoToast = () => {
             className={styles.content}
           >
             <span className={styles.description}>{lastActionDescription}</span>
-            <button className={styles.undoBtn} onClick={() => {
-              undoAction();
-              setIsVisible(false);
-            }}>
+            <button
+              className={styles.undoBtn}
+              onClick={() => {
+                undoAction();
+                setIsVisible(false);
+              }}
+            >
               <Undo2 size={16} />
               Undo
             </button>

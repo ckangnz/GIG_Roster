@@ -371,11 +371,15 @@ const AllRosterTable = () => {
         title={t("roster.empty.noUsersTitle")}
         description={t("roster.empty.noUsersDesc")}
         instruction={{
-          text: isAdmin ? t("roster.empty.noUsersAdmin") : t("roster.empty.noUsersMember"),
-          action: isAdmin ? { 
-            label: t("management.user.title"), 
-            onClick: () => navigate("/app/settings/user_management") 
-          } : undefined
+          text: isAdmin
+            ? t("roster.empty.noUsersAdmin")
+            : t("roster.empty.noUsersMember"),
+          action: isAdmin
+            ? {
+                label: t("management.user.title"),
+                onClick: () => navigate("/app/settings/user_management"),
+              }
+            : undefined,
         }}
       />
     );

@@ -4,8 +4,11 @@ import TeamPositionEditor from "./TeamPositionEditor";
 import Modal from "../../components/common/Modal";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { AppUser, Team } from "../../model/model";
-import { toggleUserTeam, toggleUserTeamPosition, reorderUserTeams } from "../../store/slices/userManagementSlice";
-
+import {
+  toggleUserTeam,
+  toggleUserTeamPosition,
+  reorderUserTeams,
+} from "../../store/slices/userManagementSlice";
 
 interface UserEditModalProps {
   isOpen: boolean;
@@ -14,11 +17,20 @@ interface UserEditModalProps {
   availableTeams: Team[];
 }
 
-const UserEditModal = ({ isOpen, onClose, user, availableTeams }: UserEditModalProps) => {
+const UserEditModal = ({
+  isOpen,
+  onClose,
+  user,
+  availableTeams,
+}: UserEditModalProps) => {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
-  const { positions: globalPositions } = useAppSelector((state) => state.positions);
-  const memberships = useAppSelector((state) => state.userManagement.memberships);
+  const { positions: globalPositions } = useAppSelector(
+    (state) => state.positions,
+  );
+  const memberships = useAppSelector(
+    (state) => state.userManagement.memberships,
+  );
 
   const handleToggleTeam = (teamName: string) => {
     dispatch(toggleUserTeam({ userId: user.id, teamName }));
@@ -35,7 +47,11 @@ const UserEditModal = ({ isOpen, onClose, user, availableTeams }: UserEditModalP
   const membership = memberships[user.id];
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={t('management.user.editTitle', { name: user.name })}>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={t("management.user.editTitle", { name: user.name })}
+    >
       <TeamPositionEditor
         selectedTeams={membership?.teams || []}
         teamPositions={membership?.teamPositions || {}}

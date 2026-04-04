@@ -1,19 +1,19 @@
 import { useEffect, useRef, useMemo } from "react";
 
 import { User } from "firebase/auth";
-import { 
-  collection, 
-  doc, 
-  setDoc, 
+import {
+  collection,
+  doc,
+  setDoc,
   deleteDoc,
-  onSnapshot, 
+  onSnapshot,
   getDocs,
-  query, 
+  query,
   where,
   serverTimestamp,
   DocumentData,
   QuerySnapshot,
-  updateDoc
+  updateDoc,
 } from "firebase/firestore";
 import { useLocation, matchPath } from "react-router-dom";
 
@@ -21,7 +21,10 @@ import { db, auth } from "../firebase";
 import { useAppDispatch, useAppSelector } from "./redux";
 import { AppUser, Position } from "../model/model";
 import { selectUserData } from "../store/slices/authSlice";
-import { setOnlineUsers, setPresenceError } from "../store/slices/presenceSlice";
+import {
+  setOnlineUsers,
+  setPresenceError,
+} from "../store/slices/presenceSlice";
 import { safeDecode } from "../utils/stringUtils";
 
 export interface PresenceFocus {
@@ -36,7 +39,7 @@ export interface PresenceUser {
   userUid: string;
   name: string;
   email: string;
-  lastSeen: number; 
+  lastSeen: number;
   color: string;
   colorIndex?: number;
   photoURL?: string | null;
@@ -69,12 +72,12 @@ export const PRESENCE_COLORS = [
   ["#498205", "#8BC34A"], // Lime
   ["#8764B8", "#B388FF"], // Lavender
   ["#00B7C3", "#00E5FF"], // Turquoise
-  ["#E3008C", "#F06292"]  // Magenta
+  ["#E3008C", "#F06292"], // Magenta
 ];
 
 const getSessionId = () => {
   try {
-    const key = 'gig_roster_session_id';
+    const key = "gig_roster_session_id";
     let id = sessionStorage.getItem(key);
     if (!id) {
       id = Math.random().toString(36).substring(2, 10);
@@ -88,7 +91,7 @@ const getSessionId = () => {
 
 const getSessionColorIndex = () => {
   try {
-    const key = 'gig_roster_session_color_index';
+    const key = "gig_roster_session_color_index";
     let indexStr = sessionStorage.getItem(key);
     if (indexStr === null) {
       const randomIndex = Math.floor(Math.random() * PRESENCE_COLORS.length);
@@ -108,36 +111,56 @@ const sessionColor = PRESENCE_COLORS[sessionColorIndex][0];
 const HEARTBEAT_INTERVAL = 60000;
 const PRESENCE_THRESHOLD = 90000;
 
-export const useTrackPresence = (firebaseUser: User | null, userData: AppUser | null) => {
+export const useTrackPresence = (
+  firebaseUser: User | null,
+  userData: AppUser | null,
+) => {
   const hasCleanedUp = useRef(false);
   const location = useLocation();
-  
-  const authState = useAppSelector(state => state.auth);
+
+  const authState = useAppSelector((state) => state.auth);
   const activeOrgId = authState.activeOrgId;
   const userMembership = useAppSelector(selectUserData);
-  const myTeams = useMemo(() => userMembership?.teams || [], [userMembership?.teams]);
+  const myTeams = useMemo(
+    () => userMembership?.teams || [],
+    [userMembership?.teams],
+  );
 
-  const { focusedCell } = useAppSelector(state => state.ui);
-  const { rosterDates } = useAppSelector(state => state.rosterView);
-  const allUsers = useAppSelector(state => state.userManagement.allUsers);
-  const { positions: allPositions } = useAppSelector(state => state.positions);
-  
+  const { focusedCell } = useAppSelector((state) => state.ui);
+  const { rosterDates } = useAppSelector((state) => state.rosterView);
+  const allUsers = useAppSelector((state) => state.userManagement.allUsers);
+  const { positions: allPositions } = useAppSelector(
+    (state) => state.positions,
+  );
+
   const currentFocus: PresenceFocus | null = useMemo(() => {
     // ... same focus logic ...
-    const rosterFullMatch = matchPath("/app/roster/:teamName/:positionName", location.pathname);
-    const rosterTeamMatch = matchPath("/app/roster/:teamName", location.pathname);
-    const thoughtsFullMatch = matchPath("/app/thoughts/:teamName", location.pathname);
-    
-    const rawTeamName = rosterFullMatch?.params.teamName || 
-                        rosterTeamMatch?.params.teamName || 
-                        thoughtsFullMatch?.params.teamName;
-                     
+    const rosterFullMatch = matchPath(
+      "/app/roster/:teamName/:positionName",
+      location.pathname,
+    );
+    const rosterTeamMatch = matchPath(
+      "/app/roster/:teamName",
+      location.pathname,
+    );
+    const thoughtsFullMatch = matchPath(
+      "/app/thoughts/:teamName",
+      location.pathname,
+    );
+
+    const rawTeamName =
+      rosterFullMatch?.params.teamName ||
+      rosterTeamMatch?.params.teamName ||
+      thoughtsFullMatch?.params.teamName;
+
     const rawActivePosition = rosterFullMatch?.params.positionName;
 
     if (!rawTeamName) return null;
 
     const teamName = safeDecode(rawTeamName).trim();
-    const activePosition = rawActivePosition ? safeDecode(rawActivePosition).trim() : undefined;
+    const activePosition = rawActivePosition
+      ? safeDecode(rawActivePosition).trim()
+      : undefined;
 
     let identifier = "";
     let date = "";
@@ -147,11 +170,13 @@ export const useTrackPresence = (firebaseUser: User | null, userData: AppUser | 
       if (focusedCell.table === "absence") {
         identifier = allUsers[focusedCell.col]?.email || "";
       } else if (focusedCell.table === "roster") {
-        const currentPos = allPositions.find((p: Position) => p.name === activePosition);
+        const currentPos = allPositions.find(
+          (p: Position) => p.name === activePosition,
+        );
         if (currentPos?.isCustom) {
           identifier = currentPos.customLabels?.[focusedCell.col] || "";
         } else {
-          const sorted = allUsers.filter(u => {
+          const sorted = allUsers.filter((u) => {
             const orgs = u.organisations;
             if (orgs && !Array.isArray(orgs) && activeOrgId) {
               return orgs[activeOrgId]?.isActive ?? true;
@@ -167,24 +192,31 @@ export const useTrackPresence = (firebaseUser: User | null, userData: AppUser | 
       date,
       identifier,
       teamName,
-      viewName: activePosition || null
+      viewName: activePosition || null,
     };
-  }, [focusedCell, rosterDates, allUsers, allPositions, location.pathname, activeOrgId]);
+  }, [
+    focusedCell,
+    rosterDates,
+    allUsers,
+    allPositions,
+    location.pathname,
+    activeOrgId,
+  ]);
 
   useEffect(() => {
     if (!firebaseUser?.uid || !userData?.email || !activeOrgId) return;
 
     const docId = `${firebaseUser.uid}_${currentSessionId}`;
     const userRef = doc(db, "organisations", activeOrgId, "presence", docId);
-    
+
     if (!hasCleanedUp.current) {
       hasCleanedUp.current = true;
       const selfCleanup = async () => {
         try {
           const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
           const q = query(
-            collection(db, "organisations", activeOrgId, "presence"), 
-            where("userUid", "==", firebaseUser.uid)
+            collection(db, "organisations", activeOrgId, "presence"),
+            where("userUid", "==", firebaseUser.uid),
           );
           const snapshot = await getDocs(q);
           snapshot.forEach((docSnap) => {
@@ -193,28 +225,39 @@ export const useTrackPresence = (firebaseUser: User | null, userData: AppUser | 
               deleteDoc(docSnap.ref).catch(() => {});
             }
           });
-        } catch { /* silent */ }
+        } catch {
+          /* silent */
+        }
       };
       selfCleanup();
     }
 
-    const markOnline = async (focusData: PresenceFocus | null = currentFocus) => {
-      if (!auth.currentUser || document.visibilityState !== 'visible') return;
+    const markOnline = async (
+      focusData: PresenceFocus | null = currentFocus,
+    ) => {
+      if (!auth.currentUser || document.visibilityState !== "visible") return;
       try {
-        await setDoc(userRef, {
-          uid: docId,
-          userUid: firebaseUser.uid,
-          name: userData.name || firebaseUser.displayName || "Anonymous",
-          email: userData.email,
-          color: sessionColor,
-          colorIndex: sessionColorIndex,
-          photoURL: (firebaseUser.providerData?.[0]?.photoURL || firebaseUser.photoURL || null),
-          hidePhoto: userData.hidePhoto || false,
-          lastSeen: serverTimestamp(),
-          focus: focusData,
-          location: location.pathname,
-          teams: myTeams, // Team scoping data
-        }, { merge: true });
+        await setDoc(
+          userRef,
+          {
+            uid: docId,
+            userUid: firebaseUser.uid,
+            name: userData.name || firebaseUser.displayName || "Anonymous",
+            email: userData.email,
+            color: sessionColor,
+            colorIndex: sessionColorIndex,
+            photoURL:
+              firebaseUser.providerData?.[0]?.photoURL ||
+              firebaseUser.photoURL ||
+              null,
+            hidePhoto: userData.hidePhoto || false,
+            lastSeen: serverTimestamp(),
+            focus: focusData,
+            location: location.pathname,
+            teams: myTeams, // Team scoping data
+          },
+          { merge: true },
+        );
       } catch (err: unknown) {
         const error = err as { code?: string; message?: string };
         if (error.code !== "unavailable") {
@@ -228,11 +271,11 @@ export const useTrackPresence = (firebaseUser: User | null, userData: AppUser | 
     };
 
     markOnline();
-    
+
     const heartbeat = setInterval(() => markOnline(), HEARTBEAT_INTERVAL);
 
     const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
+      if (document.visibilityState === "visible") {
         markOnline();
       } else {
         markOffline();
@@ -248,18 +291,34 @@ export const useTrackPresence = (firebaseUser: User | null, userData: AppUser | 
       window.removeEventListener("beforeunload", markOffline);
       markOffline();
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [firebaseUser?.uid, firebaseUser?.displayName, firebaseUser?.photoURL, userData?.email, userData?.name, userData?.hidePhoto, currentFocus, location.pathname, activeOrgId, myTeams]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    firebaseUser?.uid,
+    firebaseUser?.displayName,
+    firebaseUser?.photoURL,
+    userData?.email,
+    userData?.name,
+    userData?.hidePhoto,
+    currentFocus,
+    location.pathname,
+    activeOrgId,
+    myTeams,
+  ]);
 
   useEffect(() => {
     const docId = `${firebaseUser?.uid}_${currentSessionId}`;
-    if (!firebaseUser?.uid || !activeOrgId || document.visibilityState !== 'visible') return;
-    
+    if (
+      !firebaseUser?.uid ||
+      !activeOrgId ||
+      document.visibilityState !== "visible"
+    )
+      return;
+
     const timeoutId = setTimeout(() => {
       updateDoc(doc(db, "organisations", activeOrgId, "presence", docId), {
         focus: currentFocus,
         location: location.pathname,
-        lastSeen: serverTimestamp()
+        lastSeen: serverTimestamp(),
       }).catch(() => {});
     }, 200);
 
@@ -271,8 +330,11 @@ export const usePresenceListener = () => {
   const dispatch = useAppDispatch();
   const { firebaseUser, activeOrgId } = useAppSelector((state) => state.auth);
   const userMembership = useAppSelector(selectUserData);
-  const myTeams = useMemo(() => userMembership?.teams || [], [userMembership?.teams]);
-  
+  const myTeams = useMemo(
+    () => userMembership?.teams || [],
+    [userMembership?.teams],
+  );
+
   const userUid = firebaseUser?.uid;
   const latestDocs = useRef<DocumentData[]>([]);
 
@@ -283,19 +345,21 @@ export const usePresenceListener = () => {
     }
 
     let unsubscribe: (() => void) | null = null;
-    
-    // Scoped query: Only people in the same org.
-    // Filtering by team is done client-side or via query if teams exist.
-    const presenceCollection = collection(db, "organisations", activeOrgId, "presence");
+
+    const presenceCollection = collection(
+      db,
+      "organisations",
+      activeOrgId,
+      "presence",
+    );
     let q = query(presenceCollection);
 
-    // If we have teams, we can use array-contains-any for efficiency,
-    // but if we don't, we still want to see ourselves (or others if we're an admin).
-    // Note: array-contains-any requires a non-empty array.
     if (myTeams.length > 0) {
-      q = query(presenceCollection, where("teams", "array-contains-any", myTeams));
+      q = query(
+        presenceCollection,
+        where("teams", "array-contains-any", myTeams),
+      );
     } else {
-      // If I have no teams, I only see myself
       q = query(presenceCollection, where("userUid", "==", userUid));
     }
 
@@ -306,7 +370,8 @@ export const usePresenceListener = () => {
 
       dataArray.forEach((data) => {
         if (!data || !data.name) return;
-        const lastSeenMillis = data.lastSeen?.toMillis?.() || data.lastSeen?.seconds * 1000 || now;
+        const lastSeenMillis =
+          data.lastSeen?.toMillis?.() || data.lastSeen?.seconds * 1000 || now;
 
         if (lastSeenMillis > threshold) {
           users.push({
@@ -315,7 +380,8 @@ export const usePresenceListener = () => {
             name: String(data.name),
             email: String(data.email || ""),
             color: String(data.color || "#5c4eb1"),
-            colorIndex: typeof data.colorIndex === 'number' ? data.colorIndex : undefined,
+            colorIndex:
+              typeof data.colorIndex === "number" ? data.colorIndex : undefined,
             photoURL: data.photoURL || null,
             hidePhoto: data.hidePhoto || false,
             lastSeen: lastSeenMillis,
@@ -324,22 +390,23 @@ export const usePresenceListener = () => {
           });
         }
       });
-      
-      dispatch(setOnlineUsers(users.sort((a, b) => a.name.localeCompare(b.name))));
+
+      dispatch(
+        setOnlineUsers(users.sort((a, b) => a.name.localeCompare(b.name))),
+      );
     };
-    
+
     const timeoutId = setTimeout(() => {
       unsubscribe = onSnapshot(q, {
         next: (snapshot: QuerySnapshot<DocumentData>) => {
-          const docs = snapshot.docs.map(d => d.data());
+          const docs = snapshot.docs.map((d) => d.data());
           latestDocs.current = docs;
           processSnapshot(docs);
         },
         error: (err) => {
-          // If the query fails (e.g. missing index for array-contains-any), log it and clear
           console.warn("[Presence] Listener error:", err.message);
           dispatch(setPresenceError(err.message));
-        }
+        },
       });
     }, 1000);
 

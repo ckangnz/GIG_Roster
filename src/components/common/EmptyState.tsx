@@ -24,30 +24,28 @@ const EmptyState: React.FC<EmptyStateProps> = ({
   illustration,
   title,
   description,
-  instruction
+  instruction,
 }) => {
   const { t } = useTranslation();
 
   return (
     <div className={styles.container}>
-      <div className={styles.svgWrapper}>
-        {illustration}
-      </div>
-      
+      <div className={styles.svgWrapper}>{illustration}</div>
+
       <h2 className={styles.reasonTitle}>{title}</h2>
       <p className={styles.description}>{description}</p>
-      
+
       {instruction && (
         <div className={styles.instructionBox}>
           <span className={styles.instructionLabel}>
             {instruction.label || t("common.instruction", "Instruction")}
           </span>
           <p className={styles.instructionText}>{instruction.text}</p>
-          
+
           {instruction.action && (
-            <Button 
-              className={styles.actionButton} 
-              variant="primary" 
+            <Button
+              className={styles.actionButton}
+              variant="primary"
               size="small"
               onClick={instruction.action.onClick}
             >

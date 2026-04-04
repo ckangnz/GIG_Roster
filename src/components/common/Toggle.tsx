@@ -1,6 +1,5 @@
 import styles from "./toggle.module.css";
 
-
 interface ToggleProps {
   isOn: boolean;
   onToggle: (isOn: boolean) => void;

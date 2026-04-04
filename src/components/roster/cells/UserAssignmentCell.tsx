@@ -27,74 +27,87 @@ interface UserAssignmentCellProps {
   hasOpenPositionRequest?: boolean;
 }
 
-const UserAssignmentCell = memo(({
-  rowIndex,
-  isFocused,
-  onFocus,
-  identifier,
-  dateString,
-  content,
-  onClick,
-  disabled,
-  absent,
-  absenceReason,
-  isAssignedOnClosestDate,
-  isHighlighted,
-  hasConflict,
-  userData,
-  hasOpenPositionRequest = false,
-}: UserAssignmentCellProps) => {
-  const { t } = useTranslation();
-  const hasContent = !!content || absent;
-  const isMe = identifier === userData?.email;
-  const isAdmin = !!userData?.isAdmin;
+const UserAssignmentCell = memo(
+  ({
+    rowIndex,
+    isFocused,
+    onFocus,
+    identifier,
+    dateString,
+    content,
+    onClick,
+    disabled,
+    absent,
+    absenceReason,
+    isAssignedOnClosestDate,
+    isHighlighted,
+    hasConflict,
+    userData,
+    hasOpenPositionRequest = false,
+  }: UserAssignmentCellProps) => {
+    const { t } = useTranslation();
+    const hasContent = !!content || absent;
+    const isMe = identifier === userData?.email;
+    const isAdmin = !!userData?.isAdmin;
 
-  // Logic to determine if "Claim Shift" should show
-  // 1. Cell must be empty (no content and not absent)
-  // 2. The row MUST have an open coverage request for this specific position
-  // 3. Admin sees it for everyone, non-admin only for themselves
-  const canClaim = !hasContent && hasOpenPositionRequest && (isAdmin || isMe);
+    // Logic to determine if "Claim Shift" should show
+    // 1. Cell must be empty (no content and not absent)
+    // 2. The row MUST have an open coverage request for this specific position
+    // 3. Admin sees it for everyone, non-admin only for themselves
+    const canClaim = !hasContent && hasOpenPositionRequest && (isAdmin || isMe);
 
-  const className = [
-    (!disabled || canClaim) ? styles.clickable : styles.disabled,
-    absent ? styles.absentStrike : "",
-    canClaim ? styles.canClaimRow : "",
-  ].filter(Boolean).join(" ");
+    const className = [
+      !disabled || canClaim ? styles.clickable : styles.disabled,
+      absent ? styles.absentStrike : "",
+      canClaim ? styles.canClaimRow : "",
+    ]
+      .filter(Boolean)
+      .join(" ");
 
-  return (
-    <BaseRosterCell
-      rowIndex={rowIndex}
-      isFocused={isFocused}
-      onFocus={onFocus}
-      identifier={identifier}
-      dateString={dateString}
-      className={className}
-      tabIndex={hasContent || canClaim ? 0 : -1}
-      onClick={(!disabled || canClaim) ? onClick : undefined}
-      isAssignedOnClosestDate={isAssignedOnClosestDate}
-      isHighlighted={isHighlighted}
-    >
-      <div className={styles.cellContent}>
-        {hasConflict && !absent && (
-          <div className={styles.conflictIndicator} title="User has multiple assignments on this day" />
-        )}
-        {absent && isFocused && (
-          <div className={`${styles.reasonPopover} ${rowIndex === 0 ? styles.popoverBottom : ""}`}>
-            {absenceReason || <span className={styles.noReason}>No reason provided</span>}
-          </div>
-        )}
-        {absent ? (
-          <span title={absenceReason}>❌</span>
-        ) : content ? (
-          content
-        ) : canClaim ? (
-          <div className={`${styles.claimButtonContainer} ${styles.permanentClaim}`}>
-            <span className={styles.claimText}>{t('roster.claim')}</span>
-          </div>
-        ) : null}
-      </div>
-    </BaseRosterCell>
-  );
-});
+    return (
+      <BaseRosterCell
+        rowIndex={rowIndex}
+        isFocused={isFocused}
+        onFocus={onFocus}
+        identifier={identifier}
+        dateString={dateString}
+        className={className}
+        tabIndex={hasContent || canClaim ? 0 : -1}
+        onClick={!disabled || canClaim ? onClick : undefined}
+        isAssignedOnClosestDate={isAssignedOnClosestDate}
+        isHighlighted={isHighlighted}
+      >
+        <div className={styles.cellContent}>
+          {hasConflict && !absent && (
+            <div
+              className={styles.conflictIndicator}
+              title="User has multiple assignments on this day"
+            />
+          )}
+          {absent && isFocused && (
+            <div
+              className={`${styles.reasonPopover} ${rowIndex === 0 ? styles.popoverBottom : ""}`}
+            >
+              {absenceReason || (
+                <span className={styles.noReason}>No reason provided</span>
+              )}
+            </div>
+          )}
+          {absent ? (
+            <span title={absenceReason}>❌</span>
+          ) : content ? (
+            content
+          ) : canClaim ? (
+            <div
+              className={`${styles.claimButtonContainer} ${styles.permanentClaim}`}
+            >
+              <span className={styles.claimText}>{t("roster.claim")}</span>
+            </div>
+          ) : null}
+        </div>
+      </BaseRosterCell>
+    );
+  },
+);
 
 export default UserAssignmentCell;

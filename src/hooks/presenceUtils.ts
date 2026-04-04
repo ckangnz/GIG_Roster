@@ -7,9 +7,9 @@ import { PRESENCE_COLORS } from "./usePresence";
 export const resolvePresenceColor = (
   colorIndex: number | undefined,
   storedColor: string,
-  isDark: boolean
+  isDark: boolean,
 ): string => {
-  if (typeof colorIndex === 'number' && PRESENCE_COLORS[colorIndex]) {
+  if (typeof colorIndex === "number" && PRESENCE_COLORS[colorIndex]) {
     return PRESENCE_COLORS[colorIndex][isDark ? 1 : 0];
   }
   return storedColor;
