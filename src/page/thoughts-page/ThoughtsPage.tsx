@@ -331,19 +331,20 @@ const ThoughtsPage = () => {
   const handleShareMyThoughts = () => {
     if (!myThought?.entries?.length) return;
 
+    const activeEntries = myThought.entries.filter((entry) => !entry.isExpired);
     let text = "";
     if (includeHearts) {
-      const totalLikes = myThought.entries.reduce(
+      const totalLikes = activeEntries.reduce(
         (sum, entry) => sum + Object.keys(entry.hearts || {}).length,
         0,
       );
       text = `My Thoughts (Total Likes: ${totalLikes})\n`;
-      myThought.entries.forEach((entry, i) => {
+      activeEntries.forEach((entry, i) => {
         text += `${i + 1}. ${entry.text} (${Object.keys(entry.hearts || {}).length} ❤️)\n`;
       });
     } else {
       text = `My Thoughts\n`;
-      myThought.entries.forEach((entry, i) => {
+      activeEntries.forEach((entry, i) => {
         text += `${i + 1}. ${entry.text}\n`;
       });
     }
@@ -373,7 +374,9 @@ const ThoughtsPage = () => {
     const usersWithThoughts = teamUsers
       .map((user) => {
         const userThought = thoughts[`${user.id}_${teamId}`];
-        const entries = userThought?.entries || [];
+        const entries = (userThought?.entries || []).filter(
+          (entry) => !entry.isExpired,
+        );
         const totalLikes = entries.reduce(
           (sum, e) => sum + Object.keys(e.hearts || {}).length,
           0,
