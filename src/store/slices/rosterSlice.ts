@@ -383,11 +383,12 @@ const rosterSlice = createSlice({
     updateRosterTeams(
       state,
       action: PayloadAction<{
+        orgId: string;
         teams: Record<string, Record<string, TeamRosterData | UserAssignments>>;
         coverageRequests: Record<string, Record<string, CoverageRequest>>;
       }>,
     ) {
-      const { teams, coverageRequests } = action.payload;
+      const { orgId, teams, coverageRequests } = action.payload;
       const newEntries = { ...state.entries };
 
       // 1. Update Teams
@@ -397,11 +398,12 @@ const rosterSlice = createSlice({
           date,
           teams: {},
           absence: {},
-          orgId: "", // orgId will be set by the fetch logic or the listener data itself
+          orgId, // orgId will be set by the fetch logic or the listener data itself
           coverageRequests: {},
         };
         newEntries[date] = {
           ...existingEntry,
+          orgId: existingEntry.orgId || orgId,
           teams: { ...existingEntry.teams, ...teamMap },
         };
       });
@@ -413,11 +415,12 @@ const rosterSlice = createSlice({
           date,
           teams: {},
           absence: {},
-          orgId: "",
+          orgId,
           coverageRequests: {},
         };
         newEntries[date] = {
           ...existingEntry,
+          orgId: existingEntry.orgId || orgId,
           coverageRequests: { ...coverageRequests[date] },
         };
       });

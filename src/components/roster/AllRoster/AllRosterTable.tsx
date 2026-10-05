@@ -10,11 +10,13 @@ import { useRosterHeaderLogic } from "../../../hooks/useRosterHeaderLogic";
 import { useRosterVisualRows } from "../../../hooks/useRosterVisualRows";
 import { getAssignmentsForTeam, OrgMembership } from "../../../model/model";
 import { setHighlightedUserId } from "../../../store/slices/rosterViewSlice";
+import { resolveViewedTeamAssignments } from "../../../utils/viewedTeams";
 import EmptyState from "../../common/EmptyState";
 import { NoUsersIllustration } from "../../common/EmptyStateIllustrations";
 import NameTag from "../../common/NameTag";
 import cellStyles from "../roster-cell.module.css";
 import RosterTable from "../RosterTable";
+import ViewedTeamAssignments from "../ViewedTeamAssignments";
 
 import allStyles from "./all-roster.module.css";
 
@@ -31,6 +33,7 @@ const AllRosterTable = () => {
     allTeamUsers,
     currentTeamData,
     allPositions,
+    allTeams,
     rosterAllViewMode,
     userData,
     rosterDates,
@@ -302,6 +305,33 @@ const AllRosterTable = () => {
     ],
   );
 
+  const getViewedCellContent = useCallback(
+    (dateString: string, userIdentifier: string) => {
+      const assignments = resolveViewedTeamAssignments({
+        entry: entries[dateString.split("T")[0]],
+        currentTeamId: teamId,
+        userIdentifier,
+        viewedTeamIds: userData?.viewedTeams,
+        allTeams,
+        activeOrgId: userData?.activeOrgId,
+      });
+      return assignments.length > 0 ? (
+        <ViewedTeamAssignments
+          assignments={assignments}
+          positions={allPositions}
+        />
+      ) : null;
+    },
+    [
+      entries,
+      teamId,
+      userData?.viewedTeams,
+      userData?.activeOrgId,
+      allTeams,
+      allPositions,
+    ],
+  );
+
   const isHighlightedCell = (
     dateString: string,
     identifier: string,
@@ -424,6 +454,7 @@ const AllRosterTable = () => {
             allPositions={allPositions}
             allViewPositions={allViewPositions}
             getAllViewUserCellContent={getAllViewUserCellContent}
+            getViewedCellContent={getViewedCellContent}
             getAllViewPositionCellContent={getAllViewPositionCellContent}
             getAssignmentsForIdentifier={getAssignmentsForIdentifier}
             navigate={navigate}

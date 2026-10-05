@@ -135,6 +135,7 @@ export const updateUserProfile = createAsyncThunk(
       data: Partial<AppUser> & {
         isActive?: boolean;
         teams?: string[];
+        viewedTeams?: string[];
         teamPositions?: Record<string, string[]>;
         preferredLanguage?: string;
       };
@@ -156,6 +157,8 @@ export const updateUserProfile = createAsyncThunk(
         if (data.isActive !== undefined)
           membershipUpdate.isActive = data.isActive;
         if (data.teams !== undefined) membershipUpdate.teams = data.teams;
+        if (data.viewedTeams !== undefined)
+          membershipUpdate.viewedTeams = data.viewedTeams;
         if (data.teamPositions !== undefined) {
           membershipUpdate.teamPositions = data.teamPositions;
           membershipUpdate.indexedAssignments = generateIndexedAssignments(
@@ -184,7 +187,7 @@ export const updateUserProfile = createAsyncThunk(
       }
 
       await Promise.all(promises);
-      return data;
+      return { data, orgId: activeOrgId };
     } catch (error) {
       return rejectWithValue(
         error instanceof Error ? error.message : "Failed to update profile",
@@ -487,17 +490,19 @@ const authSlice = createSlice({
           const {
             isActive,
             teams,
+            viewedTeams,
             teamPositions,
             preferredLanguage,
             ...globalData
-          } = action.payload;
+          } = action.payload.data;
           state.userData = { ...state.userData, ...globalData };
 
-          if (state.membership) {
+          if (state.membership && state.activeOrgId === action.payload.orgId) {
             state.membership = {
               ...state.membership,
               ...(isActive !== undefined && { isActive }),
               ...(teams !== undefined && { teams }),
+              ...(viewedTeams !== undefined && { viewedTeams }),
               ...(preferredLanguage !== undefined && { preferredLanguage }),
               ...(teamPositions !== undefined && {
                 teamPositions,
@@ -592,6 +597,7 @@ export const selectUserData = createSelector(
       isActive: membership?.isActive ?? true,
 
       teams: membership?.teams || [],
+      viewedTeams: membership?.viewedTeams || [],
       teamPositions: membership?.teamPositions || {},
       indexedAssignments: membership?.indexedAssignments || [],
       preferredLanguage: membership?.preferredLanguage || "en-NZ",

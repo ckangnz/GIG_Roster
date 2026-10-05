@@ -150,6 +150,12 @@ export const cleanupUsersAfterDeletion = createAsyncThunk(
         const updatePayload: Partial<OrgMembership> = {};
 
         if (teamId) {
+          if (orgEntry.viewedTeams?.includes(teamId)) {
+            updatePayload.viewedTeams = orgEntry.viewedTeams.filter(
+              (id) => id !== teamId,
+            );
+            changed = true;
+          }
           if (
             orgEntry.teams?.includes(teamId) ||
             (teamName && orgEntry.teams?.includes(teamName))
@@ -283,6 +289,19 @@ const userManagementSlice = createSlice({
         org.indexedAssignments = generateIndexedAssignments(org.teamPositions);
       }
     },
+    toggleUserViewedTeam(
+      state,
+      action: PayloadAction<{ userId: string; teamId: string }>,
+    ) {
+      const { userId, teamId } = action.payload;
+      const membership = state.memberships[userId];
+      if (membership) {
+        const viewedTeams = membership.viewedTeams || [];
+        membership.viewedTeams = viewedTeams.includes(teamId)
+          ? viewedTeams.filter((id) => id !== teamId)
+          : [...viewedTeams, teamId];
+      }
+    },
     toggleUserTeamPosition(
       state,
       action: PayloadAction<{
@@ -389,6 +408,7 @@ export const {
   updateUserField,
   updateUserOrgField,
   toggleUserTeam,
+  toggleUserViewedTeam,
   toggleUserTeamPosition,
   reorderUserTeams,
   resetUserChanges,

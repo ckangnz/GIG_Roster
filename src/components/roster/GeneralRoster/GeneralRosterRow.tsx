@@ -28,6 +28,7 @@ interface GeneralRosterRowProps {
     col: number,
   ) => void;
   getCellContent: (dateString: string, userEmail: string) => ReactNode;
+  getViewedCellContent: (dateString: string, userEmail: string) => ReactNode;
   sortedUsers: AppUser[];
   genderDividerIndex: number;
   isCellDisabled: (dateString: string, userEmail: string) => boolean;
@@ -67,6 +68,7 @@ export const GeneralRosterRow = memo(
     closestNextDate,
     handleCellClick,
     getCellContent,
+    getViewedCellContent,
     sortedUsers,
     genderDividerIndex,
     isCellDisabled,
@@ -184,6 +186,9 @@ export const GeneralRosterRow = memo(
                   handleCellClick(dateString, user.email, rowIndex, colIndex);
                 }
               }}
+              supplementalContent={
+                user.email ? getViewedCellContent(dateString, user.email) : null
+              }
             />
           </Fragment>
         ))}

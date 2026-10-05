@@ -1,3 +1,5 @@
+import { ReactNode } from "react";
+
 import { useTranslation } from "react-i18next";
 
 import SearchableMultiPicker from "../../components/common/SearchableMultiPicker";
@@ -16,6 +18,7 @@ interface TeamPositionEditorProps {
   onReorderTeams?: (newOrder: string[]) => void;
   availableTeams: Team[];
   globalPositions: Position[];
+  children?: ReactNode;
 }
 
 const ReorderableTeamItem = ({
@@ -76,6 +79,7 @@ const TeamPositionEditor = ({
   onReorderTeams,
   availableTeams,
   globalPositions,
+  children,
 }: TeamPositionEditorProps) => {
   const { t } = useTranslation();
   return (
@@ -97,6 +101,8 @@ const TeamPositionEditor = ({
           })}
         />
       </div>
+
+      {children}
 
       {selectedTeams.length > 0 && (
         <div className={commonStyles.formGroup}>

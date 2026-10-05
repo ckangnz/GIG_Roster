@@ -31,6 +31,8 @@ const UserManagement = () => {
     error,
   } = useAppSelector((state) => state.userManagement);
   const availableTeams = useAppSelector((state) => state.teams.teams);
+  const activeOrgId = useAppSelector((state) => state.auth.activeOrgId);
+  const orgTeams = availableTeams.filter((team) => team.orgId === activeOrgId);
 
   const hasChanges = useMemo(() => {
     // 1. Check for basic user profile changes (name, gender)
@@ -60,6 +62,7 @@ const UserManagement = () => {
             isApproved: !!entry.isApproved,
             isAdmin: !!entry.isAdmin,
             teams: [...(entry.teams || [])].sort(),
+            viewedTeams: [...(entry.viewedTeams || [])].sort(),
             teamPositions: Object.keys(entry.teamPositions || {})
               .sort()
               .reduce((tpAcc: Record<string, string[]>, teamId) => {
@@ -136,7 +139,7 @@ const UserManagement = () => {
               <UserManagementRow
                 key={u.id}
                 user={u}
-                availableTeams={availableTeams}
+                availableTeams={orgTeams}
                 adminEmail={import.meta.env.VITE_ADMIN_EMAIL as string}
               />
             ))}
@@ -153,7 +156,7 @@ const UserManagement = () => {
             <UserManagementRow
               key={u.id}
               user={u}
-              availableTeams={availableTeams}
+              availableTeams={orgTeams}
               adminEmail={import.meta.env.VITE_ADMIN_EMAIL as string}
             />
           ))}

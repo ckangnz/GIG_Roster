@@ -334,7 +334,10 @@
     "chooseTheme": "Choose Theme",
     "english": "English (NZ)",
     "korean": "Korean",
-    "unsavedChanges": "Unsaved profile changes"
+    "unsavedChanges": "Unsaved profile changes",
+    "viewedTeams": "Teams to view",
+    "viewedTeamsPlaceholder": "Search teams to view...",
+    "viewedTeamsHint": "Show these teams’ assignments alongside your roster. Viewing a team does not join it or allow you to edit its roster."
   },
   "onboarding": {
     "profileTitle": "Welcome! 👋",

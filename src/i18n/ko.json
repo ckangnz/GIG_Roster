@@ -335,7 +335,10 @@
     "chooseTheme": "테마 선택",
     "english": "영어 (NZ)",
     "korean": "한국어",
-    "unsavedChanges": "저장되지 않은 변경사항"
+    "unsavedChanges": "저장되지 않은 변경사항",
+    "viewedTeams": "조회할 팀",
+    "viewedTeamsPlaceholder": "조회할 팀 검색...",
+    "viewedTeamsHint": "선택한 팀의 배정을 내 일정표에 함께 표시합니다. 팀을 조회해도 해당 팀에 가입되거나 일정표 수정 권한이 부여되지는 않습니다."
   },
   "onboarding": {
     "profileTitle": "환영합니다! 👋",

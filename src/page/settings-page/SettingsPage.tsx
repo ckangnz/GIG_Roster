@@ -19,7 +19,9 @@ const SettingsPage = () => {
 
   return (
     <div className={styles.settingsContainer}>
-      {activeSection === SettingsSection.PROFILE && <ProfileSettings />}
+      {activeSection === SettingsSection.PROFILE && (
+        <ProfileSettings key={userData.orgId} />
+      )}
 
       {activeSection === SettingsSection.ORGANISATIONS && (
         <OrgManagement standalone />

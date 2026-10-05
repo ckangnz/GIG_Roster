@@ -39,6 +39,7 @@ export interface OrgMembership {
   isAdmin: boolean;
   isApproved: boolean;
   teams: string[];
+  viewedTeams?: string[];
   teamPositions?: Record<string, string[]>;
   indexedAssignments?: string[];
   preferredLanguage?: string;
@@ -66,6 +67,7 @@ export interface AppUserWithMembership extends AppUser {
   isApproved: boolean;
   isActive: boolean;
   teams: string[];
+  viewedTeams: string[];
   teamPositions: Record<string, string[]>;
   indexedAssignments: string[];
   preferredLanguage: string;

@@ -100,6 +100,7 @@ export const useAppListeners = () => {
 
           dispatch(
             updateRosterTeams({
+              orgId: activeOrgId,
               teams: teamUpdates,
               coverageRequests: coverageUpdates,
             }),

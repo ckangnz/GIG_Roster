@@ -25,6 +25,7 @@ interface RosterCellProps {
   isHighlighted?: boolean;
   hasConflict?: boolean;
   content?: ReactNode;
+  supplementalContent?: ReactNode;
   onClick?: () => void;
   // Absence View
   handleAbsenceReasonChange?: (reason: string) => void;
@@ -55,6 +56,7 @@ const RosterCell = memo(
     isHighlighted = false,
     hasConflict = false,
     content = null,
+    supplementalContent = null,
     onClick,
     handleAbsenceReasonChange,
     disabled = false,
@@ -74,6 +76,7 @@ const RosterCell = memo(
             identifier={identifier}
             dateString={dateString}
             content={content}
+            supplementalContent={supplementalContent}
             onClick={onClick}
             disabled={disabled}
             absent={absent}
@@ -114,6 +117,7 @@ const RosterCell = memo(
             identifier={identifier}
             dateString={dateString}
             content={content}
+            supplementalContent={supplementalContent}
             onClick={onClick}
             absent={absent}
             absenceReason={absenceReason}

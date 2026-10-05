@@ -26,6 +26,10 @@ interface AllRosterRowProps {
     dateString: string,
     userIdentifier: string,
   ) => ReactNode;
+  getViewedCellContent: (
+    dateString: string,
+    userIdentifier: string,
+  ) => ReactNode;
   getAllViewPositionCellContent: (
     dateString: string,
     positionName: string,
@@ -69,6 +73,7 @@ export const AllRosterRow = memo(
     allViewColumns,
     allPositions,
     getAllViewUserCellContent,
+    getViewedCellContent,
     getAllViewPositionCellContent,
     getAssignmentsForIdentifier,
     navigate,
@@ -124,6 +129,11 @@ export const AllRosterRow = memo(
                 }
                 content={
                   col.id ? getAllViewUserCellContent(dateString, col.id) : null
+                }
+                supplementalContent={
+                  col.isUser && col.id
+                    ? getViewedCellContent(dateString, col.id)
+                    : null
                 }
                 onClick={() => {
                   const assignments = getAssignmentsForIdentifier(

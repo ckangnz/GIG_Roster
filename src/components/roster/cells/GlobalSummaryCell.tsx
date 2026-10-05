@@ -10,6 +10,7 @@ interface GlobalSummaryCellProps {
   identifier: string;
   dateString: string;
   content: ReactNode;
+  supplementalContent?: ReactNode;
   onClick?: () => void;
   absent?: boolean;
   absenceReason?: string;
@@ -25,6 +26,7 @@ const GlobalSummaryCell = memo(
     identifier,
     dateString,
     content,
+    supplementalContent,
     onClick,
     absent,
     absenceReason,
@@ -63,6 +65,7 @@ const GlobalSummaryCell = memo(
           </div>
         )}
         {absent ? <span>❌</span> : content}
+        {supplementalContent}
       </BaseRosterCell>
     );
   },

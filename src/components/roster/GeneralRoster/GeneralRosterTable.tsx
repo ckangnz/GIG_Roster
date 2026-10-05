@@ -13,10 +13,12 @@ import {
   isTeamRosterData,
   OrgMembership,
 } from "../../../model/model";
+import { resolveViewedTeamAssignments } from "../../../utils/viewedTeams";
 import EmptyState from "../../common/EmptyState";
 import { NoUsersIllustration } from "../../common/EmptyStateIllustrations";
 import cellStyles from "../roster-cell.module.css";
 import RosterTable from "../RosterTable";
+import ViewedTeamAssignments from "../ViewedTeamAssignments";
 
 const GeneralRosterTable = () => {
   const logic = useRosterBaseLogic();
@@ -155,8 +157,18 @@ const GeneralRosterTable = () => {
 
       const otherTeamsAssignments: { teamId: string; positions: string[] }[] =
         [];
+      const viewedTeamIds = new Set(
+        resolveViewedTeamAssignments({
+          entry,
+          currentTeamId: teamId,
+          userIdentifier: userEmail,
+          viewedTeamIds: userData?.viewedTeams,
+          allTeams,
+          activeOrgId: userData?.activeOrgId,
+        }).map(({ team }) => team.id),
+      );
       Object.entries(entry.teams).forEach(([tId]) => {
-        if (tId !== teamId) {
+        if (tId !== teamId && !viewedTeamIds.has(tId)) {
           const assignments = getAssignmentsForTeam(entry, tId)[userEmail];
           if (Array.isArray(assignments) && assignments.length > 0) {
             otherTeamsAssignments.push({ teamId: tId, positions: assignments });
@@ -213,7 +225,41 @@ const GeneralRosterTable = () => {
         </>
       );
     },
-    [entries, teamId, allPositions, allTeams],
+    [
+      entries,
+      teamId,
+      allPositions,
+      allTeams,
+      userData?.viewedTeams,
+      userData?.activeOrgId,
+    ],
+  );
+
+  const getViewedCellContent = useCallback(
+    (dateString: string, userIdentifier: string) => {
+      const assignments = resolveViewedTeamAssignments({
+        entry: entries[dateString.split("T")[0]],
+        currentTeamId: teamId,
+        userIdentifier,
+        viewedTeamIds: userData?.viewedTeams,
+        allTeams,
+        activeOrgId: userData?.activeOrgId,
+      });
+      return assignments.length > 0 ? (
+        <ViewedTeamAssignments
+          assignments={assignments}
+          positions={allPositions}
+        />
+      ) : null;
+    },
+    [
+      entries,
+      teamId,
+      userData?.viewedTeams,
+      userData?.activeOrgId,
+      allTeams,
+      allPositions,
+    ],
   );
 
   const renderHeader = () => (
@@ -283,6 +329,7 @@ const GeneralRosterTable = () => {
             getCellContent={(date, email) =>
               getCellContent(date, email, row.slot?.id)
             }
+            getViewedCellContent={getViewedCellContent}
             sortedUsers={sortedUsers}
             genderDividerIndex={genderDividerIndex}
             isCellDisabled={logic.isCellDisabled}

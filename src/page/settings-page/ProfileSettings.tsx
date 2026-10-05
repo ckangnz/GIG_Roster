@@ -5,6 +5,7 @@ import { Eye, EyeOff, Smile } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import TeamPositionEditor from "./TeamPositionEditor";
+import ViewedTeamsEditor from "./ViewedTeamsEditor";
 import Button from "../../components/common/Button";
 import Pill, { PillGroup } from "../../components/common/Pill";
 import SaveFooter from "../../components/common/SaveFooter";
@@ -55,6 +56,7 @@ const ProfileSettings = ({
     gender: "",
     isActive: true,
     teams: [] as string[],
+    viewedTeams: [] as string[],
     teamPositions: {} as Record<string, string[]>,
     preferredLanguage: "en-NZ",
   });
@@ -74,6 +76,7 @@ const ProfileSettings = ({
       gender: userData.gender || "",
       isActive: userData.isActive ?? true,
       teams: userData.teams || [],
+      viewedTeams: userData.viewedTeams || [],
       teamPositions: userData.teamPositions || {},
       preferredLanguage: userData.preferredLanguage || "en-NZ",
     });
@@ -87,6 +90,7 @@ const ProfileSettings = ({
       gender: userData.gender || "",
       isActive: userData.isActive ?? true,
       teams: userData.teams || [],
+      viewedTeams: userData.viewedTeams || [],
       teamPositions: userData.teamPositions || {},
       preferredLanguage: userData.preferredLanguage || "en-NZ",
     };
@@ -117,6 +121,7 @@ const ProfileSettings = ({
       gender: userData.gender || "",
       isActive: userData.isActive ?? true,
       teams: userData.teams || [],
+      viewedTeams: userData.viewedTeams || [],
       teamPositions: userData.teamPositions || {},
       preferredLanguage: userData.preferredLanguage || "en-NZ",
     });
@@ -318,7 +323,20 @@ const ProfileSettings = ({
                   }
                   availableTeams={availableTeams}
                   globalPositions={globalPositions}
-                />
+                >
+                  <ViewedTeamsEditor
+                    availableTeams={availableTeams}
+                    selectedTeams={formState.viewedTeams}
+                    onToggleTeam={(teamId) =>
+                      setFormState((prev) => ({
+                        ...prev,
+                        viewedTeams: prev.viewedTeams.includes(teamId)
+                          ? prev.viewedTeams.filter((id) => id !== teamId)
+                          : [...prev.viewedTeams, teamId],
+                      }))
+                    }
+                  />
+                </TeamPositionEditor>
               ) : (
                 <div className={styles.noTeamsNotice}>
                   <p>{t("settings.noTeamsInOrg")}</p>

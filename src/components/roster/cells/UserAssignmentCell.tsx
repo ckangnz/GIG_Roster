@@ -13,6 +13,7 @@ interface UserAssignmentCellProps {
   identifier: string;
   dateString: string;
   content: ReactNode;
+  supplementalContent?: ReactNode;
   onClick?: () => void;
   disabled?: boolean;
   absent?: boolean;
@@ -35,6 +36,7 @@ const UserAssignmentCell = memo(
     identifier,
     dateString,
     content,
+    supplementalContent,
     onClick,
     disabled,
     absent,
@@ -105,6 +107,7 @@ const UserAssignmentCell = memo(
             </div>
           ) : null}
         </div>
+        {supplementalContent}
       </BaseRosterCell>
     );
   },

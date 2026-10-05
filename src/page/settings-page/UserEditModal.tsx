@@ -1,12 +1,14 @@
 import { useTranslation } from "react-i18next";
 
 import TeamPositionEditor from "./TeamPositionEditor";
+import ViewedTeamsEditor from "./ViewedTeamsEditor";
 import Modal from "../../components/common/Modal";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { AppUser, Team } from "../../model/model";
 import {
   toggleUserTeam,
   toggleUserTeamPosition,
+  toggleUserViewedTeam,
   reorderUserTeams,
 } from "../../store/slices/userManagementSlice";
 
@@ -60,7 +62,15 @@ const UserEditModal = ({
         onReorderTeams={handleReorderTeams}
         availableTeams={availableTeams}
         globalPositions={globalPositions}
-      />
+      >
+        <ViewedTeamsEditor
+          availableTeams={availableTeams}
+          selectedTeams={membership?.viewedTeams || []}
+          onToggleTeam={(teamId) =>
+            dispatch(toggleUserViewedTeam({ userId: user.id, teamId }))
+          }
+        />
+      </TeamPositionEditor>
     </Modal>
   );
 };
