@@ -24,6 +24,7 @@ interface RosterCellProps {
   isAssignedOnClosestDate?: boolean;
   isHighlighted?: boolean;
   hasConflict?: boolean;
+  conflictDescription?: string;
   content?: ReactNode;
   supplementalContent?: ReactNode;
   onClick?: () => void;
@@ -55,6 +56,7 @@ const RosterCell = memo(
     isAssignedOnClosestDate = false,
     isHighlighted = false,
     hasConflict = false,
+    conflictDescription,
     content = null,
     supplementalContent = null,
     onClick,
@@ -84,6 +86,7 @@ const RosterCell = memo(
             isAssignedOnClosestDate={isAssignedOnClosestDate}
             isHighlighted={isHighlighted}
             hasConflict={hasConflict}
+            conflictDescription={conflictDescription}
             userData={userData}
             allTeams={allTeams}
             teamName={teamName}

@@ -1,8 +1,16 @@
-import { memo, ReactNode } from "react";
+import {
+  memo,
+  ReactNode,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 import { useTranslation } from "react-i18next";
 
 import BaseRosterCell from "./BaseRosterCell";
+import { useLongPress } from "../../../hooks/useLongPress";
 import { AppUser, Team } from "../../../model/model";
 import styles from "../roster-cell.module.css";
 
@@ -21,6 +29,7 @@ interface UserAssignmentCellProps {
   isAssignedOnClosestDate?: boolean;
   isHighlighted?: boolean;
   hasConflict?: boolean;
+  conflictDescription?: string;
   userData?: (AppUser & { isAdmin?: boolean }) | null;
   allTeams?: Team[];
   teamName?: string;
@@ -44,6 +53,7 @@ const UserAssignmentCell = memo(
     isAssignedOnClosestDate,
     isHighlighted,
     hasConflict,
+    conflictDescription,
     userData,
     hasOpenPositionRequest = false,
   }: UserAssignmentCellProps) => {
@@ -51,6 +61,41 @@ const UserAssignmentCell = memo(
     const hasContent = !!content || absent;
     const isMe = identifier === userData?.email;
     const isAdmin = !!userData?.isAdmin;
+    const cellContentRef = useRef<HTMLDivElement>(null);
+    const suppressNextClickRef = useRef(false);
+    const [showConflictDetails, setShowConflictDetails] = useState(false);
+    const canShowConflictDetails = !!hasConflict && !absent;
+
+    const openConflictDetails = useCallback(() => {
+      suppressNextClickRef.current = true;
+      setShowConflictDetails(true);
+    }, []);
+
+    const longPressHandlers = useLongPress(
+      openConflictDetails,
+      canShowConflictDetails,
+    );
+
+    useEffect(() => {
+      if (!showConflictDetails) return;
+      const closeConflictDetails = (event: PointerEvent) => {
+        suppressNextClickRef.current = !!cellContentRef.current
+          ?.closest("td")
+          ?.contains(event.target as Node);
+        setShowConflictDetails(false);
+      };
+      document.addEventListener("pointerdown", closeConflictDetails, true);
+      return () =>
+        document.removeEventListener("pointerdown", closeConflictDetails, true);
+    }, [showConflictDetails]);
+
+    const handleClick = () => {
+      if (suppressNextClickRef.current) {
+        suppressNextClickRef.current = false;
+        return;
+      }
+      onClick?.();
+    };
 
     // Logic to determine if "Claim Shift" should show
     // 1. Cell must be empty (no content and not absent)
@@ -75,16 +120,24 @@ const UserAssignmentCell = memo(
         dateString={dateString}
         className={className}
         tabIndex={hasContent || canClaim ? 0 : -1}
-        onClick={!disabled || canClaim ? onClick : undefined}
+        onClick={!disabled || canClaim ? handleClick : undefined}
+        pointerHandlers={longPressHandlers}
         isAssignedOnClosestDate={isAssignedOnClosestDate}
         isHighlighted={isHighlighted}
       >
-        <div className={styles.cellContent}>
-          {hasConflict && !absent && (
+        <div ref={cellContentRef} className={styles.cellContent}>
+          {canShowConflictDetails && (
             <div
               className={styles.conflictIndicator}
-              title="User has multiple assignments on this day"
+              title={conflictDescription || t("roster.conflictTitle")}
             />
+          )}
+          {canShowConflictDetails && showConflictDetails && (
+            <div
+              className={`${styles.reasonPopover} ${styles.conflictPopover} ${rowIndex === 0 ? styles.popoverBottom : ""}`}
+            >
+              {conflictDescription || t("roster.conflictTitle")}
+            </div>
           )}
           {absent && isFocused && (
             <div

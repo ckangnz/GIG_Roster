@@ -155,84 +155,29 @@ const GeneralRosterTable = () => {
         }
       }
 
-      const otherTeamsAssignments: { teamId: string; positions: string[] }[] =
-        [];
-      const viewedTeamIds = new Set(
-        resolveViewedTeamAssignments({
-          entry,
-          currentTeamId: teamId,
-          userIdentifier: userEmail,
-          viewedTeamIds: userData?.viewedTeams,
-          allTeams,
-          activeOrgId: userData?.activeOrgId,
-        }).map(({ team }) => team.id),
-      );
-      Object.entries(entry.teams).forEach(([tId]) => {
-        if (tId !== teamId && !viewedTeamIds.has(tId)) {
-          const assignments = getAssignmentsForTeam(entry, tId)[userEmail];
-          if (Array.isArray(assignments) && assignments.length > 0) {
-            otherTeamsAssignments.push({ teamId: tId, positions: assignments });
-          }
-        }
-      });
-
-      if (
-        currentTeamAssignments.length === 0 &&
-        otherTeamsAssignments.length === 0
-      )
-        return "";
+      if (currentTeamAssignments.length === 0) return "";
 
       return (
-        <>
-          <div className={cellStyles.currentTeamContainer}>
-            {currentTeamAssignments.map((posId) => {
-              const pos = allPositions.find(
-                (p) => p.id === posId || p.name === posId,
-              );
-              const team = allTeams.find((t) => t.id === teamId);
-              return (
-                <span
-                  key={posId}
-                  title={`${team?.name || "Team"}: ${pos?.name || posId}`}
-                  className={cellStyles.currentTeamEmoji}
-                >
-                  {pos?.emoji || "❓"}
-                </span>
-              );
-            })}
-          </div>
-          {otherTeamsAssignments.length > 0 && (
-            <div className={cellStyles.otherTeamsIndicator}>
-              {otherTeamsAssignments.map((ota) =>
-                ota.positions.map((posId) => {
-                  const pos = allPositions.find(
-                    (p) => p.id === posId || p.name === posId,
-                  );
-                  const oTeam = allTeams.find((t) => t.id === ota.teamId);
-                  return (
-                    <span
-                      key={`${ota.teamId}-${posId}`}
-                      title={`${oTeam?.name || "Team"}: ${pos?.name || posId}`}
-                      className={cellStyles.otherTeamEmoji}
-                    >
-                      {pos?.emoji || "❓"}
-                    </span>
-                  );
-                }),
-              )}
-            </div>
-          )}
-        </>
+        <div className={cellStyles.currentTeamContainer}>
+          {currentTeamAssignments.map((posId) => {
+            const pos = allPositions.find(
+              (p) => p.id === posId || p.name === posId,
+            );
+            const team = allTeams.find((t) => t.id === teamId);
+            return (
+              <span
+                key={posId}
+                title={`${team?.name || "Team"}: ${pos?.name || posId}`}
+                className={cellStyles.currentTeamEmoji}
+              >
+                {pos?.emoji || "❓"}
+              </span>
+            );
+          })}
+        </div>
       );
     },
-    [
-      entries,
-      teamId,
-      allPositions,
-      allTeams,
-      userData?.viewedTeams,
-      userData?.activeOrgId,
-    ],
+    [entries, teamId, allPositions, allTeams],
   );
 
   const getViewedCellContent = useCallback(

@@ -120,6 +120,8 @@
     "editTeammateTitle": "Edit Teammate's Roster?",
     "editTeammateDesc": "You are about to change {{name}}'s assignment. Please ensure you have coordinated this swap with them.",
     "changeAssignment": "Change Assignment",
+    "conflictTitle": "Multiple assignments on this day",
+    "conflictDetail": "{{name}} is positioned for {{positions}} from {{team}}",
     "empty": {
       "noUsersTitle": "No positions assigned",
       "noUsersDesc": "Members are in this team, but no one has been assigned to any positions yet.",

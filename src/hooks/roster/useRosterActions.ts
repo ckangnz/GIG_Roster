@@ -502,6 +502,9 @@ export const useRosterActions = (
       let totalAssignments = 0;
       let teamCount = 0;
       let overLimitInAnyTeam = false;
+      const userName =
+        allTeamUsers.find((u) => u.email === userEmail)?.name || userEmail;
+      const assignmentLines: string[] = [];
 
       Object.keys(entry.teams).forEach((tId) => {
         const teamAssignments = getAssignmentsForTeam(entry, tId);
@@ -509,6 +512,19 @@ export const useRosterActions = (
         if (Array.isArray(assignments) && assignments.length > 0) {
           totalAssignments += assignments.length;
           teamCount++;
+          assignmentLines.push(
+            t("roster.conflictDetail", {
+              name: userName,
+              positions: assignments
+                .map(
+                  (posId) =>
+                    allPositions.find((p) => p.id === posId || p.name === posId)
+                      ?.name || posId,
+                )
+                .join(", "),
+              team: allTeams.find((team) => team.id === tId)?.name || tId,
+            }),
+          );
 
           const teamConfig = allTeams.find((t) => t.id === tId);
           if (teamConfig && assignments.length > teamConfig.maxConflict) {
@@ -523,9 +539,10 @@ export const useRosterActions = (
         teamCount,
         totalAssignments,
         overLimit: overLimitInAnyTeam,
+        description: [t("roster.conflictTitle"), ...assignmentLines].join("\n"),
       };
     },
-    [entries, allTeams],
+    [entries, allTeams, allPositions, allTeamUsers, t],
   );
 
   const hasPositionCoverageRequest = useCallback(

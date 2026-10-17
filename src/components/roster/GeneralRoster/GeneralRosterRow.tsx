@@ -39,7 +39,7 @@ interface GeneralRosterRowProps {
   getConflictStatus: (
     dateString: string,
     userEmail: string,
-  ) => { hasConflict: boolean };
+  ) => { hasConflict: boolean; description?: string };
   userData: AppUser | null;
   allTeams: Team[];
   teamName: string;
@@ -148,6 +148,11 @@ export const GeneralRosterRow = memo(
                 user.email
                   ? getConflictStatus(dateString, user.email).hasConflict
                   : false
+              }
+              conflictDescription={
+                user.email
+                  ? getConflictStatus(dateString, user.email).description
+                  : undefined
               }
               isHighlighted={user.email === highlightedUserId}
               userData={userData}

@@ -1,4 +1,11 @@
-import { ReactNode, memo, useEffect, useRef, useMemo } from "react";
+import {
+  DOMAttributes,
+  ReactNode,
+  memo,
+  useEffect,
+  useRef,
+  useMemo,
+} from "react";
 
 import { useParams } from "react-router-dom";
 
@@ -21,6 +28,7 @@ export interface BaseRosterCellProps {
   title?: string;
   isHighlighted?: boolean;
   isAssignedOnClosestDate?: boolean;
+  pointerHandlers?: DOMAttributes<HTMLTableCellElement>;
 }
 
 const BaseRosterCell = memo(
@@ -36,6 +44,7 @@ const BaseRosterCell = memo(
     title,
     isHighlighted,
     isAssignedOnClosestDate,
+    pointerHandlers,
   }: BaseRosterCellProps) => {
     const cellRef = useRef<HTMLTableCellElement>(null);
     const { teamName } = useParams();
@@ -79,6 +88,7 @@ const BaseRosterCell = memo(
         ref={cellRef}
         className={combinedClasses}
         tabIndex={tabIndex}
+        {...pointerHandlers}
         onClick={onClick}
         onFocus={onFocus}
         title={title}
